@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLASSIFIED - Hoi An Social Discovery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, 
+#1a1a1a 0%, 
+#2d2d2d 100%);
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        .app-container {
+            max-width: 430px;
+            margin: 0 auto;
+            background: 
+#1a1a1a;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Header Styles /
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            color: 
+#FFD700;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+        .back-btn:hover {
+            background: rgba(255,215,0,0.1);
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            flex: 1;
+        }
+        .settings-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+        .settings-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .match-badge {
+            background: rgba(0,212,255,0.2);
+            color: 
+#00D4FF;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            border: 1px solid rgba(0,212,255,0.3);
+            font-weight: 600;
+        }
+        / Main Screen Container /
+        .main-screens {
+            position: relative;
+            min-height: calc(100vh - 140px);
+            padding-bottom: 100px;
+        }
+        .screen {
+            display: none;
+            animation: slideIn 0.3s ease;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+        }
+        .screen.active {
+            display: block;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        / Social Tabs /
+        .social-tabs {
+            display: flex;
+            background: rgba(255,255,255,0.05);
+            margin: 20px;
+            border-radius: 25px;
+            padding: 4px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .social-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .social-tab.active {
+            background: linear-gradient(135deg, 
+#00D4FF, 
+#0099CC);
+            color: white;
+            transform: scale(1.02);
+        }
+        .social-content {
+            display: none;
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+        .social-content.active {
+            display: block;
+        }
+        / Search Bar /
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin: 20px;
+        }
+        .search-input {
+            flex: 1;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 25px;
+            padding: 12px 20px;
+            color: white;
+            font-size: 14px;
+        }
+        .search-input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: 
+#00D4FF;
+            box-shadow: 0 0 0 2px rgba(0,212,255,0.2);
+        }
+        .filter-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 12px 20px;
+            color: white;
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .filter-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        / Stories Section /
+        .stories-section {
+            padding: 20px;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+        }
+        .stories-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        .stories-scroll {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .stories-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        .story-item {
+            flex-shrink: 0;
+            width: 120px;
+            height: 180px;
+            border-radius: 12px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease;
+        }
+        .story-item:hover {
+            transform: scale(1.05);
+        }
+        .story-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 12px;
+            border-radius: 0 0 10px 10px;
+        }
+        .story-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 2px;
+        }
+        .story-subtitle {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+        / Feed Container /
+        .feed-container {
+            padding: 0 20px 20px 20px;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+        }
+        .feed-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .feed-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        / Business Cards /
+        .business-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .business-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-color: rgba(0,212,255,0.3);
+        }
+        .business-header {
+            padding: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .business-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            margin-right: 15px;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        .business-info h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        .business-info p {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        .business-image {
+            width: 100%;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .business-content {
+            padding: 15px;
+        }
+        .business-description {
+            font-size: 14px;
+            line-height: 1.4;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+        .business-promo {
+            background: linear-gradient(135deg, 
+#FF6B6B, 
+#FF8C42);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+        .promo-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .promo-details {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        / Filter Options /
+        .filter-options {
+            display: flex;
+            gap: 12px;
+            padding: 0 20px 20px 20px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .filter-options::-webkit-scrollbar {
+            display: none;
+        }
+        .filter-chip {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 10px 18px;
+            color: white;
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        .filter-chip.active {
+            background: linear-gradient(135deg, 
+#00D4FF, 
+#0099CC);
+            border-color: 
+#00D4FF;
+            transform: scale(1.02);
+        }
+        .filter-chip:hover:not(.active) {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.3);
+        }
+        / User Feed Styles - UPDATED /
+        .user-feed-container {
+            height: calc(100vh - 280px);
+            overflow-y: auto;
+            padding: 0 20px 20px 20px;
+        }
+        .user-feed-item {
+            background: linear-gradient(135deg, 
+#2a2a2a 0%, 
+#1a1a1a 100%);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.3s ease;
+            position: relative;
+        }
+        .user-feed-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            border-color: rgba(0,212,255,0.3);
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .user-status-badges {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+        .status-badge {
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .status-online {
+            color: 
+#4CAF50;
+            border-color: rgba(76,175,80,0.3);
+        }
+        .status-distance {
+            color: 
+#00D4FF;
+            border-color: rgba(0,212,255,0.3);
+        }
+        .status-match {
+            color: 
+#FFD700;
+            border-color: rgba(255,215,0,0.3);
+        }
+        .user-image {
+            width: 100%;
+            height: 400px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .user-image-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 30px 20px 20px;
+        }
+        .user-info {
+            padding: 20px;
+        }
+        .user-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: white;
+        }
+        .user-bio {
+            font-size: 15px;
+            opacity: 0.9;
+            margin-bottom: 18px;
+            line-height: 1.5;
+        }
+        .user-interests {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+        .interest-tag {
+            background: rgba(0, 212, 255, 0.2);
+            color: 
+#00D4FF;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            font-weight: 500;
+        }
+        .user-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 0 5px 5px 5px;
+        }
+        .action-btn {
+            flex: 1;
+            height: 50px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .pass-btn { 
+            background: rgba(255,107,107,0.9);
+            color: white;
+        }
+        .pass-btn:hover {
+            background: 
+#FF6B6B;
+        }
+        .chat-btn { 
+            background: linear-gradient(135deg, 
+#00D4FF, 
+#0099CC);
+            color: white;
+        }
+        .chat-btn:hover {
+            background: linear-gradient(135deg, 
+#0099CC, 
+#0066AA);
+        }
+        .super-btn { 
+            background: linear-gradient(135deg, 
+#FFD93D, 
+#FFC107);
+            color: white;
+        }
+        .super-btn:hover {
+            background: linear-gradient(135deg, 
+#FFC107, 
+#FF9800);
+        }
+        / Messaging Styles - FIXED CONTAINMENT /
+        .messaging-container {
+            min-height: calc(100vh - 200px);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            width: 100%;
+            background: 
+#1a1a1a;
+        }
+        .matches-section {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: 
+#1a1a1a;
+        }
+        .matches-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .matches-scroll {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scrollbar-width: none;
+        }
+        .matches-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        .match-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            border: 2px solid 
+#00D4FF;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+        .match-avatar:hover {
+            transform: scale(1.05);
+        }
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+            background: 
+#1a1a1a;
+        }
+        .chat-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.3s ease;
+        }
+        .chat-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            margin-right: 15px;
+        }
+        .chat-info {
+            flex: 1;
+        }
+        .chat-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .chat-message {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        .chat-time {
+            font-size: 12px;
+            opacity: 0.5;
+        }
+        / Overlay Screens /
+        .overlay-screen {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            height: 100vh;
+            background: 
+#1a1a1a;
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            animation: slideUp 0.3s ease;
+        }
+        .overlay-screen.show {
+            display: flex;
+        }
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(100%); }
+            to { transform: translateX(-50%) translateY(0); }
+        }
+        / Business Profile Styles /
+        .profile-hero {
+            height: 250px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .profile-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 30px 20px 20px;
+        }
+        .profile-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .profile-type {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        .profile-rating {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stars {
+            color: 
+#FFD700;
+            font-size: 16px;
+        }
+        .profile-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .profile-section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: 
+#00D4FF;
+        }
+        .profile-description {
+            line-height: 1.6;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+        .profile-details {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .detail-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: 600;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .detail-value {
+            color: 
+#00D4FF;
+            font-weight: 500;
+        }
+        .current-promo {
+            background: linear-gradient(135deg, 
+#FF6B6B, 
+#FF8C42);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        .promo-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(0,0,0,0.9);
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .action-button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        .action-button:hover {
+            transform: translateY(-2px);
+        }
+        .primary-btn {
+            background: linear-gradient(135deg, 
+#00D4FF, 
+#0099CC);
+            color: white;
+        }
+        .secondary-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        / Chat Styles /
+        .chat-header {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .chat-header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            margin: 0 15px;
+        }
+        .chat-header-info {
+            flex: 1;
+        }
+        .chat-header-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .chat-status {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-end;
+            animation: messageAppear 0.3s ease;
+        }
+        .message.sent {
+            justify-content: flex-end;
+        }
+        @keyframes messageAppear {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .message.received .message-bubble {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .message.sent .message-bubble {
+            background: linear-gradient(135deg, 
+#00D4FF, 
+#0099CC);
+            color: white;
+        }
+        .promo-message-card {
+            background: linear-gradient(135deg, 
+#FF6B6B, 
+#FF8C42);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 10px 0;
+            max-width: 250px;
+        }
+        .chat-input {
+            display: flex;
+            padding: 20px;
+            background: rgba(0,0,0,0.95);
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .chat-input input {
+            flex: 1;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 12px 20px;
+            color: white;
+            margin-right: 10px;
+        }
+        .chat-input input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        .chat-input input:focus {
+            outline: none;
+            border-color: 
+#00D4FF;
+        }
+        .send-btn {
+            background: linear-gradient(135deg, 
+#00D4FF, 
+#0099CC);
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            transition: transform 0.2s ease;
+        }
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+        / Bottom Navigation /
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(20px);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            z-index: 150;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            min-width: 70px;
+        }
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+        .nav-item.active {
+            background: linear-gradient(135deg, 
+#FF6B6B, 
+#FF8C42);
+            transform: translateY(-2px);
+        }
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        .nav-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        / Match Popup /
+        .match-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        .match-popup.show {
+            display: flex;
+        }
+        .match-content {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, 
+#2a2a2a, 
+#1a1a1a);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            max-width: 300px;
+            animation: popIn 0.3s ease;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .match-text {
+            font-size: 32px;
+            font-weight: 700;
+            color: 
+#00D4FF;
+            margin-bottom: 20px;
+        }
+        .match-btn {
+            background: linear-gradient(135deg, 
+#00D4FF, 
+#0099CC);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+        }
+        .match-btn:hover {
+            transform: scale(1.05);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        / Responsive Design */
+        @media (max-width: 430px) {
+            .app-container {
+                max-width: 100vw;
+            }
+
+            .user-feed-item {
+                margin: 0 10px 20px 10px;
+            }
+
+            .bottom-nav {
+                max-width: 100vw;
+            }
+
+            .overlay-screen {
+                max-width: 100vw;
+            }
+        }
+        /* Loading Animation */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-left: 4px solid 
+#00D4FF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Screens Container -->
+        <div class="main-screens">
+            <!-- Restaurant Feed Screen -->
+            <div id="restaurantScreen" class="screen active">
+                <div class="header">
+                    <button class="back-btn">←</button>
+                    <div class="header-title">Hungry?</div>
+                    <button class="settings-btn">⚙️</button>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Find Restaurant...">
+                    <button class="filter-btn">🔽 Filter by preferences</button>
+                </div>
+                <div class="stories-section">
+                    <div class="stories-title">DAILY STORIES</div>
+                    <div class="stories-scroll" id="restaurantStories">
+                        <!-- Stories populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="feed-container">
+                    <div class="feed-header">
+                        <h3>FEATURED</h3>
+                    </div>
+                    <div id="restaurantFeed">
+                        <!-- Restaurant cards populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <!-- Social Screen -->
+            <div id="socialScreen" class="screen">
+                <div class="header">
+                    <button class="back-btn">←</button>
+                    <div class="header-title">Feeling Adventurous?!</div>
+                    <div class="match-badge">83% Match</div>
+                </div>
+                <div class="social-tabs">
+                    <div class="social-tab active" data-tab="userFeed">👥 Browse People</div>
+                    <div class="social-tab" data-tab="messaging">💬 Messaging</div>
+                </div>
+                <!-- User Feed Content -->
+                <div id="userFeedContent" class="social-content active">
+                    <!-- Filter Options -->
+                    <div class="filter-options">
+                        <div class="filter-chip active" data-filter="all">All</div>
+                        <div class="filter-chip" data-filter="online">🟢 Online Now</div>
+                        <div class="filter-chip" data-filter="nearby">📍 Nearby</div>
+                        <div class="filter-chip" data-filter="nomads">💻 Digital Nomads</div>
+                    </div>
+
+                    <div class="user-feed-container" id="userFeedContainer">
+                        <!-- User feed items populated by JavaScript -->
+                    </div>
+                </div>
+                <!-- Messaging Content -->
+                <div id="messagingContent" class="social-content">
+                    <div class="messaging-container">
+                        <div class="matches-section">
+                            <div class="matches-title">New Matches</div>
+                            <div class="matches-scroll" id="matchesScroll">
+                                <!-- Match avatars populated by JavaScript -->
+                            </div>
+                        </div>
+                        <div class="chat-list" id="chatList">
+                            <!-- Chat items populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Activity Feed Screen -->
+            <div id="activityScreen" class="screen">
+                <div class="header">
+                    <button class="back-btn">←</button>
+                    <div class="header-title">Feeling Adventurous?!</div>
+                    <button class="settings-btn">⚙️</button>
+                </div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Find Activity...">
+                    <button class="filter-btn">🔽 Filter by preferences</button>
+                </div>
+                <div class="stories-section">
+                    <div class="stories-title">DAILY STORIES</div>
+                    <div class="stories-scroll" id="activityStories">
+                        <!-- Stories populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="feed-container">
+                    <div class="feed-header">
+                        <h3>FEATURED</h3>
+                    </div>
+                    <div id="activityFeed">
+                        <!-- Activity cards populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Business Profile Overlay -->
+        <div id="businessProfile" class="overlay-screen">
+            <div class="header">
+                <button class="back-btn" id="profileBackBtn">←</button>
+                <div class="header-title" id="profileHeaderTitle">Business Profile</div>
+                <button class="settings-btn">⚙️</button>
+            </div>
+            <div class="profile-hero" id="profileHero">
+                <div class="profile-overlay">
+                    <div class="profile-name" id="profileName">Loading...</div>
+                    <div class="profile-type" id="profileType">Loading...</div>
+                    <div class="profile-rating">
+                        <div class="stars">★★★★★</div>
+                        <span>4.8 (124 reviews)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-content">
+                <div class="profile-section">
+                    <div class="current-promo">
+                        <div class="promo-badge">🔥 SPECIAL OFFER</div>
+                        <div class="promo-title" id="profilePromoTitle">Loading...</div>
+                        <div class="promo-details" id="profilePromoDetails">Loading...</div>
+                    </div>
+                </div>
+                <div class="profile-section">
+                    <div class="section-title">About</div>
+                    <div class="profile-description" id="profileDescription">
+                        A vibrant spot in the heart of Hoi An, perfect for backpackers and travelers.
+                    </div>
+                </div>
+                <div class="profile-section">
+                    <div class="section-title">Details</div>
+                    <div class="profile-details">
+                        <div class="detail-item">
+                            <div class="detail-label">📍 Location</div>
+                            <div class="detail-value" id="profileLocation">Hoi An Ancient Town</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">🕒 Hours</div>
+                            <div class="detail-value" id="profileHours">5:00 PM - 2:00 AM</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">💰 Price Range</div>
+                            <div class="detail-value" id="profilePrice">$ - Moderate</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">📱 Contact</div>
+                            <div class="detail-value" id="profileContact">+84 123 456 789</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-section">
+                    <div class="section-title">Popular With</div>
+                    <div class="card-interests">
+                        <span class="interest-tag">Backpackers</span>
+                        <span class="interest-tag">Digital Nomads</span>
+                        <span class="interest-tag">Expats</span>
+                        <span class="interest-tag">Live Music Lovers</span>
+                    </div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="action-button secondary-btn" onclick="CLASSIFIED.shareBusinessProfile()">Share</button>
+                <button class="action-button primary-btn" onclick="CLASSIFIED.getDirections()">Get Directions</button>
+            </div>
+        </div>
+        <!-- Individual Chat Overlay -->
+        <div id="individualChat" class="overlay-screen">
+            <div class="chat-header">
+                <button class="back-btn" id="chatBackBtn">←</button>
+                <div class="chat-header-avatar" id="chatAvatar"></div>
+                <div class="chat-header-info">
+                    <div class="chat-header-name" id="chatName">Jessica</div>
+                    <div class="chat-status">Online now</div>
+                </div>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message received">
+                    <div class="message-bubble">Hey! I saw you're into live music too 🎵</div>
+                </div>
+                <div class="message sent">
+                    <div class="message-bubble">Yes! Love finding new venues. Any recommendations in Hoi An?</div>
+                </div>
+                <div class="message received">
+                    <div class="message-bubble">Actually, I just got this promo for tonight!</div>
+                </div>
+                <div class="message received">
+                    <div class="promo-message-card">
+                        <div class="promo-title">🍷 Date Night Special</div>
+                        <div class="promo-details">2-for-1 Cocktails + Free Appetizer<br>Tonight 6-9pm<br>Banh Mi Queen</div>
+                    </div>
+                </div>
+                <div class="message sent">
+                    <div class="message-bubble">Perfect! Want to check it out together? 😊</div>
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" placeholder="Type a message..." id="messageInput">
+                <button class="send-btn" id="sendBtn">➤</button>
+            </div>
+        </div>
+        <!-- Match Popup -->
+        <div id="matchPopup" class="match-popup">
+            <div class="match-content">
+                <div class="match-text">IT'S A MATCH! 🎉</div>
+                <p>You and Jessica both liked each other</p>
+                <button class="match-btn" id="startChatBtn">Start Chatting</button>
+            </div>
+        </div>
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active" data-screen="restaurant">
+                <div class="nav-icon">🏃</div>
+                <div class="nav-label">Your Event</div>
+            </div>
+            <div class="nav-item" data-screen="social">
+                <div class="nav-icon">🎀</div>
+                <div class="nav-label">Your Social</div>
+            </div>
+            <div class="nav-item" data-screen="activity">
+                <div class="nav-icon">📦</div>
+                <div class="nav-label">Your Activity</div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // 🎯 CLASSIFIED v4.0 - Ultimate Hoi An Social App
+        // Updated version with scrollable user feed instead of swipe cards
+
+        const CLASSIFIED = {
+            // App State Management
+            state: {
+                currentScreen: 'restaurant',
+                currentSocialTab: 'userFeed',
+                currentBusiness: null,
+                isProfileOpen: false,
+                isChatOpen: false
+            },
+            // App Data - Real Hoi An Businesses
+            data: {
+                users: [
+                    {
+                        name: "Jessica",
+                        age: 28,
+                        image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop",
+                        interests: ["Reading", "Gym", "Music", "Laughter", "Cafe Connoisseur"],
+                        bio: "Backpacker exploring Vietnam 🇻🇳 Looking for adventure buddies and great coffee spots!",
+                        isOnline: true,
+                        distance: "2 km",
+                        matchPercentage: 83,
+                        category: "nomads"
+                    },
+                    {
+                        name: "Dave",
+                        age: 32,
+                        image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop",
+                        interests: ["Surfing", "Photography", "Coffee", "Adventure Sports", "Live Music"],
+                        bio: "Digital nomad loving Hoi An vibes ✨ Always down for beach days and exploring local culture.",
+                        isOnline: false,
+                        distance: "1.5 km",
+                        matchPercentage: 76,
+                        category: "nomads"
+                    },
+                    {
+                        name: "Rebecca",
+                        age: 26,
+                        image: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&h=600&fit=crop",
+                        interests: ["Yoga", "Cooking", "Beach", "Art", "Nightlife"],
+                        bio: "Artist seeking creative adventures 🎨 Love painting landscapes and meeting fellow creatives!",
+                        isOnline: true,
+                        distance: "800m",
+                        matchPercentage: 91,
+                        category: "all"
+                    },
+                    {
+                        name: "Alex",
+                        age: 29,
+                        image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=600&fit=crop",
+                        interests: ["Hiking", "Beer", "Football", "Travel", "Food"],
+                        bio: "Exploring Southeast Asia one city at a time 🌏 Football fanatic and craft beer enthusiast.",
+                        isOnline: true,
+                        distance: "3.2 km",
+                        matchPercentage: 68,
+                        category: "all"
+                    },
+                    {
+                        name: "Maria",
+                        age: 24,
+                        image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=600&fit=crop",
+                        interests: ["Dancing", "Food", "Travel", "Photography", "Beach"],
+                        bio: "Spanish girl making memories in Vietnam 💃 Love salsa dancing and trying street food!",
+                        isOnline: false,
+                        distance: "4.1 km",
+                        matchPercentage: 79,
+                        category: "all"
+                    },
+                    {
+                        name: "James",
+                        age: 30,
+                        image: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400&h=600&fit=crop",
+                        interests: ["Music", "Art", "Coffee", "Culture", "Adventure"],
+                        bio: "British musician discovering Southeast Asia 🎸 Looking for jam sessions and cultural experiences.",
+                        isOnline: true,
+                        distance: "1.8 km",
+                        matchPercentage: 85,
+                        category: "nomads"
+                    }
+                ],
+
+                restaurants: [
+                    {
+                        id: 'banh-mi-queen',
+                        name: "Banh Mi Queen",
+                        type: "Vietnamese Street Food",
+                        image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=150&h=200&fit=crop",
+                        promo: "2-for-1 Banh Mi Special",
+                        details: "Daily 7am-10pm • Perfect for breakfast",
+                        description: "Authentic Vietnamese banh mi served fresh daily. A favorite among backpackers for quick, delicious, and affordable meals in the heart of Hoi An Ancient Town.",
+                        location: "123 Tran Phu Street, Hoi An",
+                        hours: "7:00 AM - 10:00 PM",
+                        price: "$ - Budget Friendly",
+                        contact: "+84 235 123 456"
+                    },
+                    {
+                        id: 'thuan-tinh-island-bar',
+                        name: "Thuan Tinh Island Bar",
+                        type: "Riverside Bar & Grill",
+                        image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=150&h=200&fit=crop",
+                        promo: "Happy Hour - 50% Off All Drinks",
+                        details: "Daily 4pm-2am • River views & live music",
+                        description: "Stunning riverside location with panoramic views of Thu Bon River. Popular with expats and travelers for sunset drinks, live music, and BBQ nights.",
+                        location: "Thuan Tinh Island, Hoi An",
+                        hours: "4:00 PM - 2:00 AM",
+                        price: "$ - Moderate",
+                        contact: "+84 235 234 567"
+                    },
+                    {
+                        id: 'streets-restaurant',
+                        name: "Streets Restaurant & Cafe",
+                        type: "International Cuisine",
+                        image: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=150&h=200&fit=crop",
+                        promo: "Western Breakfast Special",
+                        details: "Daily 7am-11pm • WiFi & AC",
+                        description: "Western and Vietnamese fusion cuisine in a comfortable, air-conditioned setting. Great for digital nomads with reliable WiFi and international menu options.",
+                        location: "45 Le Loi Street, Hoi An",
+                        hours: "7:00 AM - 11:00 PM",
+                        price: "$ - Moderate",
+                        contact: "+84 235 345 678"
+                    },
+                    {
+                        id: 'moon-sports-bar',
+                        name: "Moon Sports Bar",
+                        type: "Sports Bar & Nightlife",
+                        image: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1574391884720-bbc273b7c282?w=150&h=200&fit=crop",
+                        promo: "Game Night - Free Pool & Darts",
+                        details: "Daily 5pm-late • Live sports & games",
+                        description: "The go-to spot for sports lovers and night owls. Multiple screens showing international sports, pool tables, and a lively atmosphere perfect for meeting fellow travelers.",
+                        location: "67 Nguyen Thai Hoc, Hoi An",
+                        hours: "5:00 PM - 2:00 AM",
+                        price: "$ - Moderate", 
+                        contact: "+84 235 456 789"
+                    },
+                    {
+                        id: 'lantern-town-coffee',
+                        name: "Lantern Town Coffee",
+                        type: "Coffee Shop & Co-working",
+                        image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=150&h=200&fit=crop",
+                        promo: "Digital Nomad Deal - Coffee + WiFi",
+                        details: "Daily 6am-10pm • Perfect for remote work",
+                        description: "Specialty coffee roasted locally with fast WiFi and comfortable workspaces. The perfect spot for digital nomads and remote workers exploring Hoi An.",
+                        location: "12 Bach Dang Street, Hoi An",
+                        hours: "6:00 AM - 10:00 PM",
+                        price: "$ - Budget Friendly",
+                        contact: "+84 235 567 890"
+                    }
+                ],
+
+                activities: [
+                    {
+                        id: 'basket-boat-tours',
+                        name: "Basket Boat Adventure",
+                        type: "Water Sports",
+                        image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=150&h=200&fit=crop",
+                        promo: "Group Discount - 4+ People Save 30%",
+                        details: "Daily tours 8am & 2pm • 3 hours duration",
+                        description: "Traditional Vietnamese basket boat tours through coconut forests. Perfect group activity for backpackers wanting to experience local culture and nature.",
+                        location: "Coconut Forest, Cam Thanh",
+                        hours: "8:00 AM - 5:00 PM",
+                        price: "$ - Budget Friendly",
+                        contact: "+84 235 678 901"
+                    },
+                    {
+                        id: 'motorbike-adventures',
+                        name: "Hoi An Motorbike Tours",
+                        type: "Adventure Tours",
+                        image: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=150&h=200&fit=crop",
+                        promo: "Sunrise Tour Special - Early Bird 20% Off",
+                        details: "Multiple daily tours • All skill levels",
+                        description: "Explore the countryside around Hoi An on authentic Vietnamese motorbikes. Safe, guided tours perfect for adventurous travelers wanting to see the real Vietnam.",
+                        location: "85 Cua Dai Street, Hoi An",
+                        hours: "6:00 AM - 8:00 PM",
+                        price: "$ - Moderate",
+                        contact: "+84 235 789 012"
+                    },
+                    {
+                        id: 'lantern-making-class',
+                        name: "Traditional Lantern Workshop",
+                        type: "Cultural Experience",
+                        image: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=150&h=200&fit=crop",
+                        promo: "Couples Workshop - Make Lanterns Together",
+                        details: "Daily classes 10am & 3pm • Take home your creation",
+                        description: "Learn to make traditional Vietnamese lanterns from local artisans. A perfect cultural activity for travelers wanting to create something beautiful and meaningful.",
+                        location: "Ancient Town Workshop District",
+                        hours: "9:00 AM - 6:00 PM",
+                        price: "$ - Budget Friendly",
+                        contact: "+84 235 890 123"
+                    },
+                    {
+                        id: 'cooking-school',
+                        name: "Sabirama Cooking School",
+                        type: "Culinary Experience",
+                        image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=150&h=200&fit=crop",
+                        promo: "Full Day Class - Market Tour Included",
+                        details: "Half & full day classes • Vegetarian options",
+                        description: "Hands-on Vietnamese cooking classes including market tours. Learn to make pho, banh mi, and other local favorites in a fun, social environment.",
+                        location: "Tra Que Vegetable Village",
+                        hours: "8:00 AM - 4:00 PM",
+                        price: "$ - Moderate",
+                        contact: "+84 235 901 234"
+                    },
+                    {
+                        id: 'beach-club-an-bang',
+                        name: "An Bang Beach Club",
+                        type: "Beach & Water Sports",
+                        image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=150&h=200&fit=crop",
+                        promo: "Beach Day Pass - Sunbed + Drink Included",
+                        details: "Daily 8am-sunset • Surfboard rental available",
+                        description: "Beautiful beach club on An Bang Beach with sunbeds, fresh seafood, and water sports. Perfect for beach lovers and surfers looking to relax and socialize.",
+                        location: "An Bang Beach, Hoi An",
+                        hours: "8:00 AM - 7:00 PM",
+                        price: "$ - Moderate",
+                        contact: "+84 235 012 345"
+                    }
+                ],
+
+                chats: [
+                    {
+                        name: "Jessica",
+                        message: "Perfect! Want to check it out together? 😊",
+                        time: "2m",
+                        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop"
+                    },
+                    {
+                        name: "Dave", 
+                        message: "Great surfing spots near Da Nang!",
+                        time: "1h",
+                        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop"
+                    },
+                    {
+                        name: "Rebecca",
+                        message: "The art scene here is amazing!",
+                        time: "3h", 
+                        avatar: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=100&h=100&fit=crop"
+                    }
+                ]
+            },
+            // Initialize App
+            init() {
+                console.log('🚀 Initializing CLASSIFIED v4.0...');
+                this.setupEventListeners();
+                this.populateFeeds();
+                this.populateUserFeed();
+                this.populateMessaging();
+                console.log('✅ CLASSIFIED ready!');
+            },
+            // Event Listeners
+            setupEventListeners() {
+                // Bottom navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const screen = item.dataset.screen;
+                        this.showScreen(screen);
+                    });
+                });
+                // Social tabs
+                document.querySelectorAll('.social-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        const tabType = tab.dataset.tab;
+                        this.switchSocialTab(tabType);
+                    });
+                });
+                // Filter chips
+                document.querySelectorAll('.filter-chip').forEach(chip => {
+                    chip.addEventListener('click', (e) => {
+                        const filter = chip.dataset.filter;
+                        this.filterUsers(filter);
+                    });
+                });
+                // Overlay back buttons
+                document.getElementById('profileBackBtn').addEventListener('click', () => this.closeBusinessProfile());
+                document.getElementById('chatBackBtn').addEventListener('click', () => this.closeChat());
+                // Chat functionality
+                document.getElementById('sendBtn').addEventListener('click', () => this.sendMessage());
+                document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+                // Match popup
+                document.getElementById('startChatBtn').addEventListener('click', () => this.startChatFromMatch());
+            },
+            // Screen Management
+            showScreen(screenType) {
+                console.log(📱 Switching to ${screenType} screen);
+
+                // Update state
+                this.state.currentScreen = screenType;
+
+                // Hide all screens
+                document.querySelectorAll('.screen').forEach(screen => {
+                    screen.classList.remove('active');
+                });
+
+                // Show target screen
+                document.getElementById(${screenType}Screen).classList.add('active');
+
+                // Update navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.querySelector([data-screen="${screenType}"]).classList.add('active');
+
+                // Reset social tab to userFeed when leaving social screen
+                if (screenType !== 'social') {
+                    this.switchSocialTab('userFeed');
+                }
+            },
+            switchSocialTab(tabType) {
+                console.log(🔄 Switching to ${tabType} tab);
+
+                this.state.currentSocialTab = tabType;
+
+                // Update tabs
+                document.querySelectorAll('.social-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelector([data-tab="${tabType}"]).classList.add('active');
+
+                // Update content
+                document.querySelectorAll('.social-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(${tabType}Content).classList.add('active');
+            },
+            // Populate Feeds
+            populateFeeds() {
+                this.populateRestaurantFeed();
+                this.populateActivityFeed();
+            },
+            populateRestaurantFeed() {
+                const storiesContainer = document.getElementById('restaurantStories');
+                const feedContainer = document.getElementById('restaurantFeed');
+                // Stories
+                storiesContainer.innerHTML = this.data.restaurants.map(restaurant => 
+                    <div class="story-item" style="background-image: url('${restaurant.story}')">
+                        <div class="story-overlay">
+                            <div class="story-title">${restaurant.name}</div>
+                            <div class="story-subtitle">${restaurant.type}</div>
+                        </div>
+                    </div>
+                ).join('');
+                // Feed
+                feedContainer.innerHTML = this.data.restaurants.map(restaurant => 
+                    this.createBusinessCard(restaurant, 'restaurant')
+                ).join('');
+
+                console.log('🍽️ Restaurant feed populated');
+            },
+            populateActivityFeed() {
+                const storiesContainer = document.getElementById('activityStories');
+                const feedContainer = document.getElementById('activityFeed');
+                // Stories
+                storiesContainer.innerHTML = this.data.activities.map(activity => 
+                    <div class="story-item" style="background-image: url('${activity.story}')">
+                        <div class="story-overlay">
+                            <div class="story-title">${activity.name}</div>
+                            <div class="story-subtitle">${activity.type}</div>
+                        </div>
+                    </div>
+                ).join('');
+                // Feed
+                feedContainer.innerHTML = this.data.activities.map(activity => 
+                    this.createBusinessCard(activity, 'activity')
+                ).join('');
+
+                console.log('🎯 Activity feed populated');
+            },
+            createBusinessCard(business, type) {
+                return 
+                    <div class="business-card" onclick="CLASSIFIED.openBusinessProfile('${business.id}', '${type}')">
+                        <div class="business-header">
+                            <div class="business-logo" style="background-image: url('${business.logo}')"></div>
+                            <div class="business-info">
+                                <h3>${business.name}</h3>
+                                <p>${business.type}</p>
+                            </div>
+                        </div>
+                        <div class="business-image" style="background-image: url('${business.image}')"></div>
+                        <div class="business-content">
+                            <div class="business-description">${business.description.substring(0, 100)}...</div>
+                            <div class="business-promo">
+                                <div class="promo-title">${business.promo}</div>
+                                <div class="promo-details">${business.details}</div>
+                            </div>
+                        </div>
+                    </div>
+                ;
+            },
+            // Business Profile Functions
+            openBusinessProfile(businessId, type) {
+                console.log(🏪 Opening ${businessId} profile);
+
+                const businesses = type === 'restaurant' ? this.data.restaurants : this.data.activities;
+                const business = businesses.find(b => b.id === businessId);
+
+                if (!business) {
+                    console.error('Business not found:', businessId);
+                    return;
+                }
+                // Show profile overlay
+                const profile = document.getElementById('businessProfile');
+                profile.classList.add('show');
+                this.state.isProfileOpen = true;
+                this.state.currentBusiness = { business, type };
+
+                // Populate profile data
+                document.getElementById('profileHeaderTitle').textContent = business.name;
+                document.getElementById('profileHero').style.backgroundImage = url('${business.image}');
+                document.getElementById('profileName').textContent = business.name;
+                document.getElementById('profileType').textContent = business.type;
+                document.getElementById('profilePromoTitle').textContent = business.promo;
+                document.getElementById('profilePromoDetails').textContent = business.details;
+                document.getElementById('profileDescription').textContent = business.description;
+                document.getElementById('profileLocation').textContent = business.location;
+                document.getElementById('profileHours').textContent = business.hours;
+                document.getElementById('profilePrice').textContent = business.price;
+                document.getElementById('profileContact').textContent = business.contact;
+            },
+            closeBusinessProfile() {
+                console.log('🔙 Closing business profile');
+                document.getElementById('businessProfile').classList.remove('show');
+                this.state.isProfileOpen = false;
+                this.state.currentBusiness = null;
+            },
+            shareBusinessProfile() {
+                if (this.state.currentBusiness) {
+                    const business = this.state.currentBusiness.business;
+                    const shareText = Check out ${business.name} in Hoi An! ${business.promo};
+
+                    if (navigator.share) {
+                        navigator.share({
+                            title: business.name,
+                            text: shareText,
+                            url: window.location.href
+                        });
+                    } else {
+                        navigator.clipboard.writeText(shareText + ' - ' + window.location.href);
+                        alert('Business info copied to clipboard! 📋');
+                    }
+                }
+            },
+            getDirections() {
+                if (this.state.currentBusiness) {
+                    const business = this.state.currentBusiness.business;
+                    const mapsUrl = https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.location)};
+                    window.open(mapsUrl, '_blank');
+                }
+            },
+            // User Feed - NEW
+            populateUserFeed() {
+                const container = document.getElementById('userFeedContainer');
+                container.innerHTML = '';
+                this.data.users.forEach((user, index) => {
+                    const feedItem = this.createUserFeedItem(user, index);
+                    container.appendChild(feedItem);
+                });
+                console.log('👥 User feed populated');
+            },
+            filterUsers(filter) {
+                console.log(🔍 Filtering users by: ${filter});
+
+                // Update active filter chip
+                document.querySelectorAll('.filter-chip').forEach(chip => {
+                    chip.classList.remove('active');
+                });
+                document.querySelector([data-filter="${filter}"]).classList.add('active');
+                // Filter users based on criteria
+                let filteredUsers = this.data.users;
+
+                if (filter === 'online') {
+                    filteredUsers = this.data.users.filter(user => user.isOnline);
+                } else if (filter === 'nearby') {
+                    filteredUsers = this.data.users.filter(user => {
+                        const distance = parseFloat(user.distance);
+                        return distance < 2; // Within 2km
+                    });
+                } else if (filter === 'nomads') {
+                    filteredUsers = this.data.users.filter(user => user.category === 'nomads');
+                }
+                // Re-populate feed with filtered users
+                const container = document.getElementById('userFeedContainer');
+                container.innerHTML = '';
+                filteredUsers.forEach((user, index) => {
+                    const feedItem = this.createUserFeedItem(user, index);
+                    container.appendChild(feedItem);
+                });
+            },
+            createUserFeedItem(user, index) {
+                const feedItem = document.createElement('div');
+                feedItem.className = 'user-feed-item';
+                feedItem.style.animationDelay = ${index * 0.1}s;
+                feedItem.innerHTML = 
+                    <div class="user-status-badges">
+                        ${user.isOnline ? '<div class="status-badge status-online">🟢 Online</div>' : ''}
+                        <div class="status-badge status-distance">📍 ${user.distance}</div>
+                        <div class="status-badge status-match">🔥 ${user.matchPercentage}% Match</div>
+                    </div>
+                    <div class="user-image" style="background-image: url('${user.image}')">
+                        <div class="user-image-overlay">
+                            <div class="user-name">${user.name}, ${user.age}</div>
+                        </div>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-bio">${user.bio}</div>
+                        <div class="user-interests">
+                            ${user.interests.map(interest => <span class="interest-tag">${interest}</span>).join('')}
+                        </div>
+                        <div class="user-actions">
+                            <button class="action-btn pass-btn" onclick="CLASSIFIED.handleUserAction('pass', '${user.name}')">✕ Pass</button>
+                            <button class="action-btn chat-btn" onclick="CLASSIFIED.handleUserAction('like', '${user.name}')">💬 Chat</button>
+                            <button class="action-btn super-btn" onclick="CLASSIFIED.handleUserAction('superlike', '${user.name}')">⭐ Super</button>
+                        </div>
+                    </div>
+                ;
+                return feedItem;
+            },
+            handleUserAction(action, userName) {
+                console.log(👆 ${action} action for ${userName});
+
+                if (action === 'like' || action === 'superlike') {
+                    // Simulate match for Jessica
+                    if (userName === 'Jessica') {
+                        setTimeout(() => this.showMatchPopup(), 500);
+                    }
+                }
+            },
+            showMatchPopup() {
+                document.getElementById('matchPopup').classList.add('show');
+            },
+            startChatFromMatch() {
+                document.getElementById('matchPopup').classList.remove('show');
+                this.openChat('Jessica', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop');
+            },
+            // Messaging
+            populateMessaging() {
+                const matchesContainer = document.getElementById('matchesScroll');
+                const chatListContainer = document.getElementById('chatList');
+                // Matches
+                matchesContainer.innerHTML = this.data.users.slice(0, 3).map(user => 
+                    <div class="match-avatar" style="background-image: url('${user.image}')" 
+                         onclick="CLASSIFIED.openChat('${user.name}', '${user.image}')"></div>
+                ).join('');
+                // Chat list
+                chatListContainer.innerHTML = this.data.chats.map(chat => 
+                    <div class="chat-item" onclick="CLASSIFIED.openChat('${chat.name}', '${chat.avatar}')">
+                        <div class="chat-avatar" style="background-image: url('${chat.avatar}')"></div>
+                        <div class="chat-info">
+                            <div class="chat-name">${chat.name}</div>
+                            <div class="chat-message">${chat.message}</div>
+                        </div>
+                        <div class="chat-time">${chat.time}</div>
+                    </div>
+                ).join('');
+                console.log('💬 Messaging populated');
+            },
+            openChat(name, avatar) {
+                console.log(💬 Opening chat with ${name});
+
+                const chat = document.getElementById('individualChat');
+                chat.classList.add('show');
+                this.state.isChatOpen = true;
+
+                document.getElementById('chatName').textContent = name;
+                document.getElementById('chatAvatar').style.backgroundImage = url('${avatar}');
+            },
+            closeChat() {
+                console.log('🔙 Closing chat');
+                document.getElementById('individualChat').classList.remove('show');
+                this.state.isChatOpen = false;
+            },
+            sendMessage() {
+                const input = document.getElementById('messageInput');
+                const messages = document.getElementById('chatMessages');
+
+                if (input.value.trim()) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message sent';
+                    messageDiv.innerHTML = <div class="message-bubble">${input.value}</div>;
+                    messages.appendChild(messageDiv);
+                    messages.scrollTop = messages.scrollHeight;
+                    input.value = '';
+                    console.log('📨 Message sent');
+                }
+            }
+        };
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            CLASSIFIED.init();
+        });
+        // Make CLASSIFIED globally available for onclick handlers
+        window.CLASSIFIED = CLASSIFIED;
+    </script>
+</body>
+</html>

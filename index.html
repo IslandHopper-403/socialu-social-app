@@ -2098,19 +2098,16 @@
             },
             // Initialize App
             init() {
-                console.log('🚀 Initializing CLASSIFIED v6.0 with Firebase...');
+                console.log('🚀 Initializing CLASSIFIED v6.0...');
                 
-                // Wait a moment for Firebase to fully load
-                setTimeout(() => {
-                    // Check authentication state
-                    this.setupAuthListener();
-                    
-                    this.setupEventListeners();
-                    this.populateFeeds();
-                    this.setupProfileEditor();
-                    
-                    console.log('✅ CLASSIFIED ready!');
-                }, 100);
+                // Check authentication state
+                this.setupAuthListener();
+                
+                this.setupEventListeners();
+                this.populateFeeds();
+                this.setupProfileEditor();
+                
+                console.log('✅ CLASSIFIED ready!');
             },
             
             // 🔥 Firebase Authentication Methods
@@ -2167,6 +2164,8 @@
                 const password = document.getElementById('registerPassword').value;
                 const confirmPassword = document.getElementById('registerConfirmPassword').value;
                 
+                console.log('📝 Attempting registration for:', email);
+                
                 if (!name || !email || !password || !confirmPassword) {
                     alert('Please fill in all fields');
                     return;
@@ -2182,14 +2181,25 @@
                     return;
                 }
                 
+                // Check if Firebase is ready
+                if (!window.auth || !window.db) {
+                    console.error('❌ Firebase not ready:', { auth: window.auth, db: window.db });
+                    alert('Firebase is not ready yet. Please wait a moment and try again.');
+                    return;
+                }
+                
                 try {
                     this.showLoading();
+                    console.log('🔐 Creating user with email and password...');
+                    
                     const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
+                    console.log('✅ User created:', userCredential.user.uid);
                     
                     // Update display name
                     await userCredential.user.updateProfile({
                         displayName: name
                     });
+                    console.log('✅ Display name updated');
                     
                     // Create user profile in Firestore
                     await this.createUserProfile(userCredential.user.uid, {
@@ -2198,6 +2208,7 @@
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                         location: 'Hoi An, Vietnam'
                     });
+                    console.log('✅ User profile created in Firestore');
                     
                     console.log('✅ Registration successful');
                 } catch (error) {
@@ -3050,15 +3061,6 @@
                 }
             }
         };
-        // Initialize app when DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            CLASSIFIED.init();
-            
-            // Test function accessibility
-            console.log('🧪 Testing CLASSIFIED global access:');
-            console.log('CLASSIFIED.openProfileFromChat:', typeof CLASSIFIED.openProfileFromChat);
-            console.log('CLASSIFIED.openUserProfile:', typeof CLASSIFIED.openUserProfile);
-        });
         // Make CLASSIFIED globally available for onclick handlers
         window.CLASSIFIED = CLASSIFIED;
         

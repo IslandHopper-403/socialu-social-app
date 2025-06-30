@@ -346,7 +346,7 @@
             background: rgba(255,255,255,0.2);
             border-color: rgba(255,255,255,0.3);
         }
-        /* User Feed Styles */
+        /* User Feed Styles - UPDATED */
         .user-feed-container {
             height: calc(100vh - 280px);
             overflow-y: auto;
@@ -361,6 +361,7 @@
             transition: all 0.3s ease;
             animation: fadeInUp 0.3s ease;
             position: relative;
+            cursor: pointer;
         }
         .user-feed-item:hover {
             transform: translateY(-5px);
@@ -491,7 +492,7 @@
         .super-btn:hover {
             background: linear-gradient(135deg, #FFC107, #FF9800);
         }
-        /* Messaging Styles */
+        /* Messaging Styles - FIXED CONTAINMENT */
         .messaging-container {
             min-height: calc(100vh - 200px);
             display: flex;
@@ -595,7 +596,162 @@
             from { transform: translateX(-50%) translateY(100%); }
             to { transform: translateX(-50%) translateY(0); }
         }
-        /* Business Profile Styles */
+        /* Profile Editor Styles */
+        .profile-editor {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .profile-section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #00D4FF;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+        .form-input {
+            width: 100%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 14px;
+        }
+        .form-input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #00D4FF;
+            box-shadow: 0 0 0 2px rgba(0,212,255,0.2);
+        }
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .choice-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .choice-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 10px 20px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            flex: 1;
+            text-align: center;
+            min-width: 120px;
+        }
+        .choice-btn.active {
+            background: linear-gradient(135deg, #00D4FF, #0099CC);
+            border-color: #00D4FF;
+        }
+        .choice-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.2);
+        }
+        .photo-upload-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px dashed rgba(255,255,255,0.2);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .photo-upload-section:hover {
+            border-color: #00D4FF;
+            background: rgba(0,212,255,0.1);
+        }
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .photo-slot {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px dashed rgba(255,255,255,0.2);
+        }
+        .photo-slot:hover {
+            border-color: #00D4FF;
+            background: rgba(0,212,255,0.1);
+        }
+        .photo-slot.filled {
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #00D4FF;
+        }
+        .star-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #FFD700;
+            font-size: 20px;
+        }
+        .interests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        .interest-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 10px 15px;
+            color: white;
+            cursor: pointer;
+            font-size: 13px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .interest-btn.active {
+            background: rgba(0, 212, 255, 0.2);
+            color: #00D4FF;
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+        .save-profile-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #00D4FF, #0099CC);
+            border: none;
+            border-radius: 25px;
+            padding: 15px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        .save-profile-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,212,255,0.3);
+        }
+        /* Profile View Styles */
         .profile-hero {
             height: 250px;
             background-size: cover;
@@ -633,15 +789,6 @@
             flex: 1;
             padding: 20px;
             overflow-y: auto;
-        }
-        .profile-section {
-            margin-bottom: 25px;
-        }
-        .section-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: #00D4FF;
         }
         .profile-description {
             line-height: 1.6;
@@ -738,13 +885,29 @@
             background-size: cover;
             background-position: center;
             margin: 0 15px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .chat-header-avatar:hover {
+            transform: scale(1.05);
         }
         .chat-header-info {
             flex: 1;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 8px;
+            transition: background 0.2s ease;
+        }
+        .chat-header-info:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .chat-header-info:hover .chat-header-name {
+            color: #00D4FF;
         }
         .chat-header-name {
             font-weight: 600;
             margin-bottom: 2px;
+            transition: color 0.2s ease;
         }
         .chat-status {
             font-size: 12px;
@@ -969,9 +1132,8 @@
                 <div class="header">
                     <button class="back-btn">←</button>
                     <div class="header-title">Hungry?</div>
-                    <button class="settings-btn">⚙️</button>
+                    <button class="settings-btn" onclick="CLASSIFIED.openProfileEditor()">⚙️</button>
                 </div>
-                
                 <div class="search-bar">
                     <input type="text" class="search-input" placeholder="Find Restaurant...">
                     <button class="filter-btn">🔽 Filter by preferences</button>
@@ -1011,7 +1173,6 @@
                         <div class="filter-chip" data-filter="nearby">📍 Nearby</div>
                         <div class="filter-chip" data-filter="nomads">💻 Digital Nomads</div>
                     </div>
-                    
                     <div class="user-feed-container" id="userFeedContainer">
                         <!-- User feed items populated by JavaScript -->
                     </div>
@@ -1036,7 +1197,7 @@
                 <div class="header">
                     <button class="back-btn">←</button>
                     <div class="header-title">Feeling Adventurous?!</div>
-                    <button class="settings-btn">⚙️</button>
+                    <button class="settings-btn" onclick="CLASSIFIED.openProfileEditor()">⚙️</button>
                 </div>
                 <div class="search-bar">
                     <input type="text" class="search-input" placeholder="Find Activity...">
@@ -1058,6 +1219,275 @@
                 </div>
             </div>
         </div>
+
+        <!-- Profile Editor Overlay -->
+        <div id="profileEditor" class="overlay-screen">
+            <div class="header">
+                <button class="back-btn" onclick="CLASSIFIED.closeProfileEditor()">←</button>
+                <div class="header-title">Edit Profile</div>
+                <button class="settings-btn" onclick="CLASSIFIED.viewMyProfile()">👤</button>
+            </div>
+            <div class="profile-editor">
+                <!-- Profile Photos Section -->
+                <div class="profile-section">
+                    <div class="section-title">Profile Photos</div>
+                    <div class="photo-upload-section" onclick="CLASSIFIED.uploadPhoto()">
+                        <div style="font-size: 48px; margin-bottom: 10px; opacity: 0.5;">📷</div>
+                        <div style="font-weight: 600;">Add Your Best Photos</div>
+                        <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">Tap to add photos</div>
+                    </div>
+                    <div class="photo-grid" id="photoGrid">
+                        <div class="photo-slot" onclick="CLASSIFIED.uploadPhoto(0)">
+                            <span style="font-size: 24px; opacity: 0.5;">+</span>
+                        </div>
+                        <div class="photo-slot" onclick="CLASSIFIED.uploadPhoto(1)">
+                            <span style="font-size: 24px; opacity: 0.5;">+</span>
+                        </div>
+                        <div class="photo-slot" onclick="CLASSIFIED.uploadPhoto(2)">
+                            <span style="font-size: 24px; opacity: 0.5;">+</span>
+                        </div>
+                        <div class="photo-slot" onclick="CLASSIFIED.uploadPhoto(3)">
+                            <span style="font-size: 24px; opacity: 0.5;">+</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About Me Section -->
+                <div class="profile-section">
+                    <div class="section-title">About Me</div>
+                    <div class="form-group">
+                        <label class="form-label">Bio</label>
+                        <textarea class="form-input form-textarea" id="profileBio" placeholder="Write about yourself or something you're up to..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Basic Info Section -->
+                <div class="profile-section">
+                    <div class="section-title">Basic Info</div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Birthday</label>
+                        <input type="date" class="form-input" id="profileBirthday">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Zodiac Sign</label>
+                        <div class="choice-group">
+                            <div class="choice-btn" data-choice="zodiac" data-value="Aries">♈ Aries</div>
+                            <div class="choice-btn" data-choice="zodiac" data-value="Taurus">♉ Taurus</div>
+                            <div class="choice-btn" data-choice="zodiac" data-value="Gemini">♊ Gemini</div>
+                            <div class="choice-btn" data-choice="zodiac" data-value="Cancer">♋ Cancer</div>
+                            <div class="choice-btn" data-choice="zodiac" data-value="Leo">♌ Leo</div>
+                            <div class="choice-btn" data-choice="zodiac" data-value="Virgo">♍ Virgo</div>
+                            <div class="choice-btn" data-choice="zodiac" data-value="Libra">♎ Libra</div>
+                            <div class="choice-btn" data-choice="zodiac" data-value="Scorpio">♏ Scorpio</div>
+                            <div class="choice-btn" data-choice="zodiac" data-value="Sagittarius">♐ Sagittarius</div>
+                            <div class="choice-btn" data-choice="zodiac" data-value="Capricorn">♑ Capricorn</div>
+                            <div class="choice-btn" data-choice="zodiac" data-value="Aquarius">♒ Aquarius</div>
+                            <div class="choice-btn" data-choice="zodiac" data-value="Pisces">♓ Pisces</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Height</label>
+                        <div class="choice-group">
+                            <input type="text" class="form-input" id="profileHeight" placeholder="5'7&quot; or 170cm">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Career</label>
+                        <div class="choice-group">
+                            <div class="choice-btn" data-choice="career" data-value="Student">Student</div>
+                            <div class="choice-btn" data-choice="career" data-value="Digital Nomad">Digital Nomad</div>
+                            <div class="choice-btn" data-choice="career" data-value="Teacher">Teacher</div>
+                            <div class="choice-btn" data-choice="career" data-value="Nurse">Nurse</div>
+                            <div class="choice-btn" data-choice="career" data-value="Engineer">Engineer</div>
+                            <div class="choice-btn" data-choice="career" data-value="Artist">Artist</div>
+                            <div class="choice-btn" data-choice="career" data-value="Business">Business</div>
+                            <div class="choice-btn" data-choice="career" data-value="Other">Other</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interests Section -->
+                <div class="profile-section">
+                    <div class="section-title">What Am I Like</div>
+                    <div class="interests-grid">
+                        <div class="interest-btn" data-interest="Adventure">Adventure</div>
+                        <div class="interest-btn" data-interest="Reading">Reading</div>
+                        <div class="interest-btn" data-interest="Sports">Sports</div>
+                        <div class="interest-btn" data-interest="Music">Music</div>
+                        <div class="interest-btn" data-interest="Travel">Travel</div>
+                        <div class="interest-btn" data-interest="Food">Food</div>
+                        <div class="interest-btn" data-interest="Art">Art</div>
+                        <div class="interest-btn" data-interest="Fitness">Fitness</div>
+                        <div class="interest-btn" data-interest="Photography">Photography</div>
+                        <div class="interest-btn" data-interest="Cooking">Cooking</div>
+                        <div class="interest-btn" data-interest="Dancing">Dancing</div>
+                        <div class="interest-btn" data-interest="Gaming">Gaming</div>
+                    </div>
+                </div>
+
+                <!-- Preferences Section -->
+                <div class="profile-section">
+                    <div class="section-title">What Do I Like Most</div>
+                    <div class="choice-group">
+                        <div class="choice-btn" data-choice="priority" data-value="Travel">Travel</div>
+                        <div class="choice-btn" data-choice="priority" data-value="Friends">Friends</div>
+                        <div class="choice-btn" data-choice="priority" data-value="Family">Family</div>
+                        <div class="choice-btn" data-choice="priority" data-value="Career">Career</div>
+                    </div>
+                </div>
+
+                <!-- Relationship Section -->
+                <div class="profile-section">
+                    <div class="section-title">Relationship Status</div>
+                    <div class="choice-group">
+                        <div class="choice-btn" data-choice="relationship" data-value="Single">Single</div>
+                        <div class="choice-btn" data-choice="relationship" data-value="In a Relationship">In a Relationship</div>
+                        <div class="choice-btn" data-choice="relationship" data-value="Common Law w. Children">Common Law w. Children</div>
+                        <div class="choice-btn" data-choice="relationship" data-value="It's Complicated">It's Complicated</div>
+                    </div>
+                </div>
+
+                <!-- Looking For Section -->
+                <div class="profile-section">
+                    <div class="section-title">What Am I Looking For</div>
+                    <div class="choice-group">
+                        <div class="choice-btn" data-choice="lookingFor" data-value="Friends">Friends</div>
+                        <div class="choice-btn" data-choice="lookingFor" data-value="Dating">Dating</div>
+                        <div class="choice-btn" data-choice="lookingFor" data-value="Networking">Networking</div>
+                        <div class="choice-btn" data-choice="lookingFor" data-value="Adventure Buddies">Adventure Buddies</div>
+                    </div>
+                </div>
+
+                <!-- Marriage Thoughts Section -->
+                <div class="profile-section">
+                    <div class="section-title">Thoughts about Marriage</div>
+                    <div class="choice-group">
+                        <div class="choice-btn" data-choice="marriage" data-value="Wants One Day">💍 Wants One Day</div>
+                        <div class="choice-btn" data-choice="marriage" data-value="Not Sure">🤷 Not Sure</div>
+                        <div class="choice-btn" data-choice="marriage" data-value="Not Interested">❌ Not Interested</div>
+                    </div>
+                </div>
+
+                <button class="save-profile-btn" onclick="CLASSIFIED.saveProfile()">Save Profile</button>
+            </div>
+        </div>
+
+        <!-- User Profile View Overlay -->
+        <div id="userProfileView" class="overlay-screen">
+            <div class="header">
+                <button class="back-btn" onclick="CLASSIFIED.closeUserProfile()">←</button>
+                <div class="header-title" id="userProfileTitle">Profile</div>
+                <button class="settings-btn" onclick="CLASSIFIED.startChatWithViewedUser()">💬</button>
+            </div>
+            <div class="profile-hero" id="userProfileHero">
+                <div class="profile-overlay">
+                    <div class="profile-name" id="userProfileName">Loading...</div>
+                    <div class="profile-type" id="userProfileAge">Loading...</div>
+                    <div class="profile-rating">
+                        <div class="stars" style="color: #00D4FF;">🔥🔥🔥</div>
+                        <span id="userProfileMatch">85% Match</span>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-content">
+                <div class="profile-section">
+                    <div class="section-title">About</div>
+                    <div class="profile-description" id="userProfileBio">
+                        Loading user bio...
+                    </div>
+                </div>
+                <div class="profile-section">
+                    <div class="section-title">Details</div>
+                    <div class="profile-details">
+                        <div class="detail-item">
+                            <div class="detail-label">📍 Distance</div>
+                            <div class="detail-value" id="userProfileDistance">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">🟢 Status</div>
+                            <div class="detail-value" id="userProfileStatus">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">📊 Category</div>
+                            <div class="detail-value" id="userProfileCategory">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-section">
+                    <div class="section-title">Interests</div>
+                    <div class="user-interests" id="userProfileInterests">
+                        <!-- Interests populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="action-button secondary-btn" onclick="CLASSIFIED.handleUserAction('pass')">✕ Pass</button>
+                <button class="action-button primary-btn" onclick="CLASSIFIED.handleUserAction('like')">💬 Like</button>
+            </div>
+        </div>
+
+        <!-- My Profile View Overlay -->
+        <div id="myProfileView" class="overlay-screen">
+            <div class="header">
+                <button class="back-btn" onclick="CLASSIFIED.closeMyProfile()">←</button>
+                <div class="header-title">My Profile</div>
+                <button class="settings-btn" onclick="CLASSIFIED.openProfileEditor()">✏️</button>
+            </div>
+            <div class="profile-hero" id="myProfileHero" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop')">
+                <div class="profile-overlay">
+                    <div class="profile-name" id="myProfileName">Your Name</div>
+                    <div class="profile-type" id="myProfileAge">Age</div>
+                </div>
+            </div>
+            <div class="profile-content">
+                <div class="profile-section">
+                    <div class="section-title">About Me</div>
+                    <div class="profile-description" id="myProfileBio">
+                        Complete your profile to start connecting with amazing people in Hoi An!
+                    </div>
+                </div>
+                <div class="profile-section">
+                    <div class="section-title">Details</div>
+                    <div class="profile-details">
+                        <div class="detail-item">
+                            <div class="detail-label">🎂 Age</div>
+                            <div class="detail-value" id="myProfileAgeDetail">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">📏 Height</div>
+                            <div class="detail-value" id="myProfileHeightDetail">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">💼 Career</div>
+                            <div class="detail-value" id="myProfileCareerDetail">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">⭐ Zodiac</div>
+                            <div class="detail-value" id="myProfileZodiacDetail">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">💝 Looking For</div>
+                            <div class="detail-value" id="myProfileLookingForDetail">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-section">
+                    <div class="section-title">My Interests</div>
+                    <div class="user-interests" id="myProfileInterests">
+                        <!-- Interests populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="action-button secondary-btn" onclick="CLASSIFIED.shareMyProfile()">Share Profile</button>
+                <button class="action-button primary-btn" onclick="CLASSIFIED.openProfileEditor()">Edit Profile</button>
+            </div>
+        </div>
+
         <!-- Business Profile Overlay -->
         <div id="businessProfile" class="overlay-screen">
             <div class="header">
@@ -1112,7 +1542,7 @@
                 </div>
                 <div class="profile-section">
                     <div class="section-title">Popular With</div>
-                    <div class="card-interests">
+                    <div class="user-interests">
                         <span class="interest-tag">Backpackers</span>
                         <span class="interest-tag">Digital Nomads</span>
                         <span class="interest-tag">Expats</span>
@@ -1129,8 +1559,8 @@
         <div id="individualChat" class="overlay-screen">
             <div class="chat-header">
                 <button class="back-btn" id="chatBackBtn">←</button>
-                <div class="chat-header-avatar" id="chatAvatar"></div>
-                <div class="chat-header-info">
+                <div class="chat-header-avatar" id="chatAvatar" onclick="console.log('👆 Avatar clicked!'); CLASSIFIED.openProfileFromChat();"></div>
+                <div class="chat-header-info" onclick="console.log('👆 Name area clicked!'); CLASSIFIED.openProfileFromChat();">
                     <div class="chat-header-name" id="chatName">Jessica</div>
                     <div class="chat-status">Online now</div>
                 </div>
@@ -1185,17 +1615,35 @@
         </div>
     </div>
     <script>
-        // 🎯 CLASSIFIED v4.0 - Ultimate Hoi An Social App
-        // Updated version with scrollable user feed instead of swipe cards
-        
+        // 🎯 CLASSIFIED v5.0 - Ultimate Hoi An Social App with Profile System
+        // Updated version with complete profile creation and editing system
         const CLASSIFIED = {
             // App State Management
             state: {
                 currentScreen: 'restaurant',
                 currentSocialTab: 'userFeed',
                 currentBusiness: null,
+                currentViewedUser: null,
+                currentChatUser: null,
                 isProfileOpen: false,
-                isChatOpen: false
+                isChatOpen: false,
+                isProfileEditorOpen: false,
+                isUserProfileOpen: false,
+                userProfile: {
+                    name: '',
+                    age: '',
+                    bio: '',
+                    birthday: '',
+                    zodiac: '',
+                    height: '',
+                    career: '',
+                    interests: [],
+                    priority: '',
+                    relationship: '',
+                    lookingFor: '',
+                    marriage: '',
+                    photos: []
+                }
             },
             // App Data - Real Hoi An Businesses
             data: {
@@ -1267,7 +1715,6 @@
                         category: "nomads"
                     }
                 ],
-                
                 restaurants: [
                     {
                         id: 'banh-mi-queen',
@@ -1345,7 +1792,6 @@
                         contact: "+84 235 567 890"
                     }
                 ],
-                
                 activities: [
                     {
                         id: 'basket-boat-tours',
@@ -1423,7 +1869,6 @@
                         contact: "+84 235 012 345"
                     }
                 ],
-                
                 chats: [
                     {
                         name: "Jessica",
@@ -1447,11 +1892,12 @@
             },
             // Initialize App
             init() {
-                console.log('🚀 Initializing CLASSIFIED v4.0...');
+                console.log('🚀 Initializing CLASSIFIED v5.0...');
                 this.setupEventListeners();
                 this.populateFeeds();
                 this.populateUserFeed();
                 this.populateMessaging();
+                this.setupProfileEditor();
                 console.log('✅ CLASSIFIED ready!');
             },
             // Event Listeners
@@ -1488,27 +1934,292 @@
                 // Match popup
                 document.getElementById('startChatBtn').addEventListener('click', () => this.startChatFromMatch());
             },
+            // Profile Editor Setup
+            setupProfileEditor() {
+                // Choice buttons
+                document.querySelectorAll('.choice-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const choiceType = btn.dataset.choice;
+                        const value = btn.dataset.value;
+                        this.selectChoice(choiceType, value, btn);
+                    });
+                });
+                // Interest buttons
+                document.querySelectorAll('.interest-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.toggleInterest(btn);
+                    });
+                });
+            },
+            // Profile Editor Functions
+            openProfileEditor() {
+                console.log('✏️ Opening profile editor');
+                document.getElementById('profileEditor').classList.add('show');
+                this.state.isProfileEditorOpen = true;
+                this.loadProfileData();
+            },
+            closeProfileEditor() {
+                console.log('🔙 Closing profile editor');
+                document.getElementById('profileEditor').classList.remove('show');
+                this.state.isProfileEditorOpen = false;
+            },
+            viewMyProfile() {
+                console.log('👤 Viewing my profile');
+                this.closeProfileEditor();
+                document.getElementById('myProfileView').classList.add('show');
+                this.updateMyProfileView();
+            },
+            closeMyProfile() {
+                console.log('🔙 Closing my profile');
+                document.getElementById('myProfileView').classList.remove('show');
+            },
+            loadProfileData() {
+                const profile = this.state.userProfile;
+                
+                // Load basic info
+                document.getElementById('profileBio').value = profile.bio || '';
+                document.getElementById('profileBirthday').value = profile.birthday || '';
+                document.getElementById('profileHeight').value = profile.height || '';
+                
+                // Load choices
+                if (profile.zodiac) this.selectChoiceByValue('zodiac', profile.zodiac);
+                if (profile.career) this.selectChoiceByValue('career', profile.career);
+                if (profile.priority) this.selectChoiceByValue('priority', profile.priority);
+                if (profile.relationship) this.selectChoiceByValue('relationship', profile.relationship);
+                if (profile.lookingFor) this.selectChoiceByValue('lookingFor', profile.lookingFor);
+                if (profile.marriage) this.selectChoiceByValue('marriage', profile.marriage);
+                
+                // Load interests
+                document.querySelectorAll('.interest-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (profile.interests.includes(btn.dataset.interest)) {
+                        btn.classList.add('active');
+                    }
+                });
+            },
+            selectChoice(choiceType, value, buttonElement) {
+                // Remove active from siblings
+                const siblings = buttonElement.parentElement.querySelectorAll('.choice-btn');
+                siblings.forEach(btn => btn.classList.remove('active'));
+                
+                // Add active to clicked button
+                buttonElement.classList.add('active');
+                
+                // Update state
+                this.state.userProfile[choiceType] = value;
+                console.log(`Selected ${choiceType}: ${value}`);
+            },
+            selectChoiceByValue(choiceType, value) {
+                const btn = document.querySelector(`[data-choice="${choiceType}"][data-value="${value}"]`);
+                if (btn) {
+                    this.selectChoice(choiceType, value, btn);
+                }
+            },
+            toggleInterest(buttonElement) {
+                const interest = buttonElement.dataset.interest;
+                const isActive = buttonElement.classList.contains('active');
+                
+                if (isActive) {
+                    buttonElement.classList.remove('active');
+                    this.state.userProfile.interests = this.state.userProfile.interests.filter(i => i !== interest);
+                } else {
+                    if (this.state.userProfile.interests.length < 8) { // Limit to 8 interests
+                        buttonElement.classList.add('active');
+                        this.state.userProfile.interests.push(interest);
+                    } else {
+                        alert('You can select up to 8 interests!');
+                    }
+                }
+                console.log('Current interests:', this.state.userProfile.interests);
+            },
+            uploadPhoto(slotIndex) {
+                // Simulate photo upload
+                const photos = [
+                    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop',
+                    'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop',
+                    'https://images.unsplash.com/photo-1494790108755-2616b1e78f41?w=400&h=400&fit=crop',
+                    'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&h=400&fit=crop'
+                ];
+                
+                if (slotIndex !== undefined) {
+                    const slot = document.querySelectorAll('.photo-slot')[slotIndex];
+                    if (slot && !slot.classList.contains('filled')) {
+                        const photoUrl = photos[slotIndex];
+                        slot.style.backgroundImage = `url('${photoUrl}')`;
+                        slot.classList.add('filled');
+                        slot.innerHTML = slotIndex === 0 ? '<div class="star-icon">⭐</div>' : '';
+                        
+                        this.state.userProfile.photos[slotIndex] = photoUrl;
+                        console.log(`Photo uploaded to slot ${slotIndex}`);
+                    }
+                } else {
+                    alert('Tap on a photo slot to add your image! 📸');
+                }
+            },
+            saveProfile() {
+                // Gather form data
+                this.state.userProfile.bio = document.getElementById('profileBio').value;
+                this.state.userProfile.birthday = document.getElementById('profileBirthday').value;
+                this.state.userProfile.height = document.getElementById('profileHeight').value;
+                
+                // Calculate age from birthday
+                if (this.state.userProfile.birthday) {
+                    const today = new Date();
+                    const birthDate = new Date(this.state.userProfile.birthday);
+                    let age = today.getFullYear() - birthDate.getFullYear();
+                    const monthDiff = today.getMonth() - birthDate.getMonth();
+                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                        age--;
+                    }
+                    this.state.userProfile.age = age;
+                }
+                
+                console.log('💾 Profile saved:', this.state.userProfile);
+                
+                // Show success message
+                alert('Profile saved successfully! 🎉');
+                
+                // Close editor and show profile
+                this.closeProfileEditor();
+                setTimeout(() => this.viewMyProfile(), 300);
+            },
+            updateMyProfileView() {
+                const profile = this.state.userProfile;
+                
+                // Update profile view with user data
+                document.getElementById('myProfileName').textContent = profile.name || 'Your Name';
+                document.getElementById('myProfileAge').textContent = profile.age ? `${profile.age} years old` : 'Add your age';
+                document.getElementById('myProfileBio').textContent = profile.bio || 'Complete your profile to start connecting with amazing people in Hoi An!';
+                
+                // Update details
+                document.getElementById('myProfileAgeDetail').textContent = profile.age || '-';
+                document.getElementById('myProfileHeightDetail').textContent = profile.height || '-';
+                document.getElementById('myProfileCareerDetail').textContent = profile.career || '-';
+                document.getElementById('myProfileZodiacDetail').textContent = profile.zodiac || '-';
+                document.getElementById('myProfileLookingForDetail').textContent = profile.lookingFor || '-';
+                
+                // Update interests
+                const interestsContainer = document.getElementById('myProfileInterests');
+                if (profile.interests.length > 0) {
+                    interestsContainer.innerHTML = profile.interests.map(interest => 
+                        `<span class="interest-tag">${interest}</span>`
+                    ).join('');
+                } else {
+                    interestsContainer.innerHTML = '<span class="interest-tag">Add interests in profile editor</span>';
+                }
+                
+                // Update hero image if photos available
+                if (profile.photos.length > 0) {
+                    document.getElementById('myProfileHero').style.backgroundImage = `url('${profile.photos[0]}')`;
+                }
+            },
+            shareMyProfile() {
+                const shareText = `Check out my profile on CLASSIFIED Hoi An! 🌟`;
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'My CLASSIFIED Profile',
+                        text: shareText,
+                        url: window.location.href
+                    });
+                } else {
+                    navigator.clipboard.writeText(shareText + ' - ' + window.location.href);
+                    alert('Profile link copied to clipboard! 📋');
+                }
+            },
+            // User Profile Viewing Functions
+            openUserProfile(user) {
+                console.log(`👤 Opening ${user.name}'s profile`);
+                document.getElementById('userProfileView').classList.add('show');
+                this.state.isUserProfileOpen = true;
+                this.state.currentViewedUser = user;
+                
+                // Populate user profile data
+                document.getElementById('userProfileTitle').textContent = user.name;
+                document.getElementById('userProfileHero').style.backgroundImage = `url('${user.image}')`;
+                document.getElementById('userProfileName').textContent = user.name;
+                document.getElementById('userProfileAge').textContent = `${user.age} years old`;
+                document.getElementById('userProfileMatch').textContent = `${user.matchPercentage}% Match`;
+                document.getElementById('userProfileBio').textContent = user.bio;
+                document.getElementById('userProfileDistance').textContent = user.distance;
+                document.getElementById('userProfileStatus').textContent = user.isOnline ? 'Online Now' : 'Offline';
+                document.getElementById('userProfileCategory').textContent = user.category === 'nomads' ? 'Digital Nomad' : 'Traveler';
+                
+                // Update interests
+                const interestsContainer = document.getElementById('userProfileInterests');
+                interestsContainer.innerHTML = user.interests.map(interest => 
+                    `<span class="interest-tag">${interest}</span>`
+                ).join('');
+            },
+            closeUserProfile() {
+                console.log('🔙 Closing user profile');
+                document.getElementById('userProfileView').classList.remove('show');
+                this.state.isUserProfileOpen = false;
+                this.state.currentViewedUser = null;
+            },
+            startChatWithViewedUser() {
+                if (this.state.currentViewedUser) {
+                    const user = this.state.currentViewedUser;
+                    this.closeUserProfile();
+                    setTimeout(() => {
+                        // Use the new method that ensures proper user state
+                        this.openChatWithUser(user.name);
+                    }, 300);
+                }
+            },
+            openProfileFromChat() {
+                console.log('🔍 Opening profile from chat');
+                console.log('Current chat user state:', this.state.currentChatUser);
+                
+                // Try multiple methods to get the user data
+                let user = null;
+                
+                // Method 1: Use stored currentChatUser
+                if (this.state.currentChatUser) {
+                    user = this.state.currentChatUser;
+                    console.log('✅ Method 1: Found user from currentChatUser:', user.name);
+                } 
+                // Method 2: Look up by chat header name
+                else {
+                    const chatNameElement = document.getElementById('chatName');
+                    const chatName = chatNameElement ? chatNameElement.textContent.trim() : '';
+                    console.log('🔄 Method 2: Looking up user by chat name:', chatName);
+                    
+                    if (chatName) {
+                        user = this.data.users.find(u => u.name.trim() === chatName);
+                        if (user) {
+                            console.log('✅ Method 2: Found user by name lookup:', user.name);
+                            // Update the state for future clicks
+                            this.state.currentChatUser = user;
+                        }
+                    }
+                }
+                
+                // Open the profile if we found a user
+                if (user) {
+                    console.log('🚀 Opening user profile for:', user.name);
+                    this.openUserProfile(user);
+                } else {
+                    console.error('❌ Could not find user data');
+                    console.log('Available users:', this.data.users.map(u => u.name));
+                    alert('Could not load user profile. Please try again.');
+                }
+            },
             // Screen Management
             showScreen(screenType) {
                 console.log(`📱 Switching to ${screenType} screen`);
-                
                 // Update state
                 this.state.currentScreen = screenType;
-                
                 // Hide all screens
                 document.querySelectorAll('.screen').forEach(screen => {
                     screen.classList.remove('active');
                 });
-                
                 // Show target screen
                 document.getElementById(`${screenType}Screen`).classList.add('active');
-                
                 // Update navigation
                 document.querySelectorAll('.nav-item').forEach(item => {
                     item.classList.remove('active');
                 });
                 document.querySelector(`[data-screen="${screenType}"]`).classList.add('active');
-                
                 // Reset social tab to userFeed when leaving social screen
                 if (screenType !== 'social') {
                     this.switchSocialTab('userFeed');
@@ -1516,15 +2227,12 @@
             },
             switchSocialTab(tabType) {
                 console.log(`🔄 Switching to ${tabType} tab`);
-                
                 this.state.currentSocialTab = tabType;
-                
                 // Update tabs
                 document.querySelectorAll('.social-tab').forEach(tab => {
                     tab.classList.remove('active');
                 });
                 document.querySelector(`[data-tab="${tabType}"]`).classList.add('active');
-                
                 // Update content
                 document.querySelectorAll('.social-content').forEach(content => {
                     content.classList.remove('active');
@@ -1540,38 +2248,36 @@
                 const storiesContainer = document.getElementById('restaurantStories');
                 const feedContainer = document.getElementById('restaurantFeed');
                 // Stories
-                storiesContainer.innerHTML = this.data.restaurants.map(restaurant => `
-                    <div class="story-item" style="background-image: url('${restaurant.story}')">
+                storiesContainer.innerHTML = this.data.restaurants.map(restaurant => 
+                    `<div class="story-item" style="background-image: url('${restaurant.story}')">
                         <div class="story-overlay">
                             <div class="story-title">${restaurant.name}</div>
                             <div class="story-subtitle">${restaurant.type}</div>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`
+                ).join('');
                 // Feed
                 feedContainer.innerHTML = this.data.restaurants.map(restaurant => 
                     this.createBusinessCard(restaurant, 'restaurant')
                 ).join('');
-                
                 console.log('🍽️ Restaurant feed populated');
             },
             populateActivityFeed() {
                 const storiesContainer = document.getElementById('activityStories');
                 const feedContainer = document.getElementById('activityFeed');
                 // Stories
-                storiesContainer.innerHTML = this.data.activities.map(activity => `
-                    <div class="story-item" style="background-image: url('${activity.story}')">
+                storiesContainer.innerHTML = this.data.activities.map(activity => 
+                    `<div class="story-item" style="background-image: url('${activity.story}')">
                         <div class="story-overlay">
                             <div class="story-title">${activity.name}</div>
                             <div class="story-subtitle">${activity.type}</div>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`
+                ).join('');
                 // Feed
                 feedContainer.innerHTML = this.data.activities.map(activity => 
                     this.createBusinessCard(activity, 'activity')
                 ).join('');
-                
                 console.log('🎯 Activity feed populated');
             },
             createBusinessCard(business, type) {
@@ -1598,10 +2304,8 @@
             // Business Profile Functions
             openBusinessProfile(businessId, type) {
                 console.log(`🏪 Opening ${businessId} profile`);
-                
                 const businesses = type === 'restaurant' ? this.data.restaurants : this.data.activities;
                 const business = businesses.find(b => b.id === businessId);
-                
                 if (!business) {
                     console.error('Business not found:', businessId);
                     return;
@@ -1611,7 +2315,6 @@
                 profile.classList.add('show');
                 this.state.isProfileOpen = true;
                 this.state.currentBusiness = { business, type };
-                
                 // Populate profile data
                 document.getElementById('profileHeaderTitle').textContent = business.name;
                 document.getElementById('profileHero').style.backgroundImage = `url('${business.image}')`;
@@ -1635,7 +2338,6 @@
                 if (this.state.currentBusiness) {
                     const business = this.state.currentBusiness.business;
                     const shareText = `Check out ${business.name} in Hoi An! ${business.promo}`;
-                    
                     if (navigator.share) {
                         navigator.share({
                             title: business.name,
@@ -1667,7 +2369,6 @@
             },
             filterUsers(filter) {
                 console.log(`🔍 Filtering users by: ${filter}`);
-                
                 // Update active filter chip
                 document.querySelectorAll('.filter-chip').forEach(chip => {
                     chip.classList.remove('active');
@@ -1675,7 +2376,6 @@
                 document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
                 // Filter users based on criteria
                 let filteredUsers = this.data.users;
-                
                 if (filter === 'online') {
                     filteredUsers = this.data.users.filter(user => user.isOnline);
                 } else if (filter === 'nearby') {
@@ -1698,6 +2398,16 @@
                 const feedItem = document.createElement('div');
                 feedItem.className = 'user-feed-item';
                 feedItem.style.animationDelay = `${index * 0.1}s`;
+                feedItem.style.cursor = 'pointer';
+                
+                // Make the entire card clickable to view profile
+                feedItem.addEventListener('click', (e) => {
+                    // Don't open profile if clicking on action buttons
+                    if (!e.target.closest('.user-actions')) {
+                        this.openUserProfile(user);
+                    }
+                });
+                
                 feedItem.innerHTML = `
                     <div class="user-status-badges">
                         ${user.isOnline ? '<div class="status-badge status-online">🟢 Online</div>' : ''}
@@ -1715,9 +2425,9 @@
                             ${user.interests.map(interest => `<span class="interest-tag">${interest}</span>`).join('')}
                         </div>
                         <div class="user-actions">
-                            <button class="action-btn pass-btn" onclick="CLASSIFIED.handleUserAction('pass', '${user.name}')">✕ Pass</button>
-                            <button class="action-btn chat-btn" onclick="CLASSIFIED.handleUserAction('like', '${user.name}')">💬 Chat</button>
-                            <button class="action-btn super-btn" onclick="CLASSIFIED.handleUserAction('superlike', '${user.name}')">⭐ Super</button>
+                            <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${user.name}')">✕ Pass</button>
+                            <button class="action-btn chat-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${user.name}')">💬 Chat</button>
+                            <button class="action-btn super-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('superlike', '${user.name}')">⭐ Super</button>
                         </div>
                     </div>
                 `;
@@ -1726,11 +2436,35 @@
             handleUserAction(action, userName) {
                 console.log(`👆 ${action} action for ${userName}`);
                 
+                // If no userName provided, use current viewed user
+                if (!userName && this.state.currentViewedUser) {
+                    userName = this.state.currentViewedUser.name;
+                }
+                
                 if (action === 'like' || action === 'superlike') {
+                    // Close user profile if open
+                    if (this.state.isUserProfileOpen) {
+                        this.closeUserProfile();
+                    }
+                    
                     // Simulate match for Jessica
                     if (userName === 'Jessica') {
                         setTimeout(() => this.showMatchPopup(), 500);
+                    } else {
+                        // For other users, show a generic positive response
+                        setTimeout(() => {
+                            alert(`You liked ${userName}! 💕 They'll be notified when they're online.`);
+                        }, 300);
                     }
+                } else if (action === 'pass') {
+                    // Close user profile if open
+                    if (this.state.isUserProfileOpen) {
+                        this.closeUserProfile();
+                    }
+                    // Show a subtle confirmation
+                    setTimeout(() => {
+                        console.log(`Passed on ${userName}`);
+                    }, 300);
                 }
             },
             showMatchPopup() {
@@ -1738,49 +2472,77 @@
             },
             startChatFromMatch() {
                 document.getElementById('matchPopup').classList.remove('show');
-                this.openChat('Jessica', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop');
+                // Use the new method to ensure proper user state
+                this.openChatWithUser('Jessica');
             },
             // Messaging
             populateMessaging() {
                 const matchesContainer = document.getElementById('matchesScroll');
                 const chatListContainer = document.getElementById('chatList');
-                // Matches
-                matchesContainer.innerHTML = this.data.users.slice(0, 3).map(user => `
-                    <div class="match-avatar" style="background-image: url('${user.image}')" 
-                         onclick="CLASSIFIED.openChat('${user.name}', '${user.image}')"></div>
-                `).join('');
-                // Chat list
-                chatListContainer.innerHTML = this.data.chats.map(chat => `
-                    <div class="chat-item" onclick="CLASSIFIED.openChat('${chat.name}', '${chat.avatar}')">
+                // Matches - pass full user object, not just name/avatar
+                matchesContainer.innerHTML = this.data.users.slice(0, 3).map(user => 
+                    `<div class="match-avatar" style="background-image: url('${user.image}')" 
+                         onclick="CLASSIFIED.openChatWithUser('${user.name}')"></div>`
+                ).join('');
+                // Chat list - also pass user name to lookup full object
+                chatListContainer.innerHTML = this.data.chats.map(chat => 
+                    `<div class="chat-item" onclick="CLASSIFIED.openChatWithUser('${chat.name}')">
                         <div class="chat-avatar" style="background-image: url('${chat.avatar}')"></div>
                         <div class="chat-info">
                             <div class="chat-name">${chat.name}</div>
                             <div class="chat-message">${chat.message}</div>
                         </div>
                         <div class="chat-time">${chat.time}</div>
-                    </div>
-                `).join('');
+                    </div>`
+                ).join('');
                 console.log('💬 Messaging populated');
             },
             openChat(name, avatar) {
                 console.log(`💬 Opening chat with ${name}`);
-                
                 const chat = document.getElementById('individualChat');
                 chat.classList.add('show');
                 this.state.isChatOpen = true;
                 
+                // Find the full user data for the chat
+                const user = this.data.users.find(u => u.name === name);
+                this.state.currentChatUser = user;
+                
+                console.log('✅ Current chat user set to:', this.state.currentChatUser);
+                
                 document.getElementById('chatName').textContent = name;
                 document.getElementById('chatAvatar').style.backgroundImage = `url('${avatar}')`;
+            },
+            // New function to handle opening chat with better user lookup
+            openChatWithUser(userName) {
+                console.log(`💬 Opening chat with user: ${userName}`);
+                
+                // First, find the full user object
+                const user = this.data.users.find(u => u.name === userName);
+                
+                if (user) {
+                    console.log('✅ Found user object:', user);
+                    // Set the current chat user BEFORE opening chat
+                    this.state.currentChatUser = user;
+                    
+                    // Now open the chat with full user data
+                    this.openChat(user.name, user.image);
+                } else {
+                    console.error('❌ Could not find user:', userName);
+                    console.log('Available users:', this.data.users.map(u => u.name));
+                    
+                    // Fallback to old method
+                    this.openChat(userName, '');
+                }
             },
             closeChat() {
                 console.log('🔙 Closing chat');
                 document.getElementById('individualChat').classList.remove('show');
                 this.state.isChatOpen = false;
+                this.state.currentChatUser = null;
             },
             sendMessage() {
                 const input = document.getElementById('messageInput');
                 const messages = document.getElementById('chatMessages');
-                
                 if (input.value.trim()) {
                     const messageDiv = document.createElement('div');
                     messageDiv.className = 'message sent';
@@ -1795,9 +2557,24 @@
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             CLASSIFIED.init();
+            
+            // Test function accessibility
+            console.log('🧪 Testing CLASSIFIED global access:');
+            console.log('CLASSIFIED.openProfileFromChat:', typeof CLASSIFIED.openProfileFromChat);
+            console.log('CLASSIFIED.openUserProfile:', typeof CLASSIFIED.openUserProfile);
         });
         // Make CLASSIFIED globally available for onclick handlers
         window.CLASSIFIED = CLASSIFIED;
+        
+        // Also add a simple test function
+        window.testChatClick = function() {
+            console.log('🧪 Test function called - onclick is working!');
+            if (window.CLASSIFIED && window.CLASSIFIED.openProfileFromChat) {
+                window.CLASSIFIED.openProfileFromChat();
+            } else {
+                console.error('CLASSIFIED.openProfileFromChat not found');
+            }
+        };
     </script>
 </body>
 </html>

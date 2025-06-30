@@ -2100,14 +2100,17 @@
             init() {
                 console.log('🚀 Initializing CLASSIFIED v6.0 with Firebase...');
                 
-                // Check authentication state
-                this.setupAuthListener();
-                
-                this.setupEventListeners();
-                this.populateFeeds();
-                this.setupProfileEditor();
-                
-                console.log('✅ CLASSIFIED ready!');
+                // Wait a moment for Firebase to fully load
+                setTimeout(() => {
+                    // Check authentication state
+                    this.setupAuthListener();
+                    
+                    this.setupEventListeners();
+                    this.populateFeeds();
+                    this.setupProfileEditor();
+                    
+                    console.log('✅ CLASSIFIED ready!');
+                }, 100);
             },
             
             // 🔥 Firebase Authentication Methods
@@ -2205,11 +2208,22 @@
             },
             
             async loginWithGoogle() {
-                const provider = new firebase.auth.GoogleAuthProvider();
+                console.log('🔍 Attempting Google login...');
+                
+                // Check if Firebase auth is ready
+                if (!window.auth) {
+                    console.error('❌ Firebase auth not initialized');
+                    alert('Authentication system not ready. Please refresh and try again.');
+                    return;
+                }
                 
                 try {
                     this.showLoading();
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    console.log('🔧 Google provider created');
+                    
                     const result = await window.auth.signInWithPopup(provider);
+                    console.log('✅ Google popup completed');
                     
                     // Check if this is a new user
                     const userDoc = await window.db.collection('users').doc(result.user.uid).get();
@@ -2229,7 +2243,13 @@
                 } catch (error) {
                     this.hideLoading();
                     console.error('❌ Google login error:', error);
-                    alert('Google login failed: ' + error.message);
+                    
+                    if (error.code === 'auth/popup-closed-by-user') {
+                        // User closed popup - don't show error
+                        console.log('User closed Google popup');
+                    } else {
+                        alert('Google login failed: ' + error.message);
+                    }
                 }
             },
             

@@ -1,9 +1,17 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLASSIFIED - Hoi An Social Discovery</title>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -84,6 +92,10 @@
             position: relative;
             min-height: calc(100vh - 140px);
             padding-bottom: 100px;
+            display: none; /* Hidden until authenticated */
+        }
+        .main-screens.authenticated {
+            display: block;
         }
         .screen {
             display: none;
@@ -1000,7 +1012,7 @@
             background: rgba(0,0,0,0.95);
             backdrop-filter: blur(20px);
             padding: 15px 20px;
-            display: flex;
+            display: none; /* Hidden until authenticated */
             justify-content: space-around;
             border-top: 1px solid rgba(255,255,255,0.1);
             z-index: 150;
@@ -1102,7 +1114,145 @@
                 max-width: 100vw;
             }
         }
-        /* Loading Animation */
+        /* Auth Screens Styles */
+        .auth-screen {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            z-index: 300;
+            display: none;
+            flex-direction: column;
+            animation: slideUp 0.3s ease;
+        }
+        .auth-screen.show {
+            display: flex;
+        }
+        .auth-header {
+            text-align: center;
+            padding: 60px 20px 40px;
+        }
+        .auth-logo {
+            font-size: 48px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #FFD700, #FF6B6B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        .auth-tagline {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-bottom: 40px;
+        }
+        .auth-form {
+            padding: 0 30px;
+            flex: 1;
+        }
+        .auth-input {
+            width: 100%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 16px 20px;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .auth-input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        .auth-input:focus {
+            outline: none;
+            border-color: #00D4FF;
+            box-shadow: 0 0 0 2px rgba(0,212,255,0.2);
+        }
+        .auth-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #00D4FF, #0099CC);
+            border: none;
+            border-radius: 25px;
+            padding: 16px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,212,255,0.3);
+        }
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .google-btn {
+            background: white;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .google-btn:hover {
+            background: #f5f5f5;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        .auth-divider {
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+            color: rgba(255,255,255,0.5);
+        }
+        .auth-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(255,255,255,0.2);
+        }
+        .auth-divider span {
+            background: #1a1a1a;
+            padding: 0 15px;
+        }
+        .auth-switch {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .auth-switch a {
+            color: #00D4FF;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 400;
+        }
+        .loading-overlay.show {
+            display: flex;
+        }
         .loading {
             display: flex;
             justify-content: center;
@@ -1132,7 +1282,7 @@
                 <div class="header">
                     <button class="back-btn">←</button>
                     <div class="header-title">Hungry?</div>
-                    <button class="settings-btn" onclick="CLASSIFIED.openProfileEditor()">⚙️</button>
+                    <button class="settings-btn" onclick="CLASSIFIED.openSettings()">⚙️</button>
                 </div>
                 <div class="search-bar">
                     <input type="text" class="search-input" placeholder="Find Restaurant...">
@@ -1197,7 +1347,7 @@
                 <div class="header">
                     <button class="back-btn">←</button>
                     <div class="header-title">Feeling Adventurous?!</div>
-                    <button class="settings-btn" onclick="CLASSIFIED.openProfileEditor()">⚙️</button>
+                    <button class="settings-btn" onclick="CLASSIFIED.openSettings()">⚙️</button>
                 </div>
                 <div class="search-bar">
                     <input type="text" class="search-input" placeholder="Find Activity...">
@@ -1372,7 +1522,7 @@
                     </div>
                 </div>
 
-                <button class="save-profile-btn" onclick="CLASSIFIED.saveProfile()">Save Profile</button>
+                <button class="save-profile-btn" onclick="CLASSIFIED.saveUserProfile()">Save Profile</button>
             </div>
         </div>
 
@@ -1598,6 +1748,63 @@
                 <button class="match-btn" id="startChatBtn">Start Chatting</button>
             </div>
         </div>
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Login Screen -->
+        <div id="loginScreen" class="auth-screen show">
+            <div class="auth-header">
+                <div class="auth-logo">CLASSIFIED</div>
+                <div class="auth-tagline">Discover Hoi An's Hidden Gems</div>
+            </div>
+            <div class="auth-form">
+                <input type="email" class="auth-input" id="loginEmail" placeholder="Email address">
+                <input type="password" class="auth-input" id="loginPassword" placeholder="Password">
+                <button class="auth-btn" onclick="CLASSIFIED.loginWithEmail()">Sign In</button>
+                
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                
+                <button class="auth-btn google-btn" onclick="CLASSIFIED.loginWithGoogle()">
+                    <span>🌟</span>
+                    Continue with Google
+                </button>
+            </div>
+            <div class="auth-switch">
+                Don't have an account? <a href="#" onclick="CLASSIFIED.showRegister()">Sign up</a>
+            </div>
+        </div>
+
+        <!-- Registration Screen -->
+        <div id="registerScreen" class="auth-screen">
+            <div class="auth-header">
+                <div class="auth-logo">CLASSIFIED</div>
+                <div class="auth-tagline">Join the Hoi An Community</div>
+            </div>
+            <div class="auth-form">
+                <input type="text" class="auth-input" id="registerName" placeholder="Your name">
+                <input type="email" class="auth-input" id="registerEmail" placeholder="Email address">
+                <input type="password" class="auth-input" id="registerPassword" placeholder="Create password">
+                <input type="password" class="auth-input" id="registerConfirmPassword" placeholder="Confirm password">
+                <button class="auth-btn" onclick="CLASSIFIED.registerWithEmail()">Create Account</button>
+                
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                
+                <button class="auth-btn google-btn" onclick="CLASSIFIED.loginWithGoogle()">
+                    <span>🌟</span>
+                    Continue with Google
+                </button>
+            </div>
+            <div class="auth-switch">
+                Already have an account? <a href="#" onclick="CLASSIFIED.showLogin()">Sign in</a>
+            </div>
+        </div>
+
         <!-- Bottom Navigation -->
         <div class="bottom-nav">
             <div class="nav-item active" data-screen="restaurant">
@@ -1892,13 +2099,233 @@
             },
             // Initialize App
             init() {
-                console.log('🚀 Initializing CLASSIFIED v5.0...');
+                console.log('🚀 Initializing CLASSIFIED v6.0 with Firebase...');
+                
+                // Check authentication state
+                this.setupAuthListener();
+                
                 this.setupEventListeners();
                 this.populateFeeds();
-                this.populateUserFeed();
-                this.populateMessaging();
                 this.setupProfileEditor();
+                
                 console.log('✅ CLASSIFIED ready!');
+            },
+            
+            // 🔥 Firebase Authentication Methods
+            setupAuthListener() {
+                auth.onAuthStateChanged((user) => {
+                    console.log('🔐 Auth state changed:', user ? user.email : 'No user');
+                    
+                    if (user) {
+                        // User is signed in
+                        this.state.currentUser = user;
+                        this.state.isAuthenticated = true;
+                        this.hideAuthScreens();
+                        this.loadUserProfile(user.uid);
+                        this.populateUserFeed(); // Load real users from Firebase
+                        this.populateMessaging();
+                    } else {
+                        // User is signed out
+                        this.state.currentUser = null;
+                        this.state.isAuthenticated = false;
+                        this.showLogin();
+                    }
+                });
+            },
+            
+            async loginWithEmail() {
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                if (!email || !password) {
+                    alert('Please enter email and password');
+                    return;
+                }
+                
+                try {
+                    this.showLoading();
+                    await auth.signInWithEmailAndPassword(email, password);
+                    console.log('✅ Email login successful');
+                } catch (error) {
+                    this.hideLoading();
+                    console.error('❌ Login error:', error);
+                    alert('Login failed: ' + error.message);
+                }
+            },
+            
+            async registerWithEmail() {
+                const name = document.getElementById('registerName').value;
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
+                const confirmPassword = document.getElementById('registerConfirmPassword').value;
+                
+                if (!name || !email || !password || !confirmPassword) {
+                    alert('Please fill in all fields');
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    alert('Passwords do not match');
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    alert('Password must be at least 6 characters');
+                    return;
+                }
+                
+                try {
+                    this.showLoading();
+                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    
+                    // Update display name
+                    await userCredential.user.updateProfile({
+                        displayName: name
+                    });
+                    
+                    // Create user profile in Firestore
+                    await this.createUserProfile(userCredential.user.uid, {
+                        name: name,
+                        email: email,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        location: 'Hoi An, Vietnam'
+                    });
+                    
+                    console.log('✅ Registration successful');
+                } catch (error) {
+                    this.hideLoading();
+                    console.error('❌ Registration error:', error);
+                    alert('Registration failed: ' + error.message);
+                }
+            },
+            
+            async loginWithGoogle() {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                
+                try {
+                    this.showLoading();
+                    const result = await auth.signInWithPopup(provider);
+                    
+                    // Check if this is a new user
+                    const userDoc = await db.collection('users').doc(result.user.uid).get();
+                    
+                    if (!userDoc.exists) {
+                        // Create profile for new Google user
+                        await this.createUserProfile(result.user.uid, {
+                            name: result.user.displayName,
+                            email: result.user.email,
+                            photo: result.user.photoURL,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            location: 'Hoi An, Vietnam'
+                        });
+                    }
+                    
+                    console.log('✅ Google login successful');
+                } catch (error) {
+                    this.hideLoading();
+                    console.error('❌ Google login error:', error);
+                    alert('Google login failed: ' + error.message);
+                }
+            },
+            
+            async logout() {
+                try {
+                    await auth.signOut();
+                    console.log('✅ Logout successful');
+                } catch (error) {
+                    console.error('❌ Logout error:', error);
+                }
+            },
+            
+            // 🔥 Firestore Methods
+            async createUserProfile(uid, profileData) {
+                try {
+                    await db.collection('users').doc(uid).set(profileData);
+                    console.log('✅ User profile created in Firestore');
+                } catch (error) {
+                    console.error('❌ Error creating user profile:', error);
+                    throw error;
+                }
+            },
+            
+            async loadUserProfile(uid) {
+                try {
+                    const doc = await db.collection('users').doc(uid).get();
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        this.state.userProfile = { ...this.state.userProfile, ...userData };
+                        console.log('✅ User profile loaded:', userData);
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading user profile:', error);
+                }
+            },
+            
+            async saveUserProfile() {
+                if (!this.state.currentUser) return;
+                
+                try {
+                    // Gather form data (existing logic)
+                    this.state.userProfile.bio = document.getElementById('profileBio').value;
+                    this.state.userProfile.birthday = document.getElementById('profileBirthday').value;
+                    this.state.userProfile.height = document.getElementById('profileHeight').value;
+                    
+                    // Calculate age from birthday (existing logic)
+                    if (this.state.userProfile.birthday) {
+                        const today = new Date();
+                        const birthDate = new Date(this.state.userProfile.birthday);
+                        let age = today.getFullYear() - birthDate.getFullYear();
+                        const monthDiff = today.getMonth() - birthDate.getMonth();
+                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                            age--;
+                        }
+                        this.state.userProfile.age = age;
+                    }
+                    
+                    // Save to Firebase
+                    await db.collection('users').doc(this.state.currentUser.uid).update({
+                        ...this.state.userProfile,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    console.log('💾 Profile saved to Firebase:', this.state.userProfile);
+                    alert('Profile saved successfully! 🎉');
+                    
+                    this.closeProfileEditor();
+                    setTimeout(() => this.viewMyProfile(), 300);
+                } catch (error) {
+                    console.error('❌ Error saving profile:', error);
+                    alert('Error saving profile: ' + error.message);
+                }
+            },
+            
+            // UI Helper Methods
+            showLogin() {
+                document.getElementById('loginScreen').classList.add('show');
+                document.getElementById('registerScreen').classList.remove('show');
+                document.querySelector('.main-screens').classList.remove('authenticated');
+                document.querySelector('.bottom-nav').style.display = 'none';
+            },
+            
+            showRegister() {
+                document.getElementById('registerScreen').classList.add('show');
+                document.getElementById('loginScreen').classList.remove('show');
+            },
+            
+            hideAuthScreens() {
+                document.getElementById('loginScreen').classList.remove('show');
+                document.getElementById('registerScreen').classList.remove('show');
+                document.querySelector('.main-screens').classList.add('authenticated');
+                document.querySelector('.bottom-nav').style.display = 'flex';
+                this.hideLoading();
+            },
+            
+            showLoading() {
+                document.getElementById('loadingOverlay').classList.add('show');
+            },
+            
+            hideLoading() {
+                document.getElementById('loadingOverlay').classList.remove('show');
             },
             // Event Listeners
             setupEventListeners() {
@@ -2033,7 +2460,8 @@
                 console.log('Current interests:', this.state.userProfile.interests);
             },
             uploadPhoto(slotIndex) {
-                // Simulate photo upload
+                // TODO: Implement Firebase Storage photo upload
+                // For now, simulate photo upload with demo images
                 const photos = [
                     'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop',
                     'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop',
@@ -2053,35 +2481,27 @@
                         console.log(`Photo uploaded to slot ${slotIndex}`);
                     }
                 } else {
-                    alert('Tap on a photo slot to add your image! 📸');
+                    alert('Tap on a photo slot to add your image! 📸\n\n(Firebase Storage integration coming soon)');
                 }
             },
-            saveProfile() {
-                // Gather form data
-                this.state.userProfile.bio = document.getElementById('profileBio').value;
-                this.state.userProfile.birthday = document.getElementById('profileBirthday').value;
-                this.state.userProfile.height = document.getElementById('profileHeight').value;
+
+            // Settings & Account Management
+            openSettings() {
+                const settingsMenu = `
+                    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 500; display: flex; align-items: center; justify-content: center;" onclick="this.remove()">
+                        <div style="background: #2a2a2a; border-radius: 20px; padding: 30px; max-width: 300px; width: 90%; border: 1px solid rgba(255,255,255,0.1);" onclick="event.stopPropagation()">
+                            <h3 style="margin: 0 0 20px 0; text-align: center; color: #00D4FF;">Settings</h3>
+                            <button onclick="CLASSIFIED.openProfileEditor(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; cursor: pointer;">✏️ Edit Profile</button>
+                            <button onclick="CLASSIFIED.viewMyProfile(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; cursor: pointer;">👤 View My Profile</button>
+                            <button onclick="CLASSIFIED.logout(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; background: rgba(255,107,107,0.2); border: 1px solid rgba(255,107,107,0.3); border-radius: 10px; color: #FF6B6B; cursor: pointer;">🚪 Logout</button>
+                        </div>
+                    </div>
+                `;
                 
-                // Calculate age from birthday
-                if (this.state.userProfile.birthday) {
-                    const today = new Date();
-                    const birthDate = new Date(this.state.userProfile.birthday);
-                    let age = today.getFullYear() - birthDate.getFullYear();
-                    const monthDiff = today.getMonth() - birthDate.getMonth();
-                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                        age--;
-                    }
-                    this.state.userProfile.age = age;
-                }
-                
-                console.log('💾 Profile saved:', this.state.userProfile);
-                
-                // Show success message
-                alert('Profile saved successfully! 🎉');
-                
-                // Close editor and show profile
-                this.closeProfileEditor();
-                setTimeout(() => this.viewMyProfile(), 300);
+                const overlay = document.createElement('div');
+                overlay.className = 'settings-overlay';
+                overlay.innerHTML = settingsMenu;
+                document.body.appendChild(overlay);
             },
             updateMyProfileView() {
                 const profile = this.state.userProfile;
@@ -2357,15 +2777,66 @@
                     window.open(mapsUrl, '_blank');
                 }
             },
-            // User Feed - NEW
-            populateUserFeed() {
+            // User Feed - Updated for Firebase
+            async populateUserFeed() {
+                if (!this.state.isAuthenticated) return;
+                
                 const container = document.getElementById('userFeedContainer');
-                container.innerHTML = '';
-                this.data.users.forEach((user, index) => {
-                    const feedItem = this.createUserFeedItem(user, index);
-                    container.appendChild(feedItem);
-                });
-                console.log('👥 User feed populated');
+                container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+                
+                try {
+                    // Fetch real users from Firebase
+                    const snapshot = await db.collection('users')
+                        .where('uid', '!=', this.state.currentUser.uid) // Exclude current user
+                        .limit(10)
+                        .get();
+                    
+                    const users = [];
+                    snapshot.forEach(doc => {
+                        const userData = doc.data();
+                        users.push({
+                            id: doc.id,
+                            name: userData.name || 'Anonymous',
+                            age: userData.age || 25,
+                            image: userData.photos?.[0] || userData.photo || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop',
+                            interests: userData.interests || ['Travel', 'Adventure'],
+                            bio: userData.bio || 'Exploring Hoi An and meeting new people!',
+                            isOnline: Math.random() > 0.5, // Simulate online status
+                            distance: `${Math.floor(Math.random() * 5) + 1} km`,
+                            matchPercentage: Math.floor(Math.random() * 30) + 70,
+                            category: userData.category || 'all'
+                        });
+                    });
+                    
+                    // If no users found, show demo users
+                    if (users.length === 0) {
+                        container.innerHTML = `
+                            <div style="text-align: center; padding: 40px; opacity: 0.7;">
+                                <div style="font-size: 48px; margin-bottom: 20px;">👥</div>
+                                <div style="font-size: 18px; margin-bottom: 10px;">No travelers nearby yet!</div>
+                                <div style="font-size: 14px;">Be the first to complete your profile and start connecting.</div>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Populate with real users
+                    container.innerHTML = '';
+                    users.forEach((user, index) => {
+                        const feedItem = this.createUserFeedItem(user, index);
+                        container.appendChild(feedItem);
+                    });
+                    
+                    console.log(`👥 User feed populated with ${users.length} real users`);
+                } catch (error) {
+                    console.error('❌ Error loading users:', error);
+                    // Fallback to demo users
+                    container.innerHTML = '';
+                    this.data.users.forEach((user, index) => {
+                        const feedItem = this.createUserFeedItem(user, index);
+                        container.appendChild(feedItem);
+                    });
+                }
             },
             filterUsers(filter) {
                 console.log(`🔍 Filtering users by: ${filter}`);

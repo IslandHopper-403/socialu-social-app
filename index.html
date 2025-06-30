@@ -2112,7 +2112,13 @@
             
             // 🔥 Firebase Authentication Methods
             setupAuthListener() {
-                auth.onAuthStateChanged((user) => {
+                console.log('🔐 Setting up auth listener...');
+                if (!window.auth) {
+                    console.error('❌ Firebase auth not initialized!');
+                    return;
+                }
+                
+                window.auth.onAuthStateChanged((user) => {
                     console.log('🔐 Auth state changed:', user ? user.email : 'No user');
                     
                     if (user) {
@@ -2143,7 +2149,7 @@
                 
                 try {
                     this.showLoading();
-                    await auth.signInWithEmailAndPassword(email, password);
+                    await window.auth.signInWithEmailAndPassword(email, password);
                     console.log('✅ Email login successful');
                 } catch (error) {
                     this.hideLoading();
@@ -2175,7 +2181,7 @@
                 
                 try {
                     this.showLoading();
-                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
                     
                     // Update display name
                     await userCredential.user.updateProfile({
@@ -2203,10 +2209,10 @@
                 
                 try {
                     this.showLoading();
-                    const result = await auth.signInWithPopup(provider);
+                    const result = await window.auth.signInWithPopup(provider);
                     
                     // Check if this is a new user
-                    const userDoc = await db.collection('users').doc(result.user.uid).get();
+                    const userDoc = await window.db.collection('users').doc(result.user.uid).get();
                     
                     if (!userDoc.exists) {
                         // Create profile for new Google user
@@ -2229,7 +2235,7 @@
             
             async logout() {
                 try {
-                    await auth.signOut();
+                    await window.auth.signOut();
                     console.log('✅ Logout successful');
                 } catch (error) {
                     console.error('❌ Logout error:', error);
@@ -2239,7 +2245,7 @@
             // 🔥 Firestore Methods
             async createUserProfile(uid, profileData) {
                 try {
-                    await db.collection('users').doc(uid).set(profileData);
+                    await window.db.collection('users').doc(uid).set(profileData);
                     console.log('✅ User profile created in Firestore');
                 } catch (error) {
                     console.error('❌ Error creating user profile:', error);
@@ -2249,7 +2255,7 @@
             
             async loadUserProfile(uid) {
                 try {
-                    const doc = await db.collection('users').doc(uid).get();
+                    const doc = await window.db.collection('users').doc(uid).get();
                     if (doc.exists) {
                         const userData = doc.data();
                         this.state.userProfile = { ...this.state.userProfile, ...userData };
@@ -2282,7 +2288,7 @@
                     }
                     
                     // Save to Firebase
-                    await db.collection('users').doc(this.state.currentUser.uid).update({
+                    await window.db.collection('users').doc(this.state.currentUser.uid).update({
                         ...this.state.userProfile,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
@@ -2785,7 +2791,7 @@
                 
                 try {
                     // Fetch real users from Firebase
-                    const snapshot = await db.collection('users')
+                    const snapshot = await window.db.collection('users')
                         .where('uid', '!=', this.state.currentUser.uid) // Exclude current user
                         .limit(10)
                         .get();

@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLASSIFIED - Hoi An Social Discovery</title>
     
-    <!-- Firebase SDKs - Compat Version -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <!-- Firebase SDKs - Using newer, more reliable version -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     
     <style>
         * {
@@ -2098,16 +2098,19 @@
             },
             // Initialize App
             init() {
-                console.log('🚀 Initializing CLASSIFIED v6.0...');
+                console.log('🚀 Starting CLASSIFIED v6.0...');
                 
-                // Check authentication state
+                // Setup authentication listener
                 this.setupAuthListener();
                 
+                // Setup event listeners
                 this.setupEventListeners();
+                
+                // Populate static content
                 this.populateFeeds();
                 this.setupProfileEditor();
                 
-                console.log('✅ CLASSIFIED ready!');
+                console.log('✅ CLASSIFIED app ready for users!');
             },
             
             // 🔥 Firebase Authentication Methods
@@ -2164,7 +2167,7 @@
                 const password = document.getElementById('registerPassword').value;
                 const confirmPassword = document.getElementById('registerConfirmPassword').value;
                 
-                console.log('📝 Attempting registration for:', email);
+                console.log('📝 Registration attempt for:', email);
                 
                 if (!name || !email || !password || !confirmPassword) {
                     alert('Please fill in all fields');
@@ -2181,25 +2184,29 @@
                     return;
                 }
                 
-                // Check if Firebase is ready
-                if (!window.auth || !window.db) {
-                    console.error('❌ Firebase not ready:', { auth: window.auth, db: window.db });
-                    alert('Firebase is not ready yet. Please wait a moment and try again.');
+                // Check if Firebase is properly initialized
+                if (!firebaseInitialized || !window.auth || !window.db) {
+                    console.error('❌ Firebase not ready:', { 
+                        firebaseInitialized, 
+                        auth: !!window.auth, 
+                        db: !!window.db 
+                    });
+                    alert('Firebase is still loading. Please wait a few seconds and try again.');
                     return;
                 }
                 
                 try {
                     this.showLoading();
-                    console.log('🔐 Creating user with email and password...');
+                    console.log('🔐 Creating user account...');
                     
                     const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
-                    console.log('✅ User created:', userCredential.user.uid);
+                    console.log('✅ User account created:', userCredential.user.uid);
                     
                     // Update display name
                     await userCredential.user.updateProfile({
                         displayName: name
                     });
-                    console.log('✅ Display name updated');
+                    console.log('✅ Display name set');
                     
                     // Create user profile in Firestore
                     await this.createUserProfile(userCredential.user.uid, {
@@ -2208,12 +2215,12 @@
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                         location: 'Hoi An, Vietnam'
                     });
-                    console.log('✅ User profile created in Firestore');
+                    console.log('✅ User profile created');
                     
-                    console.log('✅ Registration successful');
+                    console.log('🎉 Registration completed successfully!');
                 } catch (error) {
                     this.hideLoading();
-                    console.error('❌ Registration error:', error);
+                    console.error('❌ Registration failed:', error);
                     alert('Registration failed: ' + error.message);
                 }
             },

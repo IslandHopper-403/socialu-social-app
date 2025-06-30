@@ -2185,9 +2185,9 @@
                 }
                 
                 // Check if Firebase is properly initialized
-                if (!firebaseInitialized || !window.auth || !window.db) {
+                if (!this.state.firebaseReady || !window.auth || !window.db) {
                     console.error('❌ Firebase not ready:', { 
-                        firebaseInitialized, 
+                        firebaseReady: this.state.firebaseReady, 
                         auth: !!window.auth, 
                         db: !!window.db 
                     });

@@ -1127,6 +1127,21 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+        /* Responsive Design */
+        @media (max-width: 430px) {
+            .app-container {
+                max-width: 100vw;
+            }
+            .user-feed-item {
+                margin: 0 10px 20px 10px;
+            }
+            .bottom-nav {
+                max-width: 100vw;
+            }
+            .overlay-screen {
+                max-width: 100vw;
+            }
+        }
         /* Auth Screens Styles */
         .auth-screen {
             position: fixed;
@@ -1283,81 +1298,6 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-
-        /* 🚀 NEW ENHANCEMENTS - Business-specific and Growth Features */
-        
-        /* Business-specific enhancements */
-        .business-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stats-card {
-            background: rgba(0,212,255,0.1);
-            border: 1px solid rgba(0,212,255,0.3);
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-        }
-
-        /* Guest mode banner */
-        #guestBanner {
-            position: sticky;
-            top: 0;
-            z-index: 99;
-        }
-
-        /* Notification styles */
-        @keyframes slideDown {
-            from { transform: translateY(-100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        @keyframes bounceIn {
-            0% { transform: scale(0.3); opacity: 0; }
-            50% { transform: scale(1.05); }
-            70% { transform: scale(0.9); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        /* Mobile improvements */
-        @media (max-width: 430px) {
-            .app-container {
-                max-width: 100vw;
-            }
-            .user-feed-item {
-                margin: 0 10px 20px 10px;
-            }
-            .bottom-nav {
-                max-width: 100vw;
-            }
-            .overlay-screen {
-                max-width: 100vw;
-            }
-            .auth-input, .form-input {
-                font-size: 16px; /* Prevents iOS zoom */
-            }
-            
-            .business-stats-grid {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 430px) {
-            .user-feed-item {
-                margin: 0 10px 20px 10px;
-            }
-            .bottom-nav {
-                max-width: 100vw;
-            }
-            .overlay-screen {
-                max-width: 100vw;
-            }
         }
     </style>
 </head>
@@ -1844,22 +1784,6 @@
                     <span>🌟</span>
                     Continue with Google
                 </button>
-
-                <!-- Guest Mode Button -->
-                <button class="auth-btn" onclick="CLASSIFIED.enableGuestMode()" style="
-                    background: rgba(255,255,255,0.1);
-                    border: 1px solid rgba(255,255,255,0.2);
-                    color: white;
-                    margin-top: 10px;
-                ">👁️ Browse as Guest</button>
-
-                <!-- Business Login Button -->
-                <button class="auth-btn" onclick="CLASSIFIED.showBusinessLogin()" style="
-                    background: rgba(255,107,107,0.2);
-                    border: 1px solid rgba(255,107,107,0.3);
-                    color: #FF6B6B;
-                    margin-top: 20px;
-                ">🏪 Business Login</button>
             </div>
             <div class="auth-switch">
                 Don't have an account? <a href="#" onclick="CLASSIFIED.showRegister()">Sign up</a>
@@ -1891,226 +1815,6 @@
                 Already have an account? <a href="#" onclick="CLASSIFIED.showLogin()">Sign in</a>
             </div>
         </div>
-
-        <!-- 🏪 BUSINESS MANAGEMENT SCREENS -->
-
-        <!-- Business Login Screen -->
-        <div id="businessLoginScreen" class="auth-screen">
-            <div class="auth-header">
-                <div class="auth-logo">CLASSIFIED</div>
-                <div class="auth-tagline">Business Partner Portal</div>
-                <button class="back-btn" onclick="CLASSIFIED.showLogin()" style="position: absolute; top: 20px; left: 20px; background: none; border: none; color: #00D4FF; font-size: 24px;">←</button>
-            </div>
-            <div class="auth-form">
-                <input type="email" class="auth-input" id="businessLoginEmail" placeholder="Business email address">
-                <input type="password" class="auth-input" id="businessLoginPassword" placeholder="Password">
-                <button class="auth-btn" onclick="CLASSIFIED.businessLogin()">Business Sign In</button>
-                
-                <div class="auth-divider">
-                    <span>or</span>
-                </div>
-                
-                <button class="auth-btn google-btn" onclick="CLASSIFIED.businessLoginWithGoogle()">
-                    <span>🏪</span>
-                    Continue with Google
-                </button>
-            </div>
-            <div class="auth-switch">
-                New business? <a href="#" onclick="CLASSIFIED.showBusinessRegister()">Register your business</a><br>
-                <small><a href="#" onclick="CLASSIFIED.showLogin()">Back to user login</a></small>
-            </div>
-        </div>
-
-        <!-- Business Registration Screen -->
-        <div id="businessRegisterScreen" class="auth-screen">
-            <div class="auth-header">
-                <div class="auth-logo">CLASSIFIED</div>
-                <div class="auth-tagline">Register Your Business</div>
-                <button class="back-btn" onclick="CLASSIFIED.showBusinessLogin()" style="position: absolute; top: 20px; left: 20px; background: none; border: none; color: #00D4FF; font-size: 24px;">←</button>
-            </div>
-            <div class="auth-form">
-                <input type="text" class="auth-input" id="businessName" placeholder="Business name">
-                <select class="auth-input" id="businessType">
-                    <option value="">Select business type</option>
-                    <option value="restaurant">Restaurant</option>
-                    <option value="bar">Bar/Nightlife</option>
-                    <option value="cafe">Cafe</option>
-                    <option value="activity">Activity/Tour</option>
-                    <option value="accommodation">Accommodation</option>
-                    <option value="shop">Shop/Retail</option>
-                    <option value="service">Service</option>
-                </select>
-                <input type="email" class="auth-input" id="businessRegisterEmail" placeholder="Business email">
-                <input type="tel" class="auth-input" id="businessPhone" placeholder="Phone number">
-                <input type="text" class="auth-input" id="businessAddress" placeholder="Address in Hoi An">
-                <input type="password" class="auth-input" id="businessRegisterPassword" placeholder="Create password">
-                <button class="auth-btn" onclick="CLASSIFIED.registerBusiness()">Register Business</button>
-            </div>
-            <div class="auth-switch">
-                Already registered? <a href="#" onclick="CLASSIFIED.showBusinessLogin()">Sign in</a>
-            </div>
-        </div>
-
-        <!-- Business Dashboard -->
-        <div id="businessDashboard" class="overlay-screen">
-            <div class="header">
-                <button class="back-btn" onclick="CLASSIFIED.businessLogout()">🏠</button>
-                <div class="header-title">Business Dashboard</div>
-                <button class="settings-btn" onclick="CLASSIFIED.businessSettings()">⚙️</button>
-            </div>
-            
-            <div class="profile-editor" style="padding-top: 0;">
-                <!-- Business Stats -->
-                <div class="profile-section">
-                    <div class="section-title">📊 Your Stats Today</div>
-                    <div class="business-stats-grid">
-                        <div class="stats-card">
-                            <div style="font-size: 24px; font-weight: 700; color: #00D4FF;" id="businessViews">-</div>
-                            <div style="font-size: 12px; opacity: 0.8;">Profile Views</div>
-                        </div>
-                        <div style="background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3); border-radius: 12px; padding: 15px; text-align: center;">
-                            <div style="font-size: 24px; font-weight: 700; color: #FF6B6B;" id="businessClicks">-</div>
-                            <div style="font-size: 12px; opacity: 0.8;">Get Directions</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Business Profile -->
-                <div class="profile-section">
-                    <div class="section-title">🏪 Business Profile</div>
-                    <div class="form-group">
-                        <label class="form-label">Business Name</label>
-                        <input type="text" class="form-input" id="businessProfileName" placeholder="Your business name">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Business Type</label>
-                        <select class="form-input" id="businessProfileType">
-                            <option value="restaurant">Restaurant</option>
-                            <option value="bar">Bar/Nightlife</option>
-                            <option value="cafe">Cafe</option>
-                            <option value="activity">Activity/Tour</option>
-                            <option value="accommodation">Accommodation</option>
-                            <option value="shop">Shop/Retail</option>
-                            <option value="service">Service</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-input form-textarea" id="businessDescription" placeholder="Tell travelers about your business..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Address</label>
-                        <input type="text" class="form-input" id="businessAddressField" placeholder="Full address in Hoi An">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Phone Number</label>
-                        <input type="tel" class="form-input" id="businessPhoneNumber" placeholder="+84 XXX XXX XXX">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Operating Hours</label>
-                        <input type="text" class="form-input" id="businessHours" placeholder="e.g., Daily 8:00 AM - 10:00 PM">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Price Range</label>
-                        <select class="form-input" id="businessPriceRange">
-                            <option value="$ - Budget Friendly">$ - Budget Friendly</option>
-                            <option value="$$ - Moderate">$$ - Moderate</option>
-                            <option value="$$$ - Premium">$$$ - Premium</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Current Promotion -->
-                <div class="profile-section">
-                    <div class="section-title">🎉 Current Promotion</div>
-                    <div class="form-group">
-                        <label class="form-label">Promotion Title</label>
-                        <input type="text" class="form-input" id="businessPromoTitle" placeholder="e.g., Happy Hour Special">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Promotion Details</label>
-                        <input type="text" class="form-input" id="businessPromoDetails" placeholder="e.g., 50% off all drinks 5-7pm daily">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Valid Until</label>
-                        <input type="date" class="form-input" id="businessPromoExpiry">
-                    </div>
-                    <div style="background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); border-radius: 10px; padding: 15px; margin-top: 10px;">
-                        <div style="font-size: 14px; font-weight: 600; color: #FFD700; margin-bottom: 5px;">💡 Promotion Tips</div>
-                        <div style="font-size: 12px; opacity: 0.9; line-height: 1.4;">
-                            • Time-limited offers create urgency<br>
-                            • Group discounts encourage social visits<br>
-                            • "First-time visitor" specials attract new customers
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Business Photos -->
-                <div class="profile-section">
-                    <div class="section-title">📸 Business Photos</div>
-                    <div class="photo-upload-section" onclick="CLASSIFIED.uploadBusinessPhoto()">
-                        <div style="font-size: 48px; margin-bottom: 10px; opacity: 0.5;">📷</div>
-                        <div style="font-weight: 600;">Add Business Photos</div>
-                        <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">Show off your space, food, and atmosphere</div>
-                    </div>
-                    <div class="photo-grid" id="businessPhotoGrid">
-                        <div class="photo-slot" onclick="CLASSIFIED.uploadBusinessPhoto(0)">
-                            <span style="font-size: 24px; opacity: 0.5;">+</span>
-                        </div>
-                        <div class="photo-slot" onclick="CLASSIFIED.uploadBusinessPhoto(1)">
-                            <span style="font-size: 24px; opacity: 0.5;">+</span>
-                        </div>
-                        <div class="photo-slot" onclick="CLASSIFIED.uploadBusinessPhoto(2)">
-                            <span style="font-size: 24px; opacity: 0.5;">+</span>
-                        </div>
-                        <div class="photo-slot" onclick="CLASSIFIED.uploadBusinessPhoto(3)">
-                            <span style="font-size: 24px; opacity: 0.5;">+</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Target Audience -->
-                <div class="profile-section">
-                    <div class="section-title">🎯 Target Audience</div>
-                    <div class="interests-grid">
-                        <div class="interest-btn" data-business-audience="backpackers">🎒 Backpackers</div>
-                        <div class="interest-btn" data-business-audience="digital-nomads">💻 Digital Nomads</div>
-                        <div class="interest-btn" data-business-audience="couples">❤️ Couples</div>
-                        <div class="interest-btn" data-business-audience="families">👨‍👩‍👧‍👦 Families</div>
-                        <div class="interest-btn" data-business-audience="solo-travelers">🚶 Solo Travelers</div>
-                        <div class="interest-btn" data-business-audience="groups">👥 Groups</div>
-                        <div class="interest-btn" data-business-audience="expats">🏠 Expats</div>
-                        <div class="interest-btn" data-business-audience="locals">🏛️ Locals</div>
-                    </div>
-                </div>
-
-                <!-- QR Code Section -->
-                <div class="profile-section">
-                    <div class="section-title">📱 Your QR Code</div>
-                    <div style="background: rgba(255,255,255,0.05); border-radius: 15px; padding: 20px; text-align: center;">
-                        <div id="businessQRCode" style="margin-bottom: 15px;">
-                            <div style="width: 200px; height: 200px; background: white; border-radius: 10px; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: black; font-weight: bold;">
-                                QR CODE<br>GENERATED<br>HERE
-                            </div>
-                        </div>
-                        <div style="font-weight: 600; margin-bottom: 5px;">Display this QR code in your business</div>
-                        <div style="font-size: 12px; opacity: 0.8; margin-bottom: 15px;">Customers can scan to see your profile and current promotions</div>
-                        <button onclick="CLASSIFIED.downloadQRCode()" style="background: rgba(0,212,255,0.2); border: 1px solid rgba(0,212,255,0.3); color: #00D4FF; padding: 10px 20px; border-radius: 20px; cursor: pointer;">Download QR Code</button>
-                    </div>
-                </div>
-
-                <!-- Save Button -->
-                <button class="save-profile-btn" onclick="CLASSIFIED.saveBusinessProfile()">Save Business Profile</button>
-                
-                <!-- Business Portal Link -->
-                <div style="text-align: center; margin-top: 20px; padding: 20px; background: rgba(0,212,255,0.1); border-radius: 15px;">
-                    <div style="font-weight: 600; margin-bottom: 10px; color: #00D4FF;">🚀 Want more features?</div>
-                    <div style="font-size: 14px; opacity: 0.9; margin-bottom: 15px;">Get analytics, customer insights, and marketing tools</div>
-                    <button onclick="window.open('mailto:business@classified-hoian.com?subject=Business Portal Access')" style="background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; color: white; padding: 12px 24px; border-radius: 20px; cursor: pointer; font-weight: 600;">Contact Us</button>
-                </div>
-            </div>
-        </div>
-
         <!-- Bottom Navigation -->
         <div class="bottom-nav">
             <div class="nav-item active" data-screen="restaurant">
@@ -2128,8 +1832,8 @@
         </div>
     </div>
     <script>
-        // 🎯 CLASSIFIED v8.0 - Complete Enhanced Hoi An Social App
-        // With Business Management, Growth Features, and Firebase Storage
+        // 🎯 CLASSIFIED v5.0 - Ultimate Hoi An Social App with Profile System
+        // Updated version with complete profile creation and editing system
         const CLASSIFIED = {
             // App State Management
             state: {
@@ -2141,3 +1845,1256 @@
                 isProfileOpen: false,
                 isChatOpen: false,
                 isProfileEditorOpen: false,
+                isUserProfileOpen: false,
+                userProfile: {
+                    name: '',
+                    age: '',
+                    bio: '',
+                    birthday: '',
+                    zodiac: '',
+                    height: '',
+                    career: '',
+                    interests: [],
+                    priority: '',
+                    relationship: '',
+                    lookingFor: '',
+                    marriage: '',
+                    photos: []
+                }
+            },
+            // App Data - Real Hoi An Businesses
+            data: {
+                users: [
+                    {
+                        name: "Jessica",
+                        age: 28,
+                        image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop",
+                        interests: ["Reading", "Gym", "Music", "Laughter", "Cafe Connoisseur"],
+                        bio: "Backpacker exploring Vietnam 🇻🇳 Looking for adventure buddies and great coffee spots!",
+                        isOnline: true,
+                        distance: "2 km",
+                        matchPercentage: 83,
+                        category: "nomads"
+                    },
+                    {
+                        name: "Dave",
+                        age: 32,
+                        image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop",
+                        interests: ["Surfing", "Photography", "Coffee", "Adventure Sports", "Live Music"],
+                        bio: "Digital nomad loving Hoi An vibes ✨ Always down for beach days and exploring local culture.",
+                        isOnline: false,
+                        distance: "1.5 km",
+                        matchPercentage: 76,
+                        category: "nomads"
+                    },
+                    {
+                        name: "Rebecca",
+                        age: 26,
+                        image: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&h=600&fit=crop",
+                        interests: ["Yoga", "Cooking", "Beach", "Art", "Nightlife"],
+                        bio: "Artist seeking creative adventures 🎨 Love painting landscapes and meeting fellow creatives!",
+                        isOnline: true,
+                        distance: "800m",
+                        matchPercentage: 91,
+                        category: "all"
+                    },
+                    {
+                        name: "Alex",
+                        age: 29,
+                        image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=600&fit=crop",
+                        interests: ["Hiking", "Beer", "Football", "Travel", "Food"],
+                        bio: "Exploring Southeast Asia one city at a time 🌏 Football fanatic and craft beer enthusiast.",
+                        isOnline: true,
+                        distance: "3.2 km",
+                        matchPercentage: 68,
+                        category: "all"
+                    },
+                    {
+                        name: "Maria",
+                        age: 24,
+                        image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=600&fit=crop",
+                        interests: ["Dancing", "Food", "Travel", "Photography", "Beach"],
+                        bio: "Spanish girl making memories in Vietnam 💃 Love salsa dancing and trying street food!",
+                        isOnline: false,
+                        distance: "4.1 km",
+                        matchPercentage: 79,
+                        category: "all"
+                    },
+                    {
+                        name: "James",
+                        age: 30,
+                        image: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400&h=600&fit=crop",
+                        interests: ["Music", "Art", "Coffee", "Culture", "Adventure"],
+                        bio: "British musician discovering Southeast Asia 🎸 Looking for jam sessions and cultural experiences.",
+                        isOnline: true,
+                        distance: "1.8 km",
+                        matchPercentage: 85,
+                        category: "nomads"
+                    }
+                ],
+                restaurants: [
+                    {
+                        id: 'banh-mi-queen',
+                        name: "Banh Mi Queen",
+                        type: "Vietnamese Street Food",
+                        image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=150&h=200&fit=crop",
+                        promo: "2-for-1 Banh Mi Special",
+                        details: "Daily 7am-10pm • Perfect for breakfast",
+                        description: "Authentic Vietnamese banh mi served fresh daily. A favorite among backpackers for quick, delicious, and affordable meals in the heart of Hoi An Ancient Town.",
+                        location: "123 Tran Phu Street, Hoi An",
+                        hours: "7:00 AM - 10:00 PM",
+                        price: "$ - Budget Friendly",
+                        contact: "+84 235 123 456"
+                    },
+                    {
+                        id: 'thuan-tinh-island-bar',
+                        name: "Thuan Tinh Island Bar",
+                        type: "Riverside Bar & Grill",
+                        image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=150&h=200&fit=crop",
+                        promo: "Happy Hour - 50% Off All Drinks",
+                        details: "Daily 4pm-2am • River views & live music",
+                        description: "Stunning riverside location with panoramic views of Thu Bon River. Popular with expats and travelers for sunset drinks, live music, and BBQ nights.",
+                        location: "Thuan Tinh Island, Hoi An",
+                        hours: "4:00 PM - 2:00 AM",
+                        price: "$ - Moderate",
+                        contact: "+84 235 234 567"
+                    },
+                    {
+                        id: 'streets-restaurant',
+                        name: "Streets Restaurant & Cafe",
+                        type: "International Cuisine",
+                        image: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=150&h=200&fit=crop",
+                        promo: "Western Breakfast Special",
+                        details: "Daily 7am-11pm • WiFi & AC",
+                        description: "Western and Vietnamese fusion cuisine in a comfortable, air-conditioned setting. Great for digital nomads with reliable WiFi and international menu options.",
+                        location: "45 Le Loi Street, Hoi An",
+                        hours: "7:00 AM - 11:00 PM",
+                        price: "$ - Moderate",
+                        contact: "+84 235 345 678"
+                    },
+                    {
+                        id: 'moon-sports-bar',
+                        name: "Moon Sports Bar",
+                        type: "Sports Bar & Nightlife",
+                        image: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1574391884720-bbc273b7c282?w=150&h=200&fit=crop",
+                        promo: "Game Night - Free Pool & Darts",
+                        details: "Daily 5pm-late • Live sports & games",
+                        description: "The go-to spot for sports lovers and night owls. Multiple screens showing international sports, pool tables, and a lively atmosphere perfect for meeting fellow travelers.",
+                        location: "67 Nguyen Thai Hoc, Hoi An",
+                        hours: "5:00 PM - 2:00 AM",
+                        price: "$ - Moderate", 
+                        contact: "+84 235 456 789"
+                    },
+                    {
+                        id: 'lantern-town-coffee',
+                        name: "Lantern Town Coffee",
+                        type: "Coffee Shop & Co-working",
+                        image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=150&h=200&fit=crop",
+                        promo: "Digital Nomad Deal - Coffee + WiFi",
+                        details: "Daily 6am-10pm • Perfect for remote work",
+                        description: "Specialty coffee roasted locally with fast WiFi and comfortable workspaces. The perfect spot for digital nomads and remote workers exploring Hoi An.",
+                        location: "12 Bach Dang Street, Hoi An",
+                        hours: "6:00 AM - 10:00 PM",
+                        price: "$ - Budget Friendly",
+                        contact: "+84 235 567 890"
+                    }
+                ],
+                activities: [
+                    {
+                        id: 'basket-boat-tours',
+                        name: "Basket Boat Adventure",
+                        type: "Water Sports",
+                        image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=150&h=200&fit=crop",
+                        promo: "Group Discount - 4+ People Save 30%",
+                        details: "Daily tours 8am & 2pm • 3 hours duration",
+                        description: "Traditional Vietnamese basket boat tours through coconut forests. Perfect group activity for backpackers wanting to experience local culture and nature.",
+                        location: "Coconut Forest, Cam Thanh",
+                        hours: "8:00 AM - 5:00 PM",
+                        price: "$ - Budget Friendly",
+                        contact: "+84 235 678 901"
+                    },
+                    {
+                        id: 'motorbike-adventures',
+                        name: "Hoi An Motorbike Tours",
+                        type: "Adventure Tours",
+                        image: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=150&h=200&fit=crop",
+                        promo: "Sunrise Tour Special - Early Bird 20% Off",
+                        details: "Multiple daily tours • All skill levels",
+                        description: "Explore the countryside around Hoi An on authentic Vietnamese motorbikes. Safe, guided tours perfect for adventurous travelers wanting to see the real Vietnam.",
+                        location: "85 Cua Dai Street, Hoi An",
+                        hours: "6:00 AM - 8:00 PM",
+                        price: "$ - Moderate",
+                        contact: "+84 235 789 012"
+                    },
+                    {
+                        id: 'lantern-making-class',
+                        name: "Traditional Lantern Workshop",
+                        type: "Cultural Experience",
+                        image: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=150&h=200&fit=crop",
+                        promo: "Couples Workshop - Make Lanterns Together",
+                        details: "Daily classes 10am & 3pm • Take home your creation",
+                        description: "Learn to make traditional Vietnamese lanterns from local artisans. A perfect cultural activity for travelers wanting to create something beautiful and meaningful.",
+                        location: "Ancient Town Workshop District",
+                        hours: "9:00 AM - 6:00 PM",
+                        price: "$ - Budget Friendly",
+                        contact: "+84 235 890 123"
+                    },
+                    {
+                        id: 'cooking-school',
+                        name: "Sabirama Cooking School",
+                        type: "Culinary Experience",
+                        image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=150&h=200&fit=crop",
+                        promo: "Full Day Class - Market Tour Included",
+                        details: "Half & full day classes • Vegetarian options",
+                        description: "Hands-on Vietnamese cooking classes including market tours. Learn to make pho, banh mi, and other local favorites in a fun, social environment.",
+                        location: "Tra Que Vegetable Village",
+                        hours: "8:00 AM - 4:00 PM",
+                        price: "$ - Moderate",
+                        contact: "+84 235 901 234"
+                    },
+                    {
+                        id: 'beach-club-an-bang',
+                        name: "An Bang Beach Club",
+                        type: "Beach & Water Sports",
+                        image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=150&h=200&fit=crop",
+                        promo: "Beach Day Pass - Sunbed + Drink Included",
+                        details: "Daily 8am-sunset • Surfboard rental available",
+                        description: "Beautiful beach club on An Bang Beach with sunbeds, fresh seafood, and water sports. Perfect for beach lovers and surfers looking to relax and socialize.",
+                        location: "An Bang Beach, Hoi An",
+                        hours: "8:00 AM - 7:00 PM",
+                        price: "$ - Moderate",
+                        contact: "+84 235 012 345"
+                    }
+                ],
+                chats: [
+                    {
+                        name: "Jessica",
+                        message: "Perfect! Want to check it out together? 😊",
+                        time: "2m",
+                        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop"
+                    },
+                    {
+                        name: "Dave", 
+                        message: "Great surfing spots near Da Nang!",
+                        time: "1h",
+                        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop"
+                    },
+                    {
+                        name: "Rebecca",
+                        message: "The art scene here is amazing!",
+                        time: "3h", 
+                        avatar: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=100&h=100&fit=crop"
+                    }
+                ]
+            },
+            // Initialize App
+            init() {
+                console.log('🚀 Starting CLASSIFIED v6.0...');
+                
+                // Setup authentication listener
+                this.setupAuthListener();
+                
+                // Setup event listeners
+                this.setupEventListeners();
+                
+                // Populate static content
+                this.populateFeeds();
+                this.setupProfileEditor();
+                
+                console.log('✅ CLASSIFIED app ready for users!');
+            },
+            
+            // 🔥 Firebase Authentication Methods
+            setupAuthListener() {
+                console.log('🔐 Setting up auth listener...');
+                if (!window.auth) {
+                    console.error('❌ Firebase auth not initialized!');
+                    return;
+                }
+                
+                window.auth.onAuthStateChanged((user) => {
+                    console.log('🔐 Auth state changed:', user ? user.email : 'No user');
+                    
+                    if (user) {
+                        // User is signed in
+                        this.state.currentUser = user;
+                        this.state.isAuthenticated = true;
+                        this.hideAuthScreens();
+                        this.loadUserProfile(user.uid);
+                        this.populateUserFeed(); // Load real users from Firebase
+                        this.populateMessaging();
+                    } else {
+                        // User is signed out
+                        this.state.currentUser = null;
+                        this.state.isAuthenticated = false;
+                        this.showLogin();
+                    }
+                });
+            },
+            
+            async loginWithEmail() {
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                if (!email || !password) {
+                    alert('Please enter email and password');
+                    return;
+                }
+                
+                try {
+                    this.showLoading();
+                    await window.auth.signInWithEmailAndPassword(email, password);
+                    console.log('✅ Email login successful');
+                } catch (error) {
+                    this.hideLoading();
+                    console.error('❌ Login error:', error);
+                    alert('Login failed: ' + error.message);
+                }
+            },
+            
+            async registerWithEmail() {
+                const name = document.getElementById('registerName').value;
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
+                const confirmPassword = document.getElementById('registerConfirmPassword').value;
+                
+                console.log('📝 Registration attempt for:', email);
+                
+                if (!name || !email || !password || !confirmPassword) {
+                    alert('Please fill in all fields');
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    alert('Passwords do not match');
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    alert('Password must be at least 6 characters');
+                    return;
+                }
+                
+                // Check if Firebase is properly initialized - FIXED: Removed firebaseReady check
+                if (!window.auth || !window.db) {
+                    console.error('❌ Firebase not ready:', { 
+                        auth: !!window.auth, 
+                        db: !!window.db 
+                    });
+                    alert('Firebase is still loading. Please wait a few seconds and try again.');
+                    return;
+                }
+                
+                try {
+                    this.showLoading();
+                    console.log('🔐 Creating user account...');
+                    
+                    const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
+                    console.log('✅ User account created:', userCredential.user.uid);
+                    
+                    // Update display name
+                    await userCredential.user.updateProfile({
+                        displayName: name
+                    });
+                    console.log('✅ Display name set');
+                    
+                    // Create user profile in Firestore
+                    await this.createUserProfile(userCredential.user.uid, {
+                        name: name,
+                        email: email,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        location: 'Hoi An, Vietnam'
+                    });
+                    console.log('✅ User profile created');
+                    
+                    console.log('🎉 Registration completed successfully!');
+                } catch (error) {
+                    this.hideLoading();
+                    console.error('❌ Registration failed:', error);
+                    alert('Registration failed: ' + error.message);
+                }
+            },
+            
+            async loginWithGoogle() {
+                console.log('🔍 Attempting Google login...');
+                
+                // Check if Firebase auth is ready
+                if (!window.auth) {
+                    console.error('❌ Firebase auth not initialized');
+                    alert('Authentication system not ready. Please refresh and try again.');
+                    return;
+                }
+                
+                try {
+                    this.showLoading();
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    console.log('🔧 Google provider created');
+                    
+                    const result = await window.auth.signInWithPopup(provider);
+                    console.log('✅ Google popup completed');
+                    
+                    // Check if this is a new user
+                    const userDoc = await window.db.collection('users').doc(result.user.uid).get();
+                    
+                    if (!userDoc.exists) {
+                        // Create profile for new Google user
+                        await this.createUserProfile(result.user.uid, {
+                            name: result.user.displayName,
+                            email: result.user.email,
+                            photo: result.user.photoURL,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            location: 'Hoi An, Vietnam'
+                        });
+                    }
+                    
+                    console.log('✅ Google login successful');
+                } catch (error) {
+                    this.hideLoading();
+                    console.error('❌ Google login error:', error);
+                    
+                    if (error.code === 'auth/popup-closed-by-user') {
+                        // User closed popup - don't show error
+                        console.log('User closed Google popup');
+                    } else {
+                        alert('Google login failed: ' + error.message);
+                    }
+                }
+            },
+            
+            async logout() {
+                try {
+                    await window.auth.signOut();
+                    console.log('✅ Logout successful');
+                } catch (error) {
+                    console.error('❌ Logout error:', error);
+                }
+            },
+            
+            // 🔥 Firestore Methods
+            async createUserProfile(uid, profileData) {
+                try {
+                    await window.db.collection('users').doc(uid).set(profileData);
+                    console.log('✅ User profile created in Firestore');
+                } catch (error) {
+                    console.error('❌ Error creating user profile:', error);
+                    throw error;
+                }
+            },
+            
+            async loadUserProfile(uid) {
+                try {
+                    const doc = await window.db.collection('users').doc(uid).get();
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        this.state.userProfile = { ...this.state.userProfile, ...userData };
+                        console.log('✅ User profile loaded:', userData);
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading user profile:', error);
+                }
+            },
+            
+            async saveUserProfile() {
+                if (!this.state.currentUser) return;
+                
+                try {
+                    // Gather form data (existing logic)
+                    this.state.userProfile.bio = document.getElementById('profileBio').value;
+                    this.state.userProfile.birthday = document.getElementById('profileBirthday').value;
+                    this.state.userProfile.height = document.getElementById('profileHeight').value;
+                    
+                    // Calculate age from birthday (existing logic)
+                    if (this.state.userProfile.birthday) {
+                        const today = new Date();
+                        const birthDate = new Date(this.state.userProfile.birthday);
+                        let age = today.getFullYear() - birthDate.getFullYear();
+                        const monthDiff = today.getMonth() - birthDate.getMonth();
+                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                            age--;
+                        }
+                        this.state.userProfile.age = age;
+                    }
+                    
+                    // Save to Firebase
+                    await window.db.collection('users').doc(this.state.currentUser.uid).update({
+                        ...this.state.userProfile,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    console.log('💾 Profile saved to Firebase:', this.state.userProfile);
+                    alert('Profile saved successfully! 🎉');
+                    
+                    this.closeProfileEditor();
+                    setTimeout(() => this.viewMyProfile(), 300);
+                } catch (error) {
+                    console.error('❌ Error saving profile:', error);
+                    alert('Error saving profile: ' + error.message);
+                }
+            },
+            
+            // UI Helper Methods
+            showLogin() {
+                document.getElementById('loginScreen').classList.add('show');
+                document.getElementById('registerScreen').classList.remove('show');
+                document.querySelector('.main-screens').classList.remove('authenticated');
+                document.querySelector('.bottom-nav').style.display = 'none';
+            },
+            
+            showRegister() {
+                document.getElementById('registerScreen').classList.add('show');
+                document.getElementById('loginScreen').classList.remove('show');
+            },
+            
+            hideAuthScreens() {
+                document.getElementById('loginScreen').classList.remove('show');
+                document.getElementById('registerScreen').classList.remove('show');
+                document.querySelector('.main-screens').classList.add('authenticated');
+                document.querySelector('.bottom-nav').style.display = 'flex';
+                this.hideLoading();
+            },
+            
+            showLoading() {
+                document.getElementById('loadingOverlay').classList.add('show');
+            },
+            
+            hideLoading() {
+                document.getElementById('loadingOverlay').classList.remove('show');
+            },
+            // Event Listeners
+            setupEventListeners() {
+                // Bottom navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const screen = item.dataset.screen;
+                        this.showScreen(screen);
+                    });
+                });
+                // Social tabs
+                document.querySelectorAll('.social-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        const tabType = tab.dataset.tab;
+                        this.switchSocialTab(tabType);
+                    });
+                });
+                // Filter chips
+                document.querySelectorAll('.filter-chip').forEach(chip => {
+                    chip.addEventListener('click', (e) => {
+                        const filter = chip.dataset.filter;
+                        this.filterUsers(filter);
+                    });
+                });
+                // Overlay back buttons
+                document.getElementById('profileBackBtn').addEventListener('click', () => this.closeBusinessProfile());
+                document.getElementById('chatBackBtn').addEventListener('click', () => this.closeChat());
+                // Chat functionality
+                document.getElementById('sendBtn').addEventListener('click', () => this.sendMessage());
+                document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+                // Match popup
+                document.getElementById('startChatBtn').addEventListener('click', () => this.startChatFromMatch());
+            },
+            // Profile Editor Setup
+            setupProfileEditor() {
+                // Choice buttons
+                document.querySelectorAll('.choice-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const choiceType = btn.dataset.choice;
+                        const value = btn.dataset.value;
+                        this.selectChoice(choiceType, value, btn);
+                    });
+                });
+                // Interest buttons
+                document.querySelectorAll('.interest-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.toggleInterest(btn);
+                    });
+                });
+            },
+            // Profile Editor Functions
+            openProfileEditor() {
+                console.log('✏️ Opening profile editor');
+                document.getElementById('profileEditor').classList.add('show');
+                this.state.isProfileEditorOpen = true;
+                this.loadProfileData();
+            },
+            closeProfileEditor() {
+                console.log('🔙 Closing profile editor');
+                document.getElementById('profileEditor').classList.remove('show');
+                this.state.isProfileEditorOpen = false;
+            },
+            viewMyProfile() {
+                console.log('👤 Viewing my profile');
+                this.closeProfileEditor();
+                document.getElementById('myProfileView').classList.add('show');
+                this.updateMyProfileView();
+            },
+            closeMyProfile() {
+                console.log('🔙 Closing my profile');
+                document.getElementById('myProfileView').classList.remove('show');
+            },
+            loadProfileData() {
+                const profile = this.state.userProfile;
+                
+                // Load basic info
+                document.getElementById('profileBio').value = profile.bio || '';
+                document.getElementById('profileBirthday').value = profile.birthday || '';
+                document.getElementById('profileHeight').value = profile.height || '';
+                
+                // Load choices
+                if (profile.zodiac) this.selectChoiceByValue('zodiac', profile.zodiac);
+                if (profile.career) this.selectChoiceByValue('career', profile.career);
+                if (profile.priority) this.selectChoiceByValue('priority', profile.priority);
+                if (profile.relationship) this.selectChoiceByValue('relationship', profile.relationship);
+                if (profile.lookingFor) this.selectChoiceByValue('lookingFor', profile.lookingFor);
+                if (profile.marriage) this.selectChoiceByValue('marriage', profile.marriage);
+                
+                // Load interests
+                document.querySelectorAll('.interest-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (profile.interests.includes(btn.dataset.interest)) {
+                        btn.classList.add('active');
+                    }
+                });
+            },
+            selectChoice(choiceType, value, buttonElement) {
+                // Remove active from siblings
+                const siblings = buttonElement.parentElement.querySelectorAll('.choice-btn');
+                siblings.forEach(btn => btn.classList.remove('active'));
+                
+                // Add active to clicked button
+                buttonElement.classList.add('active');
+                
+                // Update state
+                this.state.userProfile[choiceType] = value;
+                console.log(`Selected ${choiceType}: ${value}`);
+            },
+            selectChoiceByValue(choiceType, value) {
+                const btn = document.querySelector(`[data-choice="${choiceType}"][data-value="${value}"]`);
+                if (btn) {
+                    this.selectChoice(choiceType, value, btn);
+                }
+            },
+            toggleInterest(buttonElement) {
+                const interest = buttonElement.dataset.interest;
+                const isActive = buttonElement.classList.contains('active');
+                
+                if (isActive) {
+                    buttonElement.classList.remove('active');
+                    this.state.userProfile.interests = this.state.userProfile.interests.filter(i => i !== interest);
+                } else {
+                    if (this.state.userProfile.interests.length < 8) { // Limit to 8 interests
+                        buttonElement.classList.add('active');
+                        this.state.userProfile.interests.push(interest);
+                    } else {
+                        alert('You can select up to 8 interests!');
+                    }
+                }
+                console.log('Current interests:', this.state.userProfile.interests);
+            },
+            uploadPhoto(slotIndex) {
+                // TODO: Implement Firebase Storage photo upload
+                // For now, simulate photo upload with demo images
+                const photos = [
+                    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop',
+                    'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop',
+                    'https://images.unsplash.com/photo-1494790108755-2616b1e78f41?w=400&h=400&fit=crop',
+                    'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&h=400&fit=crop'
+                ];
+                
+                if (slotIndex !== undefined) {
+                    const slot = document.querySelectorAll('.photo-slot')[slotIndex];
+                    if (slot && !slot.classList.contains('filled')) {
+                        const photoUrl = photos[slotIndex];
+                        slot.style.backgroundImage = `url('${photoUrl}')`;
+                        slot.classList.add('filled');
+                        slot.innerHTML = slotIndex === 0 ? '<div class="star-icon">⭐</div>' : '';
+                        
+                        this.state.userProfile.photos[slotIndex] = photoUrl;
+                        console.log(`Photo uploaded to slot ${slotIndex}`);
+                    }
+                } else {
+                    alert('Tap on a photo slot to add your image! 📸\n\n(Firebase Storage integration coming soon)');
+                }
+            },
+            // Settings & Account Management
+            openSettings() {
+                const settingsMenu = `
+                    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 500; display: flex; align-items: center; justify-content: center;" onclick="this.remove()">
+                        <div style="background: #2a2a2a; border-radius: 20px; padding: 30px; max-width: 300px; width: 90%; border: 1px solid rgba(255,255,255,0.1);" onclick="event.stopPropagation()">
+                            <h3 style="margin: 0 0 20px 0; text-align: center; color: #00D4FF;">Settings</h3>
+                            <button onclick="CLASSIFIED.openProfileEditor(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; cursor: pointer;">✏️ Edit Profile</button>
+                            <button onclick="CLASSIFIED.viewMyProfile(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; cursor: pointer;">👤 View My Profile</button>
+                            <button onclick="CLASSIFIED.logout(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; background: rgba(255,107,107,0.2); border: 1px solid rgba(255,107,107,0.3); border-radius: 10px; color: #FF6B6B; cursor: pointer;">🚪 Logout</button>
+                        </div>
+                    </div>
+                `;
+                
+                const overlay = document.createElement('div');
+                overlay.className = 'settings-overlay';
+                overlay.innerHTML = settingsMenu;
+                document.body.appendChild(overlay);
+            },
+            updateMyProfileView() {
+                const profile = this.state.userProfile;
+                
+                // Update profile view with user data
+                document.getElementById('myProfileName').textContent = profile.name || 'Your Name';
+                document.getElementById('myProfileAge').textContent = profile.age ? `${profile.age} years old` : 'Add your age';
+                document.getElementById('myProfileBio').textContent = profile.bio || 'Complete your profile to start connecting with amazing people in Hoi An!';
+                
+                // Update details
+                document.getElementById('myProfileAgeDetail').textContent = profile.age || '-';
+                document.getElementById('myProfileHeightDetail').textContent = profile.height || '-';
+                document.getElementById('myProfileCareerDetail').textContent = profile.career || '-';
+                document.getElementById('myProfileZodiacDetail').textContent = profile.zodiac || '-';
+                document.getElementById('myProfileLookingForDetail').textContent = profile.lookingFor || '-';
+                
+                // Update interests
+                const interestsContainer = document.getElementById('myProfileInterests');
+                if (profile.interests.length > 0) {
+                    interestsContainer.innerHTML = profile.interests.map(interest => 
+                        `<span class="interest-tag">${interest}</span>`
+                    ).join('');
+                } else {
+                    interestsContainer.innerHTML = '<span class="interest-tag">Add interests in profile editor</span>';
+                }
+                
+                // Update hero image if photos available
+                if (profile.photos.length > 0) {
+                    document.getElementById('myProfileHero').style.backgroundImage = `url('${profile.photos[0]}')`;
+                }
+            },
+            shareMyProfile() {
+                const shareText = `Check out my profile on CLASSIFIED Hoi An! 🌟`;
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'My CLASSIFIED Profile',
+                        text: shareText,
+                        url: window.location.href
+                    });
+                } else {
+                    navigator.clipboard.writeText(shareText + ' - ' + window.location.href);
+                    alert('Profile link copied to clipboard! 📋');
+                }
+            },
+            // User Profile Viewing Functions
+            openUserProfile(user) {
+                console.log(`👤 Opening ${user.name}'s profile`);
+                document.getElementById('userProfileView').classList.add('show');
+                this.state.isUserProfileOpen = true;
+                this.state.currentViewedUser = user;
+                
+                // Populate user profile data
+                document.getElementById('userProfileTitle').textContent = user.name;
+                document.getElementById('userProfileHero').style.backgroundImage = `url('${user.image}')`;
+                document.getElementById('userProfileName').textContent = user.name;
+                document.getElementById('userProfileAge').textContent = `${user.age} years old`;
+                document.getElementById('userProfileMatch').textContent = `${user.matchPercentage}% Match`;
+                document.getElementById('userProfileBio').textContent = user.bio;
+                document.getElementById('userProfileDistance').textContent = user.distance;
+                document.getElementById('userProfileStatus').textContent = user.isOnline ? 'Online Now' : 'Offline';
+                document.getElementById('userProfileCategory').textContent = user.category === 'nomads' ? 'Digital Nomad' : 'Traveler';
+                
+                // Update interests
+                const interestsContainer = document.getElementById('userProfileInterests');
+                interestsContainer.innerHTML = user.interests.map(interest => 
+                    `<span class="interest-tag">${interest}</span>`
+                ).join('');
+            },
+            closeUserProfile() {
+                console.log('🔙 Closing user profile');
+                document.getElementById('userProfileView').classList.remove('show');
+                this.state.isUserProfileOpen = false;
+                this.state.currentViewedUser = null;
+            },
+            startChatWithViewedUser() {
+                if (this.state.currentViewedUser) {
+                    const user = this.state.currentViewedUser;
+                    this.closeUserProfile();
+                    setTimeout(() => {
+                        // Use the new method that ensures proper user state
+                        this.openChatWithUser(user.name);
+                    }, 300);
+                }
+            },
+            openProfileFromChat() {
+                console.log('🔍 Opening profile from chat');
+                console.log('Current chat user state:', this.state.currentChatUser);
+                
+                // Try multiple methods to get the user data
+                let user = null;
+                
+                // Method 1: Use stored currentChatUser
+                if (this.state.currentChatUser) {
+                    user = this.state.currentChatUser;
+                    console.log('✅ Method 1: Found user from currentChatUser:', user.name);
+                } 
+                // Method 2: Look up by chat header name
+                else {
+                    const chatNameElement = document.getElementById('chatName');
+                    const chatName = chatNameElement ? chatNameElement.textContent.trim() : '';
+                    console.log('🔄 Method 2: Looking up user by chat name:', chatName);
+                    
+                    if (chatName) {
+                        user = this.data.users.find(u => u.name.trim() === chatName);
+                        if (user) {
+                            console.log('✅ Method 2: Found user by name lookup:', user.name);
+                            // Update the state for future clicks
+                            this.state.currentChatUser = user;
+                        }
+                    }
+                }
+                
+                // Open the profile if we found a user
+                if (user) {
+                    console.log('🚀 Opening user profile for:', user.name);
+                    this.openUserProfile(user);
+                } else {
+                    console.error('❌ Could not find user data');
+                    console.log('Available users:', this.data.users.map(u => u.name));
+                    alert('Could not load user profile. Please try again.');
+                }
+            },
+            // Screen Management
+            showScreen(screenType) {
+                console.log(`📱 Switching to ${screenType} screen`);
+                // Update state
+                this.state.currentScreen = screenType;
+                // Hide all screens
+                document.querySelectorAll('.screen').forEach(screen => {
+                    screen.classList.remove('active');
+                });
+                // Show target screen
+                document.getElementById(`${screenType}Screen`).classList.add('active');
+                // Update navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.querySelector(`[data-screen="${screenType}"]`).classList.add('active');
+                // Reset social tab to userFeed when leaving social screen
+                if (screenType !== 'social') {
+                    this.switchSocialTab('userFeed');
+                }
+            },
+            switchSocialTab(tabType) {
+                console.log(`🔄 Switching to ${tabType} tab`);
+                this.state.currentSocialTab = tabType;
+                // Update tabs
+                document.querySelectorAll('.social-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelector(`[data-tab="${tabType}"]`).classList.add('active');
+                // Update content
+                document.querySelectorAll('.social-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(`${tabType}Content`).classList.add('active');
+            },
+            // Populate Feeds
+            populateFeeds() {
+                this.populateRestaurantFeed();
+                this.populateActivityFeed();
+            },
+            populateRestaurantFeed() {
+                const storiesContainer = document.getElementById('restaurantStories');
+                const feedContainer = document.getElementById('restaurantFeed');
+                // Stories
+                storiesContainer.innerHTML = this.data.restaurants.map(restaurant => 
+                    `<div class="story-item" style="background-image: url('${restaurant.story}')">
+                        <div class="story-overlay">
+                            <div class="story-title">${restaurant.name}</div>
+                            <div class="story-subtitle">${restaurant.type}</div>
+                        </div>
+                    </div>`
+                ).join('');
+                // Feed
+                feedContainer.innerHTML = this.data.restaurants.map(restaurant => 
+                    this.createBusinessCard(restaurant, 'restaurant')
+                ).join('');
+                console.log('🍽️ Restaurant feed populated');
+            },
+            populateActivityFeed() {
+                const storiesContainer = document.getElementById('activityStories');
+                const feedContainer = document.getElementById('activityFeed');
+                // Stories
+                storiesContainer.innerHTML = this.data.activities.map(activity => 
+                    `<div class="story-item" style="background-image: url('${activity.story}')">
+                        <div class="story-overlay">
+                            <div class="story-title">${activity.name}</div>
+                            <div class="story-subtitle">${activity.type}</div>
+                        </div>
+                    </div>`
+                ).join('');
+                // Feed
+                feedContainer.innerHTML = this.data.activities.map(activity => 
+                    this.createBusinessCard(activity, 'activity')
+                ).join('');
+                console.log('🎯 Activity feed populated');
+            },
+            createBusinessCard(business, type) {
+                return `
+                    <div class="business-card" onclick="CLASSIFIED.openBusinessProfile('${business.id}', '${type}')">
+                        <div class="business-header">
+                            <div class="business-logo" style="background-image: url('${business.logo}')"></div>
+                            <div class="business-info">
+                                <h3>${business.name}</h3>
+                                <p>${business.type}</p>
+                            </div>
+                        </div>
+                        <div class="business-image" style="background-image: url('${business.image}')"></div>
+                        <div class="business-content">
+                            <div class="business-description">${business.description.substring(0, 100)}...</div>
+                            <div class="business-promo">
+                                <div class="promo-title">${business.promo}</div>
+                                <div class="promo-details">${business.details}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+            // Business Profile Functions
+            openBusinessProfile(businessId, type) {
+                console.log(`🏪 Opening ${businessId} profile`);
+                const businesses = type === 'restaurant' ? this.data.restaurants : this.data.activities;
+                const business = businesses.find(b => b.id === businessId);
+                if (!business) {
+                    console.error('Business not found:', businessId);
+                    return;
+                }
+                // Show profile overlay
+                const profile = document.getElementById('businessProfile');
+                profile.classList.add('show');
+                this.state.isProfileOpen = true;
+                this.state.currentBusiness = { business, type };
+                // Populate profile data
+                document.getElementById('profileHeaderTitle').textContent = business.name;
+                document.getElementById('profileHero').style.backgroundImage = `url('${business.image}')`;
+                document.getElementById('profileName').textContent = business.name;
+                document.getElementById('profileType').textContent = business.type;
+                document.getElementById('profilePromoTitle').textContent = business.promo;
+                document.getElementById('profilePromoDetails').textContent = business.details;
+                document.getElementById('profileDescription').textContent = business.description;
+                document.getElementById('profileLocation').textContent = business.location;
+                document.getElementById('profileHours').textContent = business.hours;
+                document.getElementById('profilePrice').textContent = business.price;
+                document.getElementById('profileContact').textContent = business.contact;
+            },
+            closeBusinessProfile() {
+                console.log('🔙 Closing business profile');
+                document.getElementById('businessProfile').classList.remove('show');
+                this.state.isProfileOpen = false;
+                this.state.currentBusiness = null;
+            },
+            shareBusinessProfile() {
+                if (this.state.currentBusiness) {
+                    const business = this.state.currentBusiness.business;
+                    const shareText = `Check out ${business.name} in Hoi An! ${business.promo}`;
+                    if (navigator.share) {
+                        navigator.share({
+                            title: business.name,
+                            text: shareText,
+                            url: window.location.href
+                        });
+                    } else {
+                        navigator.clipboard.writeText(shareText + ' - ' + window.location.href);
+                        alert('Business info copied to clipboard! 📋');
+                    }
+                }
+            },
+            getDirections() {
+                if (this.state.currentBusiness) {
+                    const business = this.state.currentBusiness.business;
+                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.location)}`;
+                    window.open(mapsUrl, '_blank');
+                }
+            },
+            // User Feed - Updated for Firebase
+            async populateUserFeed() {
+                if (!this.state.isAuthenticated) return;
+                
+                const container = document.getElementById('userFeedContainer');
+                container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+                
+                try {
+                    // Fetch real users from Firebase
+                    const snapshot = await window.db.collection('users')
+                        .where('uid', '!=', this.state.currentUser.uid) // Exclude current user
+                        .limit(10)
+                        .get();
+                    
+                    const users = [];
+                    snapshot.forEach(doc => {
+                        const userData = doc.data();
+                        users.push({
+                            id: doc.id,
+                            name: userData.name || 'Anonymous',
+                            age: userData.age || 25,
+                            image: userData.photos?.[0] || userData.photo || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop',
+                            interests: userData.interests || ['Travel', 'Adventure'],
+                            bio: userData.bio || 'Exploring Hoi An and meeting new people!',
+                            isOnline: Math.random() > 0.5, // Simulate online status
+                            distance: `${Math.floor(Math.random() * 5) + 1} km`,
+                            matchPercentage: Math.floor(Math.random() * 30) + 70,
+                            category: userData.category || 'all'
+                        });
+                    });
+                    
+                    // If no users found, show demo users
+                    if (users.length === 0) {
+                        container.innerHTML = `
+                            <div style="text-align: center; padding: 40px; opacity: 0.7;">
+                                <div style="font-size: 48px; margin-bottom: 20px;">👥</div>
+                                <div style="font-size: 18px; margin-bottom: 10px;">No travelers nearby yet!</div>
+                                <div style="font-size: 14px;">Be the first to complete your profile and start connecting.</div>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Populate with real users
+                    container.innerHTML = '';
+                    users.forEach((user, index) => {
+                        const feedItem = this.createUserFeedItem(user, index);
+                        container.appendChild(feedItem);
+                    });
+                    
+                    console.log(`👥 User feed populated with ${users.length} real users`);
+                } catch (error) {
+                    console.error('❌ Error loading users:', error);
+                    // Fallback to demo users
+                    container.innerHTML = '';
+                    this.data.users.forEach((user, index) => {
+                        const feedItem = this.createUserFeedItem(user, index);
+                        container.appendChild(feedItem);
+                    });
+                }
+            },
+            filterUsers(filter) {
+                console.log(`🔍 Filtering users by: ${filter}`);
+                // Update active filter chip
+                document.querySelectorAll('.filter-chip').forEach(chip => {
+                    chip.classList.remove('active');
+                });
+                document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+                // Filter users based on criteria
+                let filteredUsers = this.data.users;
+                if (filter === 'online') {
+                    filteredUsers = this.data.users.filter(user => user.isOnline);
+                } else if (filter === 'nearby') {
+                    filteredUsers = this.data.users.filter(user => {
+                        const distance = parseFloat(user.distance);
+                        return distance < 2; // Within 2km
+                    });
+                } else if (filter === 'nomads') {
+                    filteredUsers = this.data.users.filter(user => user.category === 'nomads');
+                }
+                // Re-populate feed with filtered users
+                const container = document.getElementById('userFeedContainer');
+                container.innerHTML = '';
+                filteredUsers.forEach((user, index) => {
+                    const feedItem = this.createUserFeedItem(user, index);
+                    container.appendChild(feedItem);
+                });
+            },
+            createUserFeedItem(user, index) {
+                const feedItem = document.createElement('div');
+                feedItem.className = 'user-feed-item';
+                feedItem.style.animationDelay = `${index * 0.1}s`;
+                feedItem.style.cursor = 'pointer';
+                
+                // Make the entire card clickable to view profile
+                feedItem.addEventListener('click', (e) => {
+                    // Don't open profile if clicking on action buttons
+                    if (!e.target.closest('.user-actions')) {
+                        this.openUserProfile(user);
+                    }
+                });
+                
+                feedItem.innerHTML = `
+                    <div class="user-status-badges">
+                        ${user.isOnline ? '<div class="status-badge status-online">🟢 Online</div>' : ''}
+                        <div class="status-badge status-distance">📍 ${user.distance}</div>
+                        <div class="status-badge status-match">🔥 ${user.matchPercentage}% Match</div>
+                    </div>
+                    <div class="user-image" style="background-image: url('${user.image}')">
+                        <div class="user-image-overlay">
+                            <div class="user-name">${user.name}, ${user.age}</div>
+                        </div>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-bio">${user.bio}</div>
+                        <div class="user-interests">
+                            ${user.interests.map(interest => `<span class="interest-tag">${interest}</span>`).join('')}
+                        </div>
+                        <div class="user-actions">
+                            <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${user.name}')">✕ Pass</button>
+                            <button class="action-btn chat-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${user.name}')">💬 Chat</button>
+                            <button class="action-btn super-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('superlike', '${user.name}')">⭐ Super</button>
+                        </div>
+                    </div>
+                `;
+                return feedItem;
+            },
+            handleUserAction(action, userName) {
+                console.log(`👆 ${action} action for ${userName}`);
+                
+                // If no userName provided, use current viewed user
+                if (!userName && this.state.currentViewedUser) {
+                    userName = this.state.currentViewedUser.name;
+                }
+                
+                if (action === 'like' || action === 'superlike') {
+                    // Close user profile if open
+                    if (this.state.isUserProfileOpen) {
+                        this.closeUserProfile();
+                    }
+                    
+                    // Simulate match for Jessica
+                    if (userName === 'Jessica') {
+                        setTimeout(() => this.showMatchPopup(), 500);
+                    } else {
+                        // For other users, show a generic positive response
+                        setTimeout(() => {
+                            alert(`You liked ${userName}! 💕 They'll be notified when they're online.`);
+                        }, 300);
+                    }
+                } else if (action === 'pass') {
+                    // Close user profile if open
+                    if (this.state.isUserProfileOpen) {
+                        this.closeUserProfile();
+                    }
+                    // Show a subtle confirmation
+                    setTimeout(() => {
+                        console.log(`Passed on ${userName}`);
+                    }, 300);
+                }
+            },
+            showMatchPopup() {
+                document.getElementById('matchPopup').classList.add('show');
+            },
+            startChatFromMatch() {
+                document.getElementById('matchPopup').classList.remove('show');
+                // Use the new method to ensure proper user state
+                this.openChatWithUser('Jessica');
+            },
+            // Messaging
+            populateMessaging() {
+                const matchesContainer = document.getElementById('matchesScroll');
+                const chatListContainer = document.getElementById('chatList');
+                // Matches - pass full user object, not just name/avatar
+                matchesContainer.innerHTML = this.data.users.slice(0, 3).map(user => 
+                    `<div class="match-avatar" style="background-image: url('${user.image}')" 
+                         onclick="CLASSIFIED.openChatWithUser('${user.name}')"></div>`
+                ).join('');
+                // Chat list - also pass user name to lookup full object
+                chatListContainer.innerHTML = this.data.chats.map(chat => 
+                    `<div class="chat-item" onclick="CLASSIFIED.openChatWithUser('${chat.name}')">
+                        <div class="chat-avatar" style="background-image: url('${chat.avatar}')"></div>
+                        <div class="chat-info">
+                            <div class="chat-name">${chat.name}</div>
+                            <div class="chat-message">${chat.message}</div>
+                        </div>
+                        <div class="chat-time">${chat.time}</div>
+                    </div>`
+                ).join('');
+                console.log('💬 Messaging populated');
+            },
+            openChat(name, avatar) {
+                console.log(`💬 Opening chat with ${name}`);
+                const chat = document.getElementById('individualChat');
+                chat.classList.add('show');
+                this.state.isChatOpen = true;
+                
+                // Find the full user data for the chat
+                const user = this.data.users.find(u => u.name === name);
+                this.state.currentChatUser = user;
+                
+                console.log('✅ Current chat user set to:', this.state.currentChatUser);
+                
+                document.getElementById('chatName').textContent = name;
+                document.getElementById('chatAvatar').style.backgroundImage = `url('${avatar}')`;
+            },
+            // New function to handle opening chat with better user lookup
+            openChatWithUser(userName) {
+                console.log(`💬 Opening chat with user: ${userName}`);
+                
+                // First, find the full user object
+                const user = this.data.users.find(u => u.name === userName);
+                
+                if (user) {
+                    console.log('✅ Found user object:', user);
+                    // Set the current chat user BEFORE opening chat
+                    this.state.currentChatUser = user;
+                    
+                    // Now open the chat with full user data
+                    this.openChat(user.name, user.image);
+                } else {
+                    console.error('❌ Could not find user:', userName);
+                    console.log('Available users:', this.data.users.map(u => u.name));
+                    
+                    // Fallback to old method
+                    this.openChat(userName, '');
+                }
+            },
+            closeChat() {
+                console.log('🔙 Closing chat');
+                document.getElementById('individualChat').classList.remove('show');
+                this.state.isChatOpen = false;
+                this.state.currentChatUser = null;
+            },
+            sendMessage() {
+                const input = document.getElementById('messageInput');
+                const messages = document.getElementById('chatMessages');
+                if (input.value.trim()) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message sent';
+                    messageDiv.innerHTML = `<div class="message-bubble">${input.value}</div>`;
+                    messages.appendChild(messageDiv);
+                    messages.scrollTop = messages.scrollHeight;
+                    input.value = '';
+                    console.log('📨 Message sent');
+                }
+            }
+        };
+        // Make CLASSIFIED globally available for onclick handlers
+        window.CLASSIFIED = CLASSIFIED;
+        
+        // Also add a simple test function
+        window.testChatClick = function() {
+            console.log('🧪 Test function called - onclick is working!');
+            if (window.CLASSIFIED && window.CLASSIFIED.openProfileFromChat) {
+                window.CLASSIFIED.openProfileFromChat();
+            } else {
+                console.error('CLASSIFIED.openProfileFromChat not found');
+            }
+        };
+        
+        // Initialize app when DOM is ready - FIXED: This was missing!
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 DOM loaded, initializing CLASSIFIED...');
+            CLASSIFIED.init();
+        });
+    </script>
+</body>
+</html>

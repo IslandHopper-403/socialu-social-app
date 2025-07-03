@@ -2146,7 +2146,7 @@
             
             <div class="business-auth-tabs">
                 <div class="business-auth-tab active" onclick="CLASSIFIED.switchBusinessAuthTab('login')">Login</div>
-                <div class="business-auth-tab" onclick="CLASSIFIED.switchBusinessAuthTab('signup')">Join Waitlist</div>
+                <div class="business-auth-tab" onclick="CLASSIFIED.switchBusinessAuthTab('signup')">Create Account</div>
             </div>
             
             <!-- Business Login Form -->
@@ -2154,10 +2154,16 @@
                 <input type="email" class="auth-input" id="businessLoginEmail" placeholder="Business email">
                 <input type="password" class="auth-input" id="businessLoginPassword" placeholder="Password">
                 <button class="auth-btn" onclick="CLASSIFIED.businessLogin()">Login to Dashboard</button>
+                <p style="text-align: center; font-size: 12px; opacity: 0.7; margin-top: 10px;">
+                    Forgot your password? Contact support@classified.com
+                </p>
             </div>
             
             <!-- Business Signup Form -->
             <div id="businessSignupForm" class="business-auth-form">
+                <p style="text-align: center; font-size: 14px; opacity: 0.8; margin-bottom: 20px;">
+                    Create your business account instantly!
+                </p>
                 <input type="text" class="auth-input" id="businessSignupName" placeholder="Business Name">
                 <input type="email" class="auth-input" id="businessSignupEmail" placeholder="Business Email">
                 <input type="tel" class="auth-input" id="businessSignupPhone" placeholder="WhatsApp Number">
@@ -2169,7 +2175,12 @@
                     <option value="retail">Shop/Retail</option>
                     <option value="service">Service</option>
                 </select>
-                <button class="auth-btn" onclick="CLASSIFIED.businessSignup()">Join Waitlist</button>
+                <div style="background: rgba(0,212,255,0.1); border-radius: 10px; padding: 12px; margin-bottom: 15px; font-size: 12px; opacity: 0.9;">
+                    ✅ Instant account creation<br>
+                    ✅ Complete your profile right away<br>
+                    ✅ Get approved within 24 hours
+                </div>
+                <button class="auth-btn" onclick="CLASSIFIED.businessSignup()">Create Business Account</button>
             </div>
             
             <div class="auth-switch">
@@ -2199,7 +2210,26 @@
     </div>
     
     <script>
-        // 🎯 CLASSIFIED v7.0 - Complete Integration with All Features
+        // 🎯 CLASSIFIED v7.0 - Complete Business Management System
+        // 
+        // BUSINESS WORKFLOW:
+        // 1. Business signs up → gets instant account with temp password
+        // 2. Business logs in → completes profile → status: pending_approval
+        // 3. Admin reviews → approves → status: active → appears in feeds
+        // 4. Business can manage their profile and view dashboard
+        //
+        // ADMIN WORKFLOW:
+        // 1. Set your admin email in isAdminUser() function
+        // 2. Admin sees "Admin Panel" in settings
+        // 3. Admin can approve/reject businesses
+        // 4. Admin gets notifications of pending businesses
+        //
+        // USER WORKFLOW:
+        // 1. Can browse as guest (limited)
+        // 2. Sign up for full access
+        // 3. Complete profile → appears in user feed
+        // 4. Referral system for growth
+        
         const CLASSIFIED = {
             // Enhanced App State Management
             state: {
@@ -2459,11 +2489,45 @@
                     const businessDoc = await window.db.collection('businesses').doc(user.uid).get();
                     if (businessDoc.exists) {
                         this.state.isBusinessUser = true;
+                        this.state.businessProfile = businessDoc.data();
+                        
+                        // Show business-specific UI elements
+                        this.showBusinessUI();
+                        
+                        // Auto-open business profile editor if profile is incomplete
+                        if (this.state.businessProfile.status === 'pending_approval' && !this.state.businessProfile.description) {
+                            setTimeout(() => {
+                                alert('👋 Welcome to CLASSIFIED! Please complete your business profile to get approved faster.');
+                                this.openBusinessProfileEditor();
+                            }, 2000);
+                        }
+                        
                         this.loadBusinessProfile(user.uid);
                     }
                 } catch (error) {
                     console.error('Error checking business status:', error);
                 }
+            },
+            
+            showBusinessUI() {
+                // Update header to show business status
+                const headers = document.querySelectorAll('.header-title');
+                headers.forEach(header => {
+                    if (header.textContent.includes('Feeling Adventurous')) {
+                        const status = this.state.businessProfile.status;
+                        const statusText = status === 'active' ? '✅ Active' : 
+                                         status === 'pending_approval' ? '⏳ Pending' : '❌ Inactive';
+                        header.innerHTML = `${header.textContent} <span style="font-size: 12px; opacity: 0.7;">${statusText}</span>`;
+                    }
+                });
+                
+                // Add business dashboard button to settings
+                this.addBusinessDashboardAccess();
+            },
+            
+            addBusinessDashboardAccess() {
+                // This will be used in the settings menu
+                console.log('✅ Business UI elements added');
             },
             
             async loginWithEmail() {
@@ -2649,33 +2713,51 @@
                 try {
                     this.showLoading();
                     
-                    // Add to waitlist
-                    await window.db.collection('business_waitlist').add({
+                    // Create business account directly
+                    const tempPassword = this.generateTempPassword();
+                    const userCredential = await window.auth.createUserWithEmailAndPassword(email, tempPassword);
+                    
+                    // Update display name
+                    await userCredential.user.updateProfile({
+                        displayName: name
+                    });
+                    
+                    // Create business profile
+                    await window.db.collection('businesses').doc(userCredential.user.uid).set({
                         name: name,
                         email: email,
-                        whatsapp: phone,
+                        phone: phone,
                         type: type,
-                        status: 'pending',
-                        source: 'app_integrated',
-                        priority: type === 'restaurant' ? 1 : 2,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        status: 'pending_approval',
+                        uid: userCredential.user.uid,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        tempPassword: tempPassword,
+                        location: 'Hoi An, Vietnam'
                     });
                     
                     this.hideLoading();
                     
-                    // Show success message
-                    alert('🎉 Thanks for joining! We\'ve added your business to our waitlist. You\'ll receive login credentials within 24 hours via WhatsApp.');
+                    // Show success with login info
+                    alert(`🎉 Business account created! Your temporary password is: ${tempPassword}\n\nYour account is pending approval. You can login now and complete your profile. We'll review it within 24 hours.`);
                     
-                    // Switch back to login tab
+                    // Switch to login tab
                     this.switchBusinessAuthTab('login');
                     
-                    console.log('✅ Business added to waitlist');
+                    // Pre-fill login form
+                    document.getElementById('businessLoginEmail').value = email;
+                    document.getElementById('businessLoginPassword').value = tempPassword;
+                    
+                    console.log('✅ Business account created successfully');
                     
                 } catch (error) {
                     this.hideLoading();
                     console.error('❌ Business signup error:', error);
                     alert('Signup failed: ' + error.message);
                 }
+            },
+            
+            generateTempPassword() {
+                return Math.random().toString(36).slice(-8);
             },
             
             switchBusinessAuthTab(tab) {
@@ -3513,15 +3595,19 @@
             openSettings() {
                 const settingsMenu = `
                     <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 500; display: flex; align-items: center; justify-content: center;" onclick="this.remove()">
-                        <div style="background: #2a2a2a; border-radius: 20px; padding: 30px; max-width: 300px; width: 90%; border: 1px solid rgba(255,255,255,0.1);" onclick="event.stopPropagation()">
+                        <div style="background: #2a2a2a; border-radius: 20px; padding: 30px; max-width: 300px; width: 90%; border: 1px solid rgba(255,255,255,0.1); max-height: 80vh; overflow-y: auto;" onclick="event.stopPropagation()">
                             <h3 style="margin: 0 0 20px 0; text-align: center; color: #00D4FF;">Settings</h3>
                             ${this.state.isAuthenticated ? `
                                 <button onclick="CLASSIFIED.openProfileEditor(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; cursor: pointer;">✏️ Edit Profile</button>
                                 <button onclick="CLASSIFIED.viewMyProfile(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; cursor: pointer;">👤 View My Profile</button>
                                 ${this.state.isBusinessUser ? `
                                     <button onclick="CLASSIFIED.openBusinessProfileEditor(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); border-radius: 10px; color: #FFD700; cursor: pointer;">🏢 Business Profile</button>
+                                    <button onclick="CLASSIFIED.viewBusinessDashboard(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); border-radius: 10px; color: #FFD700; cursor: pointer;">📊 Business Dashboard</button>
                                 ` : ''}
                                 <button onclick="CLASSIFIED.showReferralCode(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3); border-radius: 10px; color: #00D4FF; cursor: pointer;">🔑 Referral Code</button>
+                                ${this.isAdminUser() ? `
+                                    <button onclick="CLASSIFIED.openAdminPanel(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3); border-radius: 10px; color: #FF6B6B; cursor: pointer;">🛡️ Admin Panel</button>
+                                ` : ''}
                                 <button onclick="CLASSIFIED.logout(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; background: rgba(255,107,107,0.2); border: 1px solid rgba(255,107,107,0.3); border-radius: 10px; color: #FF6B6B; cursor: pointer;">🚪 Logout</button>
                             ` : `
                                 <button onclick="CLASSIFIED.showLogin(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; border-radius: 10px; color: white; cursor: pointer;">🔐 Login</button>
@@ -3536,6 +3622,174 @@
                 overlay.className = 'settings-overlay';
                 overlay.innerHTML = settingsMenu;
                 document.body.appendChild(overlay);
+            },
+            
+            isAdminUser() {
+                // Check if current user is admin (replace with your actual admin email)
+                return this.state.currentUser && (
+                    this.state.currentUser.email === 'admin@classified.com' || 
+                    this.state.currentUser.email === 'your-admin-email@gmail.com' // Replace with your email
+                );
+            },
+            
+            viewBusinessDashboard() {
+                if (!this.state.isBusinessUser) {
+                    alert('Access denied: Business account required');
+                    return;
+                }
+                
+                const dashboard = document.createElement('div');
+                dashboard.innerHTML = `
+                    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px;" onclick="this.remove()">
+                        <div style="background: #2a2a2a; border-radius: 20px; padding: 30px; max-width: 400px; width: 100%; border: 1px solid rgba(255,255,255,0.1); max-height: 80vh; overflow-y: auto;" onclick="event.stopPropagation()">
+                            <h3 style="margin: 0 0 20px 0; text-align: center; color: #FFD700;">🏢 Business Dashboard</h3>
+                            
+                            <div style="background: rgba(255,215,0,0.1); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                                <h4 style="margin: 0 0 10px 0; color: #FFD700;">Account Status</h4>
+                                <p style="margin: 0; font-size: 14px;">Status: <strong>${this.state.businessProfile.status}</strong></p>
+                                <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.8;">
+                                    ${this.state.businessProfile.status === 'active' ? 'Your business is live on CLASSIFIED!' : 
+                                      this.state.businessProfile.status === 'pending_approval' ? 'Your profile is being reviewed. Complete it to speed up approval.' : 
+                                      'Please complete your profile to get approved.'}
+                                </p>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="margin: 0 0 10px 0; color: #00D4FF;">Quick Actions</h4>
+                                <button onclick="CLASSIFIED.openBusinessProfileEditor(); this.closest('div').remove();" style="width: 100%; padding: 10px; margin-bottom: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; cursor: pointer;">✏️ Edit Profile</button>
+                                <button onclick="CLASSIFIED.viewBusinessAnalytics(); this.closest('div').remove();" style="width: 100%; padding: 10px; margin-bottom: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; cursor: pointer;">📊 View Analytics</button>
+                                <button onclick="CLASSIFIED.managePromotions(); this.closest('div').remove();" style="width: 100%; padding: 10px; margin-bottom: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; cursor: pointer;">🎯 Manage Promotions</button>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="margin: 0 0 10px 0; color: #00D4FF;">Help & Support</h4>
+                                <p style="margin: 0; font-size: 12px; opacity: 0.8;">Need help? Contact us at support@classified.com</p>
+                            </div>
+                            
+                            <button onclick="this.closest('div').remove()" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; cursor: pointer;">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(dashboard);
+            },
+            
+            viewBusinessAnalytics() {
+                alert('📊 Analytics feature coming soon! You\'ll be able to see views, clicks, and customer engagement here.');
+            },
+            
+            managePromotions() {
+                alert('🎯 Promotions management coming soon! You\'ll be able to create and manage special offers here.');
+            },
+            
+            openAdminPanel() {
+                if (!this.isAdminUser()) {
+                    alert('Access denied: Admin privileges required');
+                    return;
+                }
+                
+                this.loadPendingBusinesses();
+            },
+            
+            async loadPendingBusinesses() {
+                try {
+                    const snapshot = await window.db.collection('businesses')
+                        .where('status', '==', 'pending_approval')
+                        .orderBy('createdAt', 'desc')
+                        .get();
+                    
+                    const businesses = [];
+                    snapshot.forEach(doc => {
+                        businesses.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    
+                    this.showAdminPanel(businesses);
+                    
+                } catch (error) {
+                    console.error('Error loading pending businesses:', error);
+                    alert('Error loading pending businesses');
+                }
+            },
+            
+            showAdminPanel(businesses) {
+                const panel = document.createElement('div');
+                panel.innerHTML = `
+                    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px;" onclick="this.remove()">
+                        <div style="background: #2a2a2a; border-radius: 20px; padding: 30px; max-width: 500px; width: 100%; border: 1px solid rgba(255,255,255,0.1); max-height: 80vh; overflow-y: auto;" onclick="event.stopPropagation()">
+                            <h3 style="margin: 0 0 20px 0; text-align: center; color: #FF6B6B;">🛡️ Admin Panel</h3>
+                            
+                            <h4 style="margin: 0 0 15px 0; color: #00D4FF;">Pending Business Approvals (${businesses.length})</h4>
+                            
+                            ${businesses.length === 0 ? `
+                                <p style="text-align: center; opacity: 0.7; margin: 40px 0;">No pending approvals</p>
+                            ` : businesses.map(business => `
+                                <div style="background: rgba(255,255,255,0.05); border-radius: 10px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                                    <h4 style="margin: 0 0 8px 0; color: #FFD700;">${business.name}</h4>
+                                    <p style="margin: 0 0 5px 0; font-size: 12px; opacity: 0.8;">Type: ${business.type}</p>
+                                    <p style="margin: 0 0 5px 0; font-size: 12px; opacity: 0.8;">Email: ${business.email}</p>
+                                    <p style="margin: 0 0 5px 0; font-size: 12px; opacity: 0.8;">Phone: ${business.phone}</p>
+                                    <p style="margin: 0 0 10px 0; font-size: 12px; opacity: 0.8;">Created: ${business.createdAt?.toDate().toLocaleDateString()}</p>
+                                    
+                                    <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                        <button onclick="CLASSIFIED.approveBusiness('${business.id}'); this.closest('.admin-panel').remove();" style="flex: 1; padding: 8px; background: rgba(76,175,80,0.2); border: 1px solid rgba(76,175,80,0.3); border-radius: 6px; color: #4CAF50; cursor: pointer; font-size: 12px;">
+                                            ✅ Approve
+                                        </button>
+                                        <button onclick="CLASSIFIED.rejectBusiness('${business.id}'); this.closest('.admin-panel').remove();" style="flex: 1; padding: 8px; background: rgba(255,107,107,0.2); border: 1px solid rgba(255,107,107,0.3); border-radius: 6px; color: #FF6B6B; cursor: pointer; font-size: 12px;">
+                                            ❌ Reject
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                            
+                            <button onclick="this.closest('div').remove()" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; cursor: pointer; margin-top: 15px;">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                panel.className = 'admin-panel';
+                document.body.appendChild(panel);
+            },
+            
+            async approveBusiness(businessId) {
+                try {
+                    await window.db.collection('businesses').doc(businessId).update({
+                        status: 'active',
+                        approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    alert('✅ Business approved successfully!');
+                    
+                    // Refresh feeds to show new business
+                    this.populateFeeds();
+                    
+                } catch (error) {
+                    console.error('Error approving business:', error);
+                    alert('Error approving business');
+                }
+            },
+            
+            async rejectBusiness(businessId) {
+                if (!confirm('Are you sure you want to reject this business?')) return;
+                
+                try {
+                    await window.db.collection('businesses').doc(businessId).update({
+                        status: 'rejected',
+                        rejectedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    alert('❌ Business rejected');
+                    
+                } catch (error) {
+                    console.error('Error rejecting business:', error);
+                    alert('Error rejecting business');
+                }
             },
             
             // 📱 Screen Management
@@ -3668,7 +3922,36 @@
                 // Add business signup banner
                 this.addBusinessSignupBanner(feedContainer);
                 
+                // Add admin notice if there are pending businesses
+                if (this.isAdminUser()) {
+                    this.addAdminNotice(feedContainer);
+                }
+                
                 console.log('🍽️ Restaurant feed populated with', restaurants.length, 'businesses');
+            },
+            
+            async addAdminNotice(container) {
+                try {
+                    const pendingSnapshot = await window.db.collection('businesses')
+                        .where('status', '==', 'pending_approval')
+                        .get();
+                    
+                    if (pendingSnapshot.size > 0) {
+                        const adminNotice = document.createElement('div');
+                        adminNotice.innerHTML = `
+                            <div style="background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3); border-radius: 15px; padding: 20px; margin: 20px 0; text-align: center;">
+                                <h3 style="margin: 0 0 10px 0; color: #FF6B6B;">🛡️ Admin Notice</h3>
+                                <p style="margin: 0 0 15px 0; font-size: 14px;">${pendingSnapshot.size} business${pendingSnapshot.size > 1 ? 'es' : ''} pending approval</p>
+                                <button onclick="CLASSIFIED.openAdminPanel()" style="background: rgba(255,107,107,0.2); border: 1px solid rgba(255,107,107,0.3); border-radius: 20px; padding: 8px 16px; color: #FF6B6B; cursor: pointer; font-size: 12px;">
+                                    Review Applications
+                                </button>
+                            </div>
+                        `;
+                        container.appendChild(adminNotice);
+                    }
+                } catch (error) {
+                    console.error('Error checking pending businesses:', error);
+                }
             },
             
             async populateActivityFeed() {
@@ -3772,9 +4055,9 @@
                 banner.className = 'business-signup-banner';
                 banner.innerHTML = `
                     <h3>🏪 Own a Business in Hoi An?</h3>
-                    <p>Get featured and reach 100+ travelers daily</p>
+                    <p>Create your account instantly and reach 100+ travelers daily</p>
                     <div class="cta-button" onclick="CLASSIFIED.showBusinessSignup()">
-                        Join Our Partners 🚀
+                        Create Business Account 🚀
                     </div>
                 `;
                 
@@ -3798,10 +4081,11 @@
                             <div style="background: rgba(0,212,255,0.1); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
                                 <h4 style="margin: 0 0 10px 0; color: #00D4FF;">What You Get:</h4>
                                 <ul style="margin: 0; padding-left: 20px; opacity: 0.9;">
-                                    <li>Direct access to 100+ travelers</li>
-                                    <li>Featured placement in app</li>
-                                    <li>Custom promotion tools</li>
-                                    <li>Real-time customer insights</li>
+                                    <li>✅ Instant account creation</li>
+                                    <li>✅ Direct access to 100+ travelers</li>
+                                    <li>✅ Featured placement in app</li>
+                                    <li>✅ Custom promotion tools</li>
+                                    <li>✅ Real-time customer insights</li>
                                 </ul>
                             </div>
                             
@@ -3823,7 +4107,7 @@
                                     Cancel
                                 </button>
                                 <button onclick="CLASSIFIED.submitQuickBusinessSignup()" style="flex: 2; padding: 12px; background: linear-gradient(135deg, #FFD700, #FF6B6B); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
-                                    Join Waitlist 🚀
+                                    Create Account 🚀
                                 </button>
                             </div>
                         </div>
@@ -3845,30 +4129,47 @@
                 }
                 
                 try {
-                    await window.db.collection('business_waitlist').add({
+                    // Create business account directly
+                    const tempPassword = this.generateTempPassword();
+                    const userCredential = await window.auth.createUserWithEmailAndPassword(email, tempPassword);
+                    
+                    // Update display name
+                    await userCredential.user.updateProfile({
+                        displayName: name
+                    });
+                    
+                    // Create business profile
+                    await window.db.collection('businesses').doc(userCredential.user.uid).set({
                         name: name,
                         email: email,
-                        whatsapp: phone,
+                        phone: phone,
                         type: type,
-                        status: 'pending',
-                        source: 'main_app',
-                        priority: type === 'restaurant' ? 1 : 2,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        status: 'pending_approval',
+                        uid: userCredential.user.uid,
+                        source: 'quick_signup',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        tempPassword: tempPassword,
+                        location: 'Hoi An, Vietnam'
                     });
                     
                     // Close modal and show success
                     document.querySelector('.business-signup-modal').remove();
                     
-                    // Show success message
+                    // Show success message with login info
                     setTimeout(() => {
-                        alert('🎉 Thanks for joining! We\'ll contact you within 24 hours via WhatsApp to set up your business profile.');
+                        alert(`🎉 Business account created!\n\nEmail: ${email}\nPassword: ${tempPassword}\n\nYou can now login and complete your profile. We'll review it within 24 hours.`);
+                        
+                        // Optionally redirect to business login
+                        this.showBusinessAuth();
+                        document.getElementById('businessLoginEmail').value = email;
+                        document.getElementById('businessLoginPassword').value = tempPassword;
                     }, 300);
                     
                     console.log('✅ Quick business signup completed');
                     
                 } catch (error) {
                     console.error('❌ Error submitting business signup:', error);
-                    alert('Error submitting signup: ' + error.message);
+                    alert('Error creating account: ' + error.message);
                 }
             },
             

@@ -2535,11 +2535,7 @@
             console.log('🚀 DOM loaded, initializing CLASSIFIED...');
             CLASSIFIED.init();
         });
-    </script>
-</body>
-</html>
-            
-            closeUserProfile() {
+         closeUserProfile() {
                 console.log('🔙 Closing user profile');
                 document.getElementById('userProfileView').classList.remove('show');
                 this.state.isUserProfileOpen = false;
@@ -3777,3 +3773,9 @@
                     alert('Error saving business profile: ' + error.message);
                 }
             },
+
+    </script>
+</body>
+</html>
+            
+   

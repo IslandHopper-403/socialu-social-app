@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLASSIFIED - Hoi An Social Discovery</title>
     
-    <!-- Firebase SDKs - Using newer, more reliable version -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     
     <script>
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyB-zTm6JB4EkD_7Q9056K4UGbIPyHQL4S4",
             authDomain: "hoi-an-social-app.firebaseapp.com",
@@ -27,7 +27,7 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         
-        // Initialize services and make them globally available
+        // Initialize services
         window.auth = firebase.auth();
         window.db = firebase.firestore();
         window.storage = firebase.storage();
@@ -61,6 +61,7 @@
             position: relative;
             overflow: hidden;
         }
+        
         /* Header Styles */
         .header {
             display: flex;
@@ -115,15 +116,26 @@
             border: 1px solid rgba(0,212,255,0.3);
             font-weight: 600;
         }
+        
+        /* Guest Mode Banner */
+        .guest-banner {
+            background: linear-gradient(135deg, #FFD700, #FF6B6B);
+            padding: 12px 20px;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .guest-banner:hover {
+            background: linear-gradient(135deg, #FF6B6B, #FFD700);
+        }
+        
         /* Main Screen Container */
         .main-screens {
             position: relative;
             min-height: calc(100vh - 140px);
             padding-bottom: 100px;
-            display: none; /* Hidden until authenticated */
-        }
-        .main-screens.authenticated {
-            display: block;
         }
         .screen {
             display: none;
@@ -139,6 +151,7 @@
             from { opacity: 0; transform: translateX(20px); }
             to { opacity: 1; transform: translateX(0); }
         }
+        
         /* Social Tabs */
         .social-tabs {
             display: flex;
@@ -172,6 +185,7 @@
         .social-content.active {
             display: block;
         }
+        
         /* Search Bar */
         .search-bar {
             display: flex;
@@ -209,6 +223,7 @@
         .filter-btn:hover {
             background: rgba(255,255,255,0.2);
         }
+        
         /* Stories Section */
         .stories-section {
             padding: 20px;
@@ -268,6 +283,7 @@
             font-size: 10px;
             opacity: 0.8;
         }
+        
         /* Feed Container */
         .feed-container {
             padding: 0 20px 20px 20px;
@@ -284,6 +300,7 @@
             font-weight: 700;
             letter-spacing: 1px;
         }
+        
         /* Business Cards */
         .business-card {
             background: rgba(255,255,255,0.05);
@@ -353,40 +370,42 @@
             font-size: 12px;
             opacity: 0.9;
         }
-        /* Filter Options */
-        .filter-options {
-            display: flex;
-            gap: 12px;
-            padding: 0 20px 20px 20px;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-        .filter-options::-webkit-scrollbar {
-            display: none;
-        }
-        .filter-chip {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 25px;
-            padding: 10px 18px;
-            color: white;
+        
+        /* Business Signup Banner */
+        .business-signup-banner {
+            background: linear-gradient(135deg, #FFD700, #FF6B6B);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 15px;
+            text-align: center;
             cursor: pointer;
-            white-space: nowrap;
-            font-size: 14px;
-            font-weight: 500;
             transition: all 0.3s ease;
-            flex-shrink: 0;
         }
-        .filter-chip.active {
-            background: linear-gradient(135deg, #00D4FF, #0099CC);
-            border-color: #00D4FF;
-            transform: scale(1.02);
+        .business-signup-banner:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255,215,0,0.3);
         }
-        .filter-chip:hover:not(.active) {
+        .business-signup-banner h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        .business-signup-banner p {
+            margin: 0 0 15px 0;
+            opacity: 0.9;
+        }
+        .business-signup-banner .cta-button {
             background: rgba(255,255,255,0.2);
-            border-color: rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
-        /* User Feed Styles - UPDATED */
+        .business-signup-banner .cta-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        /* User Feed Styles */
         .user-feed-container {
             height: calc(100vh - 280px);
             overflow-y: auto;
@@ -532,7 +551,42 @@
         .super-btn:hover {
             background: linear-gradient(135deg, #FFC107, #FF9800);
         }
-        /* Messaging Styles - FIXED CONTAINMENT */
+        
+        /* Filter Options */
+        .filter-options {
+            display: flex;
+            gap: 12px;
+            padding: 0 20px 20px 20px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .filter-options::-webkit-scrollbar {
+            display: none;
+        }
+        .filter-chip {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 10px 18px;
+            color: white;
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        .filter-chip.active {
+            background: linear-gradient(135deg, #00D4FF, #0099CC);
+            border-color: #00D4FF;
+            transform: scale(1.02);
+        }
+        .filter-chip:hover:not(.active) {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.3);
+        }
+        
+        /* Messaging Styles */
         .messaging-container {
             min-height: calc(100vh - 200px);
             display: flex;
@@ -614,6 +668,7 @@
             font-size: 12px;
             opacity: 0.5;
         }
+        
         /* Overlay Screens */
         .overlay-screen {
             position: fixed;
@@ -636,6 +691,7 @@
             from { transform: translateX(-50%) translateY(100%); }
             to { transform: translateX(-50%) translateY(0); }
         }
+        
         /* Profile Editor Styles */
         .profile-editor {
             flex: 1;
@@ -681,6 +737,19 @@
         .form-textarea {
             min-height: 100px;
             resize: vertical;
+        }
+        .form-select {
+            width: 100%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 14px;
+        }
+        .form-select option {
+            background: #2a2a2a;
+            color: white;
         }
         .choice-group {
             display: flex;
@@ -736,6 +805,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             border: 2px dashed rgba(255,255,255,0.2);
+            position: relative;
         }
         .photo-slot:hover {
             border-color: #00D4FF;
@@ -745,6 +815,26 @@
             background-size: cover;
             background-position: center;
             border: 2px solid #00D4FF;
+        }
+        .photo-slot.uploading {
+            border-color: #FFD700;
+            background: rgba(255,215,0,0.1);
+        }
+        .photo-slot .upload-progress {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            right: 5px;
+            height: 4px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .photo-slot .upload-progress-bar {
+            height: 100%;
+            background: #00D4FF;
+            width: 0%;
+            transition: width 0.3s ease;
         }
         .star-icon {
             position: absolute;
@@ -791,6 +881,7 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,212,255,0.3);
         }
+        
         /* Profile View Styles */
         .profile-hero {
             height: 250px;
@@ -909,6 +1000,7 @@
             color: white;
             border: 1px solid rgba(255,255,255,0.2);
         }
+        
         /* Chat Styles */
         .chat-header {
             display: flex;
@@ -1029,6 +1121,7 @@
         .send-btn:hover {
             transform: scale(1.05);
         }
+        
         /* Bottom Navigation */
         .bottom-nav {
             position: fixed;
@@ -1040,7 +1133,7 @@
             background: rgba(0,0,0,0.95);
             backdrop-filter: blur(20px);
             padding: 15px 20px;
-            display: none; /* Hidden until authenticated */
+            display: flex;
             justify-content: space-around;
             border-top: 1px solid rgba(255,255,255,0.1);
             z-index: 150;
@@ -1073,6 +1166,7 @@
             font-weight: 600;
             letter-spacing: 0.5px;
         }
+        
         /* Match Popup */
         .match-popup {
             position: fixed;
@@ -1127,21 +1221,7 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        /* Responsive Design */
-        @media (max-width: 430px) {
-            .app-container {
-                max-width: 100vw;
-            }
-            .user-feed-item {
-                margin: 0 10px 20px 10px;
-            }
-            .bottom-nav {
-                max-width: 100vw;
-            }
-            .overlay-screen {
-                max-width: 100vw;
-            }
-        }
+        
         /* Auth Screens Styles */
         .auth-screen {
             position: fixed;
@@ -1266,6 +1346,38 @@
         .auth-switch a:hover {
             text-decoration: underline;
         }
+        
+        /* Business Auth Tabs */
+        .business-auth-tabs {
+            display: flex;
+            margin: 20px 30px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 25px;
+            padding: 4px;
+        }
+        .business-auth-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .business-auth-tab.active {
+            background: linear-gradient(135deg, #FFD700, #FF6B6B);
+            color: white;
+        }
+        .business-auth-form {
+            display: none;
+            padding: 0 30px;
+        }
+        .business-auth-form.active {
+            display: block;
+        }
+        
+        /* Loading and Message Styles */
         .loading-overlay {
             position: absolute;
             top: 0;
@@ -1299,10 +1411,105 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        .success-message {
+            background: rgba(76,175,80,0.2);
+            border: 1px solid rgba(76,175,80,0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+            color: #4CAF50;
+        }
+        .error-message {
+            background: rgba(255,107,107,0.2);
+            border: 1px solid rgba(255,107,107,0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+            color: #FF6B6B;
+        }
+        
+        /* Referral Banner */
+        .referral-banner {
+            background: linear-gradient(135deg, #00D4FF, #0099CC);
+            padding: 15px;
+            margin: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .referral-banner h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+        }
+        .referral-banner p {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .referral-banner .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .referral-banner button {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .referral-banner button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        /* Social Proof Notification */
+        .social-proof-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,212,255,0.9);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 999;
+            animation: slideInRight 0.3s ease;
+        }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 430px) {
+            .app-container {
+                max-width: 100vw;
+            }
+            .user-feed-item {
+                margin: 0 10px 20px 10px;
+            }
+            .bottom-nav {
+                max-width: 100vw;
+            }
+            .overlay-screen {
+                max-width: 100vw;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="app-container">
+        <!-- Guest Mode Banner -->
+        <div id="guestBanner" class="guest-banner" style="display: none;" onclick="CLASSIFIED.showLogin()">
+            🚀 Join CLASSIFIED to connect with travelers and discover hidden gems! Tap to sign up
+        </div>
+        
         <!-- Main Screens Container -->
         <div class="main-screens">
             <!-- Restaurant Feed Screen -->
@@ -1331,6 +1538,7 @@
                     </div>
                 </div>
             </div>
+            
             <!-- Social Screen -->
             <div id="socialScreen" class="screen">
                 <div class="header">
@@ -1342,9 +1550,9 @@
                     <div class="social-tab active" data-tab="userFeed">👥 Browse People</div>
                     <div class="social-tab" data-tab="messaging">💬 Messaging</div>
                 </div>
+                
                 <!-- User Feed Content -->
                 <div id="userFeedContent" class="social-content active">
-                    <!-- Filter Options -->
                     <div class="filter-options">
                         <div class="filter-chip active" data-filter="all">All</div>
                         <div class="filter-chip" data-filter="online">🟢 Online Now</div>
@@ -1355,6 +1563,7 @@
                         <!-- User feed items populated by JavaScript -->
                     </div>
                 </div>
+                
                 <!-- Messaging Content -->
                 <div id="messagingContent" class="social-content">
                     <div class="messaging-container">
@@ -1370,6 +1579,7 @@
                     </div>
                 </div>
             </div>
+            
             <!-- Activity Feed Screen -->
             <div id="activityScreen" class="screen">
                 <div class="header">
@@ -1397,6 +1607,7 @@
                 </div>
             </div>
         </div>
+        
         <!-- Profile Editor Overlay -->
         <div id="profileEditor" class="overlay-screen">
             <div class="header">
@@ -1408,26 +1619,27 @@
                 <!-- Profile Photos Section -->
                 <div class="profile-section">
                     <div class="section-title">Profile Photos</div>
-                    <div class="photo-upload-section" onclick="CLASSIFIED.uploadPhoto()">
+                    <div class="photo-upload-section" onclick="CLASSIFIED.triggerPhotoUpload()">
                         <div style="font-size: 48px; margin-bottom: 10px; opacity: 0.5;">📷</div>
                         <div style="font-weight: 600;">Add Your Best Photos</div>
                         <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">Tap to add photos</div>
                     </div>
                     <div class="photo-grid" id="photoGrid">
-                        <div class="photo-slot" onclick="CLASSIFIED.uploadPhoto(0)">
+                        <div class="photo-slot" onclick="CLASSIFIED.triggerPhotoUpload(0)">
                             <span style="font-size: 24px; opacity: 0.5;">+</span>
                         </div>
-                        <div class="photo-slot" onclick="CLASSIFIED.uploadPhoto(1)">
+                        <div class="photo-slot" onclick="CLASSIFIED.triggerPhotoUpload(1)">
                             <span style="font-size: 24px; opacity: 0.5;">+</span>
                         </div>
-                        <div class="photo-slot" onclick="CLASSIFIED.uploadPhoto(2)">
+                        <div class="photo-slot" onclick="CLASSIFIED.triggerPhotoUpload(2)">
                             <span style="font-size: 24px; opacity: 0.5;">+</span>
                         </div>
-                        <div class="photo-slot" onclick="CLASSIFIED.uploadPhoto(3)">
+                        <div class="photo-slot" onclick="CLASSIFIED.triggerPhotoUpload(3)">
                             <span style="font-size: 24px; opacity: 0.5;">+</span>
                         </div>
                     </div>
                 </div>
+                
                 <!-- About Me Section -->
                 <div class="profile-section">
                     <div class="section-title">About Me</div>
@@ -1436,6 +1648,7 @@
                         <textarea class="form-input form-textarea" id="profileBio" placeholder="Write about yourself or something you're up to..."></textarea>
                     </div>
                 </div>
+                
                 <!-- Basic Info Section -->
                 <div class="profile-section">
                     <div class="section-title">Basic Info</div>
@@ -1463,9 +1676,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Height</label>
-                        <div class="choice-group">
-                            <input type="text" class="form-input" id="profileHeight" placeholder="5'7&quot; or 170cm">
-                        </div>
+                        <input type="text" class="form-input" id="profileHeight" placeholder="5'7&quot; or 170cm">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Career</label>
@@ -1481,6 +1692,7 @@
                         </div>
                     </div>
                 </div>
+                
                 <!-- Interests Section -->
                 <div class="profile-section">
                     <div class="section-title">What Am I Like</div>
@@ -1499,6 +1711,7 @@
                         <div class="interest-btn" data-interest="Gaming">Gaming</div>
                     </div>
                 </div>
+                
                 <!-- Preferences Section -->
                 <div class="profile-section">
                     <div class="section-title">What Do I Like Most</div>
@@ -1509,6 +1722,7 @@
                         <div class="choice-btn" data-choice="priority" data-value="Career">Career</div>
                     </div>
                 </div>
+                
                 <!-- Relationship Section -->
                 <div class="profile-section">
                     <div class="section-title">Relationship Status</div>
@@ -1519,6 +1733,7 @@
                         <div class="choice-btn" data-choice="relationship" data-value="It's Complicated">It's Complicated</div>
                     </div>
                 </div>
+                
                 <!-- Looking For Section -->
                 <div class="profile-section">
                     <div class="section-title">What Am I Looking For</div>
@@ -1529,6 +1744,7 @@
                         <div class="choice-btn" data-choice="lookingFor" data-value="Adventure Buddies">Adventure Buddies</div>
                     </div>
                 </div>
+                
                 <!-- Marriage Thoughts Section -->
                 <div class="profile-section">
                     <div class="section-title">Thoughts about Marriage</div>
@@ -1538,9 +1754,104 @@
                         <div class="choice-btn" data-choice="marriage" data-value="Not Interested">❌ Not Interested</div>
                     </div>
                 </div>
+                
                 <button class="save-profile-btn" onclick="CLASSIFIED.saveUserProfile()">Save Profile</button>
             </div>
         </div>
+        
+        <!-- Business Profile Editor Overlay -->
+        <div id="businessProfileEditor" class="overlay-screen">
+            <div class="header">
+                <button class="back-btn" onclick="CLASSIFIED.closeBusinessProfileEditor()">←</button>
+                <div class="header-title">Business Profile</div>
+                <button class="settings-btn" onclick="CLASSIFIED.viewBusinessProfile()">🏪</button>
+            </div>
+            <div class="profile-editor">
+                <!-- Business Photos Section -->
+                <div class="profile-section">
+                    <div class="section-title">Business Photos</div>
+                    <div class="photo-upload-section" onclick="CLASSIFIED.triggerBusinessPhotoUpload()">
+                        <div style="font-size: 48px; margin-bottom: 10px; opacity: 0.5;">📷</div>
+                        <div style="font-weight: 600;">Add Business Photos</div>
+                        <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">Main photo, interior, products, etc.</div>
+                    </div>
+                    <div class="photo-grid" id="businessPhotoGrid">
+                        <div class="photo-slot" onclick="CLASSIFIED.triggerBusinessPhotoUpload(0)">
+                            <span style="font-size: 24px; opacity: 0.5;">+</span>
+                        </div>
+                        <div class="photo-slot" onclick="CLASSIFIED.triggerBusinessPhotoUpload(1)">
+                            <span style="font-size: 24px; opacity: 0.5;">+</span>
+                        </div>
+                        <div class="photo-slot" onclick="CLASSIFIED.triggerBusinessPhotoUpload(2)">
+                            <span style="font-size: 24px; opacity: 0.5;">+</span>
+                        </div>
+                        <div class="photo-slot" onclick="CLASSIFIED.triggerBusinessPhotoUpload(3)">
+                            <span style="font-size: 24px; opacity: 0.5;">+</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Business Information Section -->
+                <div class="profile-section">
+                    <div class="section-title">Business Information</div>
+                    <div class="form-group">
+                        <label class="form-label">Business Name</label>
+                        <input type="text" class="form-input" id="businessName" placeholder="Your Business Name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Business Type</label>
+                        <select class="form-select" id="businessType">
+                            <option value="">Select Type</option>
+                            <option value="restaurant">Restaurant/Bar</option>
+                            <option value="activity">Activity/Tour</option>
+                            <option value="accommodation">Hotel/Hostel</option>
+                            <option value="retail">Shop/Retail</option>
+                            <option value="service">Service</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-input form-textarea" id="businessDescription" placeholder="Tell travelers about your business..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Address</label>
+                        <input type="text" class="form-input" id="businessAddress" placeholder="123 Street Name, Hoi An">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" class="form-input" id="businessPhone" placeholder="+84 123 456 789">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Opening Hours</label>
+                        <input type="text" class="form-input" id="businessHours" placeholder="8:00 AM - 10:00 PM">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Price Range</label>
+                        <select class="form-select" id="businessPriceRange">
+                            <option value="budget">$ - Budget Friendly</option>
+                            <option value="moderate">$$ - Moderate</option>
+                            <option value="expensive">$$$ - Expensive</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Current Promotion Section -->
+                <div class="profile-section">
+                    <div class="section-title">Current Promotion</div>
+                    <div class="form-group">
+                        <label class="form-label">Promotion Title</label>
+                        <input type="text" class="form-input" id="businessPromoTitle" placeholder="Happy Hour Special">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Promotion Details</label>
+                        <textarea class="form-input form-textarea" id="businessPromoDetails" placeholder="50% off all drinks 5-7pm daily"></textarea>
+                    </div>
+                </div>
+                
+                <button class="save-profile-btn" onclick="CLASSIFIED.saveBusinessProfile()">Save Business Profile</button>
+            </div>
+        </div>
+        
         <!-- User Profile View Overlay -->
         <div id="userProfileView" class="overlay-screen">
             <div class="header">
@@ -1594,6 +1905,7 @@
                 <button class="action-button primary-btn" onclick="CLASSIFIED.handleUserAction('like')">💬 Like</button>
             </div>
         </div>
+        
         <!-- My Profile View Overlay -->
         <div id="myProfileView" class="overlay-screen">
             <div class="header">
@@ -1651,7 +1963,8 @@
                 <button class="action-button primary-btn" onclick="CLASSIFIED.openProfileEditor()">Edit Profile</button>
             </div>
         </div>
-        <!-- Business Profile Overlay -->
+        
+        <!-- Business Profile View Overlay -->
         <div id="businessProfile" class="overlay-screen">
             <div class="header">
                 <button class="back-btn" id="profileBackBtn">←</button>
@@ -1718,12 +2031,13 @@
                 <button class="action-button primary-btn" onclick="CLASSIFIED.getDirections()">Get Directions</button>
             </div>
         </div>
+        
         <!-- Individual Chat Overlay -->
         <div id="individualChat" class="overlay-screen">
             <div class="chat-header">
                 <button class="back-btn" id="chatBackBtn">←</button>
-                <div class="chat-header-avatar" id="chatAvatar" onclick="console.log('👆 Avatar clicked!'); CLASSIFIED.openProfileFromChat();"></div>
-                <div class="chat-header-info" onclick="console.log('👆 Name area clicked!'); CLASSIFIED.openProfileFromChat();">
+                <div class="chat-header-avatar" id="chatAvatar" onclick="CLASSIFIED.openProfileFromChat();"></div>
+                <div class="chat-header-info" onclick="CLASSIFIED.openProfileFromChat();">
                     <div class="chat-header-name" id="chatName">Jessica</div>
                     <div class="chat-status">Online now</div>
                 </div>
@@ -1753,6 +2067,7 @@
                 <button class="send-btn" id="sendBtn">➤</button>
             </div>
         </div>
+        
         <!-- Match Popup -->
         <div id="matchPopup" class="match-popup">
             <div class="match-content">
@@ -1761,12 +2076,14 @@
                 <button class="match-btn" id="startChatBtn">Start Chatting</button>
             </div>
         </div>
+        
         <!-- Loading Overlay -->
         <div id="loadingOverlay" class="loading-overlay">
             <div class="spinner"></div>
         </div>
+        
         <!-- Login Screen -->
-        <div id="loginScreen" class="auth-screen show">
+        <div id="loginScreen" class="auth-screen">
             <div class="auth-header">
                 <div class="auth-logo">CLASSIFIED</div>
                 <div class="auth-tagline">Discover Hoi An's Hidden Gems</div>
@@ -1786,9 +2103,12 @@
                 </button>
             </div>
             <div class="auth-switch">
-                Don't have an account? <a href="#" onclick="CLASSIFIED.showRegister()">Sign up</a>
+                Don't have an account? <a href="#" onclick="CLASSIFIED.showRegister()">Sign up</a> | 
+                <a href="#" onclick="CLASSIFIED.showBusinessAuth()">Business Login</a> | 
+                <a href="#" onclick="CLASSIFIED.enableGuestMode()">Browse as Guest</a>
             </div>
         </div>
+        
         <!-- Registration Screen -->
         <div id="registerScreen" class="auth-screen">
             <div class="auth-header">
@@ -1812,9 +2132,51 @@
                 </button>
             </div>
             <div class="auth-switch">
-                Already have an account? <a href="#" onclick="CLASSIFIED.showLogin()">Sign in</a>
+                Already have an account? <a href="#" onclick="CLASSIFIED.showLogin()">Sign in</a> | 
+                <a href="#" onclick="CLASSIFIED.showBusinessAuth()">Business Login</a>
             </div>
         </div>
+        
+        <!-- Business Auth Screen -->
+        <div id="businessAuthScreen" class="auth-screen">
+            <div class="auth-header">
+                <div class="auth-logo">CLASSIFIED</div>
+                <div class="auth-tagline">Business Portal</div>
+            </div>
+            
+            <div class="business-auth-tabs">
+                <div class="business-auth-tab active" onclick="CLASSIFIED.switchBusinessAuthTab('login')">Login</div>
+                <div class="business-auth-tab" onclick="CLASSIFIED.switchBusinessAuthTab('signup')">Join Waitlist</div>
+            </div>
+            
+            <!-- Business Login Form -->
+            <div id="businessLoginForm" class="business-auth-form active">
+                <input type="email" class="auth-input" id="businessLoginEmail" placeholder="Business email">
+                <input type="password" class="auth-input" id="businessLoginPassword" placeholder="Password">
+                <button class="auth-btn" onclick="CLASSIFIED.businessLogin()">Login to Dashboard</button>
+            </div>
+            
+            <!-- Business Signup Form -->
+            <div id="businessSignupForm" class="business-auth-form">
+                <input type="text" class="auth-input" id="businessSignupName" placeholder="Business Name">
+                <input type="email" class="auth-input" id="businessSignupEmail" placeholder="Business Email">
+                <input type="tel" class="auth-input" id="businessSignupPhone" placeholder="WhatsApp Number">
+                <select class="auth-input" id="businessSignupType">
+                    <option value="">Select Business Type</option>
+                    <option value="restaurant">Restaurant/Bar</option>
+                    <option value="activity">Activity/Tour</option>
+                    <option value="accommodation">Hotel/Hostel</option>
+                    <option value="retail">Shop/Retail</option>
+                    <option value="service">Service</option>
+                </select>
+                <button class="auth-btn" onclick="CLASSIFIED.businessSignup()">Join Waitlist</button>
+            </div>
+            
+            <div class="auth-switch">
+                <a href="#" onclick="CLASSIFIED.showLogin()">← Back to User Login</a>
+            </div>
+        </div>
+        
         <!-- Bottom Navigation -->
         <div class="bottom-nav">
             <div class="nav-item active" data-screen="restaurant">
@@ -1830,22 +2192,32 @@
                 <div class="nav-label">Your Activity</div>
             </div>
         </div>
+        
+        <!-- Hidden file input for photo uploads -->
+        <input type="file" id="photoUpload" accept="image/*" style="display: none;" onchange="CLASSIFIED.handlePhotoUpload(event)">
+        <input type="file" id="businessPhotoUpload" accept="image/*" style="display: none;" onchange="CLASSIFIED.handleBusinessPhotoUpload(event)">
     </div>
+    
     <script>
-        // 🎯 CLASSIFIED v5.0 - Ultimate Hoi An Social App with Profile System
-        // Updated version with complete profile creation and editing system
+        // 🎯 CLASSIFIED v7.0 - Complete Integration with All Features
         const CLASSIFIED = {
-            // App State Management
+            // Enhanced App State Management
             state: {
                 currentScreen: 'restaurant',
                 currentSocialTab: 'userFeed',
                 currentBusiness: null,
                 currentViewedUser: null,
                 currentChatUser: null,
+                currentUser: null,
+                isAuthenticated: false,
+                isGuestMode: false,
                 isProfileOpen: false,
                 isChatOpen: false,
                 isProfileEditorOpen: false,
                 isUserProfileOpen: false,
+                isBusinessProfileEditorOpen: false,
+                currentUploadSlot: null,
+                currentBusinessUploadSlot: null,
                 userProfile: {
                     name: '',
                     age: '',
@@ -1859,10 +2231,24 @@
                     relationship: '',
                     lookingFor: '',
                     marriage: '',
+                    photos: [],
+                    referralCode: ''
+                },
+                businessProfile: {
+                    name: '',
+                    type: '',
+                    description: '',
+                    address: '',
+                    phone: '',
+                    hours: '',
+                    priceRange: '',
+                    promoTitle: '',
+                    promoDetails: '',
                     photos: []
                 }
             },
-            // App Data - Real Hoi An Businesses
+            
+            // Enhanced App Data
             data: {
                 users: [
                     {
@@ -1977,71 +2363,8 @@
                         hours: "7:00 AM - 11:00 PM",
                         price: "$ - Moderate",
                         contact: "+84 235 345 678"
-                    },
-                    {
-                        id: 'moon-sports-bar',
-                        name: "Moon Sports Bar",
-                        type: "Sports Bar & Nightlife",
-                        image: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=400&h=300&fit=crop",
-                        logo: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=100&h=100&fit=crop",
-                        story: "https://images.unsplash.com/photo-1574391884720-bbc273b7c282?w=150&h=200&fit=crop",
-                        promo: "Game Night - Free Pool & Darts",
-                        details: "Daily 5pm-late • Live sports & games",
-                        description: "The go-to spot for sports lovers and night owls. Multiple screens showing international sports, pool tables, and a lively atmosphere perfect for meeting fellow travelers.",
-                        location: "67 Nguyen Thai Hoc, Hoi An",
-                        hours: "5:00 PM - 2:00 AM",
-                        price: "$ - Moderate", 
-                        contact: "+84 235 456 789"
-                    },
-                    {
-                        id: 'lantern-town-coffee',
-                        name: "Lantern Town Coffee",
-                        type: "Coffee Shop & Co-working",
-                        image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&h=300&fit=crop",
-                        logo: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=100&h=100&fit=crop",
-                        story: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=150&h=200&fit=crop",
-                        promo: "Digital Nomad Deal - Coffee + WiFi",
-                        details: "Daily 6am-10pm • Perfect for remote work",
-                        description: "Specialty coffee roasted locally with fast WiFi and comfortable workspaces. The perfect spot for digital nomads and remote workers exploring Hoi An.",
-                        location: "12 Bach Dang Street, Hoi An",
-                        hours: "6:00 AM - 10:00 PM",
-                        price: "$ - Budget Friendly",
-                        contact: "+84 235 567 890"
-                    },
-                    
-                    {
-                        id: 'cham-chi',
-                        name: "Cham Chi",
-                        type: "Restaurant & Bar",
-                        image: "https://unsplash.com/photos/a-table-topped-with-plates-of-food-and-bowls-of-soup-bHQCgxTGlYg",
-                        logo: "https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=100&h=100&fit=crop",
-                        story: "https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=150&h=200&fit=crop",
-                        promo: "Jam Night - Buy One Get 2 Cocktails ",
-                        details: "Every Wednesday • Open Mic Night",
-                        description: "Hoi An's premier nightlife destination. Three floors of music, rooftop bar with ancient town views.",
-                        location: "89 Nguyen Phuc Chu, Hoi An",
-                        hours: "10:00 AM - 11:00 PM",
-                        price: "$$ - Moderate to High",
-                        contact: "+84 235 999 888"
-                    },
-                    {
-                        id: '8-days-a-week',
-                        name: "8 Days A Week",
-                        type: "Restaurant & Bar",
-                        image: "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=400&h=300&fit=crop",
-                        logo: "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=100&h=100&fit=crop",
-                        story: "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=150&h=200&fit=crop",
-                        promo: "Sunset Special - 30% Off All Cocktails",
-                        details: "Jam Night Every Monday • Delicious cocktails close to the beach",
-                        description: "Creative fusion cuisine blending Vietnamese and international flavors. Famous for innovative cocktails.",
-                        location: "45 Nguyen Phuc Tan, Hoi An",
-                        hours: "11:00 AM - 11:00 PM",
-                        price: "$$ - Moderate",
-                        contact: "+84 235 678 345"
                     }
-        
                 ],
-
                 activities: [
                     {
                         id: 'basket-boat-tours',
@@ -2057,66 +2380,6 @@
                         hours: "8:00 AM - 5:00 PM",
                         price: "$ - Budget Friendly",
                         contact: "+84 235 678 901"
-                    },
-                    {
-                        id: 'motorbike-adventures',
-                        name: "Hoi An Motorbike Tours",
-                        type: "Adventure Tours",
-                        image: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=400&h=300&fit=crop",
-                        logo: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=100&h=100&fit=crop",
-                        story: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=150&h=200&fit=crop",
-                        promo: "Sunrise Tour Special - Early Bird 20% Off",
-                        details: "Multiple daily tours • All skill levels",
-                        description: "Explore the countryside around Hoi An on authentic Vietnamese motorbikes. Safe, guided tours perfect for adventurous travelers wanting to see the real Vietnam.",
-                        location: "85 Cua Dai Street, Hoi An",
-                        hours: "6:00 AM - 8:00 PM",
-                        price: "$ - Moderate",
-                        contact: "+84 235 789 012"
-                    },
-                    {
-                        id: 'lantern-making-class',
-                        name: "Traditional Lantern Workshop",
-                        type: "Cultural Experience",
-                        image: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=400&h=300&fit=crop",
-                        logo: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=100&h=100&fit=crop",
-                        story: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=150&h=200&fit=crop",
-                        promo: "Couples Workshop - Make Lanterns Together",
-                        details: "Daily classes 10am & 3pm • Take home your creation",
-                        description: "Learn to make traditional Vietnamese lanterns from local artisans. A perfect cultural activity for travelers wanting to create something beautiful and meaningful.",
-                        location: "Ancient Town Workshop District",
-                        hours: "9:00 AM - 6:00 PM",
-                        price: "$ - Budget Friendly",
-                        contact: "+84 235 890 123"
-                    },
-                    {
-                        id: 'cooking-school',
-                        name: "Sabirama Cooking School",
-                        type: "Culinary Experience",
-                        image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop",
-                        logo: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=100&h=100&fit=crop",
-                        story: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=150&h=200&fit=crop",
-                        promo: "Full Day Class - Market Tour Included",
-                        details: "Half & full day classes • Vegetarian options",
-                        description: "Hands-on Vietnamese cooking classes including market tours. Learn to make pho, banh mi, and other local favorites in a fun, social environment.",
-                        location: "Tra Que Vegetable Village",
-                        hours: "8:00 AM - 4:00 PM",
-                        price: "$ - Moderate",
-                        contact: "+84 235 901 234"
-                    },
-                    {
-                        id: 'beach-club-an-bang',
-                        name: "An Bang Beach Club",
-                        type: "Beach & Water Sports",
-                        image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop",
-                        logo: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=100&h=100&fit=crop",
-                        story: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=150&h=200&fit=crop",
-                        promo: "Beach Day Pass - Sunbed + Drink Included",
-                        details: "Daily 8am-sunset • Surfboard rental available",
-                        description: "Beautiful beach club on An Bang Beach with sunbeds, fresh seafood, and water sports. Perfect for beach lovers and surfers looking to relax and socialize.",
-                        location: "An Bang Beach, Hoi An",
-                        hours: "8:00 AM - 7:00 PM",
-                        price: "$ - Moderate",
-                        contact: "+84 235 012 345"
                     }
                 ],
                 chats: [
@@ -2140,9 +2403,10 @@
                     }
                 ]
             },
+            
             // Initialize App
             init() {
-                console.log('🚀 Starting CLASSIFIED v6.0...');
+                console.log('🚀 Starting CLASSIFIED v7.0...');
                 
                 // Setup authentication listener
                 this.setupAuthListener();
@@ -2154,10 +2418,13 @@
                 this.populateFeeds();
                 this.setupProfileEditor();
                 
-                console.log('✅ CLASSIFIED app ready for users!');
+                // Initialize growth features
+                this.initGrowthFeatures();
+                
+                console.log('✅ CLASSIFIED app ready!');
             },
             
-            // 🔥 Firebase Authentication Methods
+            // 🔥 Enhanced Firebase Authentication Methods
             setupAuthListener() {
                 console.log('🔐 Setting up auth listener...');
                 if (!window.auth) {
@@ -2169,20 +2436,34 @@
                     console.log('🔐 Auth state changed:', user ? user.email : 'No user');
                     
                     if (user) {
-                        // User is signed in
                         this.state.currentUser = user;
                         this.state.isAuthenticated = true;
+                        this.state.isGuestMode = false;
                         this.hideAuthScreens();
                         this.loadUserProfile(user.uid);
-                        this.populateUserFeed(); // Load real users from Firebase
+                        this.populateUserFeed();
                         this.populateMessaging();
+                        this.checkIfBusiness(user);
                     } else {
-                        // User is signed out
                         this.state.currentUser = null;
                         this.state.isAuthenticated = false;
-                        this.showLogin();
+                        if (!this.state.isGuestMode) {
+                            this.showLogin();
+                        }
                     }
                 });
+            },
+            
+            async checkIfBusiness(user) {
+                try {
+                    const businessDoc = await window.db.collection('businesses').doc(user.uid).get();
+                    if (businessDoc.exists) {
+                        this.state.isBusinessUser = true;
+                        this.loadBusinessProfile(user.uid);
+                    }
+                } catch (error) {
+                    console.error('Error checking business status:', error);
+                }
             },
             
             async loginWithEmail() {
@@ -2210,6 +2491,7 @@
                 const email = document.getElementById('registerEmail').value;
                 const password = document.getElementById('registerPassword').value;
                 const confirmPassword = document.getElementById('registerConfirmPassword').value;
+                const referralCode = sessionStorage.getItem('referralCode');
                 
                 console.log('📝 Registration attempt for:', email);
                 
@@ -2228,19 +2510,13 @@
                     return;
                 }
                 
-                // Check if Firebase is properly initialized - FIXED: Removed firebaseReady check
                 if (!window.auth || !window.db) {
-                    console.error('❌ Firebase not ready:', { 
-                        auth: !!window.auth, 
-                        db: !!window.db 
-                    });
                     alert('Firebase is still loading. Please wait a few seconds and try again.');
                     return;
                 }
                 
                 try {
                     this.showLoading();
-                    console.log('🔐 Creating user account...');
                     
                     const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
                     console.log('✅ User account created:', userCredential.user.uid);
@@ -2249,18 +2525,35 @@
                     await userCredential.user.updateProfile({
                         displayName: name
                     });
-                    console.log('✅ Display name set');
                     
-                    // Create user profile in Firestore
-                    await this.createUserProfile(userCredential.user.uid, {
+                    // Generate referral code
+                    const newReferralCode = this.generateReferralCode();
+                    
+                    // Create user profile
+                    const profileData = {
                         name: name,
                         email: email,
+                        referralCode: newReferralCode,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        location: 'Hoi An, Vietnam'
-                    });
-                    console.log('✅ User profile created');
+                        location: 'Hoi An, Vietnam',
+                        isOnline: true,
+                        isPremium: referralCode ? true : false,
+                        premiumUntil: referralCode ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) : null
+                    };
+                    
+                    await this.createUserProfile(userCredential.user.uid, profileData);
+                    
+                    // Handle referral
+                    if (referralCode) {
+                        await this.trackReferral(referralCode, userCredential.user.uid);
+                        alert('🎉 Welcome! You and your friend both got premium features!');
+                    }
+                    
+                    // Clear referral code
+                    sessionStorage.removeItem('referralCode');
                     
                     console.log('🎉 Registration completed successfully!');
+                    
                 } catch (error) {
                     this.hideLoading();
                     console.error('❌ Registration failed:', error);
@@ -2271,9 +2564,7 @@
             async loginWithGoogle() {
                 console.log('🔍 Attempting Google login...');
                 
-                // Check if Firebase auth is ready
                 if (!window.auth) {
-                    console.error('❌ Firebase auth not initialized');
                     alert('Authentication system not ready. Please refresh and try again.');
                     return;
                 }
@@ -2281,10 +2572,8 @@
                 try {
                     this.showLoading();
                     const provider = new firebase.auth.GoogleAuthProvider();
-                    console.log('🔧 Google provider created');
                     
                     const result = await window.auth.signInWithPopup(provider);
-                    console.log('✅ Google popup completed');
                     
                     // Check if this is a new user
                     const userDoc = await window.db.collection('users').doc(result.user.uid).get();
@@ -2295,8 +2584,10 @@
                             name: result.user.displayName,
                             email: result.user.email,
                             photo: result.user.photoURL,
+                            referralCode: this.generateReferralCode(),
                             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            location: 'Hoi An, Vietnam'
+                            location: 'Hoi An, Vietnam',
+                            isOnline: true
                         });
                     }
                     
@@ -2306,7 +2597,6 @@
                     console.error('❌ Google login error:', error);
                     
                     if (error.code === 'auth/popup-closed-by-user') {
-                        // User closed popup - don't show error
                         console.log('User closed Google popup');
                     } else {
                         alert('Google login failed: ' + error.message);
@@ -2317,13 +2607,176 @@
             async logout() {
                 try {
                     await window.auth.signOut();
+                    this.state.isGuestMode = false;
                     console.log('✅ Logout successful');
                 } catch (error) {
                     console.error('❌ Logout error:', error);
                 }
             },
             
-            // 🔥 Firestore Methods
+            // 🏢 Business Authentication Methods
+            async businessLogin() {
+                const email = document.getElementById('businessLoginEmail').value;
+                const password = document.getElementById('businessLoginPassword').value;
+                
+                if (!email || !password) {
+                    alert('Please enter email and password');
+                    return;
+                }
+                
+                try {
+                    this.showLoading();
+                    await window.auth.signInWithEmailAndPassword(email, password);
+                    console.log('✅ Business login successful');
+                } catch (error) {
+                    this.hideLoading();
+                    console.error('❌ Business login error:', error);
+                    alert('Login failed: ' + error.message);
+                }
+            },
+            
+            async businessSignup() {
+                const name = document.getElementById('businessSignupName').value;
+                const email = document.getElementById('businessSignupEmail').value;
+                const phone = document.getElementById('businessSignupPhone').value;
+                const type = document.getElementById('businessSignupType').value;
+                
+                if (!name || !email || !phone || !type) {
+                    alert('Please fill in all fields');
+                    return;
+                }
+                
+                try {
+                    this.showLoading();
+                    
+                    // Add to waitlist
+                    await window.db.collection('business_waitlist').add({
+                        name: name,
+                        email: email,
+                        whatsapp: phone,
+                        type: type,
+                        status: 'pending',
+                        source: 'app_integrated',
+                        priority: type === 'restaurant' ? 1 : 2,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    this.hideLoading();
+                    
+                    // Show success message
+                    alert('🎉 Thanks for joining! We\'ve added your business to our waitlist. You\'ll receive login credentials within 24 hours via WhatsApp.');
+                    
+                    // Switch back to login tab
+                    this.switchBusinessAuthTab('login');
+                    
+                    console.log('✅ Business added to waitlist');
+                    
+                } catch (error) {
+                    this.hideLoading();
+                    console.error('❌ Business signup error:', error);
+                    alert('Signup failed: ' + error.message);
+                }
+            },
+            
+            switchBusinessAuthTab(tab) {
+                // Update tab buttons
+                document.querySelectorAll('.business-auth-tab').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`[onclick="CLASSIFIED.switchBusinessAuthTab('${tab}')"]`).classList.add('active');
+                
+                // Update form visibility
+                document.querySelectorAll('.business-auth-form').forEach(form => {
+                    form.classList.remove('active');
+                });
+                document.getElementById(`business${tab.charAt(0).toUpperCase() + tab.slice(1)}Form`).classList.add('active');
+            },
+            
+            // 👤 Guest Mode Implementation
+            enableGuestMode() {
+                console.log('👤 Enabling guest mode');
+                this.state.isGuestMode = true;
+                this.state.isAuthenticated = false;
+                
+                // Hide auth screens
+                this.hideAuthScreens();
+                
+                // Show guest banner
+                document.getElementById('guestBanner').style.display = 'block';
+                
+                // Populate feeds with demo data
+                this.populateFeeds();
+                this.populateGuestUserFeed();
+                
+                // Show restricted features message
+                setTimeout(() => {
+                    this.showGuestLimitationsMessage();
+                }, 3000);
+            },
+            
+            populateGuestUserFeed() {
+                const container = document.getElementById('userFeedContainer');
+                container.innerHTML = '';
+                
+                // Show first 3 users to guests
+                const guestUsers = this.data.users.slice(0, 3);
+                guestUsers.forEach((user, index) => {
+                    const feedItem = this.createUserFeedItem(user, index);
+                    
+                    // Add guest overlay to limit interactions
+                    const overlay = document.createElement('div');
+                    overlay.innerHTML = `
+                        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; border-radius: 20px; z-index: 10;">
+                            <div style="text-align: center; padding: 20px;">
+                                <h3 style="color: #FFD700; margin-bottom: 10px;">🔒 Sign up to connect!</h3>
+                                <button onclick="CLASSIFIED.showRegister()" style="background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; padding: 10px 20px; border-radius: 20px; color: white; font-weight: 600; cursor: pointer;">
+                                    Create Account
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    overlay.style.position = 'relative';
+                    feedItem.appendChild(overlay);
+                    
+                    container.appendChild(feedItem);
+                });
+                
+                // Add signup encouragement
+                const signupCard = document.createElement('div');
+                signupCard.innerHTML = `
+                    <div style="background: linear-gradient(135deg, #FFD700, #FF6B6B); padding: 30px; border-radius: 20px; text-align: center; margin: 20px 0;">
+                        <h3 style="margin: 0 0 15px 0; font-size: 20px;">🚀 Ready to connect?</h3>
+                        <p style="margin: 0 0 20px 0; opacity: 0.9;">Join ${this.data.users.length}+ travelers already using CLASSIFIED</p>
+                        <button onclick="CLASSIFIED.showRegister()" style="background: rgba(255,255,255,0.2); border: none; padding: 12px 24px; border-radius: 25px; color: white; font-weight: 600; cursor: pointer; margin-right: 10px;">
+                            Sign Up Free
+                        </button>
+                        <button onclick="CLASSIFIED.showLogin()" style="background: transparent; border: 2px solid rgba(255,255,255,0.3); padding: 10px 22px; border-radius: 25px; color: white; font-weight: 600; cursor: pointer;">
+                            Login
+                        </button>
+                    </div>
+                `;
+                container.appendChild(signupCard);
+            },
+            
+            showGuestLimitationsMessage() {
+                const message = document.createElement('div');
+                message.innerHTML = `
+                    <div style="position: fixed; top: 20px; right: 20px; background: rgba(255,215,0,0.9); color: white; padding: 15px 20px; border-radius: 15px; font-size: 14px; font-weight: 600; z-index: 999; max-width: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                        <div style="margin-bottom: 10px;">👋 Browsing as guest</div>
+                        <div style="font-size: 12px; opacity: 0.9;">Sign up to message people, upload photos, and access all features!</div>
+                        <button onclick="this.parentElement.remove(); CLASSIFIED.showRegister();" style="background: rgba(255,255,255,0.2); border: none; padding: 6px 12px; border-radius: 10px; color: white; font-size: 11px; font-weight: 600; cursor: pointer; margin-top: 10px;">
+                            Sign Up Now
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(message);
+                
+                setTimeout(() => {
+                    message.remove();
+                }, 8000);
+            },
+            
+            // 🔥 Enhanced Firestore Methods
             async createUserProfile(uid, profileData) {
                 try {
                     await window.db.collection('users').doc(uid).set(profileData);
@@ -2348,15 +2801,20 @@
             },
             
             async saveUserProfile() {
-                if (!this.state.currentUser) return;
+                if (!this.state.currentUser) {
+                    alert('Please log in first');
+                    return;
+                }
                 
                 try {
-                    // Gather form data (existing logic)
+                    // Gather form data
                     this.state.userProfile.bio = document.getElementById('profileBio').value;
                     this.state.userProfile.birthday = document.getElementById('profileBirthday').value;
                     this.state.userProfile.height = document.getElementById('profileHeight').value;
+                    this.state.userProfile.name = this.state.currentUser.displayName || this.state.userProfile.name;
+                    this.state.userProfile.email = this.state.currentUser.email;
                     
-                    // Calculate age from birthday (existing logic)
+                    // Calculate age from birthday
                     if (this.state.userProfile.birthday) {
                         const today = new Date();
                         const birthDate = new Date(this.state.userProfile.birthday);
@@ -2368,41 +2826,423 @@
                         this.state.userProfile.age = age;
                     }
                     
+                    // Add required fields for user feed
+                    this.state.userProfile.uid = this.state.currentUser.uid;
+                    this.state.userProfile.isOnline = true;
+                    this.state.userProfile.lastSeen = firebase.firestore.FieldValue.serverTimestamp();
+                    this.state.userProfile.location = 'Hoi An, Vietnam';
+                    this.state.userProfile.matchPercentage = Math.floor(Math.random() * 30) + 70;
+                    this.state.userProfile.distance = `${Math.floor(Math.random() * 5) + 1} km`;
+                    this.state.userProfile.category = this.state.userProfile.career === 'Digital Nomad' ? 'nomads' : 'all';
+                    
+                    // Generate referral code if not exists
+                    if (!this.state.userProfile.referralCode) {
+                        this.state.userProfile.referralCode = this.generateReferralCode();
+                    }
+                    
                     // Save to Firebase
-                    await window.db.collection('users').doc(this.state.currentUser.uid).update({
+                    await window.db.collection('users').doc(this.state.currentUser.uid).set({
                         ...this.state.userProfile,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
+                    }, { merge: true });
                     
-                    console.log('💾 Profile saved to Firebase:', this.state.userProfile);
-                    alert('Profile saved successfully! 🎉');
+                    console.log('💾 Profile saved successfully:', this.state.userProfile);
+                    alert('Profile saved successfully! 🎉 You\'ll now appear in the user feed.');
                     
+                    // Refresh user feed
                     this.closeProfileEditor();
-                    setTimeout(() => this.viewMyProfile(), 300);
+                    this.populateUserFeed();
+                    
+                    // Show success with referral code
+                    setTimeout(() => {
+                        this.showReferralCode();
+                    }, 1000);
+                    
                 } catch (error) {
                     console.error('❌ Error saving profile:', error);
                     alert('Error saving profile: ' + error.message);
                 }
             },
             
-            // UI Helper Methods
+            async loadBusinessProfile(uid) {
+                try {
+                    const doc = await window.db.collection('businesses').doc(uid).get();
+                    if (doc.exists) {
+                        const businessData = doc.data();
+                        this.state.businessProfile = { ...this.state.businessProfile, ...businessData };
+                        console.log('✅ Business profile loaded:', businessData);
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading business profile:', error);
+                }
+            },
+            
+            async saveBusinessProfile() {
+                if (!this.state.currentUser) {
+                    alert('Please log in first');
+                    return;
+                }
+                
+                try {
+                    // Gather form data
+                    this.state.businessProfile.name = document.getElementById('businessName').value;
+                    this.state.businessProfile.type = document.getElementById('businessType').value;
+                    this.state.businessProfile.description = document.getElementById('businessDescription').value;
+                    this.state.businessProfile.address = document.getElementById('businessAddress').value;
+                    this.state.businessProfile.phone = document.getElementById('businessPhone').value;
+                    this.state.businessProfile.hours = document.getElementById('businessHours').value;
+                    this.state.businessProfile.priceRange = document.getElementById('businessPriceRange').value;
+                    this.state.businessProfile.promoTitle = document.getElementById('businessPromoTitle').value;
+                    this.state.businessProfile.promoDetails = document.getElementById('businessPromoDetails').value;
+                    
+                    // Add required fields
+                    this.state.businessProfile.uid = this.state.currentUser.uid;
+                    this.state.businessProfile.email = this.state.currentUser.email;
+                    this.state.businessProfile.status = 'active';
+                    
+                    // Save to Firebase
+                    await window.db.collection('businesses').doc(this.state.currentUser.uid).set({
+                        ...this.state.businessProfile,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                    
+                    console.log('💾 Business profile saved successfully');
+                    alert('Business profile saved successfully! 🎉 Your business will appear in the feeds.');
+                    
+                    // Refresh feeds
+                    this.closeBusinessProfileEditor();
+                    this.populateFeeds();
+                    
+                } catch (error) {
+                    console.error('❌ Error saving business profile:', error);
+                    alert('Error saving business profile: ' + error.message);
+                }
+            },
+            
+            // 📸 Enhanced Photo Upload System
+            triggerPhotoUpload(slotIndex) {
+                console.log('📸 Triggering photo upload for slot:', slotIndex);
+                this.state.currentUploadSlot = slotIndex;
+                document.getElementById('photoUpload').click();
+            },
+            
+            async handlePhotoUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const slotIndex = this.state.currentUploadSlot;
+                console.log('📸 Handling photo upload:', file.name, 'to slot', slotIndex);
+                
+                if (!this.state.currentUser) {
+                    alert('Please log in to upload photos');
+                    return;
+                }
+                
+                try {
+                    // Show upload progress
+                    const slot = document.querySelectorAll('.photo-slot')[slotIndex];
+                    slot.classList.add('uploading');
+                    slot.innerHTML = `
+                        <div style="text-align: center;">
+                            <div>📤</div>
+                            <div style="font-size: 12px; margin-top: 5px;">Uploading...</div>
+                            <div class="upload-progress">
+                                <div class="upload-progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Upload to Firebase Storage
+                    const storageRef = window.storage.ref();
+                    const photoRef = storageRef.child(`users/${this.state.currentUser.uid}/photo_${slotIndex}_${Date.now()}`);
+                    
+                    const uploadTask = photoRef.put(file);
+                    
+                    uploadTask.on('state_changed', 
+                        (snapshot) => {
+                            // Progress tracking
+                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            const progressBar = slot.querySelector('.upload-progress-bar');
+                            if (progressBar) {
+                                progressBar.style.width = progress + '%';
+                            }
+                        },
+                        (error) => {
+                            console.error('❌ Upload failed:', error);
+                            slot.classList.remove('uploading');
+                            slot.innerHTML = `<span style="font-size: 24px; opacity: 0.5;">+</span>`;
+                            alert('Upload failed: ' + error.message);
+                        },
+                        async () => {
+                            // Upload completed successfully
+                            try {
+                                const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                                
+                                // Update UI
+                                slot.classList.remove('uploading');
+                                slot.classList.add('filled');
+                                slot.style.backgroundImage = `url('${downloadURL}')`;
+                                slot.innerHTML = slotIndex === 0 ? '<div class="star-icon">⭐</div>' : '';
+                                
+                                // Save to state
+                                this.state.userProfile.photos[slotIndex] = downloadURL;
+                                
+                                console.log('✅ Photo uploaded successfully');
+                                
+                                // Auto-save profile
+                                await this.saveUserProfile();
+                                
+                            } catch (error) {
+                                console.error('❌ Error getting download URL:', error);
+                                alert('Error saving photo: ' + error.message);
+                            }
+                        }
+                    );
+                    
+                } catch (error) {
+                    console.error('❌ Error uploading photo:', error);
+                    alert('Error uploading photo: ' + error.message);
+                }
+            },
+            
+            triggerBusinessPhotoUpload(slotIndex) {
+                console.log('📸 Triggering business photo upload for slot:', slotIndex);
+                this.state.currentBusinessUploadSlot = slotIndex;
+                document.getElementById('businessPhotoUpload').click();
+            },
+            
+            async handleBusinessPhotoUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const slotIndex = this.state.currentBusinessUploadSlot;
+                console.log('📸 Handling business photo upload:', file.name, 'to slot', slotIndex);
+                
+                if (!this.state.currentUser) {
+                    alert('Please log in to upload photos');
+                    return;
+                }
+                
+                try {
+                    // Show upload progress
+                    const slot = document.querySelectorAll('#businessPhotoGrid .photo-slot')[slotIndex];
+                    slot.classList.add('uploading');
+                    slot.innerHTML = `
+                        <div style="text-align: center;">
+                            <div>📤</div>
+                            <div style="font-size: 12px; margin-top: 5px;">Uploading...</div>
+                            <div class="upload-progress">
+                                <div class="upload-progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Upload to Firebase Storage
+                    const storageRef = window.storage.ref();
+                    const photoRef = storageRef.child(`businesses/${this.state.currentUser.uid}/photo_${slotIndex}_${Date.now()}`);
+                    
+                    const uploadTask = photoRef.put(file);
+                    
+                    uploadTask.on('state_changed', 
+                        (snapshot) => {
+                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            const progressBar = slot.querySelector('.upload-progress-bar');
+                            if (progressBar) {
+                                progressBar.style.width = progress + '%';
+                            }
+                        },
+                        (error) => {
+                            console.error('❌ Business upload failed:', error);
+                            slot.classList.remove('uploading');
+                            slot.innerHTML = `<span style="font-size: 24px; opacity: 0.5;">+</span>`;
+                            alert('Upload failed: ' + error.message);
+                        },
+                        async () => {
+                            try {
+                                const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                                
+                                // Update UI
+                                slot.classList.remove('uploading');
+                                slot.classList.add('filled');
+                                slot.style.backgroundImage = `url('${downloadURL}')`;
+                                slot.innerHTML = slotIndex === 0 ? '<div class="star-icon">⭐</div>' : '';
+                                
+                                // Save to state
+                                this.state.businessProfile.photos[slotIndex] = downloadURL;
+                                
+                                console.log('✅ Business photo uploaded successfully');
+                                
+                                // Auto-save business profile
+                                await this.saveBusinessProfile();
+                                
+                            } catch (error) {
+                                console.error('❌ Error getting business download URL:', error);
+                                alert('Error saving business photo: ' + error.message);
+                            }
+                        }
+                    );
+                    
+                } catch (error) {
+                    console.error('❌ Error uploading business photo:', error);
+                    alert('Error uploading business photo: ' + error.message);
+                }
+            },
+            
+            // 🔄 Referral System
+            generateReferralCode() {
+                return Math.random().toString(36).substring(2, 8).toUpperCase();
+            },
+            
+            async trackReferral(referralCode, newUserId) {
+                try {
+                    const referrerSnapshot = await window.db.collection('users')
+                        .where('referralCode', '==', referralCode)
+                        .get();
+                        
+                    if (!referrerSnapshot.empty) {
+                        const referrerId = referrerSnapshot.docs[0].id;
+                        
+                        // Save referral record
+                        await window.db.collection('referrals').add({
+                            referrer: referrerId,
+                            referred: newUserId,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                            bonus: 'premium_week',
+                            status: 'active'
+                        });
+                        
+                        // Update referrer's stats
+                        await window.db.collection('users').doc(referrerId).update({
+                            referralCount: firebase.firestore.FieldValue.increment(1),
+                            premiumUntil: firebase.firestore.FieldValue.serverTimestamp() + (7 * 24 * 60 * 60 * 1000)
+                        });
+                        
+                        console.log('✅ Referral tracked successfully');
+                    }
+                } catch (error) {
+                    console.error('❌ Error tracking referral:', error);
+                }
+            },
+            
+            shareApp() {
+                const referralCode = this.state.userProfile.referralCode || this.generateReferralCode();
+                const shareUrl = `${window.location.origin}?ref=${referralCode}`;
+                
+                const shareData = {
+                    title: 'CLASSIFIED - Hoi An Social Discovery',
+                    text: `Join me on CLASSIFIED - discover hidden gems and meet amazing people in Hoi An! 🌟 Use my code: ${referralCode}`,
+                    url: shareUrl
+                };
+                
+                if (navigator.share) {
+                    navigator.share(shareData);
+                } else {
+                    navigator.clipboard.writeText(`${shareData.text}\n\n${shareData.url}`);
+                    alert('✅ Referral link copied to clipboard! Share it with your friends 📱');
+                }
+            },
+            
+            showReferralCode() {
+                const referralCode = this.state.userProfile.referralCode || this.generateReferralCode();
+                const shareUrl = `${window.location.origin}?ref=${referralCode}`;
+                
+                const modal = document.createElement('div');
+                modal.innerHTML = `
+                    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px;" onclick="this.remove()">
+                        <div style="background: #2a2a2a; border-radius: 20px; padding: 30px; max-width: 350px; width: 100%; text-align: center; border: 1px solid rgba(255,255,255,0.1);" onclick="event.stopPropagation()">
+                            <h3 style="margin: 0 0 20px 0; color: #00D4FF;">🔑 Your Referral Code</h3>
+                            
+                            <div style="background: rgba(0,212,255,0.1); border: 2px solid #00D4FF; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <div style="font-size: 32px; font-weight: 700; color: #00D4FF; margin-bottom: 10px;">${referralCode}</div>
+                                <div style="font-size: 14px; opacity: 0.8;">Share this code with friends</div>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <p style="margin: 0 0 10px 0; font-size: 14px; opacity: 0.9;">When friends sign up with your code:</p>
+                                <ul style="text-align: left; margin: 0; padding-left: 20px; font-size: 14px; opacity: 0.8;">
+                                    <li>You both get 1 week premium</li>
+                                    <li>Access to exclusive events</li>
+                                    <li>Priority customer support</li>
+                                </ul>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="navigator.clipboard.writeText('${referralCode}'); alert('Code copied!')" style="flex: 1; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; cursor: pointer;">
+                                    Copy Code
+                                </button>
+                                <button onclick="navigator.clipboard.writeText('${shareUrl}'); alert('Link copied!')" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+                                    Copy Link
+                                </button>
+                            </div>
+                            
+                            <button onclick="this.closest('div').remove()" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; cursor: pointer; margin-top: 10px;">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+            },
+            
+            checkReferralCode() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const referralCode = urlParams.get('ref');
+                
+                if (referralCode) {
+                    sessionStorage.setItem('referralCode', referralCode);
+                    
+                    // Show referral welcome message
+                    setTimeout(() => {
+                        const welcomeModal = document.createElement('div');
+                        welcomeModal.innerHTML = `
+                            <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px;">
+                                <div style="background: #2a2a2a; border-radius: 20px; padding: 30px; max-width: 350px; width: 100%; text-align: center; border: 1px solid rgba(255,215,0,0.3);" onclick="event.stopPropagation()">
+                                    <h3 style="margin: 0 0 20px 0; color: #FFD700;">🎉 Welcome to CLASSIFIED!</h3>
+                                    <p style="margin: 0 0 20px 0; font-size: 16px;">You've been invited by a friend!</p>
+                                    <div style="background: rgba(255,215,0,0.1); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                                        <p style="margin: 0; font-size: 14px; opacity: 0.9;">Sign up with code <strong>${referralCode}</strong> and you'll both get premium features!</p>
+                                    </div>
+                                    <button onclick="this.closest('div').remove(); CLASSIFIED.showRegister();" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #FFD700, #FF6B6B); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+                                        Sign Up Now 🚀
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        document.body.appendChild(welcomeModal);
+                    }, 1000);
+                }
+            },
+            
+            // 📱 UI Helper Methods
             showLogin() {
                 document.getElementById('loginScreen').classList.add('show');
                 document.getElementById('registerScreen').classList.remove('show');
+                document.getElementById('businessAuthScreen').classList.remove('show');
                 document.querySelector('.main-screens').classList.remove('authenticated');
                 document.querySelector('.bottom-nav').style.display = 'none';
+                document.getElementById('guestBanner').style.display = 'none';
             },
             
             showRegister() {
                 document.getElementById('registerScreen').classList.add('show');
                 document.getElementById('loginScreen').classList.remove('show');
+                document.getElementById('businessAuthScreen').classList.remove('show');
+            },
+            
+            showBusinessAuth() {
+                document.getElementById('businessAuthScreen').classList.add('show');
+                document.getElementById('loginScreen').classList.remove('show');
+                document.getElementById('registerScreen').classList.remove('show');
             },
             
             hideAuthScreens() {
                 document.getElementById('loginScreen').classList.remove('show');
                 document.getElementById('registerScreen').classList.remove('show');
+                document.getElementById('businessAuthScreen').classList.remove('show');
                 document.querySelector('.main-screens').classList.add('authenticated');
                 document.querySelector('.bottom-nav').style.display = 'flex';
+                document.getElementById('guestBanner').style.display = 'none';
                 this.hideLoading();
             },
             
@@ -2413,7 +3253,8 @@
             hideLoading() {
                 document.getElementById('loadingOverlay').classList.remove('show');
             },
-            // Event Listeners
+            
+            // 🔧 Event Listeners
             setupEventListeners() {
                 // Bottom navigation
                 document.querySelectorAll('.nav-item').forEach(item => {
@@ -2422,6 +3263,7 @@
                         this.showScreen(screen);
                     });
                 });
+                
                 // Social tabs
                 document.querySelectorAll('.social-tab').forEach(tab => {
                     tab.addEventListener('click', (e) => {
@@ -2429,6 +3271,7 @@
                         this.switchSocialTab(tabType);
                     });
                 });
+                
                 // Filter chips
                 document.querySelectorAll('.filter-chip').forEach(chip => {
                     chip.addEventListener('click', (e) => {
@@ -2436,18 +3279,22 @@
                         this.filterUsers(filter);
                     });
                 });
+                
                 // Overlay back buttons
                 document.getElementById('profileBackBtn').addEventListener('click', () => this.closeBusinessProfile());
                 document.getElementById('chatBackBtn').addEventListener('click', () => this.closeChat());
+                
                 // Chat functionality
                 document.getElementById('sendBtn').addEventListener('click', () => this.sendMessage());
                 document.getElementById('messageInput').addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') this.sendMessage();
                 });
+                
                 // Match popup
                 document.getElementById('startChatBtn').addEventListener('click', () => this.startChatFromMatch());
             },
-            // Profile Editor Setup
+            
+            // 📝 Profile Editor Setup
             setupProfileEditor() {
                 // Choice buttons
                 document.querySelectorAll('.choice-btn').forEach(btn => {
@@ -2457,6 +3304,7 @@
                         this.selectChoice(choiceType, value, btn);
                     });
                 });
+                
                 // Interest buttons
                 document.querySelectorAll('.interest-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
@@ -2464,28 +3312,52 @@
                     });
                 });
             },
-            // Profile Editor Functions
+            
+            // 📝 Profile Editor Functions
             openProfileEditor() {
                 console.log('✏️ Opening profile editor');
                 document.getElementById('profileEditor').classList.add('show');
                 this.state.isProfileEditorOpen = true;
                 this.loadProfileData();
             },
+            
             closeProfileEditor() {
                 console.log('🔙 Closing profile editor');
                 document.getElementById('profileEditor').classList.remove('show');
                 this.state.isProfileEditorOpen = false;
             },
+            
+            openBusinessProfileEditor() {
+                console.log('🏢 Opening business profile editor');
+                document.getElementById('businessProfileEditor').classList.add('show');
+                this.state.isBusinessProfileEditorOpen = true;
+                this.loadBusinessProfileData();
+            },
+            
+            closeBusinessProfileEditor() {
+                console.log('🔙 Closing business profile editor');
+                document.getElementById('businessProfileEditor').classList.remove('show');
+                this.state.isBusinessProfileEditorOpen = false;
+            },
+            
             viewMyProfile() {
                 console.log('👤 Viewing my profile');
                 this.closeProfileEditor();
                 document.getElementById('myProfileView').classList.add('show');
                 this.updateMyProfileView();
             },
+            
             closeMyProfile() {
                 console.log('🔙 Closing my profile');
                 document.getElementById('myProfileView').classList.remove('show');
             },
+            
+            viewBusinessProfile() {
+                console.log('🏢 Viewing business profile');
+                this.closeBusinessProfileEditor();
+                // Could open business profile view here
+            },
+            
             loadProfileData() {
                 const profile = this.state.userProfile;
                 
@@ -2509,7 +3381,51 @@
                         btn.classList.add('active');
                     }
                 });
+                
+                // Load photos
+                if (profile.photos && profile.photos.length > 0) {
+                    profile.photos.forEach((photo, index) => {
+                        if (photo) {
+                            const slot = document.querySelectorAll('.photo-slot')[index];
+                            if (slot) {
+                                slot.style.backgroundImage = `url('${photo}')`;
+                                slot.classList.add('filled');
+                                slot.innerHTML = index === 0 ? '<div class="star-icon">⭐</div>' : '';
+                            }
+                        }
+                    });
+                }
             },
+            
+            loadBusinessProfileData() {
+                const profile = this.state.businessProfile;
+                
+                // Load basic info
+                document.getElementById('businessName').value = profile.name || '';
+                document.getElementById('businessType').value = profile.type || '';
+                document.getElementById('businessDescription').value = profile.description || '';
+                document.getElementById('businessAddress').value = profile.address || '';
+                document.getElementById('businessPhone').value = profile.phone || '';
+                document.getElementById('businessHours').value = profile.hours || '';
+                document.getElementById('businessPriceRange').value = profile.priceRange || '';
+                document.getElementById('businessPromoTitle').value = profile.promoTitle || '';
+                document.getElementById('businessPromoDetails').value = profile.promoDetails || '';
+                
+                // Load photos
+                if (profile.photos && profile.photos.length > 0) {
+                    profile.photos.forEach((photo, index) => {
+                        if (photo) {
+                            const slot = document.querySelectorAll('#businessPhotoGrid .photo-slot')[index];
+                            if (slot) {
+                                slot.style.backgroundImage = `url('${photo}')`;
+                                slot.classList.add('filled');
+                                slot.innerHTML = index === 0 ? '<div class="star-icon">⭐</div>' : '';
+                            }
+                        }
+                    });
+                }
+            },
+            
             selectChoice(choiceType, value, buttonElement) {
                 // Remove active from siblings
                 const siblings = buttonElement.parentElement.querySelectorAll('.choice-btn');
@@ -2522,12 +3438,14 @@
                 this.state.userProfile[choiceType] = value;
                 console.log(`Selected ${choiceType}: ${value}`);
             },
+            
             selectChoiceByValue(choiceType, value) {
                 const btn = document.querySelector(`[data-choice="${choiceType}"][data-value="${value}"]`);
                 if (btn) {
                     this.selectChoice(choiceType, value, btn);
                 }
             },
+            
             toggleInterest(buttonElement) {
                 const interest = buttonElement.dataset.interest;
                 const isActive = buttonElement.classList.contains('active');
@@ -2536,7 +3454,7 @@
                     buttonElement.classList.remove('active');
                     this.state.userProfile.interests = this.state.userProfile.interests.filter(i => i !== interest);
                 } else {
-                    if (this.state.userProfile.interests.length < 8) { // Limit to 8 interests
+                    if (this.state.userProfile.interests.length < 8) {
                         buttonElement.classList.add('active');
                         this.state.userProfile.interests.push(interest);
                     } else {
@@ -2545,49 +3463,7 @@
                 }
                 console.log('Current interests:', this.state.userProfile.interests);
             },
-            uploadPhoto(slotIndex) {
-                // TODO: Implement Firebase Storage photo upload
-                // For now, simulate photo upload with demo images
-                const photos = [
-                    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop',
-                    'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop',
-                    'https://images.unsplash.com/photo-1494790108755-2616b1e78f41?w=400&h=400&fit=crop',
-                    'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&h=400&fit=crop'
-                ];
-                
-                if (slotIndex !== undefined) {
-                    const slot = document.querySelectorAll('.photo-slot')[slotIndex];
-                    if (slot && !slot.classList.contains('filled')) {
-                        const photoUrl = photos[slotIndex];
-                        slot.style.backgroundImage = `url('${photoUrl}')`;
-                        slot.classList.add('filled');
-                        slot.innerHTML = slotIndex === 0 ? '<div class="star-icon">⭐</div>' : '';
-                        
-                        this.state.userProfile.photos[slotIndex] = photoUrl;
-                        console.log(`Photo uploaded to slot ${slotIndex}`);
-                    }
-                } else {
-                    alert('Tap on a photo slot to add your image! 📸\n\n(Firebase Storage integration coming soon)');
-                }
-            },
-            // Settings & Account Management
-            openSettings() {
-                const settingsMenu = `
-                    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 500; display: flex; align-items: center; justify-content: center;" onclick="this.remove()">
-                        <div style="background: #2a2a2a; border-radius: 20px; padding: 30px; max-width: 300px; width: 90%; border: 1px solid rgba(255,255,255,0.1);" onclick="event.stopPropagation()">
-                            <h3 style="margin: 0 0 20px 0; text-align: center; color: #00D4FF;">Settings</h3>
-                            <button onclick="CLASSIFIED.openProfileEditor(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; cursor: pointer;">✏️ Edit Profile</button>
-                            <button onclick="CLASSIFIED.viewMyProfile(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; cursor: pointer;">👤 View My Profile</button>
-                            <button onclick="CLASSIFIED.logout(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; background: rgba(255,107,107,0.2); border: 1px solid rgba(255,107,107,0.3); border-radius: 10px; color: #FF6B6B; cursor: pointer;">🚪 Logout</button>
-                        </div>
-                    </div>
-                `;
-                
-                const overlay = document.createElement('div');
-                overlay.className = 'settings-overlay';
-                overlay.innerHTML = settingsMenu;
-                document.body.appendChild(overlay);
-            },
+            
             updateMyProfileView() {
                 const profile = this.state.userProfile;
                 
@@ -2605,7 +3481,7 @@
                 
                 // Update interests
                 const interestsContainer = document.getElementById('myProfileInterests');
-                if (profile.interests.length > 0) {
+                if (profile.interests && profile.interests.length > 0) {
                     interestsContainer.innerHTML = profile.interests.map(interest => 
                         `<span class="interest-tag">${interest}</span>`
                     ).join('');
@@ -2614,10 +3490,11 @@
                 }
                 
                 // Update hero image if photos available
-                if (profile.photos.length > 0) {
+                if (profile.photos && profile.photos.length > 0) {
                     document.getElementById('myProfileHero').style.backgroundImage = `url('${profile.photos[0]}')`;
                 }
             },
+            
             shareMyProfile() {
                 const shareText = `Check out my profile on CLASSIFIED Hoi An! 🌟`;
                 if (navigator.share) {
@@ -2631,129 +3508,150 @@
                     alert('Profile link copied to clipboard! 📋');
                 }
             },
-            // User Profile Viewing Functions
-            openUserProfile(user) {
-                console.log(`👤 Opening ${user.name}'s profile`);
-                document.getElementById('userProfileView').classList.add('show');
-                this.state.isUserProfileOpen = true;
-                this.state.currentViewedUser = user;
+            
+            // ⚙️ Settings & Account Management
+            openSettings() {
+                const settingsMenu = `
+                    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 500; display: flex; align-items: center; justify-content: center;" onclick="this.remove()">
+                        <div style="background: #2a2a2a; border-radius: 20px; padding: 30px; max-width: 300px; width: 90%; border: 1px solid rgba(255,255,255,0.1);" onclick="event.stopPropagation()">
+                            <h3 style="margin: 0 0 20px 0; text-align: center; color: #00D4FF;">Settings</h3>
+                            ${this.state.isAuthenticated ? `
+                                <button onclick="CLASSIFIED.openProfileEditor(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; cursor: pointer;">✏️ Edit Profile</button>
+                                <button onclick="CLASSIFIED.viewMyProfile(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; cursor: pointer;">👤 View My Profile</button>
+                                ${this.state.isBusinessUser ? `
+                                    <button onclick="CLASSIFIED.openBusinessProfileEditor(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); border-radius: 10px; color: #FFD700; cursor: pointer;">🏢 Business Profile</button>
+                                ` : ''}
+                                <button onclick="CLASSIFIED.showReferralCode(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3); border-radius: 10px; color: #00D4FF; cursor: pointer;">🔑 Referral Code</button>
+                                <button onclick="CLASSIFIED.logout(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; background: rgba(255,107,107,0.2); border: 1px solid rgba(255,107,107,0.3); border-radius: 10px; color: #FF6B6B; cursor: pointer;">🚪 Logout</button>
+                            ` : `
+                                <button onclick="CLASSIFIED.showLogin(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; border-radius: 10px; color: white; cursor: pointer;">🔐 Login</button>
+                                <button onclick="CLASSIFIED.showRegister(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; margin-bottom: 10px; background: linear-gradient(135deg, #FFD700, #FF6B6B); border: none; border-radius: 10px; color: white; cursor: pointer;">🚀 Sign Up</button>
+                                <button onclick="CLASSIFIED.showBusinessAuth(); this.closest('.settings-overlay').remove();" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; cursor: pointer;">🏢 Business Login</button>
+                            `}
+                        </div>
+                    </div>
+                `;
                 
-                // Populate user profile data
-                document.getElementById('userProfileTitle').textContent = user.name;
-                document.getElementById('userProfileHero').style.backgroundImage = `url('${user.image}')`;
-                document.getElementById('userProfileName').textContent = user.name;
-                document.getElementById('userProfileAge').textContent = `${user.age} years old`;
-                document.getElementById('userProfileMatch').textContent = `${user.matchPercentage}% Match`;
-                document.getElementById('userProfileBio').textContent = user.bio;
-                document.getElementById('userProfileDistance').textContent = user.distance;
-                document.getElementById('userProfileStatus').textContent = user.isOnline ? 'Online Now' : 'Offline';
-                document.getElementById('userProfileCategory').textContent = user.category === 'nomads' ? 'Digital Nomad' : 'Traveler';
-                
-                // Update interests
-                const interestsContainer = document.getElementById('userProfileInterests');
-                interestsContainer.innerHTML = user.interests.map(interest => 
-                    `<span class="interest-tag">${interest}</span>`
-                ).join('');
+                const overlay = document.createElement('div');
+                overlay.className = 'settings-overlay';
+                overlay.innerHTML = settingsMenu;
+                document.body.appendChild(overlay);
             },
-            closeUserProfile() {
-                console.log('🔙 Closing user profile');
-                document.getElementById('userProfileView').classList.remove('show');
-                this.state.isUserProfileOpen = false;
-                this.state.currentViewedUser = null;
-            },
-            startChatWithViewedUser() {
-                if (this.state.currentViewedUser) {
-                    const user = this.state.currentViewedUser;
-                    this.closeUserProfile();
-                    setTimeout(() => {
-                        // Use the new method that ensures proper user state
-                        this.openChatWithUser(user.name);
-                    }, 300);
-                }
-            },
-            openProfileFromChat() {
-                console.log('🔍 Opening profile from chat');
-                console.log('Current chat user state:', this.state.currentChatUser);
-                
-                // Try multiple methods to get the user data
-                let user = null;
-                
-                // Method 1: Use stored currentChatUser
-                if (this.state.currentChatUser) {
-                    user = this.state.currentChatUser;
-                    console.log('✅ Method 1: Found user from currentChatUser:', user.name);
-                } 
-                // Method 2: Look up by chat header name
-                else {
-                    const chatNameElement = document.getElementById('chatName');
-                    const chatName = chatNameElement ? chatNameElement.textContent.trim() : '';
-                    console.log('🔄 Method 2: Looking up user by chat name:', chatName);
-                    
-                    if (chatName) {
-                        user = this.data.users.find(u => u.name.trim() === chatName);
-                        if (user) {
-                            console.log('✅ Method 2: Found user by name lookup:', user.name);
-                            // Update the state for future clicks
-                            this.state.currentChatUser = user;
-                        }
-                    }
-                }
-                
-                // Open the profile if we found a user
-                if (user) {
-                    console.log('🚀 Opening user profile for:', user.name);
-                    this.openUserProfile(user);
-                } else {
-                    console.error('❌ Could not find user data');
-                    console.log('Available users:', this.data.users.map(u => u.name));
-                    alert('Could not load user profile. Please try again.');
-                }
-            },
-            // Screen Management
+            
+            // 📱 Screen Management
             showScreen(screenType) {
                 console.log(`📱 Switching to ${screenType} screen`);
-                // Update state
+                
+                // Check if guest trying to access restricted features
+                if (this.state.isGuestMode && screenType === 'social') {
+                    alert('🔒 Sign up to access social features and connect with other travelers!');
+                    this.showRegister();
+                    return;
+                }
+                
                 this.state.currentScreen = screenType;
+                
                 // Hide all screens
                 document.querySelectorAll('.screen').forEach(screen => {
                     screen.classList.remove('active');
                 });
+                
                 // Show target screen
                 document.getElementById(`${screenType}Screen`).classList.add('active');
+                
                 // Update navigation
                 document.querySelectorAll('.nav-item').forEach(item => {
                     item.classList.remove('active');
                 });
                 document.querySelector(`[data-screen="${screenType}"]`).classList.add('active');
-                // Reset social tab to userFeed when leaving social screen
+                
+                // Reset social tab when leaving social screen
                 if (screenType !== 'social') {
                     this.switchSocialTab('userFeed');
                 }
             },
+            
             switchSocialTab(tabType) {
                 console.log(`🔄 Switching to ${tabType} tab`);
                 this.state.currentSocialTab = tabType;
+                
                 // Update tabs
                 document.querySelectorAll('.social-tab').forEach(tab => {
                     tab.classList.remove('active');
                 });
                 document.querySelector(`[data-tab="${tabType}"]`).classList.add('active');
+                
                 // Update content
                 document.querySelectorAll('.social-content').forEach(content => {
                     content.classList.remove('active');
                 });
                 document.getElementById(`${tabType}Content`).classList.add('active');
             },
-            // Populate Feeds
+            
+            // 🍽️ Feed Management
             populateFeeds() {
                 this.populateRestaurantFeed();
                 this.populateActivityFeed();
             },
-            populateRestaurantFeed() {
+            
+            async populateRestaurantFeed() {
                 const storiesContainer = document.getElementById('restaurantStories');
                 const feedContainer = document.getElementById('restaurantFeed');
-                // Stories
-                storiesContainer.innerHTML = this.data.restaurants.map(restaurant => 
+                
+                try {
+                    // Show loading
+                    feedContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+                    
+                    // Try to fetch from Firebase first
+                    if (this.state.isAuthenticated) {
+                        const snapshot = await window.db.collection('businesses')
+                            .where('type', '==', 'restaurant')
+                            .where('status', '==', 'active')
+                            .orderBy('updatedAt', 'desc')
+                            .limit(20)
+                            .get();
+                        
+                        const restaurants = [];
+                        snapshot.forEach(doc => {
+                            const business = doc.data();
+                            restaurants.push({
+                                id: doc.id,
+                                name: business.name,
+                                type: business.type,
+                                image: business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop',
+                                logo: business.photos?.[1] || business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop',
+                                story: business.photos?.[0] || 'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=150&h=200&fit=crop',
+                                promo: business.promoTitle || 'Special Offer',
+                                details: business.promoDetails || 'Ask about our current promotions',
+                                description: business.description || 'Great food and atmosphere in Hoi An',
+                                location: business.address || 'Hoi An Ancient Town',
+                                hours: business.hours || 'Daily 8am-10pm',
+                                price: business.priceRange === 'budget' ? '$ - Budget Friendly' : 
+                                       business.priceRange === 'expensive' ? '$$ - Expensive' : '$ - Moderate',
+                                contact: business.phone || '+84 123 456 789'
+                            });
+                        });
+                        
+                        // If Firebase has restaurants, use them
+                        if (restaurants.length > 0) {
+                            this.renderRestaurantFeed(restaurants, storiesContainer, feedContainer);
+                            return;
+                        }
+                    }
+                    
+                    // Fallback to demo data
+                    this.renderRestaurantFeed(this.data.restaurants, storiesContainer, feedContainer);
+                    
+                } catch (error) {
+                    console.error('❌ Error loading restaurants:', error);
+                    // Fallback to demo data
+                    this.renderRestaurantFeed(this.data.restaurants, storiesContainer, feedContainer);
+                }
+            },
+            
+            renderRestaurantFeed(restaurants, storiesContainer, feedContainer) {
+                // Populate stories
+                storiesContainer.innerHTML = restaurants.slice(0, 10).map(restaurant => 
                     `<div class="story-item" style="background-image: url('${restaurant.story}')">
                         <div class="story-overlay">
                             <div class="story-title">${restaurant.name}</div>
@@ -2761,17 +3659,73 @@
                         </div>
                     </div>`
                 ).join('');
-                // Feed
-                feedContainer.innerHTML = this.data.restaurants.map(restaurant => 
+                
+                // Populate feed
+                feedContainer.innerHTML = restaurants.map(restaurant => 
                     this.createBusinessCard(restaurant, 'restaurant')
                 ).join('');
-                console.log('🍽️ Restaurant feed populated');
+                
+                // Add business signup banner
+                this.addBusinessSignupBanner(feedContainer);
+                
+                console.log('🍽️ Restaurant feed populated with', restaurants.length, 'businesses');
             },
-            populateActivityFeed() {
+            
+            async populateActivityFeed() {
                 const storiesContainer = document.getElementById('activityStories');
                 const feedContainer = document.getElementById('activityFeed');
-                // Stories
-                storiesContainer.innerHTML = this.data.activities.map(activity => 
+                
+                try {
+                    feedContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+                    
+                    // Try to fetch from Firebase first
+                    if (this.state.isAuthenticated) {
+                        const snapshot = await window.db.collection('businesses')
+                            .where('type', '==', 'activity')
+                            .where('status', '==', 'active')
+                            .orderBy('updatedAt', 'desc')
+                            .limit(20)
+                            .get();
+                        
+                        const activities = [];
+                        snapshot.forEach(doc => {
+                            const business = doc.data();
+                            activities.push({
+                                id: doc.id,
+                                name: business.name,
+                                type: business.type,
+                                image: business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop',
+                                logo: business.photos?.[1] || business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop',
+                                story: business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=150&h=200&fit=crop',
+                                promo: business.promoTitle || 'Special Activity',
+                                details: business.promoDetails || 'Book now for special rates',
+                                description: business.description || 'Amazing activity experience in Hoi An',
+                                location: business.address || 'Hoi An, Vietnam',
+                                hours: business.hours || 'Daily tours available',
+                                price: business.priceRange === 'budget' ? '$ - Budget Friendly' : 
+                                       business.priceRange === 'expensive' ? '$$ - Expensive' : '$ - Moderate',
+                                contact: business.phone || '+84 123 456 789'
+                            });
+                        });
+                        
+                        if (activities.length > 0) {
+                            this.renderActivityFeed(activities, storiesContainer, feedContainer);
+                            return;
+                        }
+                    }
+                    
+                    // Fallback to demo data
+                    this.renderActivityFeed(this.data.activities, storiesContainer, feedContainer);
+                    
+                } catch (error) {
+                    console.error('❌ Error loading activities:', error);
+                    this.renderActivityFeed(this.data.activities, storiesContainer, feedContainer);
+                }
+            },
+            
+            renderActivityFeed(activities, storiesContainer, feedContainer) {
+                // Populate stories
+                storiesContainer.innerHTML = activities.slice(0, 10).map(activity => 
                     `<div class="story-item" style="background-image: url('${activity.story}')">
                         <div class="story-overlay">
                             <div class="story-title">${activity.name}</div>
@@ -2779,12 +3733,18 @@
                         </div>
                     </div>`
                 ).join('');
-                // Feed
-                feedContainer.innerHTML = this.data.activities.map(activity => 
+                
+                // Populate feed
+                feedContainer.innerHTML = activities.map(activity => 
                     this.createBusinessCard(activity, 'activity')
                 ).join('');
-                console.log('🎯 Activity feed populated');
+                
+                // Add business signup banner
+                this.addBusinessSignupBanner(feedContainer);
+                
+                console.log('🎯 Activity feed populated with', activities.length, 'businesses');
             },
+            
             createBusinessCard(business, type) {
                 return `
                     <div class="business-card" onclick="CLASSIFIED.openBusinessProfile('${business.id}', '${type}')">
@@ -2806,63 +3766,113 @@
                     </div>
                 `;
             },
-            // Business Profile Functions
-            openBusinessProfile(businessId, type) {
-                console.log(`🏪 Opening ${businessId} profile`);
-                const businesses = type === 'restaurant' ? this.data.restaurants : this.data.activities;
-                const business = businesses.find(b => b.id === businessId);
-                if (!business) {
-                    console.error('Business not found:', businessId);
+            
+            addBusinessSignupBanner(container) {
+                const banner = document.createElement('div');
+                banner.className = 'business-signup-banner';
+                banner.innerHTML = `
+                    <h3>🏪 Own a Business in Hoi An?</h3>
+                    <p>Get featured and reach 100+ travelers daily</p>
+                    <div class="cta-button" onclick="CLASSIFIED.showBusinessSignup()">
+                        Join Our Partners 🚀
+                    </div>
+                `;
+                
+                // Insert after the 3rd business card
+                const businessCards = container.querySelectorAll('.business-card');
+                if (businessCards.length >= 3) {
+                    businessCards[2].insertAdjacentElement('afterend', banner);
+                } else {
+                    container.appendChild(banner);
+                }
+            },
+            
+            showBusinessSignup() {
+                const modal = document.createElement('div');
+                modal.className = 'business-signup-modal';
+                modal.innerHTML = `
+                    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px;" onclick="this.remove()">
+                        <div style="background: #2a2a2a; border-radius: 20px; padding: 30px; max-width: 400px; width: 100%; border: 1px solid rgba(255,255,255,0.1);" onclick="event.stopPropagation()">
+                            <h3 style="margin: 0 0 20px 0; text-align: center; color: #FFD700;">🏪 Partner with CLASSIFIED</h3>
+                            
+                            <div style="background: rgba(0,212,255,0.1); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                                <h4 style="margin: 0 0 10px 0; color: #00D4FF;">What You Get:</h4>
+                                <ul style="margin: 0; padding-left: 20px; opacity: 0.9;">
+                                    <li>Direct access to 100+ travelers</li>
+                                    <li>Featured placement in app</li>
+                                    <li>Custom promotion tools</li>
+                                    <li>Real-time customer insights</li>
+                                </ul>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <input type="text" placeholder="Business Name" id="quickBusinessName" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white;">
+                                <input type="email" placeholder="Email Address" id="quickBusinessEmail" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white;">
+                                <input type="tel" placeholder="WhatsApp Number" id="quickBusinessPhone" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white;">
+                                <select id="quickBusinessType" style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white;">
+                                    <option value="">Select Business Type</option>
+                                    <option value="restaurant">Restaurant/Bar</option>
+                                    <option value="activity">Activity/Tour</option>
+                                    <option value="accommodation">Hotel/Hostel</option>
+                                    <option value="retail">Shop/Retail</option>
+                                </select>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="this.closest('.business-signup-modal').remove()" style="flex: 1; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; cursor: pointer;">
+                                    Cancel
+                                </button>
+                                <button onclick="CLASSIFIED.submitQuickBusinessSignup()" style="flex: 2; padding: 12px; background: linear-gradient(135deg, #FFD700, #FF6B6B); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+                                    Join Waitlist 🚀
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+            },
+            
+            async submitQuickBusinessSignup() {
+                const name = document.getElementById('quickBusinessName').value;
+                const email = document.getElementById('quickBusinessEmail').value;
+                const phone = document.getElementById('quickBusinessPhone').value;
+                const type = document.getElementById('quickBusinessType').value;
+                
+                if (!name || !email || !phone || !type) {
+                    alert('Please fill in all fields');
                     return;
                 }
-                // Show profile overlay
-                const profile = document.getElementById('businessProfile');
-                profile.classList.add('show');
-                this.state.isProfileOpen = true;
-                this.state.currentBusiness = { business, type };
-                // Populate profile data
-                document.getElementById('profileHeaderTitle').textContent = business.name;
-                document.getElementById('profileHero').style.backgroundImage = `url('${business.image}')`;
-                document.getElementById('profileName').textContent = business.name;
-                document.getElementById('profileType').textContent = business.type;
-                document.getElementById('profilePromoTitle').textContent = business.promo;
-                document.getElementById('profilePromoDetails').textContent = business.details;
-                document.getElementById('profileDescription').textContent = business.description;
-                document.getElementById('profileLocation').textContent = business.location;
-                document.getElementById('profileHours').textContent = business.hours;
-                document.getElementById('profilePrice').textContent = business.price;
-                document.getElementById('profileContact').textContent = business.contact;
-            },
-            closeBusinessProfile() {
-                console.log('🔙 Closing business profile');
-                document.getElementById('businessProfile').classList.remove('show');
-                this.state.isProfileOpen = false;
-                this.state.currentBusiness = null;
-            },
-            shareBusinessProfile() {
-                if (this.state.currentBusiness) {
-                    const business = this.state.currentBusiness.business;
-                    const shareText = `Check out ${business.name} in Hoi An! ${business.promo}`;
-                    if (navigator.share) {
-                        navigator.share({
-                            title: business.name,
-                            text: shareText,
-                            url: window.location.href
-                        });
-                    } else {
-                        navigator.clipboard.writeText(shareText + ' - ' + window.location.href);
-                        alert('Business info copied to clipboard! 📋');
-                    }
+                
+                try {
+                    await window.db.collection('business_waitlist').add({
+                        name: name,
+                        email: email,
+                        whatsapp: phone,
+                        type: type,
+                        status: 'pending',
+                        source: 'main_app',
+                        priority: type === 'restaurant' ? 1 : 2,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    // Close modal and show success
+                    document.querySelector('.business-signup-modal').remove();
+                    
+                    // Show success message
+                    setTimeout(() => {
+                        alert('🎉 Thanks for joining! We\'ll contact you within 24 hours via WhatsApp to set up your business profile.');
+                    }, 300);
+                    
+                    console.log('✅ Quick business signup completed');
+                    
+                } catch (error) {
+                    console.error('❌ Error submitting business signup:', error);
+                    alert('Error submitting signup: ' + error.message);
                 }
             },
-            getDirections() {
-                if (this.state.currentBusiness) {
-                    const business = this.state.currentBusiness.business;
-                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.location)}`;
-                    window.open(mapsUrl, '_blank');
-                }
-            },
-            // User Feed - Updated for Firebase
+            
+            // 👥 User Feed Management
             async populateUserFeed() {
                 if (!this.state.isAuthenticated) return;
                 
@@ -2872,57 +3882,87 @@
                 try {
                     // Fetch real users from Firebase
                     const snapshot = await window.db.collection('users')
-                        .where('uid', '!=', this.state.currentUser.uid) // Exclude current user
-                        .limit(10)
+                        .where('uid', '!=', this.state.currentUser.uid)
+                        .orderBy('updatedAt', 'desc')
+                        .limit(20)
                         .get();
                     
                     const users = [];
                     snapshot.forEach(doc => {
                         const userData = doc.data();
-                        users.push({
-                            id: doc.id,
-                            name: userData.name || 'Anonymous',
-                            age: userData.age || 25,
-                            image: userData.photos?.[0] || userData.photo || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop',
-                            interests: userData.interests || ['Travel', 'Adventure'],
-                            bio: userData.bio || 'Exploring Hoi An and meeting new people!',
-                            isOnline: Math.random() > 0.5, // Simulate online status
-                            distance: `${Math.floor(Math.random() * 5) + 1} km`,
-                            matchPercentage: Math.floor(Math.random() * 30) + 70,
-                            category: userData.category || 'all'
-                        });
+                        // Only include users with complete profiles
+                        if (userData.name && userData.bio && userData.interests && userData.interests.length > 0) {
+                            users.push({
+                                id: doc.id,
+                                uid: userData.uid,
+                                name: userData.name,
+                                age: userData.age || 25,
+                                image: userData.photos?.[0] || userData.photo || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop',
+                                interests: userData.interests || ['Travel', 'Adventure'],
+                                bio: userData.bio || 'Exploring Hoi An!',
+                                isOnline: userData.isOnline || false,
+                                distance: userData.distance || `${Math.floor(Math.random() * 5) + 1} km`,
+                                matchPercentage: userData.matchPercentage || Math.floor(Math.random() * 30) + 70,
+                                category: userData.category || 'all',
+                                career: userData.career,
+                                lookingFor: userData.lookingFor
+                            });
+                        }
                     });
                     
-                    // If no users found, show demo users
-                    if (users.length === 0) {
-                        container.innerHTML = `
-                            <div style="text-align: center; padding: 40px; opacity: 0.7;">
-                                <div style="font-size: 48px; margin-bottom: 20px;">👥</div>
-                                <div style="font-size: 18px; margin-bottom: 10px;">No travelers nearby yet!</div>
-                                <div style="font-size: 14px;">Be the first to complete your profile and start connecting.</div>
+                    // Show user count
+                    const userCount = users.length;
+                    console.log(`👥 Found ${userCount} users in feed`);
+                    
+                    // If we have real users, display them
+                    if (users.length > 0) {
+                        container.innerHTML = '';
+                        users.forEach((user, index) => {
+                            const feedItem = this.createUserFeedItem(user, index);
+                            container.appendChild(feedItem);
+                        });
+                        
+                        // Add activity indicator
+                        const activityIndicator = document.createElement('div');
+                        activityIndicator.innerHTML = `
+                            <div style="text-align: center; padding: 20px; background: rgba(0,212,255,0.1); margin: 20px 0; border-radius: 15px;">
+                                <h3>🔥 ${userCount} travelers active in Hoi An</h3>
+                                <p>Join the community and start connecting!</p>
                             </div>
                         `;
-                        return;
+                        container.appendChild(activityIndicator);
+                        
+                    } else {
+                        // Show encouraging message for first users
+                        container.innerHTML = `
+                            <div style="text-align: center; padding: 40px; opacity: 0.9;">
+                                <div style="font-size: 48px; margin-bottom: 20px;">🚀</div>
+                                <div style="font-size: 20px; margin-bottom: 15px; color: #00D4FF;">Be the first!</div>
+                                <div style="font-size: 16px; margin-bottom: 10px;">You're among the first travelers to join CLASSIFIED.</div>
+                                <div style="font-size: 14px; opacity: 0.7;">Complete your profile and invite friends to start connecting!</div>
+                                <button onclick="CLASSIFIED.shareApp()" style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; border-radius: 25px; color: white; font-weight: 600; cursor: pointer;">
+                                    Share CLASSIFIED 🚀
+                                </button>
+                            </div>
+                        `;
                     }
                     
-                    // Populate with real users
-                    container.innerHTML = '';
-                    users.forEach((user, index) => {
-                        const feedItem = this.createUserFeedItem(user, index);
-                        container.appendChild(feedItem);
-                    });
-                    
-                    console.log(`👥 User feed populated with ${users.length} real users`);
                 } catch (error) {
                     console.error('❌ Error loading users:', error);
-                    // Fallback to demo users
-                    container.innerHTML = '';
-                    this.data.users.forEach((user, index) => {
-                        const feedItem = this.createUserFeedItem(user, index);
-                        container.appendChild(feedItem);
-                    });
+                    // Show error message
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; opacity: 0.7;">
+                            <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+                            <div style="font-size: 18px; margin-bottom: 10px;">Unable to load users</div>
+                            <div style="font-size: 14px;">Please check your internet connection and try again.</div>
+                            <button onclick="CLASSIFIED.populateUserFeed()" style="margin-top: 20px; padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 25px; color: white; cursor: pointer;">
+                                Try Again
+                            </button>
+                        </div>
+                    `;
                 }
             },
+            
             filterUsers(filter) {
                 console.log(`🔍 Filtering users by: ${filter}`);
                 // Update active filter chip
@@ -2930,6 +3970,7 @@
                     chip.classList.remove('active');
                 });
                 document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+                
                 // Filter users based on criteria
                 let filteredUsers = this.data.users;
                 if (filter === 'online') {
@@ -2942,6 +3983,7 @@
                 } else if (filter === 'nomads') {
                     filteredUsers = this.data.users.filter(user => user.category === 'nomads');
                 }
+                
                 // Re-populate feed with filtered users
                 const container = document.getElementById('userFeedContainer');
                 container.innerHTML = '';
@@ -2950,6 +3992,7 @@
                     container.appendChild(feedItem);
                 });
             },
+            
             createUserFeedItem(user, index) {
                 const feedItem = document.createElement('div');
                 feedItem.className = 'user-feed-item';
@@ -2989,58 +4032,131 @@
                 `;
                 return feedItem;
             },
+            
+            // 👤 User Profile Management
+            openUserProfile(user) {
+                console.log(`👤 Opening ${user.name}'s profile`);
+                document.getElementById('userProfileView').classList.add('show');
+                this.state.isUserProfileOpen = true;
+                this.state.currentViewedUser = user;
+                
+                // Populate user profile data
+                document.getElementById('userProfileTitle').textContent = user.name;
+                document.getElementById('userProfileHero').style.backgroundImage = `url('${user.image}')`;
+                document.getElementById('userProfileName').textContent = user.name;
+                document.getElementById('userProfileAge').textContent = `${user.age} years old`;
+                document.getElementById('userProfileMatch').textContent = `${user.matchPercentage}% Match`;
+                document.getElementById('userProfileBio').textContent = user.bio;
+                document.getElementById('userProfileDistance').textContent = user.distance;
+                document.getElementById('userProfileStatus').textContent = user.isOnline ? 'Online Now' : 'Offline';
+                document.getElementById('userProfileCategory').textContent = user.category === 'nomads' ? 'Digital Nomad' : 'Traveler';
+                
+                // Update interests
+                const interestsContainer = document.getElementById('userProfileInterests');
+                interestsContainer.innerHTML = user.interests.map(interest => 
+                    `<span class="interest-tag">${interest}</span>`
+                ).join('');
+            },
+            
+            closeUserProfile() {
+                console.log('🔙 Closing user profile');
+                document.getElementById('userProfileView').classList.remove('show');
+                this.state.isUserProfileOpen = false;
+                this.state.currentViewedUser = null;
+            },
+            
+            startChatWithViewedUser() {
+                if (this.state.currentViewedUser) {
+                    const user = this.state.currentViewedUser;
+                    this.closeUserProfile();
+                    setTimeout(() => {
+                        this.openChatWithUser(user.name);
+                    }, 300);
+                }
+            },
+            
+            openProfileFromChat() {
+                console.log('🔍 Opening profile from chat');
+                console.log('Current chat user state:', this.state.currentChatUser);
+                
+                let user = null;
+                
+                if (this.state.currentChatUser) {
+                    user = this.state.currentChatUser;
+                    console.log('✅ Found user from currentChatUser:', user.name);
+                } else {
+                    const chatNameElement = document.getElementById('chatName');
+                    const chatName = chatNameElement ? chatNameElement.textContent.trim() : '';
+                    console.log('🔄 Looking up user by chat name:', chatName);
+                    
+                    if (chatName) {
+                        user = this.data.users.find(u => u.name.trim() === chatName);
+                        if (user) {
+                            console.log('✅ Found user by name lookup:', user.name);
+                            this.state.currentChatUser = user;
+                        }
+                    }
+                }
+                
+                if (user) {
+                    console.log('🚀 Opening user profile for:', user.name);
+                    this.openUserProfile(user);
+                } else {
+                    console.error('❌ Could not find user data');
+                    alert('Could not load user profile. Please try again.');
+                }
+            },
+            
             handleUserAction(action, userName) {
                 console.log(`👆 ${action} action for ${userName}`);
                 
-                // If no userName provided, use current viewed user
                 if (!userName && this.state.currentViewedUser) {
                     userName = this.state.currentViewedUser.name;
                 }
                 
                 if (action === 'like' || action === 'superlike') {
-                    // Close user profile if open
                     if (this.state.isUserProfileOpen) {
                         this.closeUserProfile();
                     }
                     
-                    // Simulate match for Jessica
                     if (userName === 'Jessica') {
                         setTimeout(() => this.showMatchPopup(), 500);
                     } else {
-                        // For other users, show a generic positive response
                         setTimeout(() => {
                             alert(`You liked ${userName}! 💕 They'll be notified when they're online.`);
                         }, 300);
                     }
                 } else if (action === 'pass') {
-                    // Close user profile if open
                     if (this.state.isUserProfileOpen) {
                         this.closeUserProfile();
                     }
-                    // Show a subtle confirmation
                     setTimeout(() => {
                         console.log(`Passed on ${userName}`);
                     }, 300);
                 }
             },
+            
             showMatchPopup() {
                 document.getElementById('matchPopup').classList.add('show');
             },
+            
             startChatFromMatch() {
                 document.getElementById('matchPopup').classList.remove('show');
-                // Use the new method to ensure proper user state
                 this.openChatWithUser('Jessica');
             },
-            // Messaging
+            
+            // 💬 Messaging System
             populateMessaging() {
                 const matchesContainer = document.getElementById('matchesScroll');
                 const chatListContainer = document.getElementById('chatList');
-                // Matches - pass full user object, not just name/avatar
+                
+                // Matches
                 matchesContainer.innerHTML = this.data.users.slice(0, 3).map(user => 
                     `<div class="match-avatar" style="background-image: url('${user.image}')" 
                          onclick="CLASSIFIED.openChatWithUser('${user.name}')"></div>`
                 ).join('');
-                // Chat list - also pass user name to lookup full object
+                
+                // Chat list
                 chatListContainer.innerHTML = this.data.chats.map(chat => 
                     `<div class="chat-item" onclick="CLASSIFIED.openChatWithUser('${chat.name}')">
                         <div class="chat-avatar" style="background-image: url('${chat.avatar}')"></div>
@@ -3051,51 +4167,45 @@
                         <div class="chat-time">${chat.time}</div>
                     </div>`
                 ).join('');
+                
                 console.log('💬 Messaging populated');
             },
+            
+            openChatWithUser(userName) {
+                console.log(`💬 Opening chat with user: ${userName}`);
+                
+                const user = this.data.users.find(u => u.name === userName);
+                
+                if (user) {
+                    console.log('✅ Found user object:', user);
+                    this.state.currentChatUser = user;
+                    this.openChat(user.name, user.image);
+                } else {
+                    console.error('❌ Could not find user:', userName);
+                    this.openChat(userName, '');
+                }
+            },
+            
             openChat(name, avatar) {
                 console.log(`💬 Opening chat with ${name}`);
                 const chat = document.getElementById('individualChat');
                 chat.classList.add('show');
                 this.state.isChatOpen = true;
                 
-                // Find the full user data for the chat
                 const user = this.data.users.find(u => u.name === name);
                 this.state.currentChatUser = user;
-                
-                console.log('✅ Current chat user set to:', this.state.currentChatUser);
                 
                 document.getElementById('chatName').textContent = name;
                 document.getElementById('chatAvatar').style.backgroundImage = `url('${avatar}')`;
             },
-            // New function to handle opening chat with better user lookup
-            openChatWithUser(userName) {
-                console.log(`💬 Opening chat with user: ${userName}`);
-                
-                // First, find the full user object
-                const user = this.data.users.find(u => u.name === userName);
-                
-                if (user) {
-                    console.log('✅ Found user object:', user);
-                    // Set the current chat user BEFORE opening chat
-                    this.state.currentChatUser = user;
-                    
-                    // Now open the chat with full user data
-                    this.openChat(user.name, user.image);
-                } else {
-                    console.error('❌ Could not find user:', userName);
-                    console.log('Available users:', this.data.users.map(u => u.name));
-                    
-                    // Fallback to old method
-                    this.openChat(userName, '');
-                }
-            },
+            
             closeChat() {
                 console.log('🔙 Closing chat');
                 document.getElementById('individualChat').classList.remove('show');
                 this.state.isChatOpen = false;
                 this.state.currentChatUser = null;
             },
+            
             sendMessage() {
                 const input = document.getElementById('messageInput');
                 const messages = document.getElementById('chatMessages');
@@ -3108,22 +4218,134 @@
                     input.value = '';
                     console.log('📨 Message sent');
                 }
+            },
+            
+            // 🏢 Business Profile Management
+            openBusinessProfile(businessId, type) {
+                console.log(`🏪 Opening ${businessId} profile`);
+                const businesses = type === 'restaurant' ? this.data.restaurants : this.data.activities;
+                const business = businesses.find(b => b.id === businessId);
+                if (!business) {
+                    console.error('Business not found:', businessId);
+                    return;
+                }
+                
+                const profile = document.getElementById('businessProfile');
+                profile.classList.add('show');
+                this.state.isProfileOpen = true;
+                this.state.currentBusiness = { business, type };
+                
+                // Populate profile data
+                document.getElementById('profileHeaderTitle').textContent = business.name;
+                document.getElementById('profileHero').style.backgroundImage = `url('${business.image}')`;
+                document.getElementById('profileName').textContent = business.name;
+                document.getElementById('profileType').textContent = business.type;
+                document.getElementById('profilePromoTitle').textContent = business.promo;
+                document.getElementById('profilePromoDetails').textContent = business.details;
+                document.getElementById('profileDescription').textContent = business.description;
+                document.getElementById('profileLocation').textContent = business.location;
+                document.getElementById('profileHours').textContent = business.hours;
+                document.getElementById('profilePrice').textContent = business.price;
+                document.getElementById('profileContact').textContent = business.contact;
+            },
+            
+            closeBusinessProfile() {
+                console.log('🔙 Closing business profile');
+                document.getElementById('businessProfile').classList.remove('show');
+                this.state.isProfileOpen = false;
+                this.state.currentBusiness = null;
+            },
+            
+            shareBusinessProfile() {
+                if (this.state.currentBusiness) {
+                    const business = this.state.currentBusiness.business;
+                    const shareText = `Check out ${business.name} in Hoi An! ${business.promo}`;
+                    if (navigator.share) {
+                        navigator.share({
+                            title: business.name,
+                            text: shareText,
+                            url: window.location.href
+                        });
+                    } else {
+                        navigator.clipboard.writeText(shareText + ' - ' + window.location.href);
+                        alert('Business info copied to clipboard! 📋');
+                    }
+                }
+            },
+            
+            getDirections() {
+                if (this.state.currentBusiness) {
+                    const business = this.state.currentBusiness.business;
+                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.location)}`;
+                    window.open(mapsUrl, '_blank');
+                }
+            },
+            
+            // 🔥 Growth Features
+            initGrowthFeatures() {
+                this.checkReferralCode();
+                
+                // Show social proof notifications every 30 seconds
+                setInterval(() => {
+                    if (this.state.isAuthenticated && Math.random() > 0.5) {
+                        this.showSocialProof();
+                    }
+                }, 30000);
+                
+                // Show user growth features after 10 seconds
+                setTimeout(() => {
+                    if (this.state.isAuthenticated) {
+                        this.showUserGrowthFeatures();
+                    }
+                }, 10000);
+            },
+            
+            showSocialProof() {
+                const proofs = [
+                    '🎉 Sarah just found her adventure buddy!',
+                    '🍻 Mike discovered 3 new bars this week',
+                    '📸 Emma shared amazing photos from her food tour',
+                    '🎵 Dave found the perfect live music venue',
+                    '🌟 Jessica made 5 new connections today'
+                ];
+                
+                const randomProof = proofs[Math.floor(Math.random() * proofs.length)];
+                
+                const notification = document.createElement('div');
+                notification.className = 'social-proof-notification';
+                notification.textContent = randomProof;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 4000);
+            },
+            
+            showUserGrowthFeatures() {
+                const referralBanner = document.createElement('div');
+                referralBanner.className = 'referral-banner';
+                referralBanner.innerHTML = `
+                    <h3>🎉 Invite Friends & Get Premium!</h3>
+                    <p>Both you and your friend get 1 week premium features</p>
+                    <div class="btn-group">
+                        <button onclick="CLASSIFIED.shareApp()">Share App 📱</button>
+                        <button onclick="CLASSIFIED.showReferralCode()">My Code 🔑</button>
+                    </div>
+                `;
+                
+                // Add to restaurant screen after stories
+                const restaurantStories = document.getElementById('restaurantStories');
+                if (restaurantStories) {
+                    restaurantStories.parentElement.insertAdjacentElement('afterend', referralBanner);
+                }
             }
         };
-        // Make CLASSIFIED globally available for onclick handlers
+        
+        // Make CLASSIFIED globally available
         window.CLASSIFIED = CLASSIFIED;
         
-        // Also add a simple test function
-        window.testChatClick = function() {
-            console.log('🧪 Test function called - onclick is working!');
-            if (window.CLASSIFIED && window.CLASSIFIED.openProfileFromChat) {
-                window.CLASSIFIED.openProfileFromChat();
-            } else {
-                console.error('CLASSIFIED.openProfileFromChat not found');
-            }
-        };
-        
-        // Initialize app when DOM is ready - FIXED: This was missing!
+        // Initialize app when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 DOM loaded, initializing CLASSIFIED...');
             CLASSIFIED.init();

@@ -1387,6 +1387,19 @@
             text-align: center;
             color: #FF6B6B;
         }
+
+        /* Message time display */
+        .message-time {
+            font-size: 11px;
+            opacity: 0.6;
+            margin-top: 4px;
+        }
+        .message.sent .message-time {
+            text-align: right;
+        }
+        .message.received .message-time {
+            text-align: left;
+        }
         
         /* Referral Banner */
         .referral-banner {

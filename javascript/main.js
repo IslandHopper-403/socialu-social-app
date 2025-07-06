@@ -2232,35 +2232,35 @@ renderDemoUserFeed(users, container) {
     });
 },
     
-    filterUsers(filter) {
-        console.log(`🔍 Filtering users by: ${filter}`);
-        // Update active filter chip
-        document.querySelectorAll('.filter-chip').forEach(chip => {
-            chip.classList.remove('active');
+filterUsers(filter) {
+    console.log(`🔍 Filtering users by: ${filter}`);
+    // Update active filter chip
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.classList.remove('active');
+    });
+    document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+    
+    // Filter users based on criteria using allUsers
+    let filteredUsers = this.state.allUsers || [];
+    if (filter === 'online') {
+        filteredUsers = filteredUsers.filter(user => user.isOnline);
+    } else if (filter === 'nearby') {
+        filteredUsers = filteredUsers.filter(user => {
+            const distance = parseFloat(user.distance);
+            return distance < 2; // Within 2km
         });
-        document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
-        
-        // Filter users based on criteria
-        let filteredUsers = this.data.users;
-        if (filter === 'online') {
-            filteredUsers = this.data.users.filter(user => user.isOnline);
-        } else if (filter === 'nearby') {
-            filteredUsers = this.data.users.filter(user => {
-                const distance = parseFloat(user.distance);
-                return distance < 2; // Within 2km
-            });
-        } else if (filter === 'nomads') {
-            filteredUsers = this.data.users.filter(user => user.category === 'nomads');
-        }
-        
-        // Re-populate feed with filtered users
-        const container = document.getElementById('userFeedContainer');
-        container.innerHTML = '';
-        filteredUsers.forEach((user, index) => {
-            const feedItem = this.createUserFeedItem(user, index);
-            container.appendChild(feedItem);
-        });
-    },
+    } else if (filter === 'nomads') {
+        filteredUsers = filteredUsers.filter(user => user.category === 'nomads');
+    }
+    
+    // Re-populate feed with filtered users
+    const container = document.getElementById('userFeedContainer');
+    container.innerHTML = '';
+    filteredUsers.forEach((user, index) => {
+        const feedItem = this.createUserFeedItem(user, index);
+        container.appendChild(feedItem);
+    });
+},
     
     createUserFeedItem(user, index) {
         const feedItem = document.createElement('div');

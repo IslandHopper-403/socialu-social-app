@@ -30,7 +30,7 @@ const CLASSIFIED = {
     // Point to modular config
     config: state.config,
     
-    // Point to modular data
+    // Point to modular data - make sure this includes all properties
     data: mockData,
     
     // Initialize App (your existing init method goes here)

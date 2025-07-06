@@ -2381,36 +2381,77 @@ renderDemoUserFeed(users, container) {
     },
     
     async handleUserAction(action, userName) {
-        console.log(`👆 ${action} action for ${userName}`);
-        
-        if (!userName && this.state.currentViewedUser) {
-            userName = this.state.currentViewedUser.name;
+    console.log(`👆 ${action} action for ${userName}`);
+    
+    // Prevent self-interaction
+    if (userName === this.state.userProfile.name) {
+        console.log('❌ Cannot interact with your own profile');
+        return;
+    }
+    
+    // Find user in combined data
+    let targetUser = this.state.currentViewedUser;
+    
+    if (!targetUser && userName) {
+        // Search in allUsers (combined Firebase + demo users)
+        targetUser = this.state.allUsers.find(u => u.name === userName);
+    }
+    
+    if (!targetUser) {
+        console.error('❌ Could not find target user in allUsers:', userName);
+        console.log('Available users:', this.state.allUsers.map(u => u.name));
+        return;
+    }
+    
+    // Check if it's a demo user
+    if (this.state.isDemoUser(targetUser.uid)) {
+        await this.handleDemoUserInteraction(action, targetUser);
+    } else {
+        await this.handleRealUserInteraction(action, targetUser);
+    }
+},
+
+// Add these new methods right after handleUserAction
+async handleDemoUserInteraction(action, demoUser) {
+    if (action === 'like' || action === 'superlike') {
+        // Close profile if open
+        if (this.state.isUserProfileOpen) {
+            this.closeUserProfile();
         }
         
-        const targetUser = this.state.currentViewedUser || this.data.users.find(u => u.name === userName);
-        
-        if (!targetUser) {
-            console.error('❌ Could not find target user');
-            return;
+        // Simulate match with demo user
+        setTimeout(() => {
+            alert(`🎉 ${demoUser.name} likes you too! (Demo match)`);
+            this.showMatchPopup(demoUser.name);
+            
+            // Store for chat
+            this.state.lastMatchedUser = {
+                id: demoUser.uid,
+                name: demoUser.name,
+                avatar: demoUser.image
+            };
+        }, 1000);
+    } else if (action === 'pass') {
+        if (this.state.isUserProfileOpen) {
+            this.closeUserProfile();
         }
-        
-        if (action === 'like' || action === 'superlike') {
-            // Use proper user ID from Firebase
-            const targetUserId = targetUser.uid || targetUser.id;
-            
-            if (this.state.isUserProfileOpen) {
-                this.closeUserProfile();
-            }
-            
-            await this.handleUserLike(targetUserId, userName);
-            
-        } else if (action === 'pass') {
-            if (this.state.isUserProfileOpen) {
-                this.closeUserProfile();
-            }
-            console.log(`Passed on ${userName}`);
+        console.log(`Passed on demo user ${demoUser.name}`);
+    }
+},
+
+async handleRealUserInteraction(action, realUser) {
+    if (action === 'like' || action === 'superlike') {
+        if (this.state.isUserProfileOpen) {
+            this.closeUserProfile();
         }
-    },
+        await this.handleUserLike(realUser.uid, realUser.name);
+    } else if (action === 'pass') {
+        if (this.state.isUserProfileOpen) {
+            this.closeUserProfile();
+        }
+        console.log(`Passed on ${realUser.name}`);
+    }
+},
     
     showMatchPopup() {
         document.getElementById('matchPopup').classList.add('show');

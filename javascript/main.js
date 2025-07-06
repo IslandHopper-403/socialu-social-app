@@ -2930,32 +2930,49 @@ async handleRealUserInteraction(action, realUser) {
     },
     
     // Updated openChatWithUser to work with real-time messaging
-    async openChatWithUser(userName) {
-        console.log(`💬 Opening chat with user: ${userName}`);
+async openChatWithUser(userName) {
+    console.log(`💬 Opening chat with user: ${userName}`);
+    
+    // Find user in combined data
+    const user = this.state.allUsers.find(u => u.name === userName);
+    
+    if (user) {
+        console.log('✅ Found user in allUsers:', user);
+        this.state.currentChatUser = user;
         
-        const user = this.data.users.find(u => u.name === userName);
-        
-        if (user) {
-            console.log('✅ Found user object:', user);
-            this.state.currentChatUser = user;
-            
-            // For demo users, generate a temporary ID
-            const userId = user.uid || `demo_${userName.toLowerCase().replace(/\s/g, '_')}`;
-            user.uid = userId;
-            
-            // Get or create chat
-            const chatId = await this.getOrCreateChat(userId, userName);
-            
-            // Open chat UI
+        if (this.state.isDemoUser(user.uid)) {
+            // Handle demo chat
             this.openChat(user.name, user.image);
-            
-            // Start listening for messages
-            this.listenForChatMessages(chatId);
+            this.showDemoChat(user);
         } else {
-            console.error('❌ Could not find user:', userName);
-            this.openChat(userName, '');
+            // Real Firebase chat
+            const chatId = await this.getOrCreateChat(user.uid, user.name);
+            this.openChat(user.name, user.image);
+            this.listenForChatMessages(chatId);
         }
-    },
+    } else {
+        console.error('❌ Could not find user:', userName);
+        console.log('Available users:', this.state.allUsers.map(u => u.name));
+    }
+},
+
+// Add this method for demo chat
+showDemoChat(demoUser) {
+    const container = document.getElementById('chatMessages');
+    const demoMessages = [
+        { text: "Hey! Welcome to CLASSIFIED! 👋", sent: false, time: "2m ago" },
+        { text: "This is a demo conversation", sent: false, time: "2m ago" },
+        { text: `I'm ${demoUser.name}, one of the demo users`, sent: false, time: "1m ago" },
+        { text: "In the real app, you'll chat with actual travelers!", sent: false, time: "1m ago" }
+    ];
+    
+    container.innerHTML = demoMessages.map(msg => `
+        <div class="message ${msg.sent ? 'sent' : 'received'}">
+            <div class="message-bubble">${msg.text}</div>
+            <div class="message-time">${msg.time}</div>
+        </div>
+    `).join('');
+},
     
     closeChat() {
         console.log('🔙 Closing chat');

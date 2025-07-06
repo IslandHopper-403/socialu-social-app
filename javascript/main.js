@@ -23,68 +23,70 @@ const state = window.AppState || {};
 const mockData = window.MockData || {};
 const helpers = window.Helpers || {};
 
-// Update CLASSIFIED object to use new modules
 const CLASSIFIED = {
-    // Point to new state
+    // Point to modular state
     state: state,
     
-    // Point to new data
-    data: mockData,
-    
-    // Keep existing config but it will move later
+    // Point to modular config
     config: state.config,
     
-    // Your existing methods stay the same for now...
-    // We'll migrate them piece by piece
-
-const CLASSIFIED = {
-    // Enhanced App State Management
-    state: {
-        currentScreen: 'restaurant',
-        currentSocialTab: 'userFeed',
-        currentBusiness: null,
-        currentViewedUser: null,
-        currentChatUser: null,
-        currentUser: null,
-        isAuthenticated: false,
-        isGuestMode: false,
-        isProfileOpen: false,
-        isChatOpen: false,
-        isProfileEditorOpen: false,
-        isUserProfileOpen: false,
-        isBusinessProfileEditorOpen: false,
-        currentUploadSlot: null,
-        currentBusinessUploadSlot: null,
-        userProfile: {
-            name: '',
-            age: '',
-            bio: '',
-            birthday: '',
-            zodiac: '',
-            height: '',
-            career: '',
-            interests: [],
-            priority: '',
-            relationship: '',
-            lookingFor: '',
-            marriage: '',
-            photos: [],
-            referralCode: ''
-        },
-        businessProfile: {
-            name: '',
-            type: '',
-            description: '',
-            address: '',
-            phone: '',
-            hours: '',
-            priceRange: '',
-            promoTitle: '',
-            promoDetails: '',
-            photos: []
-        },
-        firebaseReady: false
+    // Point to modular data
+    data: mockData,
+    
+    // Initialize App (your existing init method goes here)
+    init() {
+        console.log('🚀 Starting CLASSIFIED v7.0...');
+        
+        // Wait for Firebase to be ready
+        this.waitForFirebase().then(() => {
+            console.log('✅ Firebase is ready');
+            
+            // Setup authentication listener
+            this.setupAuthListener();
+            
+            // Setup event listeners
+            this.setupEventListeners();
+            
+            // Populate static content
+            this.populateFeeds();
+            this.setupProfileEditor();
+            
+            // Initialize growth features
+            this.initGrowthFeatures();
+            
+            console.log('✅ CLASSIFIED app ready!');
+        }).catch(error => {
+            console.error('❌ Error waiting for Firebase:', error);
+        });
     },
+    
+    // Wait for Firebase to be ready (your existing method)
+    waitForFirebase() {
+        return new Promise((resolve, reject) => {
+            let attempts = 0;
+            const maxAttempts = 50;
+            
+            const checkFirebase = () => {
+                attempts++;
+                
+                if (window.auth && window.db && window.storage) {
+                    this.state.config.firebaseReady = true;
+                    resolve();
+                } else if (attempts >= maxAttempts) {
+                    reject(new Error('Firebase failed to initialize'));
+                } else {
+                    setTimeout(checkFirebase, 100);
+                }
+            };
+            
+            checkFirebase();
+        });
+    },
+    
+    // ALL YOUR OTHER EXISTING METHODS GO HERE
+    // (setupAuthListener, checkIfBusiness, etc.)
+    // Don't delete any of your methods, just keep them as they are
+
     
     // Enhanced App Data
     data: {

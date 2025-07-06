@@ -2150,7 +2150,7 @@ async populateUserFeed() {
         
         console.log('🔍 Demo users available:', this.data.users?.length || 0);
         
-        if (this.config.enableDemoData) {
+        if (this.state.config.enableDemoData) {
             // Get demo users (excluding any with same names as real users)
             const demoUsers = this.data.users.filter(user => 
                 user.name !== this.state.userProfile.name
@@ -2159,8 +2159,8 @@ async populateUserFeed() {
         }
         
         // Ensure minimum users
-        if (allUsers.length < this.config.minUsersToShow && this.config.enableDemoData) {
-            const needed = this.config.minUsersToShow - allUsers.length;
+       if (allUsers.length < this.state.config.minUsersToShow && this.state.config.enableDemoData) {
+            const needed = this.state.config.minUsersToShow - allUsers.length;
             const additionalDemo = window.MockData.generateDemoUsers(needed);
             allUsers = [...allUsers, ...additionalDemo];
         }
@@ -2215,7 +2215,7 @@ async populateUserFeed() {
     } catch (error) {
         console.error('❌ Error loading users:', error);
         // Fallback to demo data
-        if (this.config.enableDemoData) {
+        if (this.state.config.enableDemoData) {
             const demoUsers = this.data.users;
             this.state.allUsers = demoUsers;
             this.renderDemoUserFeed(demoUsers, container);

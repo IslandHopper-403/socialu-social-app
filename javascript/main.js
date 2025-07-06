@@ -2100,96 +2100,137 @@ const CLASSIFIED = {
     },
     
     // 👥 User Feed Management
-    async populateUserFeed() {
-        if (!this.state.isAuthenticated) return;
+async populateUserFeed() {
+    if (!this.state.isAuthenticated) return;
+    
+    const container = document.getElementById('userFeedContainer');
+    container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    
+    try {
+        // Fetch real users from Firebase
+        const snapshot = await window.db.collection('users')
+            .orderBy('updatedAt', 'desc')
+            .limit(50)
+            .get();
         
-        const container = document.getElementById('userFeedContainer');
-        container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-        
-        try {
-            // Fetch real users from Firebase
-            const snapshot = await window.db.collection('users')
-                .where('uid', '!=', this.state.currentUser.uid)
-                .orderBy('uid')
-                .orderBy('updatedAt', 'desc')
-                .limit(20)
-                .get();
-            
-            const users = [];
-            snapshot.forEach(doc => {
-                const userData = doc.data();
-                // Only include users with complete profiles
-                if (userData.name && userData.bio && userData.interests && userData.interests.length > 0) {
-                    users.push({
-                        id: doc.id,
-                        uid: userData.uid,
-                        name: userData.name,
-                        age: userData.age || 25,
-                        image: userData.photos?.[0] || userData.photo || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop',
-                        interests: userData.interests || ['Travel', 'Adventure'],
-                        bio: userData.bio || 'Exploring Hoi An!',
-                        isOnline: userData.isOnline || false,
-                        distance: userData.distance || `${Math.floor(Math.random() * 5) + 1} km`,
-                        matchPercentage: userData.matchPercentage || Math.floor(Math.random() * 30) + 70,
-                        category: userData.category || 'all',
-                        career: userData.career,
-                        lookingFor: userData.lookingFor
-                    });
-                }
-            });
-            
-            // Show user count
-            const userCount = users.length;
-            console.log(`👥 Found ${userCount} users in feed`);
-            
-            // If we have real users, display them
-            if (users.length > 0) {
-                container.innerHTML = '';
-                users.forEach((user, index) => {
-                    const feedItem = this.createUserFeedItem(user, index);
-                    container.appendChild(feedItem);
-                });
-                
-                // Add activity indicator
-                const activityIndicator = document.createElement('div');
-                activityIndicator.innerHTML = `
-                    <div style="text-align: center; padding: 20px; background: rgba(0,212,255,0.1); margin: 20px 0; border-radius: 15px;">
-                        <h3>🔥 ${userCount} travelers active in Hoi An</h3>
-                        <p>Join the community and start connecting!</p>
-                    </div>
-                `;
-                container.appendChild(activityIndicator);
-                
-            } else {
-                // Show encouraging message for first users
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; opacity: 0.9;">
-                        <div style="font-size: 48px; margin-bottom: 20px;">🚀</div>
-                        <div style="font-size: 20px; margin-bottom: 15px; color: #00D4FF;">Be the first!</div>
-                        <div style="font-size: 16px; margin-bottom: 10px;">You're among the first travelers to join CLASSIFIED.</div>
-                        <div style="font-size: 14px; opacity: 0.7;">Complete your profile and invite friends to start connecting!</div>
-                        <button onclick="CLASSIFIED.shareApp()" style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; border-radius: 25px; color: white; font-weight: 600; cursor: pointer;">
-                            Share CLASSIFIED 🚀
-                        </button>
-                    </div>
-                `;
+        const firebaseUsers = [];
+        snapshot.forEach(doc => {
+            // Skip current user
+            if (doc.id === this.state.currentUser.uid) {
+                console.log('Skipping current user:', doc.id);
+                return;
             }
             
-        } catch (error) {
-            console.error('❌ Error loading users:', error);
-            // Show error message
+            const userData = doc.data();
+            if (userData.name && userData.bio) {
+                firebaseUsers.push({
+                    id: doc.id,
+                    uid: doc.id,
+                    name: userData.name,
+                    age: userData.age || helpers.calculateAge(userData.birthday),
+                    image: userData.photos?.[0] || userData.photo || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop',
+                    interests: userData.interests || ['Travel', 'Adventure'],
+                    bio: userData.bio,
+                    isOnline: userData.isOnline || false,
+                    distance: userData.distance || `${Math.floor(Math.random() * 5) + 1} km`,
+                    matchPercentage: userData.matchPercentage || Math.floor(Math.random() * 30) + 70,
+                    category: userData.category || 'all',
+                    career: userData.career,
+                    lookingFor: userData.lookingFor,
+                    isDemo: false
+                });
+            }
+        });
+        
+        // Store Firebase users
+        this.state.firebaseUsers = firebaseUsers;
+        
+        // Combine with demo data if enabled
+        let allUsers = [...firebaseUsers];
+        
+        console.log('🔍 Demo users available:', this.data.users?.length || 0);
+        
+        if (this.config.enableDemoData) {
+            // Get demo users (excluding any with same names as real users)
+            const demoUsers = this.data.users.filter(user => 
+                user.name !== this.state.userProfile.name
+            );
+            allUsers = helpers.mergeUsersWithoutDuplicates(allUsers, demoUsers);
+        }
+        
+        // Ensure minimum users
+        if (allUsers.length < this.config.minUsersToShow && this.config.enableDemoData) {
+            const needed = this.config.minUsersToShow - allUsers.length;
+            const additionalDemo = window.MockData.generateDemoUsers(needed);
+            allUsers = [...allUsers, ...additionalDemo];
+        }
+        
+        // Shuffle for variety
+        allUsers = helpers.shuffleArray(allUsers);
+        
+        // Store combined users - THIS IS IMPORTANT!
+        this.state.allUsers = allUsers;
+        
+        // DEBUG: Check what users we have
+        console.log('📊 Debug - allUsers contents:', allUsers.map(u => ({
+            name: u.name,
+            uid: u.uid,
+            isDemo: u.isDemo
+        })));
+        
+        // Render feed
+        container.innerHTML = '';
+        if (allUsers.length === 0) {
             container.innerHTML = `
-                <div style="text-align: center; padding: 40px; opacity: 0.7;">
-                    <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
-                    <div style="font-size: 18px; margin-bottom: 10px;">Unable to load users</div>
-                    <div style="font-size: 14px;">Please check your internet connection and try again.</div>
-                    <button onclick="CLASSIFIED.populateUserFeed()" style="margin-top: 20px; padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 25px; color: white; cursor: pointer;">
-                        Try Again
+                <div style="text-align: center; padding: 40px; opacity: 0.9;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">🚀</div>
+                    <div style="font-size: 20px; margin-bottom: 15px; color: #00D4FF;">Be the first!</div>
+                    <div style="font-size: 16px; margin-bottom: 10px;">You're among the first travelers to join CLASSIFIED.</div>
+                    <div style="font-size: 14px; opacity: 0.7;">Complete your profile and invite friends to start connecting!</div>
+                    <button onclick="CLASSIFIED.shareApp()" style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; border-radius: 25px; color: white; font-weight: 600; cursor: pointer;">
+                        Share CLASSIFIED 🚀
                     </button>
                 </div>
             `;
+            return;
         }
-    },
+        
+        allUsers.forEach((user, index) => {
+            const feedItem = this.createUserFeedItem(user, index);
+            container.appendChild(feedItem);
+        });
+        
+        // Add activity indicator
+        const activityIndicator = document.createElement('div');
+        activityIndicator.innerHTML = `
+            <div style="text-align: center; padding: 20px; background: rgba(0,212,255,0.1); margin: 20px 0; border-radius: 15px;">
+                <h3>🔥 ${allUsers.length} travelers active in Hoi An</h3>
+                <p>Join the community and start connecting!</p>
+            </div>
+        `;
+        container.appendChild(activityIndicator);
+        
+        console.log(`👥 Found ${firebaseUsers.length} real users, showing ${allUsers.length} total with demo data`);
+        
+    } catch (error) {
+        console.error('❌ Error loading users:', error);
+        // Fallback to demo data
+        if (this.config.enableDemoData) {
+            const demoUsers = this.data.users;
+            this.state.allUsers = demoUsers;
+            this.renderDemoUserFeed(demoUsers, container);
+        }
+    }
+},
+
+// Add this helper method right after populateUserFeed
+renderDemoUserFeed(users, container) {
+    container.innerHTML = '';
+    users.forEach((user, index) => {
+        const feedItem = this.createUserFeedItem(user, index);
+        container.appendChild(feedItem);
+    });
+},
     
     filterUsers(filter) {
         console.log(`🔍 Filtering users by: ${filter}`);

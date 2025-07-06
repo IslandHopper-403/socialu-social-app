@@ -204,3 +204,7 @@ export function generateDemoUsers(count) {
     }
     return demoUsers;
 }
+
+
+// Make globally available during migration
+window.MockData = MockData;

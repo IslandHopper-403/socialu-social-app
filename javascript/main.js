@@ -18,6 +18,25 @@
 // 3. Complete profile → appears in user feed
 // 4. Referral system for growth
 
+// Use the new modular state and data
+const state = window.AppState || {};
+const mockData = window.MockData || {};
+const helpers = window.Helpers || {};
+
+// Update CLASSIFIED object to use new modules
+const CLASSIFIED = {
+    // Point to new state
+    state: state,
+    
+    // Point to new data
+    data: mockData,
+    
+    // Keep existing config but it will move later
+    config: state.config,
+    
+    // Your existing methods stay the same for now...
+    // We'll migrate them piece by piece
+
 const CLASSIFIED = {
     // Enhanced App State Management
     state: {

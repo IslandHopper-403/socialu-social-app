@@ -748,7 +748,31 @@
         <input type="file" id="businessPhotoUpload" accept="image/*" style="display: none;" onchange="CLASSIFIED.handleBusinessPhotoUpload(event)">
     </div>
     
-      <script src="javascript/main.js"></script>
+      <!-- Remove the old script tag -->
+<!-- <script src="javascript/main.js"></script> -->
+
+<!-- Add module support and temporary bridge -->
+<script>
+    // Temporary bridge to support both old and new code
+    window.CLASSIFIED = window.CLASSIFIED || {};
+</script>
+
+<!-- Load the modular code -->
+<script type="module">
+    import { AppState } from './javascript/core/state.js';
+    import { MockData } from './javascript/data/mockData.js';
+    import { Helpers } from './javascript/utils/helpers.js';
+    
+    // Make available globally during migration
+    window.AppState = AppState;
+    window.MockData = MockData;
+    window.Helpers = Helpers;
+    
+    console.log('✅ Modules loaded successfully');
+</script>
+
+<!-- Keep main.js for now but we'll gradually migrate -->
+<script src="javascript/main.js"></script>
 
 </body>
 </html>

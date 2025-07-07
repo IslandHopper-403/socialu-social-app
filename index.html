@@ -748,31 +748,33 @@
         <input type="file" id="businessPhotoUpload" accept="image/*" style="display: none;" onchange="CLASSIFIED.handleBusinessPhotoUpload(event)">
     </div>
     
-      <!-- Remove the old script tag -->
-<!-- <script src="javascript/main.js"></script> -->
+<!-- Bottom of index.html, before </body> -->
 
-<!-- Add module support and temporary bridge -->
+<!-- Load modules first -->
+<script src="javascript/core/state.js"></script>
+<script src="javascript/data/mockData.js"></script>
+<script src="javascript/utils/helpers.js"></script>
+
+<!-- Wait for modules to be defined on window -->
 <script>
-    // Temporary bridge to support both old and new code
-    window.CLASSIFIED = window.CLASSIFIED || {};
+    // Ensure modules are available globally
+    console.log('📦 Loading modules...');
+    
+    // Add a small delay to ensure modules are parsed
+    setTimeout(() => {
+        console.log('📦 Modules loaded:', {
+            AppState: !!window.AppState,
+            MockData: !!window.MockData,
+            AppHelpers: !!window.AppHelpers
+        });
+    }, 10);
 </script>
 
-<!-- Load the modular code -->
-<script type="module">
-    import { AppState } from './javascript/core/state.js';
-    import { MockData } from './javascript/data/mockData.js';
-    import { Helpers } from './javascript/utils/helpers.js';
-    
-    // Make available globally during migration
-    window.AppState = AppState;
-    window.MockData = MockData;
-    window.Helpers = Helpers;
-    
-    console.log('✅ Modules loaded successfully');
-</script>
-
-<!-- Keep main.js for now but we'll gradually migrate -->
+<!-- Load main app last -->
 <script src="javascript/main.js"></script>
+
+</body>
+</html>
 
 </body>
 </html>

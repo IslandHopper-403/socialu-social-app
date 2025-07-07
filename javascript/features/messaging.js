@@ -1,5 +1,4 @@
-    
-    // Initialize messaging listeners
+     // Initialize messaging listeners
     initMessaging() {
         if (!this.state.currentUser) return;
         

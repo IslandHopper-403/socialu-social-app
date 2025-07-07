@@ -41,6 +41,7 @@ const CLASSIFIED = {
         isBusinessProfileEditorOpen: false,
         currentUploadSlot: null,
         currentBusinessUploadSlot: null,
+        loadedUsers: [],
         userProfile: {
             name: '',
             age: '',
@@ -2167,7 +2168,7 @@ async populateUserFeed() {
             
             // CHANGE #3: Store demo users as loaded users
             this.state.loadedUsers = demoUsers;
-            
+
             container.innerHTML = '';
             demoUsers.forEach((user, index) => {
                 const feedItem = this.createUserFeedItem(user, index);

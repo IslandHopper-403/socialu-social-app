@@ -2883,32 +2883,42 @@ service cloud.firestore {
     },
     
     // Updated openChatWithUser to work with real-time messaging
-    async openChatWithUser(userName) {
-        console.log(`💬 Opening chat with user: ${userName}`);
+ async openChatWithUser(userName) {
+    console.log(`💬 Opening chat with user: ${userName}`);
+    
+    // First try to find from current viewed user
+    let user = this.state.currentViewedUser;
+    
+    // If not found, search in loaded users from Firebase
+    if (!user && this.state.loadedUsers) {
+        user = this.state.loadedUsers.find(u => u.name === userName);
+    }
+    
+    // Fallback to demo data
+    if (!user) {
+        user = this.data.users.find(u => u.name === userName);
+    }
+    
+    if (user) {
+        console.log('✅ Found user object:', user);
+        this.state.currentChatUser = user;
         
-        const user = this.data.users.find(u => u.name === userName);
+        const userId = user.uid || user.id || `demo_${userName.toLowerCase().replace(/\s/g, '_')}`;
+        user.uid = userId;
         
-        if (user) {
-            console.log('✅ Found user object:', user);
-            this.state.currentChatUser = user;
-            
-            // For demo users, generate a temporary ID
-            const userId = user.uid || `demo_${userName.toLowerCase().replace(/\s/g, '_')}`;
-            user.uid = userId;
-            
-            // Get or create chat
-            const chatId = await this.getOrCreateChat(userId, userName);
-            
-            // Open chat UI
-            this.openChat(user.name, user.image);
-            
-            // Start listening for messages
-            this.listenForChatMessages(chatId);
-        } else {
-            console.error('❌ Could not find user:', userName);
-            this.openChat(userName, '');
-        }
-    },
+        // Get or create chat
+        const chatId = await this.getOrCreateChat(userId, userName);
+        
+        // Open chat UI
+        this.openChat(user.name, user.image);
+        
+        // Start listening for messages
+        this.listenForChatMessages(chatId);
+    } else {
+        console.error('❌ Could not find user:', userName);
+        alert('Could not find user. Please try again.');
+    }
+}
     
     closeChat() {
         console.log('🔙 Closing chat');

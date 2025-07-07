@@ -23,6 +23,8 @@
 // IMPORTANT: This app requires proper Firestore Security Rules!
 // Add these rules in Firebase Console > Firestore > Rules:
 
+import { CLASSIFIED } from './javascript/core/app.js';
+
 const CLASSIFIED = {
     // Enhanced App State Management
     state: {

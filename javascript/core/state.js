@@ -1,1 +1,49 @@
-
+const CLASSIFIED = {
+    // Enhanced App State Management
+    state: {
+        currentScreen: 'restaurant',
+        currentSocialTab: 'userFeed',
+        currentBusiness: null,
+        currentViewedUser: null,
+        currentChatUser: null,
+        currentUser: null,
+        isAuthenticated: false,
+        isGuestMode: false,
+        isProfileOpen: false,
+        isChatOpen: false,
+        isProfileEditorOpen: false,
+        isUserProfileOpen: false,
+        isBusinessProfileEditorOpen: false,
+        currentUploadSlot: null,
+        currentBusinessUploadSlot: null,
+        userProfile: {
+            name: '',
+            age: '',
+            bio: '',
+            birthday: '',
+            zodiac: '',
+            height: '',
+            career: '',
+            interests: [],
+            priority: '',
+            relationship: '',
+            lookingFor: '',
+            marriage: '',
+            photos: [],
+            referralCode: ''
+        },
+        businessProfile: {
+            name: '',
+            type: '',
+            description: '',
+            address: '',
+            phone: '',
+            hours: '',
+            priceRange: '',
+            promoTitle: '',
+            promoDetails: '',
+            photos: []
+        },
+        firebaseReady: false,
+        isBusinessUser: false
+    },

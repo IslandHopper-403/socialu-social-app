@@ -18,6 +18,11 @@
 // 3. Complete profile → appears in user feed
 // 4. Referral system for growth
 
+// 🎯 CLASSIFIED v7.0 - Complete Business Management System
+// 
+// IMPORTANT: This app requires proper Firestore Security Rules!
+// Add these rules in Firebase Console > Firestore > Rules:
+
 const CLASSIFIED = {
     // Enhanced App State Management
     state: {
@@ -64,7 +69,8 @@ const CLASSIFIED = {
             promoDetails: '',
             photos: []
         },
-        firebaseReady: false
+        firebaseReady: false,
+        isBusinessUser: false
     },
     
     // Enhanced App Data
@@ -227,6 +233,9 @@ const CLASSIFIED = {
     init() {
         console.log('🚀 Starting CLASSIFIED v7.0...');
         
+        // Check if Firebase security rules are configured
+        this.showFirebaseRulesWarning();
+        
         // Wait for Firebase to be ready
         this.waitForFirebase().then(() => {
             console.log('✅ Firebase is ready');
@@ -248,6 +257,12 @@ const CLASSIFIED = {
         }).catch(error => {
             console.error('❌ Error waiting for Firebase:', error);
         });
+    },
+    
+    // Show warning about Firebase rules
+    showFirebaseRulesWarning() {
+        console.warn('⚠️ IMPORTANT: Make sure to configure Firestore Security Rules!');
+        console.warn('Go to Firebase Console > Firestore > Rules and add the rules from the top of main.js file');
     },
     
     // Wait for Firebase to be ready
@@ -2086,7 +2101,7 @@ const CLASSIFIED = {
         container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
         
         try {
-            // Fetch real users from Firebase
+            // Fetch real users from Firebase, excluding current user
             const snapshot = await window.db.collection('users')
                 .where('uid', '!=', this.state.currentUser.uid)
                 .orderBy('uid')
@@ -2140,18 +2155,32 @@ const CLASSIFIED = {
                 container.appendChild(activityIndicator);
                 
             } else {
+                // Add demo users if no real users yet
+                const demoUsers = this.data.users.map(user => ({
+                    ...user,
+                    uid: `demo_${user.name.toLowerCase().replace(/\s/g, '_')}`,
+                    id: `demo_${user.name.toLowerCase().replace(/\s/g, '_')}`
+                }));
+                
+                container.innerHTML = '';
+                demoUsers.forEach((user, index) => {
+                    const feedItem = this.createUserFeedItem(user, index);
+                    container.appendChild(feedItem);
+                });
+                
                 // Show encouraging message for first users
-                container.innerHTML = `
+                const encourageMessage = document.createElement('div');
+                encourageMessage.innerHTML = `
                     <div style="text-align: center; padding: 40px; opacity: 0.9;">
                         <div style="font-size: 48px; margin-bottom: 20px;">🚀</div>
-                        <div style="font-size: 20px; margin-bottom: 15px; color: #00D4FF;">Be the first!</div>
-                        <div style="font-size: 16px; margin-bottom: 10px;">You're among the first travelers to join CLASSIFIED.</div>
-                        <div style="font-size: 14px; opacity: 0.7;">Complete your profile and invite friends to start connecting!</div>
+                        <div style="font-size: 20px; margin-bottom: 15px; color: #00D4FF;">You're among the first!</div>
+                        <div style="font-size: 16px; margin-bottom: 10px;">These are demo profiles. Complete your profile and invite friends to start real connections!</div>
                         <button onclick="CLASSIFIED.shareApp()" style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; border-radius: 25px; color: white; font-weight: 600; cursor: pointer;">
                             Share CLASSIFIED 🚀
                         </button>
                     </div>
                 `;
+                container.appendChild(encourageMessage);
             }
             
         } catch (error) {
@@ -2235,9 +2264,9 @@ const CLASSIFIED = {
                     ${user.interests.map(interest => `<span class="interest-tag">${interest}</span>`).join('')}
                 </div>
                 <div class="user-actions">
-                    <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${user.name}')">✕ Pass</button>
-                    <button class="action-btn chat-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${user.name}')">💬 Chat</button>
-                    <button class="action-btn super-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('superlike', '${user.name}')">⭐ Super</button>
+                    <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${userId}')">✕ Pass</button>
+                    <button class="action-btn chat-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${userId}')">💬 Chat</button>
+                    <button class="action-btn super-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('superlike', '${userId}')">⭐ Super</button>
                 </div>
             </div>
         `;
@@ -2318,35 +2347,63 @@ const CLASSIFIED = {
         }
     },
     
-    async handleUserAction(action, userName) {
-        console.log(`👆 ${action} action for ${userName}`);
+    async handleUserAction(action, userId) {
+        console.log(`👆 ${action} action for user ID: ${userId}`);
         
-        if (!userName && this.state.currentViewedUser) {
-            userName = this.state.currentViewedUser.name;
+        // Find the target user by ID
+        let targetUser = null;
+        
+        // First check current viewed user
+        if (this.state.currentViewedUser && this.state.currentViewedUser.uid === userId) {
+            targetUser = this.state.currentViewedUser;
+        } else {
+            // Try to find in loaded users
+            const userFeedItems = document.querySelectorAll('.user-feed-item');
+            for (const item of userFeedItems) {
+                const buttons = item.querySelectorAll('.action-btn');
+                for (const btn of buttons) {
+                    if (btn.onclick && btn.onclick.toString().includes(userId)) {
+                        // Extract user data from the feed item
+                        const nameElement = item.querySelector('.user-name');
+                        if (nameElement) {
+                            const nameText = nameElement.textContent;
+                            const [name] = nameText.split(',');
+                            targetUser = this.data.users.find(u => u.name === name.trim());
+                            if (targetUser) {
+                                targetUser.uid = userId;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (targetUser) break;
+            }
         }
         
-        const targetUser = this.state.currentViewedUser || this.data.users.find(u => u.name === userName);
-        
         if (!targetUser) {
-            console.error('❌ Could not find target user');
+            console.error('❌ Could not find target user with ID:', userId);
             return;
         }
         
+        console.log('✅ Found target user:', targetUser.name);
+        
         if (action === 'like' || action === 'superlike') {
-            // Use proper user ID from Firebase
-            const targetUserId = targetUser.uid || targetUser.id;
-            
             if (this.state.isUserProfileOpen) {
                 this.closeUserProfile();
             }
             
-            await this.handleUserLike(targetUserId, userName);
+            // For demo users, just show a success message
+            if (userId.startsWith('demo_')) {
+                alert(`You ${action === 'superlike' ? 'super liked' : 'liked'} ${targetUser.name}! 💕\n\nThis is a demo profile. Complete your profile to connect with real users!`);
+            } else {
+                await this.handleUserLike(userId, targetUser.name);
+            }
             
         } else if (action === 'pass') {
             if (this.state.isUserProfileOpen) {
                 this.closeUserProfile();
             }
-            console.log(`Passed on ${userName}`);
+            console.log(`Passed on ${targetUser.name}`);
         }
     },
     
@@ -2418,6 +2475,20 @@ const CLASSIFIED = {
             return chatId;
         } catch (error) {
             console.error('❌ Error creating chat:', error);
+            if (error.code === 'permission-denied') {
+                alert('⚠️ Permission denied. Please configure Firestore security rules as shown in the console.');
+                console.error('Add these rules in Firebase Console > Firestore > Rules:', `
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /chats/{chatId} {
+      allow read: if request.auth != null && 
+        request.auth.uid in resource.data.participants;
+      allow write: if request.auth != null;
+    }
+  }
+}`);
+            }
             throw error;
         }
     },
@@ -2467,7 +2538,11 @@ const CLASSIFIED = {
             
         } catch (error) {
             console.error('❌ Error sending message:', error);
-            alert('Failed to send message. Please try again.');
+            if (error.code === 'permission-denied') {
+                alert('⚠️ Permission denied. Please configure Firestore security rules.');
+            } else {
+                alert('Failed to send message. Please try again.');
+            }
         }
     },
     
@@ -2693,7 +2768,11 @@ const CLASSIFIED = {
             
         } catch (error) {
             console.error('❌ Error handling like:', error);
-            alert('Failed to process like. Please try again.');
+            if (error.code === 'permission-denied') {
+                alert('⚠️ Permission denied. Please configure Firestore security rules as shown in the console.');
+            } else {
+                alert('Failed to process like. Please try again.');
+            }
         }
     },
     
@@ -2714,6 +2793,9 @@ const CLASSIFIED = {
             console.log('✅ Match created!');
         } catch (error) {
             console.error('❌ Error creating match:', error);
+            if (error.code === 'permission-denied') {
+                alert('⚠️ Permission denied. Please configure Firestore security rules.');
+            }
         }
     },
     
@@ -2747,6 +2829,10 @@ const CLASSIFIED = {
                 }
                 
                 this.displayMatches(matches);
+            }, (error) => {
+                if (error.code === 'permission-denied') {
+                    console.log('Cannot load matches - permission denied');
+                }
             });
     },
     

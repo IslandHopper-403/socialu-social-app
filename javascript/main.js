@@ -41,7 +41,6 @@ const CLASSIFIED = {
         isBusinessProfileEditorOpen: false,
         currentUploadSlot: null,
         currentBusinessUploadSlot: null,
-        loadedUsers: [],
         userProfile: {
             name: '',
             age: '',
@@ -2095,116 +2094,110 @@ const CLASSIFIED = {
     },
     
     // 👥 User Feed Management
-async populateUserFeed() {
-    if (!this.state.isAuthenticated) return;
-    
-    const container = document.getElementById('userFeedContainer');
-    container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-    
-    try {
-        // Fetch real users from Firebase, excluding current user
-        const snapshot = await window.db.collection('users')
-            .where('uid', '!=', this.state.currentUser.uid)
-            .orderBy('uid')
-            .orderBy('updatedAt', 'desc')
-            .limit(20)
-            .get();
+    async populateUserFeed() {
+        if (!this.state.isAuthenticated) return;
         
-        const users = [];
-        snapshot.forEach(doc => {
-            const userData = doc.data();
-            // Only include users with complete profiles
-            if (userData.name && userData.bio && userData.interests && userData.interests.length > 0) {
-                users.push({
-                    id: doc.id,
-                    uid: userData.uid || doc.id, // CHANGE #1: Ensure uid is set with fallback
-                    name: userData.name,
-                    age: userData.age || 25,
-                    image: userData.photos?.[0] || userData.photo || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop',
-                    interests: userData.interests || ['Travel', 'Adventure'],
-                    bio: userData.bio || 'Exploring Hoi An!',
-                    isOnline: userData.isOnline || false,
-                    distance: userData.distance || `${Math.floor(Math.random() * 5) + 1} km`,
-                    matchPercentage: userData.matchPercentage || Math.floor(Math.random() * 30) + 70,
-                    category: userData.category || 'all',
-                    career: userData.career,
-                    lookingFor: userData.lookingFor
+        const container = document.getElementById('userFeedContainer');
+        container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+        
+        try {
+            // Fetch real users from Firebase, excluding current user
+            const snapshot = await window.db.collection('users')
+                .where('uid', '!=', this.state.currentUser.uid)
+                .orderBy('uid')
+                .orderBy('updatedAt', 'desc')
+                .limit(20)
+                .get();
+            
+            const users = [];
+            snapshot.forEach(doc => {
+                const userData = doc.data();
+                // Only include users with complete profiles
+                if (userData.name && userData.bio && userData.interests && userData.interests.length > 0) {
+                    users.push({
+                        id: doc.id,
+                        uid: userData.uid,
+                        name: userData.name,
+                        age: userData.age || 25,
+                        image: userData.photos?.[0] || userData.photo || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop',
+                        interests: userData.interests || ['Travel', 'Adventure'],
+                        bio: userData.bio || 'Exploring Hoi An!',
+                        isOnline: userData.isOnline || false,
+                        distance: userData.distance || `${Math.floor(Math.random() * 5) + 1} km`,
+                        matchPercentage: userData.matchPercentage || Math.floor(Math.random() * 30) + 70,
+                        category: userData.category || 'all',
+                        career: userData.career,
+                        lookingFor: userData.lookingFor
+                    });
+                }
+            });
+            
+            // Show user count
+            const userCount = users.length;
+            console.log(`👥 Found ${userCount} users in feed`);
+            
+            // If we have real users, display them
+            if (users.length > 0) {
+                container.innerHTML = '';
+                users.forEach((user, index) => {
+                    const feedItem = this.createUserFeedItem(user, index);
+                    container.appendChild(feedItem);
                 });
+                
+                // Add activity indicator
+                const activityIndicator = document.createElement('div');
+                activityIndicator.innerHTML = `
+                    <div style="text-align: center; padding: 20px; background: rgba(0,212,255,0.1); margin: 20px 0; border-radius: 15px;">
+                        <h3>🔥 ${userCount} travelers active in Hoi An</h3>
+                        <p>Join the community and start connecting!</p>
+                    </div>
+                `;
+                container.appendChild(activityIndicator);
+                
+            } else {
+                // Add demo users if no real users yet
+                const demoUsers = this.data.users.map(user => ({
+                    ...user,
+                    uid: `demo_${user.name.toLowerCase().replace(/\s/g, '_')}`,
+                    id: `demo_${user.name.toLowerCase().replace(/\s/g, '_')}`
+                }));
+                
+                container.innerHTML = '';
+                demoUsers.forEach((user, index) => {
+                    const feedItem = this.createUserFeedItem(user, index);
+                    container.appendChild(feedItem);
+                });
+                
+                // Show encouraging message for first users
+                const encourageMessage = document.createElement('div');
+                encourageMessage.innerHTML = `
+                    <div style="text-align: center; padding: 40px; opacity: 0.9;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">🚀</div>
+                        <div style="font-size: 20px; margin-bottom: 15px; color: #00D4FF;">You're among the first!</div>
+                        <div style="font-size: 16px; margin-bottom: 10px;">These are demo profiles. Complete your profile and invite friends to start real connections!</div>
+                        <button onclick="CLASSIFIED.shareApp()" style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; border-radius: 25px; color: white; font-weight: 600; cursor: pointer;">
+                            Share CLASSIFIED 🚀
+                        </button>
+                    </div>
+                `;
+                container.appendChild(encourageMessage);
             }
-        });
-        
-        // Show user count
-        const userCount = users.length;
-        console.log(`👥 Found ${userCount} users in feed`);
-        
-        // CHANGE #2: Store loaded users for later reference
-        this.state.loadedUsers = users;
-        
-        // If we have real users, display them
-        if (users.length > 0) {
-            container.innerHTML = '';
-            users.forEach((user, index) => {
-                const feedItem = this.createUserFeedItem(user, index);
-                container.appendChild(feedItem);
-            });
             
-            // Add activity indicator
-            const activityIndicator = document.createElement('div');
-            activityIndicator.innerHTML = `
-                <div style="text-align: center; padding: 20px; background: rgba(0,212,255,0.1); margin: 20px 0; border-radius: 15px;">
-                    <h3>🔥 ${userCount} travelers active in Hoi An</h3>
-                    <p>Join the community and start connecting!</p>
-                </div>
-            `;
-            container.appendChild(activityIndicator);
-            
-        } else {
-            // Add demo users if no real users yet
-            const demoUsers = this.data.users.map(user => ({
-                ...user,
-                uid: `demo_${user.name.toLowerCase().replace(/\s/g, '_')}`,
-                id: `demo_${user.name.toLowerCase().replace(/\s/g, '_')}`
-            }));
-            
-            // CHANGE #3: Store demo users as loaded users
-            this.state.loadedUsers = demoUsers;
-
-            container.innerHTML = '';
-            demoUsers.forEach((user, index) => {
-                const feedItem = this.createUserFeedItem(user, index);
-                container.appendChild(feedItem);
-            });
-            
-            // Show encouraging message for first users
-            const encourageMessage = document.createElement('div');
-            encourageMessage.innerHTML = `
-                <div style="text-align: center; padding: 40px; opacity: 0.9;">
-                    <div style="font-size: 48px; margin-bottom: 20px;">🚀</div>
-                    <div style="font-size: 20px; margin-bottom: 15px; color: #00D4FF;">You're among the first!</div>
-                    <div style="font-size: 16px; margin-bottom: 10px;">These are demo profiles. Complete your profile and invite friends to start real connections!</div>
-                    <button onclick="CLASSIFIED.shareApp()" style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; border-radius: 25px; color: white; font-weight: 600; cursor: pointer;">
-                        Share CLASSIFIED 🚀
+        } catch (error) {
+            console.error('❌ Error loading users:', error);
+            // Show error message
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px; opacity: 0.7;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+                    <div style="font-size: 18px; margin-bottom: 10px;">Unable to load users</div>
+                    <div style="font-size: 14px;">Please check your internet connection and try again.</div>
+                    <button onclick="CLASSIFIED.populateUserFeed()" style="margin-top: 20px; padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 25px; color: white; cursor: pointer;">
+                        Try Again
                     </button>
                 </div>
             `;
-            container.appendChild(encourageMessage);
         }
-        
-    } catch (error) {
-        console.error('❌ Error loading users:', error);
-        // Show error message
-        container.innerHTML = `
-            <div style="text-align: center; padding: 40px; opacity: 0.7;">
-                <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
-                <div style="font-size: 18px; margin-bottom: 10px;">Unable to load users</div>
-                <div style="font-size: 14px;">Please check your internet connection and try again.</div>
-                <button onclick="CLASSIFIED.populateUserFeed()" style="margin-top: 20px; padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 25px; color: white; cursor: pointer;">
-                    Try Again
-                </button>
-            </div>
-        `;
-    }
-},
+    },
     
     filterUsers(filter) {
         console.log(`🔍 Filtering users by: ${filter}`);
@@ -2236,50 +2229,49 @@ async populateUserFeed() {
         });
     },
     
-createUserFeedItem(user, index) {
-    const feedItem = document.createElement('div');
-    feedItem.className = 'user-feed-item';
-    feedItem.style.animationDelay = `${index * 0.1}s`;
-    feedItem.style.cursor = 'pointer';
-    
-    // Make sure user has an ID
-    const userId = user.uid || user.id || `demo_${user.name.toLowerCase().replace(/\s/g, '_')}`;
-    user.uid = userId;
-    user.id = userId; // Also set id property
-    
-    // Make the entire card clickable to view profile
-    feedItem.addEventListener('click', (e) => {
-        // Don't open profile if clicking on action buttons
-        if (!e.target.closest('.user-actions')) {
-            this.openUserProfile(user);
-        }
-    });
-    
-    feedItem.innerHTML = `
-        <div class="user-status-badges">
-            ${user.isOnline ? '<div class="status-badge status-online">🟢 Online</div>' : ''}
-            <div class="status-badge status-distance">📍 ${user.distance}</div>
-            <div class="status-badge status-match">🔥 ${user.matchPercentage}% Match</div>
-        </div>
-        <div class="user-image" style="background-image: url('${user.image}')">
-            <div class="user-image-overlay">
-                <div class="user-name">${user.name}, ${user.age}</div>
+    createUserFeedItem(user, index) {
+        const feedItem = document.createElement('div');
+        feedItem.className = 'user-feed-item';
+        feedItem.style.animationDelay = `${index * 0.1}s`;
+        feedItem.style.cursor = 'pointer';
+        
+        // Make sure user has an ID
+        const userId = user.uid || user.id || `demo_${user.name.toLowerCase().replace(/\s/g, '_')}`;
+        user.uid = userId;
+        
+        // Make the entire card clickable to view profile
+        feedItem.addEventListener('click', (e) => {
+            // Don't open profile if clicking on action buttons
+            if (!e.target.closest('.user-actions')) {
+                this.openUserProfile(user);
+            }
+        });
+        
+        feedItem.innerHTML = `
+            <div class="user-status-badges">
+                ${user.isOnline ? '<div class="status-badge status-online">🟢 Online</div>' : ''}
+                <div class="status-badge status-distance">📍 ${user.distance}</div>
+                <div class="status-badge status-match">🔥 ${user.matchPercentage}% Match</div>
             </div>
-        </div>
-        <div class="user-info">
-            <div class="user-bio">${user.bio}</div>
-            <div class="user-interests">
-                ${user.interests.map(interest => `<span class="interest-tag">${interest}</span>`).join('')}
+            <div class="user-image" style="background-image: url('${user.image}')">
+                <div class="user-image-overlay">
+                    <div class="user-name">${user.name}, ${user.age}</div>
+                </div>
             </div>
-            <div class="user-actions">
-                <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${userId}', '${user.name}')">✕ Pass</button>
-                <button class="action-btn chat-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${userId}', '${user.name}')">💬 Chat</button>
-                <button class="action-btn super-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('superlike', '${userId}', '${user.name}')">⭐ Super</button>
+            <div class="user-info">
+                <div class="user-bio">${user.bio}</div>
+                <div class="user-interests">
+                    ${user.interests.map(interest => `<span class="interest-tag">${interest}</span>`).join('')}
+                </div>
+                <div class="user-actions">
+                    <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${userId}')">✕ Pass</button>
+                    <button class="action-btn chat-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${userId}')">💬 Chat</button>
+                    <button class="action-btn super-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('superlike', '${userId}')">⭐ Super</button>
+                </div>
             </div>
-        </div>
-    `;
-    return feedItem;
-}
+        `;
+        return feedItem;
+    },
     
     // 👤 User Profile Management
     openUserProfile(user) {
@@ -2355,34 +2347,65 @@ createUserFeedItem(user, index) {
         }
     },
     
-async handleUserAction(action, userId, userName) {
-    console.log(`👆 ${action} action for user ID: ${userId}, name: ${userName}`);
-    
-    // If we have a viewed user and no userId passed, use that
-    if (!userId && this.state.currentViewedUser) {
-        userId = this.state.currentViewedUser.uid || this.state.currentViewedUser.id;
-        userName = this.state.currentViewedUser.name;
-    }
-    
-    if (!userId) {
-        console.error('❌ No user ID provided');
-        return;
-    }
-    
-    if (action === 'like' || action === 'superlike') {
-        if (this.state.isUserProfileOpen) {
-            this.closeUserProfile();
+    async handleUserAction(action, userId) {
+        console.log(`👆 ${action} action for user ID: ${userId}`);
+        
+        // Find the target user by ID
+        let targetUser = null;
+        
+        // First check current viewed user
+        if (this.state.currentViewedUser && this.state.currentViewedUser.uid === userId) {
+            targetUser = this.state.currentViewedUser;
+        } else {
+            // Try to find in loaded users
+            const userFeedItems = document.querySelectorAll('.user-feed-item');
+            for (const item of userFeedItems) {
+                const buttons = item.querySelectorAll('.action-btn');
+                for (const btn of buttons) {
+                    if (btn.onclick && btn.onclick.toString().includes(userId)) {
+                        // Extract user data from the feed item
+                        const nameElement = item.querySelector('.user-name');
+                        if (nameElement) {
+                            const nameText = nameElement.textContent;
+                            const [name] = nameText.split(',');
+                            targetUser = this.data.users.find(u => u.name === name.trim());
+                            if (targetUser) {
+                                targetUser.uid = userId;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (targetUser) break;
+            }
         }
         
-        await this.handleUserLike(userId, userName);
-        
-    } else if (action === 'pass') {
-        if (this.state.isUserProfileOpen) {
-            this.closeUserProfile();
+        if (!targetUser) {
+            console.error('❌ Could not find target user with ID:', userId);
+            return;
         }
-        console.log(`Passed on ${userName}`);
-    }
-}
+        
+        console.log('✅ Found target user:', targetUser.name);
+        
+        if (action === 'like' || action === 'superlike') {
+            if (this.state.isUserProfileOpen) {
+                this.closeUserProfile();
+            }
+            
+            // For demo users, just show a success message
+            if (userId.startsWith('demo_')) {
+                alert(`You ${action === 'superlike' ? 'super liked' : 'liked'} ${targetUser.name}! 💕\n\nThis is a demo profile. Complete your profile to connect with real users!`);
+            } else {
+                await this.handleUserLike(userId, targetUser.name);
+            }
+            
+        } else if (action === 'pass') {
+            if (this.state.isUserProfileOpen) {
+                this.closeUserProfile();
+            }
+            console.log(`Passed on ${targetUser.name}`);
+        }
+    },
     
     showMatchPopup() {
         document.getElementById('matchPopup').classList.add('show');
@@ -2890,42 +2913,32 @@ service cloud.firestore {
     },
     
     // Updated openChatWithUser to work with real-time messaging
- async openChatWithUser(userName) {
-    console.log(`💬 Opening chat with user: ${userName}`);
-    
-    // First try to find from current viewed user
-    let user = this.state.currentViewedUser;
-    
-    // If not found, search in loaded users from Firebase
-    if (!user && this.state.loadedUsers) {
-        user = this.state.loadedUsers.find(u => u.name === userName);
-    }
-    
-    // Fallback to demo data
-    if (!user) {
-        user = this.data.users.find(u => u.name === userName);
-    }
-    
-    if (user) {
-        console.log('✅ Found user object:', user);
-        this.state.currentChatUser = user;
+    async openChatWithUser(userName) {
+        console.log(`💬 Opening chat with user: ${userName}`);
         
-        const userId = user.uid || user.id || `demo_${userName.toLowerCase().replace(/\s/g, '_')}`;
-        user.uid = userId;
+        const user = this.data.users.find(u => u.name === userName);
         
-        // Get or create chat
-        const chatId = await this.getOrCreateChat(userId, userName);
-        
-        // Open chat UI
-        this.openChat(user.name, user.image);
-        
-        // Start listening for messages
-        this.listenForChatMessages(chatId);
-    } else {
-        console.error('❌ Could not find user:', userName);
-        alert('Could not find user. Please try again.');
-    }
-}
+        if (user) {
+            console.log('✅ Found user object:', user);
+            this.state.currentChatUser = user;
+            
+            // For demo users, generate a temporary ID
+            const userId = user.uid || `demo_${userName.toLowerCase().replace(/\s/g, '_')}`;
+            user.uid = userId;
+            
+            // Get or create chat
+            const chatId = await this.getOrCreateChat(userId, userName);
+            
+            // Open chat UI
+            this.openChat(user.name, user.image);
+            
+            // Start listening for messages
+            this.listenForChatMessages(chatId);
+        } else {
+            console.error('❌ Could not find user:', userName);
+            this.openChat(userName, '');
+        }
+    },
     
     closeChat() {
         console.log('🔙 Closing chat');
@@ -3077,3 +3090,4 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 DOM loaded, initializing CLASSIFIED...');
     CLASSIFIED.init();
 });
+ 

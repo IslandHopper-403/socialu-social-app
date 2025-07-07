@@ -1,4 +1,5 @@
- waitForFirebase() {
+    // Wait for Firebase to be ready
+    waitForFirebase() {
         return new Promise((resolve, reject) => {
             let attempts = 0;
             const maxAttempts = 50; // 5 seconds max wait

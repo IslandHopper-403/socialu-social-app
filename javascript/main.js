@@ -2348,65 +2348,34 @@ createUserFeedItem(user, index) {
         }
     },
     
-    async handleUserAction(action, userId) {
-        console.log(`👆 ${action} action for user ID: ${userId}`);
-        
-        // Find the target user by ID
-        let targetUser = null;
-        
-        // First check current viewed user
-        if (this.state.currentViewedUser && this.state.currentViewedUser.uid === userId) {
-            targetUser = this.state.currentViewedUser;
-        } else {
-            // Try to find in loaded users
-            const userFeedItems = document.querySelectorAll('.user-feed-item');
-            for (const item of userFeedItems) {
-                const buttons = item.querySelectorAll('.action-btn');
-                for (const btn of buttons) {
-                    if (btn.onclick && btn.onclick.toString().includes(userId)) {
-                        // Extract user data from the feed item
-                        const nameElement = item.querySelector('.user-name');
-                        if (nameElement) {
-                            const nameText = nameElement.textContent;
-                            const [name] = nameText.split(',');
-                            targetUser = this.data.users.find(u => u.name === name.trim());
-                            if (targetUser) {
-                                targetUser.uid = userId;
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (targetUser) break;
-            }
+async handleUserAction(action, userId, userName) {
+    console.log(`👆 ${action} action for user ID: ${userId}, name: ${userName}`);
+    
+    // If we have a viewed user and no userId passed, use that
+    if (!userId && this.state.currentViewedUser) {
+        userId = this.state.currentViewedUser.uid || this.state.currentViewedUser.id;
+        userName = this.state.currentViewedUser.name;
+    }
+    
+    if (!userId) {
+        console.error('❌ No user ID provided');
+        return;
+    }
+    
+    if (action === 'like' || action === 'superlike') {
+        if (this.state.isUserProfileOpen) {
+            this.closeUserProfile();
         }
         
-        if (!targetUser) {
-            console.error('❌ Could not find target user with ID:', userId);
-            return;
-        }
+        await this.handleUserLike(userId, userName);
         
-        console.log('✅ Found target user:', targetUser.name);
-        
-        if (action === 'like' || action === 'superlike') {
-            if (this.state.isUserProfileOpen) {
-                this.closeUserProfile();
-            }
-            
-            // For demo users, just show a success message
-            if (userId.startsWith('demo_')) {
-                alert(`You ${action === 'superlike' ? 'super liked' : 'liked'} ${targetUser.name}! 💕\n\nThis is a demo profile. Complete your profile to connect with real users!`);
-            } else {
-                await this.handleUserLike(userId, targetUser.name);
-            }
-            
-        } else if (action === 'pass') {
-            if (this.state.isUserProfileOpen) {
-                this.closeUserProfile();
-            }
-            console.log(`Passed on ${targetUser.name}`);
+    } else if (action === 'pass') {
+        if (this.state.isUserProfileOpen) {
+            this.closeUserProfile();
         }
-    },
+        console.log(`Passed on ${userName}`);
+    }
+}
     
     showMatchPopup() {
         document.getElementById('matchPopup').classList.add('show');

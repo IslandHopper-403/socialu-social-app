@@ -4,43 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLASSIFIED - Hoi An Social Discovery</title>
-    <link rel="stylesheet" href="css/main.css">    
-    
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-    
-    <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyB-zTm6JB4EkD_7Q9056K4UGbIPyHQL4S4",
-            authDomain: "hoi-an-social-app.firebaseapp.com",
-            databaseURL: "https://hoi-an-social-app-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "hoi-an-social-app",
-            storageBucket: "hoi-an-social-app.firebasestorage.app",
-            messagingSenderId: "302219568692",
-            appId: "1:302219568692:web:3edf7128342b74b1e0cc61",
-            measurementId: "G-WX23VDV53B"
-        };
-        
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        
-        // Initialize services
-        window.auth = firebase.auth();
-        window.db = firebase.firestore();
-        window.storage = firebase.storage();
-        
-        // Mark Firebase as ready
-        window.CLASSIFIED = window.CLASSIFIED || {};
-        window.CLASSIFIED.state = window.CLASSIFIED.state || {};
-        window.CLASSIFIED.state.firebaseReady = true;
-        
-        console.log('🔥 Firebase initialized successfully!');
-    </script>
-
+    <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
     <div class="app-container">
@@ -748,31 +712,8 @@
         <input type="file" id="businessPhotoUpload" accept="image/*" style="display: none;" onchange="CLASSIFIED.handleBusinessPhotoUpload(event)">
     </div>
     
-<!-- Bottom of index.html, before </body> -->
-
-<!-- Load modules first -->
-<script src="javascript/core/state.js"></script>
-<script src="javascript/data/mockData.js"></script>
-<script src="javascript/utils/helpers.js"></script>
-
-<!-- Wait for modules to be defined on window -->
-<script>
-    // Ensure modules are available globally
-    console.log('📦 Loading modules...');
-    
-    // Add a small delay to ensure modules are parsed
-    setTimeout(() => {
-        console.log('📦 Modules loaded:', {
-            AppState: !!window.AppState,
-            MockData: !!window.MockData,
-            AppHelpers: !!window.AppHelpers
-        });
-    }, 10);
-</script>
-
-<!-- Load main app last -->
-<script src="javascript/main.js"></script>
-
+    <!-- Load JavaScript modules -->
+    <!-- Note: Firebase is loaded as ES6 modules via CDN in firebase.js -->
+    <script type="module" src="javascript/main.js"></script>
 </body>
 </html>
-

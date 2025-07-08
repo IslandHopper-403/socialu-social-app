@@ -34,19 +34,14 @@ import { MockData } from './data/mockData.js';
 import { AuthManager } from './features/auth.js';
 import { FeedManager } from './features/feed.js';
 import { ProfileManager } from './features/profile.js';
-// import { MessagingManager } from './features/messaging.js';
-// import { BusinessManager } from './features/business.js';
-// import { AdminManager } from './features/admin.js';
-// import { ReferralManager } from './features/referral.js';
-// import { PhotoUploadManager } from './features/photoUpload.js';
+import { MessagingManager } from './features/messaging.js';
+import { BusinessManager } from './features/business.js';
+import { PhotoUploadManager } from './features/photoUpload.js';
+import { AdminManager } from './features/admin.js';
+import { ReferralManager } from './features/referral.js';
 
 // Import UI modules
 import { NavigationManager } from './ui/navigation.js';
-// import { UIComponents } from './ui/components.js';
-// import { ModalManager } from './ui/modals.js';
-
-// Import utilities (these will be created next)
-// import { Helpers } from './utils/helpers.js';
 
 /**
  * Main application class that orchestrates all modules
@@ -116,19 +111,13 @@ class ClassifiedApp {
             auth: new AuthManager(firebaseServices, this.state),
             feed: new FeedManager(firebaseServices, this.state, this.mockData),
             profile: new ProfileManager(firebaseServices, this.state),
-            // messaging: new MessagingManager(firebaseServices, this.state),
-            // business: new BusinessManager(firebaseServices, this.state),
-            // admin: new AdminManager(firebaseServices, this.state),
-            // referral: new ReferralManager(firebaseServices, this.state),
-            // photoUpload: new PhotoUploadManager(firebaseServices, this.state),
+            messaging: new MessagingManager(firebaseServices, this.state),
+            business: new BusinessManager(firebaseServices, this.state),
+            admin: new AdminManager(firebaseServices, this.state),
+            referral: new ReferralManager(firebaseServices, this.state),
+            photoUpload: new PhotoUploadManager(firebaseServices, this.state),
             navigation: new NavigationManager(firebaseServices, this.state),
-            // ui: new UIComponents(firebaseServices, this.state),
-            // modals: new ModalManager(firebaseServices, this.state),
-            // helpers: new Helpers()
         };
-        
-        // Temporary: Add mock methods for testing
-        this.setupTemporaryMethods();
     }
     
     /**
@@ -163,8 +152,8 @@ class ClassifiedApp {
         // Create the global CLASSIFIED object with all public methods
         window.CLASSIFIED = {
             // State access
-            state: this.state._state, // Direct state access for compatibility
-            data: this.mockData, // Direct data access for compatibility
+            state: this.state._state,
+            data: this.mockData,
             
             // Auth methods
             loginWithEmail: () => {
@@ -205,9 +194,7 @@ class ClassifiedApp {
                 };
                 this.managers.auth.businessSignup(businessData).then(result => {
                     alert(`🎉 Business account created! Your temporary password is: ${result.tempPassword}\n\nYour account is pending approval. You can login now and complete your profile. We'll review it within 24 hours.`);
-                    // Switch to login tab
                     this.switchBusinessAuthTab('login');
-                    // Pre-fill login form
                     document.getElementById('businessLoginEmail').value = businessData.email;
                     document.getElementById('businessLoginPassword').value = result.tempPassword;
                 }).catch(err => {
@@ -228,7 +215,7 @@ class ClassifiedApp {
             closeSettings: () => this.closeSettings(),
             showSwitchAccount: () => this.showSwitchAccount(),
             openBusinessDashboard: () => this.openBusinessDashboard(),
-            openAdminPanel: () => this.showTempMessage('openAdminPanel'),
+            openAdminPanel: () => alert('Admin panel coming soon!'),
             showHelp: () => this.showHelp(),
             contactSupport: () => this.contactSupport(),
             
@@ -245,50 +232,60 @@ class ClassifiedApp {
             // User interactions
             openUserProfile: (user) => this.managers.profile.openUserProfile(user),
             closeUserProfile: () => this.managers.navigation.closeOverlay('userProfileView'),
-            handleUserAction: (action, userId) => this.showTempMessage('handleUserAction', {action, userId}),
+            handleUserAction: (action, userId) => {
+                if (!userId || userId === 'undefined') {
+                    console.error('Invalid userId for action:', action);
+                    return;
+                }
+                console.log(`User action: ${action} on user ${userId}`);
+                if (action === 'like') {
+                    alert(`You liked this user! Start a conversation in the messaging tab.`);
+                } else if (action === 'pass') {
+                    alert(`You passed on this user.`);
+                } else if (action === 'superlike') {
+                    alert(`Super like sent! 🌟`);
+                }
+            },
             filterUsers: (filter) => this.managers.feed.filterUsers(filter),
             
             // Business interactions
-            openBusinessProfile: (id, type) => this.showTempMessage('openBusinessProfile', {id, type}),
+            openBusinessProfile: (id, type) => this.managers.business.openBusinessProfile(id, type),
             closeBusinessProfile: () => this.managers.navigation.closeOverlay('businessProfile'),
-            showBusinessSignup: () => this.showTempMessage('showBusinessSignup'),
-            submitQuickBusinessSignup: () => this.showTempMessage('submitQuickBusinessSignup'),
+            showBusinessSignup: () => this.managers.business.showBusinessSignup(),
+            shareBusinessProfile: () => this.managers.business.shareBusinessProfile(),
+            getDirections: () => this.managers.business.getDirections(),
             
             // Chat methods
-            openChat: (name, avatar) => this.showTempMessage('openChat', {name, avatar}),
+            openChat: (name, avatar, userId) => this.managers.messaging.openChat(name, avatar, userId),
             closeChat: () => this.managers.navigation.closeOverlay('individualChat'),
-            sendMessage: () => this.showTempMessage('sendMessage'),
-            openChatWithUser: (userName) => this.showTempMessage('openChatWithUser', userName),
-            openProfileFromChat: () => this.showTempMessage('openProfileFromChat'),
-            startChatFromMatch: () => this.showTempMessage('startChatFromMatch'),
-            startChatWithViewedUser: () => this.showTempMessage('startChatWithViewedUser'),
+            sendMessage: () => this.managers.messaging.sendMessage(),
+            openChatWithUser: (userName) => this.managers.messaging.openChatWithUser(userName),
+            openProfileFromChat: () => this.managers.messaging.openProfileFromChat(),
+            startChatFromMatch: () => this.managers.messaging.startChatFromMatch(),
+            startChatWithViewedUser: () => this.managers.messaging.startChatWithViewedUser(),
             
             // Photo upload
-            triggerPhotoUpload: (slot) => this.showTempMessage('triggerPhotoUpload', slot),
-            handlePhotoUpload: (event) => this.showTempMessage('handlePhotoUpload', event),
-            triggerBusinessPhotoUpload: (slot) => this.showTempMessage('triggerBusinessPhotoUpload', slot),
-            handleBusinessPhotoUpload: (event) => this.showTempMessage('handleBusinessPhotoUpload', event),
+            triggerPhotoUpload: (slot) => this.managers.photoUpload.triggerPhotoUpload(slot),
+            handlePhotoUpload: (event) => this.managers.photoUpload.handlePhotoUpload(event),
+            triggerBusinessPhotoUpload: (slot) => this.managers.photoUpload.triggerBusinessPhotoUpload(slot),
+            handleBusinessPhotoUpload: (event) => this.managers.photoUpload.handleBusinessPhotoUpload(event),
             
             // Other methods
             shareApp: () => this.shareApp(),
-            showReferralCode: () => this.showTempMessage('showReferralCode'),
             shareMyProfile: () => this.managers.profile.shareMyProfile(),
-            shareBusinessProfile: () => this.showTempMessage('shareBusinessProfile'),
-            getDirections: () => this.showTempMessage('getDirections'),
-            
-            // Admin methods
-            approveBusiness: (id) => this.showTempMessage('approveBusiness', id),
-            rejectBusiness: (id) => this.showTempMessage('rejectBusiness', id),
+            showReferralCode: () => this.managers.referral.showReferralCode(),
             
             // Business auth tabs
             switchBusinessAuthTab: (tab) => this.switchBusinessAuthTab(tab),
             
-            // Utility methods
-            init: () => console.log('App already initialized'),
-            
             // Choice selection for profile editor
             selectChoice: (type, value, element) => this.managers.profile.selectChoice(type, value, element),
-            toggleInterest: (element) => this.managers.profile.toggleInterest(element)
+            toggleInterest: (element) => this.managers.profile.toggleInterest(element),
+            
+            // Feed refresh methods
+            populateUserFeed: () => this.managers.feed.populateUserFeed(),
+            populateRestaurantFeed: () => this.managers.feed.populateRestaurantFeed(),
+            populateActivityFeed: () => this.managers.feed.populateActivityFeed(),
         };
         
         // Also expose some properties for compatibility
@@ -425,22 +422,6 @@ Need help? Contact: support@classified.com
     }
     
     /**
-     * Temporary method implementations for testing
-     */
-    setupTemporaryMethods() {
-        console.log('🔧 Setting up temporary method implementations...');
-    }
-    
-    /**
-     * Temporary message display for unimplemented features
-     */
-    showTempMessage(method, data = null) {
-        console.log(`📍 Called: ${method}`, data);
-        // You can uncomment this to see alerts for each method call
-        // alert(`Feature coming soon: ${method}`);
-    }
-    
-    /**
      * Switch business auth tab
      */
     switchBusinessAuthTab(tab) {
@@ -466,19 +447,10 @@ Need help? Contact: support@classified.com
     }
     
     /**
-     * Populate demo data
-     */
-    populateDemoData() {
-        // This will be implemented by the FeedManager
-        console.log('📊 Populating demo data...');
-    }
-    
-    /**
      * Set up initial auth state
      */
     setupInitialAuthState() {
         // Check if user is already logged in
-        // This will be handled by AuthManager
         console.log('🔐 Checking initial auth state...');
         
         // Show initial content while waiting for auth

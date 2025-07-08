@@ -716,15 +716,6 @@
     <!-- Note: Firebase is loaded as ES6 modules via CDN in firebase.js -->
     <script type="module" src="javascript/main.js"></script>
 
-    <script>
-        // Auto-enable guest mode after 3 seconds if nothing loads
-        setTimeout(() => {
-                if (window.CLASSIFIED && window.CLASSIFIED.enableGuestMode) {
-                console.log('🚀 Auto-enabling guest mode...');
-                window.CLASSIFIED.enableGuestMode();
-     }
-}, 3000);
-</script>
 
 </body>
 </html>

@@ -77,7 +77,7 @@ class ClassifiedApp {
         try {
             // Step 1: Initialize Firebase
             console.log('🔥 Initializing Firebase...');
-            const firebaseServices = this.firebaseConfig.initialize();
+            const firebaseServices = await this.firebaseConfig.initialize();
             this.state.set('firebaseReady', true);
             
             // Step 2: Create manager instances
@@ -348,6 +348,19 @@ class ClassifiedApp {
         // Check if user is already logged in
         // This will be handled by AuthManager
         console.log('🔐 Checking initial auth state...');
+        
+        // Show initial content while waiting for auth
+        setTimeout(() => {
+            // If no auth state determined after 2 seconds, show login
+            if (!this.state.get('isAuthenticated') && !this.state.get('isGuestMode')) {
+                console.log('🔑 No auth state detected, showing login screen');
+                this.managers.auth.showLogin();
+                
+                // Also load demo data in feeds for preview
+                this.managers.feed.populateRestaurantFeedWithData(this.mockData.getRestaurants());
+                this.managers.feed.populateActivityFeedWithData(this.mockData.getActivities());
+            }
+        }, 2000);
     }
     
     /**
@@ -385,4 +398,3 @@ if (document.readyState === 'loading') {
     // DOM already loaded
     window.classifiedApp = new ClassifiedApp();
 }
- 

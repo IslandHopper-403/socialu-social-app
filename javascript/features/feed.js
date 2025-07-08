@@ -559,20 +559,28 @@ export class FeedManager {
      */
     // In feed.js, find the createUserFeedItem method and ensure it starts like this:
 
+// In feed.js, update the createUserFeedItem method:
+
 createUserFeedItem(user, index) {
     const feedItem = document.createElement('div');
     feedItem.className = 'user-feed-item';
     feedItem.style.animationDelay = `${index * 0.1}s`;
     feedItem.style.cursor = 'pointer';
     
-    // Ensure user has an ID - THIS IS THE IMPORTANT PART
+    // Ensure user has an ID properly set
     const userId = user.uid || user.id || `demo_${user.name.toLowerCase().replace(/\s/g, '_')}`;
-    user.uid = userId; // Make sure the user object has uid set
+    
+    // Create a properly formatted user object
+    const userWithId = {
+        ...user,
+        uid: userId,
+        id: userId
+    };
     
     // Make entire card clickable
     feedItem.addEventListener('click', (e) => {
         if (!e.target.closest('.user-actions')) {
-            window.CLASSIFIED.openUserProfile(user);
+            window.CLASSIFIED.openUserProfile(userWithId);
         }
     });
     

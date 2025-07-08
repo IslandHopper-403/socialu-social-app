@@ -18,11 +18,6 @@
 // 3. Complete profile → appears in user feed
 // 4. Referral system for growth
 
-// 🎯 CLASSIFIED v7.0 - Complete Business Management System
-// 
-// IMPORTANT: This app requires proper Firestore Security Rules!
-// Add these rules in Firebase Console > Firestore > Rules:
-
 // javascript/main.js
 
 // Import core modules
@@ -34,11 +29,11 @@ import { MockData } from './data/mockData.js';
 import { AuthManager } from './features/auth.js';
 import { FeedManager } from './features/feed.js';
 import { ProfileManager } from './features/profile.js';
-// import { MessagingManager } from './features/messaging.js';
-// import { BusinessManager } from './features/business.js';
+import { MessagingManager } from './features/messaging.js';
+import { BusinessManager } from './features/business.js';
+import { PhotoUploadManager } from './features/photoUpload.js';
 // import { AdminManager } from './features/admin.js';
 // import { ReferralManager } from './features/referral.js';
-// import { PhotoUploadManager } from './features/photoUpload.js';
 
 // Import UI modules
 import { NavigationManager } from './ui/navigation.js';
@@ -116,19 +111,16 @@ class ClassifiedApp {
             auth: new AuthManager(firebaseServices, this.state),
             feed: new FeedManager(firebaseServices, this.state, this.mockData),
             profile: new ProfileManager(firebaseServices, this.state),
-            // messaging: new MessagingManager(firebaseServices, this.state),
-            // business: new BusinessManager(firebaseServices, this.state),
+            messaging: new MessagingManager(firebaseServices, this.state),
+            business: new BusinessManager(firebaseServices, this.state),
+            photoUpload: new PhotoUploadManager(firebaseServices, this.state),
             // admin: new AdminManager(firebaseServices, this.state),
             // referral: new ReferralManager(firebaseServices, this.state),
-            // photoUpload: new PhotoUploadManager(firebaseServices, this.state),
             navigation: new NavigationManager(firebaseServices, this.state),
             // ui: new UIComponents(firebaseServices, this.state),
             // modals: new ModalManager(firebaseServices, this.state),
             // helpers: new Helpers()
         };
-        
-        // Temporary: Add mock methods for testing
-        this.setupTemporaryMethods();
     }
     
     /**
@@ -239,36 +231,56 @@ class ClassifiedApp {
             // User interactions
             openUserProfile: (user) => this.managers.profile.openUserProfile(user),
             closeUserProfile: () => this.managers.navigation.closeOverlay('userProfileView'),
-            handleUserAction: (action, userId) => this.showTempMessage('handleUserAction', {action, userId}),
+            handleUserAction: (action, userId) => {
+                console.log(`User action: ${action} on user ${userId}`);
+                // Simple match simulation for demo
+                if (action === 'like' && Math.random() > 0.5) {
+                    this.managers.messaging.handleNewMatch({
+                        users: [this.state.get('currentUser').uid, userId],
+                        timestamp: new Date()
+                    });
+                }
+            },
             filterUsers: (filter) => this.managers.feed.filterUsers(filter),
             
             // Business interactions
-            openBusinessProfile: (id, type) => this.showTempMessage('openBusinessProfile', {id, type}),
-            closeBusinessProfile: () => this.managers.navigation.closeOverlay('businessProfile'),
-            showBusinessSignup: () => this.showTempMessage('showBusinessSignup'),
-            submitQuickBusinessSignup: () => this.showTempMessage('submitQuickBusinessSignup'),
+            openBusinessProfile: (id, type) => this.managers.business.openBusinessProfile(id, type),
+            closeBusinessProfile: () => this.managers.business.closeBusinessProfile(),
+            showBusinessSignup: () => this.managers.business.showBusinessSignup(),
+            submitQuickBusinessSignup: () => this.managers.business.submitQuickBusinessSignup(),
+            shareBusinessProfile: () => this.managers.business.shareBusinessProfile(),
+            getDirections: () => this.managers.business.getDirections(),
             
             // Chat methods
-            openChat: (name, avatar) => this.showTempMessage('openChat', {name, avatar}),
-            closeChat: () => this.managers.navigation.closeOverlay('individualChat'),
-            sendMessage: () => this.showTempMessage('sendMessage'),
-            openChatWithUser: (userName) => this.showTempMessage('openChatWithUser', userName),
-            openProfileFromChat: () => this.showTempMessage('openProfileFromChat'),
-            startChatFromMatch: () => this.showTempMessage('startChatFromMatch'),
-            startChatWithViewedUser: () => this.showTempMessage('startChatWithViewedUser'),
+            openChat: (name, avatar, userId) => this.managers.messaging.openChat(name, avatar, userId),
+            closeChat: () => this.managers.messaging.closeChat(),
+            sendMessage: () => this.managers.messaging.sendMessage(),
+            openChatWithUser: (userName) => this.managers.messaging.openChatWithUser(userName),
+            openProfileFromChat: () => this.managers.messaging.openProfileFromChat(),
+            startChatFromMatch: () => this.managers.messaging.startChatFromMatch(),
+            startChatWithViewedUser: () => this.managers.messaging.startChatWithViewedUser(),
             
             // Photo upload
-            triggerPhotoUpload: (slot) => this.showTempMessage('triggerPhotoUpload', slot),
-            handlePhotoUpload: (event) => this.showTempMessage('handlePhotoUpload', event),
-            triggerBusinessPhotoUpload: (slot) => this.showTempMessage('triggerBusinessPhotoUpload', slot),
-            handleBusinessPhotoUpload: (event) => this.showTempMessage('handleBusinessPhotoUpload', event),
+            triggerPhotoUpload: (slot) => this.managers.photoUpload.triggerPhotoUpload(slot),
+            handlePhotoUpload: (event) => this.managers.photoUpload.handlePhotoUpload(event),
+            triggerBusinessPhotoUpload: (slot) => this.managers.photoUpload.triggerBusinessPhotoUpload(slot),
+            handleBusinessPhotoUpload: (event) => this.managers.photoUpload.handleBusinessPhotoUpload(event),
             
             // Other methods
-            shareApp: () => this.showTempMessage('shareApp'),
+            shareApp: () => {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'CLASSIFIED Hoi An',
+                        text: 'Join me on CLASSIFIED - discover Hoi An\'s hidden gems!',
+                        url: window.location.href
+                    });
+                } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    alert('App link copied to clipboard! 📋');
+                }
+            },
             showReferralCode: () => this.showTempMessage('showReferralCode'),
             shareMyProfile: () => this.managers.profile.shareMyProfile(),
-            shareBusinessProfile: () => this.showTempMessage('shareBusinessProfile'),
-            getDirections: () => this.showTempMessage('getDirections'),
             
             // Admin methods
             openAdminPanel: () => this.showTempMessage('openAdminPanel'),
@@ -290,13 +302,6 @@ class ClassifiedApp {
         Object.defineProperty(window.CLASSIFIED, 'isAdminUser', {
             value: () => this.managers.auth ? this.managers.auth.isAdminUser() : false
         });
-    }
-    
-    /**
-     * Temporary method implementations for testing
-     */
-    setupTemporaryMethods() {
-        console.log('🔧 Setting up temporary method implementations...');
     }
     
     /**

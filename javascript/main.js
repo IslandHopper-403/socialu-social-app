@@ -18,6 +18,11 @@
 // 3. Complete profile → appears in user feed
 // 4. Referral system for growth
 
+// 🎯 CLASSIFIED v7.0 - Complete Business Management System
+// 
+// IMPORTANT: This app requires proper Firestore Security Rules!
+// Add these rules in Firebase Console > Firestore > Rules:
+
 // javascript/main.js
 
 // Import core modules
@@ -29,11 +34,11 @@ import { MockData } from './data/mockData.js';
 import { AuthManager } from './features/auth.js';
 import { FeedManager } from './features/feed.js';
 import { ProfileManager } from './features/profile.js';
-import { MessagingManager } from './features/messaging.js';
-import { BusinessManager } from './features/business.js';
-import { PhotoUploadManager } from './features/photoUpload.js';
+// import { MessagingManager } from './features/messaging.js';
+// import { BusinessManager } from './features/business.js';
 // import { AdminManager } from './features/admin.js';
 // import { ReferralManager } from './features/referral.js';
+// import { PhotoUploadManager } from './features/photoUpload.js';
 
 // Import UI modules
 import { NavigationManager } from './ui/navigation.js';
@@ -111,16 +116,19 @@ class ClassifiedApp {
             auth: new AuthManager(firebaseServices, this.state),
             feed: new FeedManager(firebaseServices, this.state, this.mockData),
             profile: new ProfileManager(firebaseServices, this.state),
-            messaging: new MessagingManager(firebaseServices, this.state),
-            business: new BusinessManager(firebaseServices, this.state),
-            photoUpload: new PhotoUploadManager(firebaseServices, this.state),
+            // messaging: new MessagingManager(firebaseServices, this.state),
+            // business: new BusinessManager(firebaseServices, this.state),
             // admin: new AdminManager(firebaseServices, this.state),
             // referral: new ReferralManager(firebaseServices, this.state),
+            // photoUpload: new PhotoUploadManager(firebaseServices, this.state),
             navigation: new NavigationManager(firebaseServices, this.state),
             // ui: new UIComponents(firebaseServices, this.state),
             // modals: new ModalManager(firebaseServices, this.state),
             // helpers: new Helpers()
         };
+        
+        // Temporary: Add mock methods for testing
+        this.setupTemporaryMethods();
     }
     
     /**
@@ -216,7 +224,13 @@ class ClassifiedApp {
             showBusinessAuth: () => this.managers.auth.showBusinessAuth(),
             
             // Settings
-            openSettings: () => this.showTempMessage('openSettings'),
+            openSettings: () => this.openSettings(),
+            closeSettings: () => this.closeSettings(),
+            showSwitchAccount: () => this.showSwitchAccount(),
+            openBusinessDashboard: () => this.openBusinessDashboard(),
+            openAdminPanel: () => this.showTempMessage('openAdminPanel'),
+            showHelp: () => this.showHelp(),
+            contactSupport: () => this.contactSupport(),
             
             // Profile methods
             openProfileEditor: () => this.managers.profile.openProfileEditor(),
@@ -231,59 +245,38 @@ class ClassifiedApp {
             // User interactions
             openUserProfile: (user) => this.managers.profile.openUserProfile(user),
             closeUserProfile: () => this.managers.navigation.closeOverlay('userProfileView'),
-            handleUserAction: (action, userId) => {
-                console.log(`User action: ${action} on user ${userId}`);
-                // Simple match simulation for demo
-                if (action === 'like' && Math.random() > 0.5) {
-                    this.managers.messaging.handleNewMatch({
-                        users: [this.state.get('currentUser').uid, userId],
-                        timestamp: new Date()
-                    });
-                }
-            },
+            handleUserAction: (action, userId) => this.showTempMessage('handleUserAction', {action, userId}),
             filterUsers: (filter) => this.managers.feed.filterUsers(filter),
             
             // Business interactions
-            openBusinessProfile: (id, type) => this.managers.business.openBusinessProfile(id, type),
-            closeBusinessProfile: () => this.managers.business.closeBusinessProfile(),
-            showBusinessSignup: () => this.managers.business.showBusinessSignup(),
-            submitQuickBusinessSignup: () => this.managers.business.submitQuickBusinessSignup(),
-            shareBusinessProfile: () => this.managers.business.shareBusinessProfile(),
-            getDirections: () => this.managers.business.getDirections(),
+            openBusinessProfile: (id, type) => this.showTempMessage('openBusinessProfile', {id, type}),
+            closeBusinessProfile: () => this.managers.navigation.closeOverlay('businessProfile'),
+            showBusinessSignup: () => this.showTempMessage('showBusinessSignup'),
+            submitQuickBusinessSignup: () => this.showTempMessage('submitQuickBusinessSignup'),
             
             // Chat methods
-            openChat: (name, avatar, userId) => this.managers.messaging.openChat(name, avatar, userId),
-            closeChat: () => this.managers.messaging.closeChat(),
-            sendMessage: () => this.managers.messaging.sendMessage(),
-            openChatWithUser: (userName) => this.managers.messaging.openChatWithUser(userName),
-            openProfileFromChat: () => this.managers.messaging.openProfileFromChat(),
-            startChatFromMatch: () => this.managers.messaging.startChatFromMatch(),
-            startChatWithViewedUser: () => this.managers.messaging.startChatWithViewedUser(),
+            openChat: (name, avatar) => this.showTempMessage('openChat', {name, avatar}),
+            closeChat: () => this.managers.navigation.closeOverlay('individualChat'),
+            sendMessage: () => this.showTempMessage('sendMessage'),
+            openChatWithUser: (userName) => this.showTempMessage('openChatWithUser', userName),
+            openProfileFromChat: () => this.showTempMessage('openProfileFromChat'),
+            startChatFromMatch: () => this.showTempMessage('startChatFromMatch'),
+            startChatWithViewedUser: () => this.showTempMessage('startChatWithViewedUser'),
             
             // Photo upload
-            triggerPhotoUpload: (slot) => this.managers.photoUpload.triggerPhotoUpload(slot),
-            handlePhotoUpload: (event) => this.managers.photoUpload.handlePhotoUpload(event),
-            triggerBusinessPhotoUpload: (slot) => this.managers.photoUpload.triggerBusinessPhotoUpload(slot),
-            handleBusinessPhotoUpload: (event) => this.managers.photoUpload.handleBusinessPhotoUpload(event),
+            triggerPhotoUpload: (slot) => this.showTempMessage('triggerPhotoUpload', slot),
+            handlePhotoUpload: (event) => this.showTempMessage('handlePhotoUpload', event),
+            triggerBusinessPhotoUpload: (slot) => this.showTempMessage('triggerBusinessPhotoUpload', slot),
+            handleBusinessPhotoUpload: (event) => this.showTempMessage('handleBusinessPhotoUpload', event),
             
             // Other methods
-            shareApp: () => {
-                if (navigator.share) {
-                    navigator.share({
-                        title: 'CLASSIFIED Hoi An',
-                        text: 'Join me on CLASSIFIED - discover Hoi An\'s hidden gems!',
-                        url: window.location.href
-                    });
-                } else {
-                    navigator.clipboard.writeText(window.location.href);
-                    alert('App link copied to clipboard! 📋');
-                }
-            },
+            shareApp: () => this.shareApp(),
             showReferralCode: () => this.showTempMessage('showReferralCode'),
             shareMyProfile: () => this.managers.profile.shareMyProfile(),
+            shareBusinessProfile: () => this.showTempMessage('shareBusinessProfile'),
+            getDirections: () => this.showTempMessage('getDirections'),
             
             // Admin methods
-            openAdminPanel: () => this.showTempMessage('openAdminPanel'),
             approveBusiness: (id) => this.showTempMessage('approveBusiness', id),
             rejectBusiness: (id) => this.showTempMessage('rejectBusiness', id),
             
@@ -302,6 +295,140 @@ class ClassifiedApp {
         Object.defineProperty(window.CLASSIFIED, 'isAdminUser', {
             value: () => this.managers.auth ? this.managers.auth.isAdminUser() : false
         });
+    }
+    
+    /**
+     * Settings implementation
+     */
+    openSettings() {
+        console.log('⚙️ Opening settings');
+        this.managers.navigation.showOverlay('settingsOverlay');
+        this.updateSettingsDisplay();
+    }
+    
+    closeSettings() {
+        console.log('⚙️ Closing settings');
+        this.managers.navigation.closeOverlay('settingsOverlay');
+    }
+    
+    updateSettingsDisplay() {
+        const user = this.state.get('currentUser');
+        const userProfile = this.state.get('userProfile');
+        const isBusinessUser = this.state.get('isBusinessUser');
+        const isGuestMode = this.state.get('isGuestMode');
+        
+        // Update user info display
+        if (isGuestMode) {
+            document.getElementById('settingsUserName').textContent = 'Guest User';
+            document.getElementById('settingsUserEmail').textContent = 'Not logged in';
+            document.getElementById('settingsAccountType').textContent = 'Guest Mode';
+            document.getElementById('settingsUserAvatar').innerHTML = '<span style="font-size: 36px;">👤</span>';
+            
+            // Hide profile buttons for guests
+            document.getElementById('editProfileBtn').style.display = 'none';
+            document.getElementById('viewProfileBtn').style.display = 'none';
+            document.getElementById('logoutBtn').textContent = 'Sign In';
+            document.getElementById('logoutBtn').onclick = () => {
+                this.closeSettings();
+                this.managers.auth.showLogin();
+            };
+        } else if (user) {
+            // Update with user info
+            document.getElementById('settingsUserName').textContent = userProfile?.name || user.displayName || 'User';
+            document.getElementById('settingsUserEmail').textContent = user.email;
+            document.getElementById('settingsAccountType').textContent = isBusinessUser ? 'Business Account' : 'Personal Account';
+            
+            // Update avatar if photo exists
+            if (userProfile?.photos?.[0] || user.photoURL) {
+                const avatarUrl = userProfile?.photos?.[0] || user.photoURL;
+                document.getElementById('settingsUserAvatar').innerHTML = `
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background-image: url('${avatarUrl}'); background-size: cover; background-position: center;"></div>
+                `;
+            } else {
+                document.getElementById('settingsUserAvatar').innerHTML = '<span style="font-size: 36px;">👤</span>';
+            }
+            
+            // Show appropriate buttons
+            document.getElementById('editProfileBtn').style.display = 'flex';
+            document.getElementById('viewProfileBtn').style.display = 'flex';
+            document.getElementById('logoutBtn').textContent = 'Sign Out';
+            document.getElementById('logoutBtn').onclick = () => this.managers.auth.logout();
+            
+            // Show business dashboard button if business user
+            document.getElementById('businessDashboardBtn').style.display = isBusinessUser ? 'flex' : 'none';
+            
+            // Show admin panel if admin
+            document.getElementById('adminPanelBtn').style.display = this.managers.auth.isAdminUser() ? 'flex' : 'none';
+        }
+        
+        // Update profile button onclick based on user type
+        if (isBusinessUser) {
+            document.getElementById('editProfileBtn').onclick = () => {
+                this.closeSettings();
+                this.managers.profile.openBusinessProfileEditor();
+            };
+        } else {
+            document.getElementById('editProfileBtn').onclick = () => {
+                this.closeSettings();
+                this.managers.profile.openProfileEditor();
+            };
+        }
+    }
+    
+    showSwitchAccount() {
+        if (confirm('Switch to a different account? This will log you out.')) {
+            this.managers.auth.logout().then(() => {
+                this.closeSettings();
+                this.managers.auth.showLogin();
+            });
+        }
+    }
+    
+    openBusinessDashboard() {
+        this.closeSettings();
+        this.managers.profile.openBusinessProfileEditor();
+    }
+    
+    shareApp() {
+        const shareText = 'Join me on CLASSIFIED - discover Hoi An\'s hidden gems!';
+        const shareUrl = window.location.href;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: 'CLASSIFIED Hoi An',
+                text: shareText,
+                url: shareUrl
+            }).catch(err => console.log('Share cancelled'));
+        } else {
+            // Fallback: copy to clipboard
+            navigator.clipboard.writeText(`${shareText} - ${shareUrl}`).then(() => {
+                alert('App link copied to clipboard! 📋');
+            });
+        }
+    }
+    
+    showHelp() {
+        alert(`
+🌟 Welcome to CLASSIFIED!
+
+🔍 Discover: Find the best restaurants and activities
+👥 Connect: Meet travelers and locals
+💬 Chat: Connect with matches
+🏪 Business: Promote your business
+
+Need help? Contact: support@classified.com
+        `);
+    }
+    
+    contactSupport() {
+        window.location.href = 'mailto:support@classified.com?subject=CLASSIFIED Support Request';
+    }
+    
+    /**
+     * Temporary method implementations for testing
+     */
+    setupTemporaryMethods() {
+        console.log('🔧 Setting up temporary method implementations...');
     }
     
     /**

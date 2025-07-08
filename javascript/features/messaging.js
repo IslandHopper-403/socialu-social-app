@@ -174,49 +174,52 @@ export class MessagingManager {
     /**
      * Load real chats from Firebase
      */
-    async loadRealChats(userId) {
-        try {
-            const chatsRef = collection(this.db, 'chats');
-            const q = query(
-                chatsRef,
-                where('participants', 'array-contains', userId),
-                orderBy('lastMessageTime', 'desc'),
-                limit(20)
-            );
+    // In messaging.js, find the loadRealChats method and update it:
+
+async loadRealChats(userId) {
+    try {
+        const chatsRef = collection(this.db, 'chats');
+        const q = query(
+            chatsRef,
+            where('participants', 'array-contains', userId),
+            orderBy('lastMessageTime', 'desc'),
+            limit(20)
+        );
+        
+        const snapshot = await getDocs(q);
+        const realChats = [];
+        
+        // CHANGE: renamed 'doc' parameter to 'docSnapshot' to avoid conflict with imported doc function
+        for (const docSnapshot of snapshot.docs) {
+            const chatData = docSnapshot.data();
+            const partnerId = chatData.participants.find(id => id !== userId);
             
-            const snapshot = await getDocs(q);
-            const realChats = [];
-            
-            for (const doc of snapshot.docs) {
-                const chatData = doc.data();
-                const partnerId = chatData.participants.find(id => id !== userId);
-                
-                if (partnerId) {
-                    // Get partner info
-                    const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
-                    if (partnerDoc.exists()) {
-                        const partnerData = partnerDoc.data();
-                        realChats.push({
-                            id: doc.id,
-                            partnerId: partnerId,
-                            partnerName: partnerData.name,
-                            partnerAvatar: partnerData.photos?.[0] || 'https://via.placeholder.com/100',
-                            lastMessage: chatData.lastMessage,
-                            lastMessageTime: chatData.lastMessageTime
-                        });
-                    }
+            if (partnerId) {
+                // Get partner info
+                const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
+                if (partnerDoc.exists()) {
+                    const partnerData = partnerDoc.data();
+                    realChats.push({
+                        id: docSnapshot.id,
+                        partnerId: partnerId,
+                        partnerName: partnerData.name,
+                        partnerAvatar: partnerData.photos?.[0] || 'https://via.placeholder.com/100',
+                        lastMessage: chatData.lastMessage,
+                        lastMessageTime: chatData.lastMessageTime
+                    });
                 }
             }
-            
-            // If we have real chats, update the UI
-            if (realChats.length > 0) {
-                this.updateChatList(realChats);
-            }
-            
-        } catch (error) {
-            console.error('Error loading real chats:', error);
         }
+        
+        // If we have real chats, update the UI
+        if (realChats.length > 0) {
+            this.updateChatList(realChats);
+        }
+        
+    } catch (error) {
+        console.error('Error loading real chats:', error);
     }
+}
     
     /**
      * Update chat list UI
@@ -373,10 +376,11 @@ export class MessagingManager {
             const q = query(messagesRef, orderBy('timestamp', 'asc'));
             const snapshot = await getDocs(q);
             
-            const messages = [];
-            snapshot.forEach(doc => {
-                messages.push({ id: doc.id, ...doc.data() });
-            });
+
+        const messages = [];
+            snapshot.forEach(docSnapshot => {  // CHANGED from 'doc' to 'docSnapshot'
+            messages.push({ id: docSnapshot.id, ...docSnapshot.data() });
+});
             
             // Display messages
             this.displayMessages(messages, currentUser.uid);
@@ -438,14 +442,14 @@ export class MessagingManager {
         const messagesRef = collection(this.db, 'chats', chatId, 'messages');
         const q = query(messagesRef, orderBy('timestamp', 'asc'));
         
-        const unsubscribe = onSnapshot(q, (snapshot) => {
+       const unsubscribe = onSnapshot(q, (snapshot) => {
             const messages = [];
-            snapshot.forEach(doc => {
-                messages.push({ id: doc.id, ...doc.data() });
-            });
-            
-            this.displayMessages(messages, currentUser.uid);
-        });
+            snapshot.forEach(docSnapshot => {  // CHANGED from 'doc' to 'docSnapshot'
+                messages.push({ id: docSnapshot.id, ...docSnapshot.data() });
+    });
+    
+        this.displayMessages(messages, currentUser.uid);
+});
         
         this.chatListeners.set(chatId, unsubscribe);
     }
@@ -464,12 +468,12 @@ export class MessagingManager {
         this.matchListener = onSnapshot(q, (snapshot) => {
             snapshot.docChanges().forEach(change => {
                 if (change.type === 'added') {
-                    const matchData = change.doc.data();
+                    const matchData = change.doc.data();  // This is OK - it's change.doc, not just doc
                     // Handle new match
                     this.handleNewMatch(matchData);
-                }
-            });
-        });
+        }
+    });
+});
     }
     
     /**

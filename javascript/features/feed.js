@@ -557,49 +557,51 @@ export class FeedManager {
     /**
      * Create user feed item
      */
-    createUserFeedItem(user, index) {
-        const feedItem = document.createElement('div');
-        feedItem.className = 'user-feed-item';
-        feedItem.style.animationDelay = `${index * 0.1}s`;
-        feedItem.style.cursor = 'pointer';
-        
-        // Ensure user has an ID
-        const userId = user.uid || user.id || `demo_${user.name.toLowerCase().replace(/\s/g, '_')}`;
-        user.uid = userId;
-        
-        // Make entire card clickable
-        feedItem.addEventListener('click', (e) => {
-            if (!e.target.closest('.user-actions')) {
-                window.CLASSIFIED.openUserProfile(user);
-            }
-        });
-        
-        feedItem.innerHTML = `
-            <div class="user-status-badges">
-                ${user.isOnline ? '<div class="status-badge status-online">🟢 Online</div>' : ''}
-                <div class="status-badge status-distance">📍 ${user.distance}</div>
-                <div class="status-badge status-match">🔥 ${user.matchPercentage}% Match</div>
+    // In feed.js, find the createUserFeedItem method and ensure it starts like this:
+
+createUserFeedItem(user, index) {
+    const feedItem = document.createElement('div');
+    feedItem.className = 'user-feed-item';
+    feedItem.style.animationDelay = `${index * 0.1}s`;
+    feedItem.style.cursor = 'pointer';
+    
+    // Ensure user has an ID - THIS IS THE IMPORTANT PART
+    const userId = user.uid || user.id || `demo_${user.name.toLowerCase().replace(/\s/g, '_')}`;
+    user.uid = userId; // Make sure the user object has uid set
+    
+    // Make entire card clickable
+    feedItem.addEventListener('click', (e) => {
+        if (!e.target.closest('.user-actions')) {
+            window.CLASSIFIED.openUserProfile(user);
+        }
+    });
+    
+    feedItem.innerHTML = `
+        <div class="user-status-badges">
+            ${user.isOnline ? '<div class="status-badge status-online">🟢 Online</div>' : ''}
+            <div class="status-badge status-distance">📍 ${user.distance}</div>
+            <div class="status-badge status-match">🔥 ${user.matchPercentage}% Match</div>
+        </div>
+        <div class="user-image" style="background-image: url('${user.image}')">
+            <div class="user-image-overlay">
+                <div class="user-name">${user.name}, ${user.age}</div>
             </div>
-            <div class="user-image" style="background-image: url('${user.image}')">
-                <div class="user-image-overlay">
-                    <div class="user-name">${user.name}, ${user.age}</div>
-                </div>
+        </div>
+        <div class="user-info">
+            <div class="user-bio">${user.bio}</div>
+            <div class="user-interests">
+                ${user.interests.map(interest => `<span class="interest-tag">${interest}</span>`).join('')}
             </div>
-            <div class="user-info">
-                <div class="user-bio">${user.bio}</div>
-                <div class="user-interests">
-                    ${user.interests.map(interest => `<span class="interest-tag">${interest}</span>`).join('')}
-                </div>
-                <div class="user-actions">
-                    <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${userId}')">✕ Pass</button>
-                    <button class="action-btn chat-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${userId}')">💬 Chat</button>
-                    <button class="action-btn super-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('superlike', '${userId}')">⭐ Super</button>
-                </div>
+            <div class="user-actions">
+                <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${userId}')">✕ Pass</button>
+                <button class="action-btn chat-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${userId}')">💬 Chat</button>
+                <button class="action-btn super-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('superlike', '${userId}')">⭐ Super</button>
             </div>
-        `;
-        
-        return feedItem;
-    }
+        </div>
+    `;
+    
+    return feedItem;
+}
     
     /**
      * Add business signup banner

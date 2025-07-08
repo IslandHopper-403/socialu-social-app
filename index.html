@@ -111,6 +111,151 @@
             </div>
         </div>
         
+        <!-- Settings Overlay -->
+        <div id="settingsOverlay" class="overlay-screen">
+            <div class="header">
+                <button class="back-btn" onclick="CLASSIFIED.closeSettings()">←</button>
+                <div class="header-title">Settings</div>
+                <button class="settings-btn" style="opacity: 0; cursor: default;">⚙️</button>
+            </div>
+            <div class="settings-content">
+                <!-- User Account Section -->
+                <div class="settings-section">
+                    <div class="section-title">Account</div>
+                    <div class="settings-user-info">
+                        <div class="user-avatar" id="settingsUserAvatar">
+                            <span style="font-size: 36px;">👤</span>
+                        </div>
+                        <div class="user-details">
+                            <div class="user-name" id="settingsUserName">Guest User</div>
+                            <div class="user-email" id="settingsUserEmail">Not logged in</div>
+                            <div class="user-status" id="settingsUserStatus">
+                                <span class="status-indicator"></span>
+                                <span id="settingsAccountType">Guest Mode</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-actions">
+                        <button class="settings-btn-primary" id="editProfileBtn" onclick="CLASSIFIED.openProfileEditor()">
+                            <span class="btn-icon">✏️</span>
+                            Edit Profile
+                        </button>
+                        <button class="settings-btn-secondary" id="viewProfileBtn" onclick="CLASSIFIED.viewMyProfile()">
+                            <span class="btn-icon">👤</span>
+                            View Profile
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Preferences Section -->
+                <div class="settings-section">
+                    <div class="section-title">Preferences</div>
+                    <div class="settings-list">
+                        <div class="settings-item">
+                            <div class="settings-item-info">
+                                <div class="settings-item-title">🔔 Push Notifications</div>
+                                <div class="settings-item-subtitle">Get notified about new matches and messages</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="notificationsToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-item-info">
+                                <div class="settings-item-title">📍 Location Services</div>
+                                <div class="settings-item-subtitle">Share your location to find nearby users</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="locationToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-item-info">
+                                <div class="settings-item-title">🌙 Dark Mode</div>
+                                <div class="settings-item-subtitle">Always enabled for better experience</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked disabled>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Account Actions Section -->
+                <div class="settings-section">
+                    <div class="section-title">Account Actions</div>
+                    <div class="settings-list">
+                        <button class="settings-item settings-clickable" id="switchAccountBtn" onclick="CLASSIFIED.showSwitchAccount()">
+                            <div class="settings-item-info">
+                                <div class="settings-item-title">🔄 Switch Account</div>
+                                <div class="settings-item-subtitle">Login with a different account</div>
+                            </div>
+                            <span class="settings-arrow">→</span>
+                        </button>
+                        <button class="settings-item settings-clickable" id="businessDashboardBtn" onclick="CLASSIFIED.openBusinessDashboard()" style="display: none;">
+                            <div class="settings-item-info">
+                                <div class="settings-item-title">🏪 Business Dashboard</div>
+                                <div class="settings-item-subtitle">Manage your business profile</div>
+                            </div>
+                            <span class="settings-arrow">→</span>
+                        </button>
+                        <button class="settings-item settings-clickable" id="adminPanelBtn" onclick="CLASSIFIED.openAdminPanel()" style="display: none;">
+                            <div class="settings-item-info">
+                                <div class="settings-item-title">🛡️ Admin Panel</div>
+                                <div class="settings-item-subtitle">Review pending businesses</div>
+                            </div>
+                            <span class="settings-arrow">→</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Support Section -->
+                <div class="settings-section">
+                    <div class="section-title">Support</div>
+                    <div class="settings-list">
+                        <button class="settings-item settings-clickable" onclick="CLASSIFIED.showHelp()">
+                            <div class="settings-item-info">
+                                <div class="settings-item-title">❓ Help & FAQ</div>
+                                <div class="settings-item-subtitle">Get answers to common questions</div>
+                            </div>
+                            <span class="settings-arrow">→</span>
+                        </button>
+                        <button class="settings-item settings-clickable" onclick="CLASSIFIED.contactSupport()">
+                            <div class="settings-item-info">
+                                <div class="settings-item-title">💬 Contact Support</div>
+                                <div class="settings-item-subtitle">support@classified.com</div>
+                            </div>
+                            <span class="settings-arrow">→</span>
+                        </button>
+                        <button class="settings-item settings-clickable" onclick="CLASSIFIED.shareApp()">
+                            <div class="settings-item-info">
+                                <div class="settings-item-title">🚀 Share CLASSIFIED</div>
+                                <div class="settings-item-subtitle">Invite friends to join</div>
+                            </div>
+                            <span class="settings-arrow">→</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- App Info -->
+                <div class="settings-footer">
+                    <div class="app-version">CLASSIFIED v7.0</div>
+                    <div class="app-copyright">Made with ❤️ in Hoi An</div>
+                </div>
+                
+                <!-- Logout Button -->
+                <div class="settings-logout-section">
+                    <button class="logout-btn" id="logoutBtn" onclick="CLASSIFIED.logout()">
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+        
         <!-- Profile Editor Overlay -->
         <div id="profileEditor" class="overlay-screen">
             <div class="header">
@@ -716,6 +861,15 @@
     <!-- Note: Firebase is loaded as ES6 modules via CDN in firebase.js -->
     <script type="module" src="javascript/main.js"></script>
 
+    <script>
+        // Auto-enable guest mode after 3 seconds if nothing loads
+        setTimeout(() => {
+                if (window.CLASSIFIED && window.CLASSIFIED.enableGuestMode) {
+                console.log('🚀 Auto-enabling guest mode...');
+                window.CLASSIFIED.enableGuestMode();
+     }
+}, 3000);
+</script>
 
 </body>
 </html>

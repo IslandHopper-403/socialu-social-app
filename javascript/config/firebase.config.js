@@ -33,8 +33,16 @@ export class FirebaseConfig {
      * Initialize Firebase and all services
      * @returns {Object} Object containing all Firebase services
      */
-    initialize() {
+    async initialize() {
         try {
+            console.log('🔥 Initializing Firebase with modular SDK...');
+            
+            // Dynamically import Firebase modules
+            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js');
+            const { getAuth, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, signOut, onAuthStateChanged, updateProfile } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js');
+            const { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, limit, serverTimestamp, updateDoc } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js');
+            const { getStorage } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js');
+            
             // Initialize Firebase app
             this.app = initializeApp(this.config);
             
@@ -44,11 +52,16 @@ export class FirebaseConfig {
             this.services.storage = getStorage(this.app);
             this.services.googleProvider = new GoogleAuthProvider();
             
-            // For backward compatibility with existing code
+            // Create compatibility layer for older Firebase code
             window.firebase = {
                 auth: () => this.services.auth,
                 firestore: () => this.services.db,
-                storage: () => this.services.storage
+                storage: () => this.services.storage,
+                firestore: {
+                    FieldValue: {
+                        serverTimestamp: () => serverTimestamp()
+                    }
+                }
             };
             
             // Also expose services directly for compatibility
@@ -57,10 +70,17 @@ export class FirebaseConfig {
             window.storage = this.services.storage;
             
             console.log('🔥 Firebase initialized successfully with modular SDK');
+            console.log('📦 Services available:', {
+                auth: !!this.services.auth,
+                db: !!this.services.db,
+                storage: !!this.services.storage,
+                googleProvider: !!this.services.googleProvider
+            });
             
             return this.services;
         } catch (error) {
             console.error('❌ Firebase initialization error:', error);
+            console.error('Error details:', error.message);
             throw error;
         }
     }

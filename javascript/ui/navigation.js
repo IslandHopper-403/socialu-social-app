@@ -270,7 +270,9 @@ export class NavigationManager {
         }
         
         if (bottomNav) {
-            bottomNav.style.display = isAuthenticated ? 'flex' : 'none';
+            // Show nav if authenticated OR in guest mode
+const isGuestMode = this.state.get('isGuestMode');
+bottomNav.style.display = (isAuthenticated || isGuestMode) ? 'flex' : 'none';
         }
     }
     

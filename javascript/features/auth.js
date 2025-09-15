@@ -79,12 +79,15 @@ export class AuthManager {
     /**
      * Handle user login
      */
-    async handleUserLogin(user) {
-        this.state.update({
-            currentUser: user,
-            isAuthenticated: true,
-            isGuestMode: false
-        });
+   async handleUserLogin(user) {
+    this.state.update({
+        currentUser: user,
+        isAuthenticated: true,
+        isGuestMode: false
+    });
+    
+    // ADD THIS LINE to force nav visibility
+    document.querySelector('.bottom-nav').style.display = 'flex';
         
         // Hide auth screens
         this.hideAuthScreens();

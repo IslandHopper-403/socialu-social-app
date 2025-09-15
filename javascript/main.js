@@ -286,7 +286,15 @@ class ClassifiedApp {
             populateUserFeed: () => this.managers.feed.populateUserFeed(),
             populateRestaurantFeed: () => this.managers.feed.populateRestaurantFeed(),
             populateActivityFeed: () => this.managers.feed.populateActivityFeed(),
+
+                    // Menu methods
+showFullMenu: function() {
+    console.log('Show full menu clicked');
+    alert('Full menu feature coming soon!');
+}
         };
+
+
         
         // Also expose some properties for compatibility
         Object.defineProperty(window.CLASSIFIED, 'isAdminUser', {

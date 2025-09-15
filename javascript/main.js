@@ -504,10 +504,3 @@ if (document.readyState === 'loading') {
 }
 
 
-// Javascript for Menu Overlay button
-
-showFullMenu: function() {
-    // This would show the full menu overlay we created earlier
-    // or navigate to a dedicated menu page
-    console.log('Show full menu clicked');
-}

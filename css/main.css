@@ -1797,3 +1797,7 @@ input:disabled + .toggle-slider {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
 }
+/* Force navigation to always show */
+.bottom-nav {
+    display: flex !important;
+}

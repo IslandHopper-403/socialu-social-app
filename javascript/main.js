@@ -463,12 +463,12 @@ Need help? Contact: support@classified.com
     
     // Show initial content while waiting for auth
     setTimeout(() => {
-        // If no auth state determined after 2 seconds, enable guest mode instead of showing login
+        // If no auth state determined after 2 seconds, show login
         if (!this.state.get('isAuthenticated') && !this.state.get('isGuestMode')) {
-            console.log('🔑 No auth state detected, enabling guest mode');
-            this.managers.auth.enableGuestMode();
+            console.log('🔑 No auth state detected, showing login screen');
+            this.managers.auth.showLogin();
             
-            // Load demo data in feeds
+            // Also load demo data in feeds for preview
             this.managers.feed.populateRestaurantFeedWithData(this.mockData.getRestaurants());
             this.managers.feed.populateActivityFeedWithData(this.mockData.getActivities());
         }

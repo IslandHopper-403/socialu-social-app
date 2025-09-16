@@ -1102,6 +1102,7 @@ input:disabled + .toggle-slider {
     background-position: center;
     position: relative;
     flex-shrink: 0; /* Add this line */
+    border: 3px solid red !important; /* DEBUG: See if hero moves */
 }
 .profile-overlay {
     position: absolute;
@@ -1136,6 +1137,8 @@ input:disabled + .toggle-slider {
     overflow-y: auto;
      overflow-x: hidden; /* Add this line */
     -webkit-overflow-scrolling: touch; /* Add this line */
+    border: 3px solid green !important; /* DEBUG: See scrolling area */
+    background: rgba(0, 255, 0, 0.1) !important;
 }
 .profile-description {
     line-height: 1.6;

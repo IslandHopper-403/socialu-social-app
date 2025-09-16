@@ -628,7 +628,7 @@ body {
 
 /* Overlay Screens */
 .overlay-screen {
-    position: relative; /* Changed to relative from fixed */
+    position: fixed; 
     top: 0;
     left: 50%;
     transform: translateX(-50%);

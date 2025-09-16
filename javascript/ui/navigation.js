@@ -85,18 +85,24 @@ export class NavigationManager {
      */
     showScreen(screenType, updateHistory = true) {
         console.log(`📱 Navigating to ${screenType} screen`);
-
+        
+        // Check guest mode restrictions
+        if (this.state.get('isGuestMode') && screenType === 'social') {
+            alert('🔒 Sign up to access social features and connect with other travelers!');
+            if (this.authManager) {
+                this.authManager.showRegister();
+            }
             return;
         }
         
         // Update state
-        // this.state.set('currentScreen', screenType);
+        this.state.set('currentScreen', screenType);
         
         // Update UI
-      //  this.updateScreenUI(screenType);
+        this.updateScreenUI(screenType);
         
         // Update navigation UI
-       // this.updateNavigationUI(screenType);
+        this.updateNavigationUI(screenType);
         
         // Update browser history
         if (updateHistory) {
@@ -104,26 +110,26 @@ export class NavigationManager {
         }
         
         // Track navigation
-       // this.navigationHistory.push(screenType);
-      //  if (this.navigationHistory.length > 10) {
-       //     this.navigationHistory.shift();
-     //   }
+        this.navigationHistory.push(screenType);
+        if (this.navigationHistory.length > 10) {
+            this.navigationHistory.shift();
+        }
     }
     
     /**
      * Update screen visibility
      */
-    // updateScreenUI(screenType) {
+    updateScreenUI(screenType) {
         // Hide all screens
-     //    document.querySelectorAll('.screen').forEach(screen => {
-        //    screen.classList.remove('active');
-     //   });
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
+        });
         
         // Show target screen
-        // const targetScreen = document.getElementById(`${screenType}Screen`);
-        // if (targetScreen) {
-          //   targetScreen.classList.add('active');
-      //  }
+        const targetScreen = document.getElementById(`${screenType}Screen`);
+        if (targetScreen) {
+            targetScreen.classList.add('active');
+        }
         
         // Reset social tab when leaving social screen
         if (screenType !== 'social') {

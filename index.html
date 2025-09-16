@@ -905,18 +905,28 @@
     <script type="module" src="javascript/main.js"></script>
 
 <script>
-    // Auto-enable guest mode ONLY if not authenticated after 5 seconds
-    setTimeout(() => {
-        if (window.classifiedApp && window.classifiedApp.state) {
-            const isAuthenticated = window.classifiedApp.state.get('isAuthenticated');
-            const isGuestMode = window.classifiedApp.state.get('isGuestMode');
-            
-            if (!isAuthenticated && !isGuestMode && window.CLASSIFIED && window.CLASSIFIED.enableGuestMode) {
-                console.log('🚀 No auth detected, enabling guest mode...');
+      // Start in guest mode immediately for better UX
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            // Check if not authenticated after 1 second
+            if (window.CLASSIFIED && !window.classifiedApp?.state?.get('isAuthenticated')) {
+                console.log('🚀 Auto-enabling guest mode...');
                 window.CLASSIFIED.enableGuestMode();
+                
+                // Hide login screen
+                document.getElementById('loginScreen')?.classList.remove('show');
+                
+                // Show main navigation
+                document.querySelector('.bottom-nav').style.display = 'flex';
+                
+                // Load demo content
+                window.CLASSIFIED.populateRestaurantFeed();
+                window.CLASSIFIED.populateActivityFeed();
+                window.CLASSIFIED.populateUserFeed();
             }
-        }
-    }, 1000);
+        }, 1000);
+    });
+
 </script>
 
 </body>

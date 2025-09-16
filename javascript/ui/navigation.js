@@ -86,14 +86,12 @@ export class NavigationManager {
     showScreen(screenType, updateHistory = true) {
         console.log(`📱 Navigating to ${screenType} screen`);
         
-        // Check guest mode restrictions
+        // SOFT guest mode notification - don't block navigation
         if (this.state.get('isGuestMode') && screenType === 'social') {
-            alert('🔒 Sign up to access social features and connect with other travelers!');
-            if (this.authManager) {
-                this.authManager.showRegister();
-            }
-            return;
-        }
+            // Show a subtle notification instead of blocking
+            this.showGuestNotification();
+            // Continue with navigation - don't return!
+    }
         
         // Update state
         this.state.set('currentScreen', screenType);

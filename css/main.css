@@ -1097,7 +1097,7 @@ input:disabled + .toggle-slider {
 
 /* Profile View Styles */
 .profile-hero {
-    height: 250px;
+    height: 350px;
     background-size: cover;
     background-position: center;
     position: relative;

@@ -113,17 +113,17 @@ export class NavigationManager {
     /**
      * Update screen visibility
      */
-    updateScreenUI(screenType) {
+    // updateScreenUI(screenType) {
         // Hide all screens
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.remove('active');
+     //    document.querySelectorAll('.screen').forEach(screen => {
+        //    screen.classList.remove('active');
         });
         
         // Show target screen
-        const targetScreen = document.getElementById(`${screenType}Screen`);
-        if (targetScreen) {
-            targetScreen.classList.add('active');
-        }
+        // const targetScreen = document.getElementById(`${screenType}Screen`);
+        // if (targetScreen) {
+          //   targetScreen.classList.add('active');
+      //  }
         
         // Reset social tab when leaving social screen
         if (screenType !== 'social') {

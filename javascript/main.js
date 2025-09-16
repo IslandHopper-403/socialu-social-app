@@ -286,15 +286,7 @@ class ClassifiedApp {
             populateUserFeed: () => this.managers.feed.populateUserFeed(),
             populateRestaurantFeed: () => this.managers.feed.populateRestaurantFeed(),
             populateActivityFeed: () => this.managers.feed.populateActivityFeed(),
-
-                    // Menu methods
-showFullMenu: function() {
-    console.log('Show full menu clicked');
-    alert('Full menu feature coming soon!');
-}
         };
-
-
         
         // Also expose some properties for compatibility
         Object.defineProperty(window.CLASSIFIED, 'isAdminUser', {
@@ -457,23 +449,23 @@ Need help? Contact: support@classified.com
     /**
      * Set up initial auth state
      */
-   setupInitialAuthState() {
-    // Check if user is already logged in
-    console.log('🔐 Checking initial auth state...');
-    
-    // Show initial content while waiting for auth
-    setTimeout(() => {
-        // If no auth state determined after 2 seconds, show login
-        if (!this.state.get('isAuthenticated') && !this.state.get('isGuestMode')) {
-            console.log('🔑 No auth state detected, showing login screen');
-            this.managers.auth.showLogin();
-            
-            // Also load demo data in feeds for preview
-            this.managers.feed.populateRestaurantFeedWithData(this.mockData.getRestaurants());
-            this.managers.feed.populateActivityFeedWithData(this.mockData.getActivities());
-        }
-    }, 2000);
-}
+    setupInitialAuthState() {
+        // Check if user is already logged in
+        console.log('🔐 Checking initial auth state...');
+        
+        // Show initial content while waiting for auth
+        setTimeout(() => {
+            // If no auth state determined after 2 seconds, show login
+            if (!this.state.get('isAuthenticated') && !this.state.get('isGuestMode')) {
+                console.log('🔑 No auth state detected, showing login screen');
+                this.managers.auth.showLogin();
+                
+                // Also load demo data in feeds for preview
+                this.managers.feed.populateRestaurantFeedWithData(this.mockData.getRestaurants());
+                this.managers.feed.populateActivityFeedWithData(this.mockData.getActivities());
+            }
+        }, 2000);
+    }
     
     /**
      * Handle initialization errors
@@ -510,5 +502,3 @@ if (document.readyState === 'loading') {
     // DOM already loaded
     window.classifiedApp = new ClassifiedApp();
 }
-
-

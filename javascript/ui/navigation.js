@@ -104,10 +104,10 @@ export class NavigationManager {
         }
         
         // Track navigation
-        this.navigationHistory.push(screenType);
-        if (this.navigationHistory.length > 10) {
-            this.navigationHistory.shift();
-        }
+       // this.navigationHistory.push(screenType);
+      //  if (this.navigationHistory.length > 10) {
+       //     this.navigationHistory.shift();
+     //   }
     }
     
     /**

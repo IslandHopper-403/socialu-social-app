@@ -13,6 +13,42 @@ export class NavigationManager {
         
         // Track navigation history
         this.navigationHistory = [];
+
+// Ghost content loading frames - Delete if unwanted
+        showContentSkeleton(containerId, type = 'default') {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const skeletons = {
+        user: `
+            <div class="skeleton-user-card">
+                <div class="skeleton-avatar"></div>
+                <div class="skeleton-info">
+                    <div class="skeleton-name"></div>
+                    <div class="skeleton-bio"></div>
+                    <div class="skeleton-tags"></div>
+                </div>
+            </div>
+        `,
+        restaurant: `
+            <div class="skeleton-business-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-title"></div>
+                <div class="skeleton-description"></div>
+            </div>
+        `,
+        default: `
+            <div class="skeleton-card">
+                <div class="skeleton-header"></div>
+                <div class="skeleton-body"></div>
+                <div class="skeleton-footer"></div>
+            </div>
+        `
+    };
+    
+    container.innerHTML = skeletons[type].repeat(3);
+}
+        // Delete inside here if unwanted
     }
     
     /**

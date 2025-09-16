@@ -89,11 +89,11 @@ export class NavigationManager {
        console.log(`📱 Navigating to ${screenType} screen`);
         
         // Check guest mode restrictions
-         if (this.state.get('isGuestMode') && screenType === 'social') {
-           alert('🔒 Sign up to access social features and connect with other travelers!');
-           if (this.authManager) {
-               this.authManager.showRegister();
-          }
+        // if (this.state.get('isGuestMode') && screenType === 'social') {
+         //  alert('🔒 Sign up to access social features and connect with other travelers!');
+         //  if (this.authManager) {
+              //  this.authManager.showRegister();
+          // }
           return;
        }
         

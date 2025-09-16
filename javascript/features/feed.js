@@ -119,7 +119,17 @@ export class FeedManager {
         this.populateRestaurantFeedWithData(this.mockData.getRestaurants());
         this.populateActivityFeedWithData(this.mockData.getActivities());
         this.populateGuestUserFeed();
-
+         
+        // Show full user feed with "Sign up to connect" overlays
+        const users = this.mockData.getUsers();
+        const container = document.getElementById('userFeedContainer');
+        if (container) {
+            container.innerHTML = '';
+            users.forEach((user, index) => {
+                const feedItem = this.createUserFeedItem(user, index);
+                container.appendChild(feedItem);
+            });
+        }
     }
     
     /**

@@ -7,7 +7,6 @@
 export class NavigationManager {
     constructor(firebaseServices, appState) {
         this.state = appState;
-        this.listenersSetup = false;
         
         // References to other managers (set later)
         this.authManager = null;
@@ -40,11 +39,8 @@ export class NavigationManager {
      * Set up event listeners for navigation
      */
     setupEventListeners() {
-        if (this.listenersSetup) return; // Exit if already setup
-        this.listenersSetup = true;
-
         // Bottom navigation listeners - Remove existing onclick first
-         document.querySelectorAll('.nav-item').forEach(item => {
+        document.querySelectorAll('.nav-item').forEach(item => {
             // Remove any existing onclick
             item.onclick = null;
             item.addEventListener('click', (e) => {
@@ -52,7 +48,6 @@ export class NavigationManager {
                 this.showScreen(screen);
             });
         });
-
         
         // Back button listeners for overlays only
         document.querySelectorAll('.overlay-screen .back-btn').forEach(btn => {
@@ -275,9 +270,7 @@ export class NavigationManager {
         }
         
         if (bottomNav) {
-            // Show nav if authenticated OR in guest mode
-const isGuestMode = this.state.get('isGuestMode');
-bottomNav.style.display = (isAuthenticated || isGuestMode) ? 'flex' : 'none';
+            bottomNav.style.display = isAuthenticated ? 'flex' : 'none';
         }
     }
     

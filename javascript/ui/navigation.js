@@ -7,6 +7,7 @@
 export class NavigationManager {
     constructor(firebaseServices, appState) {
         this.state = appState;
+        this.listenersSetup = false;
         
         // References to other managers (set later)
         this.authManager = null;
@@ -39,6 +40,9 @@ export class NavigationManager {
      * Set up event listeners for navigation
      */
     setupEventListeners() {
+        if (this.listenersSetup) return; // Exit if already setup
+        this.listenersSetup = true;
+
         // Bottom navigation listeners - Remove existing onclick first
          document.querySelectorAll('.nav-item').forEach(item => {
             // Remove any existing onclick

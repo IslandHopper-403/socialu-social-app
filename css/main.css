@@ -1144,7 +1144,7 @@ input:disabled + .toggle-slider {
 }
 /* Make hero break out of content padding */
 .profile-content .profile-hero {
-    margin: -20px -20px 8px -20px; /* Negative margins to counteract padding */
+    margin: -20px -20px 16px -20px; /* Negative margins to counteract padding */
     height: 350px;
     width: calc(100% + 40px); /* Compensate for negative margins */
     position: relative;

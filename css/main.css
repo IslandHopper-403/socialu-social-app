@@ -1104,6 +1104,26 @@ input:disabled + .toggle-slider {
     flex-shrink: 0; /* Add this line */
     border: 3px solid red !important; /* DEBUG: See if hero moves */
 }
+
+/* STICKY HERO FIX - ADD THIS SECTION */
+/* Force the hero to be part of normal document flow */
+.overlay-screen .profile-hero {
+    position: static !important;
+    background-attachment: scroll !important;
+}
+
+/* Make the entire overlay scrollable */
+.overlay-screen {
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+.overlay-screen.show {
+    display: flex;
+}
+/* END STICKY HERO FIX */
+
 .profile-overlay {
     position: absolute;
     bottom: 0;

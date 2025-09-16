@@ -640,6 +640,7 @@ body {
     display: none;
     flex-direction: column;
     animation: slideUp 0.3s ease;
+    overflow: hidden;
 }
 .overlay-screen.show {
     display: flex;
@@ -1100,6 +1101,7 @@ input:disabled + .toggle-slider {
     background-size: cover;
     background-position: center;
     position: relative;
+    flex-shrink: 0; /* Add this line */
 }
 .profile-overlay {
     position: absolute;
@@ -1132,6 +1134,8 @@ input:disabled + .toggle-slider {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
+     overflow-x: hidden; /* Add this line */
+    -webkit-overflow-scrolling: touch; /* Add this line */
 }
 .profile-description {
     line-height: 1.6;

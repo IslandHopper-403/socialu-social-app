@@ -1097,7 +1097,7 @@ input:disabled + .toggle-slider {
 
 /* Profile View Styles */
 .profile-hero {
-    height: 350px;
+    height: 250px;
     background-size: cover;
     background-position: center;
     position: relative;
@@ -1135,7 +1135,7 @@ input:disabled + .toggle-slider {
 }
 .profile-content {
     flex: 1;
-    padding: 20px;
+    padding: 0px;
     overflow-y: auto;
      overflow-x: hidden; /* Add this line */
     -webkit-overflow-scrolling: touch; /* Add this line */

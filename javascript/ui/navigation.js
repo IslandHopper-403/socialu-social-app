@@ -117,7 +117,7 @@ export class NavigationManager {
         // Hide all screens
      //    document.querySelectorAll('.screen').forEach(screen => {
         //    screen.classList.remove('active');
-        });
+     //   });
         
         // Show target screen
         // const targetScreen = document.getElementById(`${screenType}Screen`);

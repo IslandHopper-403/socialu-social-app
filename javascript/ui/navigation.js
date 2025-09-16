@@ -93,7 +93,7 @@ export class NavigationManager {
          //  alert('🔒 Sign up to access social features and connect with other travelers!');
          //  if (this.authManager) {
               //  this.authManager.showRegister();
-          // }
+           }
           return;
        }
         

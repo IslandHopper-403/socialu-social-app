@@ -120,19 +120,6 @@ export class FeedManager {
         this.populateActivityFeedWithData(this.mockData.getActivities());
         this.populateGuestUserFeed();
 
-         // Show full user feed with "Sign up to connect" overlays
-        // Recently Added Code Delete between here and 
-        const users = this.mockData.getUsers();
-        const container = document.getElementById('userFeedContainer');
-        if (container) {
-            container.innerHTML = '';
-            users.forEach((user, index) => {
-                const feedItem = this.createUserFeedItem(user, index);
-                container.appendChild(feedItem);
-                // Recently added code 
-                // HERE if broken
-            });
-        }
     }
     
     /**

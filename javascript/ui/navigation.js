@@ -14,6 +14,8 @@ export class NavigationManager {
         // Track navigation history
         this.navigationHistory = [];
 
+    }
+
 // Ghost content loading frames - Delete if unwanted
         showContentSkeleton(containerId, type = 'default') {
     const container = document.getElementById(containerId);
@@ -49,7 +51,6 @@ export class NavigationManager {
     container.innerHTML = skeletons[type].repeat(3);
 }
         // Delete inside here if unwanted
-    }
     
     /**
      * Set references to other managers

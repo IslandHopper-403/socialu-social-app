@@ -40,7 +40,14 @@ export class NavigationManager {
      */
     setupEventListeners() {
         // Bottom navigation listeners - Remove existing onclick first
-    
+         document.querySelectorAll('.nav-item').forEach(item => {
+            // Remove any existing onclick
+            item.onclick = null;
+            item.addEventListener('click', (e) => {
+                const screen = item.dataset.screen;
+                this.showScreen(screen);
+            });
+        });
 
         
         // Back button listeners for overlays only

@@ -93,10 +93,10 @@ export class NavigationManager {
         // this.state.set('currentScreen', screenType);
         
         // Update UI
-        this.updateScreenUI(screenType);
+      //  this.updateScreenUI(screenType);
         
         // Update navigation UI
-        this.updateNavigationUI(screenType);
+       // this.updateNavigationUI(screenType);
         
         // Update browser history
         if (updateHistory) {

@@ -163,6 +163,64 @@ export class NavigationManager {
             this.showScreen('restaurant');
         }
     }
+
+  /**
+     * Go back in navigation history
+     */
+    goBack() {
+        if (this.navigationHistory.length > 1) {
+            this.navigationHistory.pop(); // Remove current
+            const previousScreen = this.navigationHistory.pop(); // Get previous
+            this.showScreen(previousScreen);
+        } else {
+            // Default to restaurant screen
+            this.showScreen('restaurant');
+        }
+    }
+    
+    /**
+     * Show subtle guest notification
+     */
+    showGuestNotification() {
+        // Check if we've already shown it recently
+        if (this.guestNotificationShown) return;
+        this.guestNotificationShown = true;
+        
+        // Create subtle notification bar
+        const notification = document.createElement('div');
+        notification.className = 'guest-notification-bar';
+        notification.innerHTML = `
+            <div style="background: linear-gradient(135deg, #FFD700, #FF6B6B); 
+                        padding: 12px; text-align: center; color: white; 
+                        font-size: 14px; cursor: pointer; 
+                        animation: slideDown 0.3s ease;">
+                ✨ Sign up to chat and connect with travelers! 
+                <span style="font-weight: bold;">Tap here →</span>
+            </div>
+        `;
+        
+        notification.onclick = () => {
+            this.authManager.showRegister();
+            notification.remove();
+        };
+        
+        // Insert at top of social screen
+        const socialScreen = document.getElementById('socialScreen');
+        if (socialScreen) {
+            socialScreen.insertBefore(notification, socialScreen.firstChild);
+        }
+        
+        // Auto-remove after 10 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 10000);
+        
+        // Reset flag after 5 minutes so we can show again if needed
+        setTimeout(() => {
+            this.guestNotificationShown = false;
+        }, 300000);
+    }
+    
     
     /**
      * Show overlay screen

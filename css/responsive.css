@@ -33,7 +33,7 @@
 
 /* Make the profile content scrollable */
 .profile-content {
-    flex: 1;
+    flex: height: calc(100vh - 200px);;
     padding: 20px;
     overflow-y: auto;
     overflow-x: hidden;

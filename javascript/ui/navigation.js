@@ -194,7 +194,7 @@ export class NavigationManager {
                         padding: 12px; text-align: center; color: white; 
                         font-size: 14px; cursor: pointer; 
                         animation: slideDown 0.3s ease;">
-                        🚀 Sign up to chat and connect with travelers! 
+                        🚀 Join CLASSIFIED to connect with travelers and discover hidden gems! Tap to sign up
                 <span style="font-weight: bold;">Tap here →</span>
             </div>
         `;

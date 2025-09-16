@@ -12,7 +12,7 @@ export class AppState {
             currentSocialTab: 'userFeed',
             
             // Authentication state
-            currentUser: null,
+            currentUser: false,
             isAuthenticated: false,
             isGuestMode: false,
             isBusinessUser: false,

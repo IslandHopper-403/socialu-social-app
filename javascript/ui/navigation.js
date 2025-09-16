@@ -85,8 +85,8 @@ export class NavigationManager {
      */
 // Delete comment blocks if doesn't work 
     
-   // showScreen(screenType, updateHistory = true) {
-     //   console.log(`📱 Navigating to ${screenType} screen`);
+   showScreen(screenType, updateHistory = true) {
+       console.log(`📱 Navigating to ${screenType} screen`);
         
         // Check guest mode restrictions
         // if (this.state.get('isGuestMode') && screenType === 'social') {
@@ -95,7 +95,7 @@ export class NavigationManager {
          //       this.authManager.showRegister();
         //    }
         //    return;
-    //    }
+       }
         
         // Update state
         this.state.set('currentScreen', screenType);

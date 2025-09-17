@@ -294,6 +294,66 @@ export class MockData {
                 price: "$ - Budget Friendly",
                 contact: "+84 235 678 901"
             }
+               {
+                        id: 'motorbike-adventures',
+                        name: "Hoi An Motorbike Tours",
+                        type: "Adventure Tours",
+                        image: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?w=150&h=200&fit=crop",
+                        promo: "Sunrise Tour Special - Early Bird 20% Off",
+                        details: "Multiple daily tours • All skill levels",
+                        description: "Explore the countryside around Hoi An on authentic Vietnamese motorbikes. Safe, guided tours perfect for adventurous travelers wanting to see the real Vietnam.",
+                        location: "85 Cua Dai Street, Hoi An",
+                        hours: "6:00 AM - 8:00 PM",
+                        price: "$ - Moderate",
+                        contact: "+84 235 789 012"
+                    },
+                    {
+                        id: 'lantern-making-class',
+                        name: "Traditional Lantern Workshop",
+                        type: "Cultural Experience",
+                        image: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=150&h=200&fit=crop",
+                        promo: "Couples Workshop - Make Lanterns Together",
+                        details: "Daily classes 10am & 3pm • Take home your creation",
+                        description: "Learn to make traditional Vietnamese lanterns from local artisans. A perfect cultural activity for travelers wanting to create something beautiful and meaningful.",
+                        location: "Ancient Town Workshop District",
+                        hours: "9:00 AM - 6:00 PM",
+                        price: "$ - Budget Friendly",
+                        contact: "+84 235 890 123"
+                    },
+                    {
+                        id: 'cooking-school',
+                        name: "Sabirama Cooking School",
+                        type: "Culinary Experience",
+                        image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=150&h=200&fit=crop",
+                        promo: "Full Day Class - Market Tour Included",
+                        details: "Half & full day classes • Vegetarian options",
+                        description: "Hands-on Vietnamese cooking classes including market tours. Learn to make pho, banh mi, and other local favorites in a fun, social environment.",
+                        location: "Tra Que Vegetable Village",
+                        hours: "8:00 AM - 4:00 PM",
+                        price: "$ - Moderate",
+                        contact: "+84 235 901 234"
+                    },
+                    {
+                        id: 'beach-club-an-bang',
+                        name: "An Bang Beach Club",
+                        type: "Beach & Water Sports",
+                        image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop",
+                        logo: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=100&h=100&fit=crop",
+                        story: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=150&h=200&fit=crop",
+                        promo: "Beach Day Pass - Sunbed + Drink Included",
+                        details: "Daily 8am-sunset • Surfboard rental available",
+                        description: "Beautiful beach club on An Bang Beach with sunbeds, fresh seafood, and water sports. Perfect for beach lovers and surfers looking to relax and socialize.",
+                        location: "An Bang Beach, Hoi An",
+                        hours: "8:00 AM - 7:00 PM",
+                        price: "$ - Moderate",
+                        contact: "+84 235 012 345"
+                    }
         ];
     }
     

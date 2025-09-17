@@ -1,4 +1,4 @@
-// javascript/features/feed.js - FIXED VERSION
+// javascript/features/feed.js - CORRECTED VERSION
 
 import {
     collection,
@@ -12,7 +12,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 /**
- * Feed Manager - FIXED VERSION
+ * Feed Manager - CORRECTED VERSION
  * Handles all feed displays - restaurants, activities, and user feeds
  */
 export class FeedManager {
@@ -127,61 +127,7 @@ export class FeedManager {
             container.innerHTML = '';
             users.forEach((user, index) => {
                 const feedItem = this.createUserFeedItem(user, index);
-                container.appendChild(adminNotice);
-            }
-        } catch (error) {
-            console.error('Error checking pending businesses:', error);
-        }
-    }
-    
-    /**
-     * Show user feed error
-     */
-    showUserFeedError(container) {
-        container.innerHTML = `
-            <div style="text-align: center; padding: 40px; opacity: 0.7;">
-                <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
-                <div style="font-size: 18px; margin-bottom: 10px;">Unable to load users</div>
-                <div style="font-size: 14px;">Please check your internet connection and try again.</div>
-                <button onclick="CLASSIFIED.populateUserFeed()" style="margin-top: 20px; padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 25px; color: white; cursor: pointer;">
-                    Try Again
-                </button>
-            </div>
-        `;
-    }
-    
-    /**
-     * Switch social tab
-     */
-    switchSocialTab(tabType) {
-        console.log(`🔄 Switching to ${tabType} tab`);
-        this.state.set('currentSocialTab', tabType);
-        
-        // Update tabs
-        document.querySelectorAll('.social-tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        document.querySelector(`[data-tab="${tabType}"]`)?.classList.add('active');
-        
-        // Update content
-        document.querySelectorAll('.social-content').forEach(content => {
-            content.classList.remove('active');
-        });
-        document.getElementById(`${tabType}Content`)?.classList.add('active');
-    }
-    
-    /**
-     * Format price range
-     */
-    formatPriceRange(priceRange) {
-        const priceMap = {
-            'budget': '$ - Budget Friendly',
-            'moderate': '$ - Moderate',
-            'expensive': '$$ - Expensive'
-        };
-        return priceMap[priceRange] || '$ - Moderate';
-    }
-}appendChild(feedItem);
+                container.appendChild(feedItem);
             });
         }
     }
@@ -232,10 +178,10 @@ export class FeedManager {
         
         const snapshot = await getDocs(q);
         
-        snapshot.forEach(doc => {
-            const business = doc.data();
+        snapshot.forEach(docSnapshot => {
+            const business = docSnapshot.data();
             restaurants.push({
-                id: doc.id,
+                id: docSnapshot.id,
                 name: business.name,
                 type: business.type,
                 image: business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop',
@@ -335,10 +281,10 @@ export class FeedManager {
         
         const snapshot = await getDocs(q);
         
-        snapshot.forEach(doc => {
-            const business = doc.data();
+        snapshot.forEach(docSnapshot => {
+            const business = docSnapshot.data();
             activities.push({
-                id: doc.id,
+                id: docSnapshot.id,
                 name: business.name,
                 type: business.type,
                 image: business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop',
@@ -750,7 +696,7 @@ export class FeedManager {
     }
     
     /**
-     * Add admin notice for pending businesses
+     * FIXED: Add admin notice for pending businesses
      */
     async addAdminNotice(container) {
         try {
@@ -772,4 +718,58 @@ export class FeedManager {
                         </button>
                     </div>
                 `;
-                container.
+                container.appendChild(adminNotice);
+            }
+        } catch (error) {
+            console.error('Error checking pending businesses:', error);
+        }
+    }
+    
+    /**
+     * Show user feed error
+     */
+    showUserFeedError(container) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; opacity: 0.7;">
+                <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+                <div style="font-size: 18px; margin-bottom: 10px;">Unable to load users</div>
+                <div style="font-size: 14px;">Please check your internet connection and try again.</div>
+                <button onclick="CLASSIFIED.populateUserFeed()" style="margin-top: 20px; padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 25px; color: white; cursor: pointer;">
+                    Try Again
+                </button>
+            </div>
+        `;
+    }
+    
+    /**
+     * Switch social tab
+     */
+    switchSocialTab(tabType) {
+        console.log(`🔄 Switching to ${tabType} tab`);
+        this.state.set('currentSocialTab', tabType);
+        
+        // Update tabs
+        document.querySelectorAll('.social-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelector(`[data-tab="${tabType}"]`)?.classList.add('active');
+        
+        // Update content
+        document.querySelectorAll('.social-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`${tabType}Content`)?.classList.add('active');
+    }
+    
+    /**
+     * Format price range
+     */
+    formatPriceRange(priceRange) {
+        const priceMap = {
+            'budget': '$ - Budget Friendly',
+            'moderate': '$ - Moderate',
+            'expensive': '$$ - Expensive'
+        };
+        return priceMap[priceRange] || '$ - Moderate';
+    }
+}

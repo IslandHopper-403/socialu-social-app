@@ -1,4 +1,4 @@
-// javascript/features/messaging.js - FIXED VERSION
+// javascript/features/messaging.js - CORRECTED VERSION
 
 import {
     collection,
@@ -17,7 +17,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 /**
- * Messaging Manager - FIXED VERSION
+ * Messaging Manager - CORRECTED VERSION
  * Handles all messaging and chat functionality
  */
 export class MessagingManager {
@@ -49,8 +49,12 @@ export class MessagingManager {
      * Set up notification sound
      */
     setupNotificationSound() {
-        // Create notification sound
-        this.notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUYrTp66hVFApGn+DyvmEaAzqM0+/ReigGHXNfY');
+        try {
+            // Create notification sound
+            this.notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUYrTp66hVFApGn+DyvmEaAzqM0+/ReigGHXNfY');
+        } catch (error) {
+            console.log('Could not create notification sound:', error);
+        }
     }
     
     /**
@@ -88,9 +92,13 @@ export class MessagingManager {
      * Request notification permission
      */
     async requestNotificationPermission() {
-        if ('Notification' in window && Notification.permission === 'default') {
-            const permission = await Notification.requestPermission();
-            console.log('🔔 Notification permission:', permission);
+        try {
+            if ('Notification' in window && Notification.permission === 'default') {
+                const permission = await Notification.requestPermission();
+                console.log('🔔 Notification permission:', permission);
+            }
+        } catch (error) {
+            console.log('Could not request notification permission:', error);
         }
     }
     
@@ -130,14 +138,18 @@ export class MessagingManager {
         
         console.log('👂 Setting up real-time listeners for user:', currentUser.uid);
         
-        // Listen for new matches
-        this.listenForMatches(currentUser.uid);
-        
-        // Listen for chat updates
-        this.listenForChatUpdates(currentUser.uid);
-        
-        // Listen for new messages (global)
-        this.listenForNewMessages(currentUser.uid);
+        try {
+            // Listen for new matches
+            this.listenForMatches(currentUser.uid);
+            
+            // Listen for chat updates
+            this.listenForChatUpdates(currentUser.uid);
+            
+            // Listen for new messages (global)
+            this.listenForNewMessages(currentUser.uid);
+        } catch (error) {
+            console.error('Error setting up real-time listeners:', error);
+        }
     }
     
     /**
@@ -205,172 +217,6 @@ export class MessagingManager {
                 if (partnerId) {
                     // Get partner info
                     const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
-                if (partnerDoc.exists()) {
-                    const partnerData = partnerDoc.data();
-                    this.state.set('lastMatchedUser', {
-                        id: partnerId,
-                        name: partnerData.name,
-                        avatar: partnerData.photos?.[0]
-                    });
-                    
-                    // Update popup text
-                    matchPopup.querySelector('p').textContent = 
-                        `You and ${partnerData.name} both liked each other`;
-                }
-            }
-        }
-    }
-    
-    /**
-     * Start chat from match popup
-     */
-    startChatFromMatch() {
-        const matchedUser = this.state.get('lastMatchedUser');
-        if (matchedUser) {
-            this.openChat(matchedUser.name, matchedUser.avatar, matchedUser.id);
-        }
-        
-        // Hide match popup
-        const matchPopup = document.getElementById('matchPopup');
-        if (matchPopup) {
-            matchPopup.classList.remove('show');
-        }
-    }
-    
-    /**
-     * Open chat with viewed user
-     */
-    openChatWithUser(userName) {
-        // Find user by name in mock data
-        if (this.mockData) {
-            const users = this.mockData.getUsers();
-            const user = users.find(u => u.name === userName);
-            if (user) {
-                this.openChat(user.name, user.image, user.uid);
-            }
-        }
-    }
-    
-    /**
-     * Start chat with currently viewed user
-     */
-    startChatWithViewedUser() {
-        const viewedUser = this.state.get('currentViewedUser');
-        if (viewedUser) {
-            this.openChat(viewedUser.name, viewedUser.image, viewedUser.uid);
-        }
-    }
-    
-    /**
-     * Open profile from chat
-     */
-    openProfileFromChat() {
-        if (this.currentChatPartner && this.profileManager) {
-            // Get full user data
-            if (this.mockData) {
-                const user = this.mockData.getUserById(this.currentChatPartner.userId);
-                if (user) {
-                    this.profileManager.openUserProfile(user);
-                }
-            }
-        }
-    }
-    
-    /**
-     * Send notification to user (placeholder for push notifications)
-     */
-    sendNotificationToUser(userId, notificationData) {
-        console.log('🔔 Sending notification to user:', userId, notificationData);
-        // In a real app, this would integrate with Firebase Cloud Messaging
-        // or another push notification service
-        
-        // For now, we'll just log it
-        // You could implement server-side logic to send actual push notifications
-    }
-    
-    /**
-     * Create a match between two users
-     */
-    async createMatch(userId1, userId2) {
-        try {
-            const matchData = {
-                users: [userId1, userId2].sort(), // Sort for consistency
-                timestamp: serverTimestamp(),
-                status: 'active'
-            };
-            
-            // Use sorted IDs as document ID
-            const matchId = `${userId1}_${userId2}`.split('_').sort().join('_');
-            
-            await setDoc(doc(this.db, 'matches', matchId), matchData);
-            console.log('🎉 Match created:', matchId);
-            
-            return matchId;
-        } catch (error) {
-            console.error('Error creating match:', error);
-            throw error;
-        }
-    }
-    
-    /**
-     * Utility Methods
-     */
-    
-    generateChatId(userId1, userId2) {
-        return [userId1, userId2].sort().join('_');
-    }
-    
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-    
-    formatMessageTime(date) {
-        if (!date) return '';
-        
-        const now = new Date();
-        const diff = now - date;
-        const minutes = Math.floor(diff / 60000);
-        const hours = Math.floor(diff / 3600000);
-        const days = Math.floor(diff / 86400000);
-        
-        if (minutes < 1) return 'Just now';
-        if (minutes < 60) return `${minutes}m ago`;
-        if (hours < 24) return `${hours}h ago`;
-        if (days < 7) return `${days}d ago`;
-        
-        return date.toLocaleDateString();
-    }
-    
-    getTimeAgo(timestamp) {
-        if (!timestamp) return '';
-        
-        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-        return this.formatMessageTime(date);
-    }
-    
-    /**
-     * Cleanup on destroy
-     */
-    cleanup() {
-        console.log('🧹 Cleaning up messaging listeners');
-        
-        // Remove all chat listeners
-        this.chatListeners.forEach(unsubscribe => unsubscribe());
-        this.chatListeners.clear();
-        
-        // Remove match listener
-        if (this.matchListener) {
-            this.matchListener();
-        }
-        
-        // Remove notification listener
-        if (this.notificationListener) {
-            this.notificationListener();
-        }
-    }
-}db, 'users', partnerId));
                     if (partnerDoc.exists()) {
                         const partnerData = partnerDoc.data();
                         matches.push({
@@ -794,29 +640,33 @@ export class MessagingManager {
         const messagesRef = collection(this.db, 'chats', chatId, 'messages');
         const q = query(messagesRef, orderBy('timestamp', 'asc'));
         
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const messages = [];
-            snapshot.forEach(messageDoc => {
-                messages.push({ id: messageDoc.id, ...messageDoc.data() });
-            });
-            
-            this.displayMessages(messages, currentUser.uid);
-            
-            // Play notification sound for new messages
-            snapshot.docChanges().forEach(change => {
-                if (change.type === 'added') {
-                    const message = change.doc.data();
-                    if (message.senderId !== currentUser.uid && this.notificationSound) {
-                        this.notificationSound.play().catch(e => console.log('Could not play sound:', e));
+        try {
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const messages = [];
+                snapshot.forEach(messageDoc => {
+                    messages.push({ id: messageDoc.id, ...messageDoc.data() });
+                });
+                
+                this.displayMessages(messages, currentUser.uid);
+                
+                // Play notification sound for new messages
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        const message = change.doc.data();
+                        if (message.senderId !== currentUser.uid && this.notificationSound) {
+                            this.notificationSound.play().catch(e => console.log('Could not play sound:', e));
+                        }
                     }
-                }
+                });
+            }, (error) => {
+                console.error('❌ Error in chat listener:', error);
             });
-        }, (error) => {
-            console.error('❌ Error in chat listener:', error);
-        });
-        
-        this.chatListeners.set(chatId, unsubscribe);
-        console.log('👂 Set up real-time listener for chat:', chatId);
+            
+            this.chatListeners.set(chatId, unsubscribe);
+            console.log('👂 Set up real-time listener for chat:', chatId);
+        } catch (error) {
+            console.error('Error setting up chat listener:', error);
+        }
     }
     
     /**
@@ -838,6 +688,8 @@ export class MessagingManager {
                         this.handleNewMatch(matchData);
                     }
                 });
+            }, (error) => {
+                console.error('Error in match listener:', error);
             });
             
             console.log('👂 Set up match listener for user:', userId);
@@ -860,6 +712,8 @@ export class MessagingManager {
             onSnapshot(q, (snapshot) => {
                 console.log('🔄 Chat updates detected, refreshing chat list');
                 this.loadChats(); // Reload chat list when updates occur
+            }, (error) => {
+                console.error('Error in chat updates listener:', error);
             });
             
             console.log('👂 Set up chat updates listener for user:', userId);
@@ -890,6 +744,8 @@ export class MessagingManager {
                         }
                     }
                 });
+            }, (error) => {
+                console.error('Error in global message listener:', error);
             });
             
             console.log('👂 Set up global message notifications for user:', userId);
@@ -920,11 +776,15 @@ export class MessagingManager {
         }
         
         // Show browser notification if permission granted
-        if (Notification.permission === 'granted') {
-            new Notification('New message', {
-                body: chatData.lastMessage,
-                icon: '/path/to/icon.png' // Add your app icon
-            });
+        try {
+            if (Notification.permission === 'granted') {
+                new Notification('New message', {
+                    body: chatData.lastMessage,
+                    icon: '/path/to/icon.png' // Add your app icon
+                });
+            }
+        } catch (error) {
+            console.log('Could not show browser notification:', error);
         }
         
         // Remove after 3 seconds
@@ -939,14 +799,58 @@ export class MessagingManager {
     async handleNewMatch(matchData) {
         console.log('🎉 New match!', matchData);
         
-        // Show match popup
+        try {
+            // Show match popup
+            const matchPopup = document.getElementById('matchPopup');
+            if (matchPopup) {
+                matchPopup.classList.add('show');
+                
+                // Update match popup content
+                const currentUser = this.state.get('currentUser');
+                const partnerId = matchData.users.find(id => id !== currentUser.uid);
+                
+                if (partnerId) {
+                    const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
+                    if (partnerDoc.exists()) {
+                        const partnerData = partnerDoc.data();
+                        this.state.set('lastMatchedUser', {
+                            id: partnerId,
+                            name: partnerData.name,
+                            avatar: partnerData.photos?.[0]
+                        });
+                        
+                        // Update popup text
+                        matchPopup.querySelector('p').textContent = 
+                            `You and ${partnerData.name} both liked each other`;
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error handling new match:', error);
+        }
+    }
+    
+    /**
+     * Start chat from match popup
+     */
+    startChatFromMatch() {
+        const matchedUser = this.state.get('lastMatchedUser');
+        if (matchedUser) {
+            this.openChat(matchedUser.name, matchedUser.avatar, matchedUser.id);
+        }
+        
+        // Hide match popup
         const matchPopup = document.getElementById('matchPopup');
         if (matchPopup) {
-            matchPopup.classList.add('show');
-            
-            // Update match popup content
-            const currentUser = this.state.get('currentUser');
-            const partnerId = matchData.users.find(id => id !== currentUser.uid);
-            
-            if (partnerId) {
-                const partnerDoc = await getDoc(doc(this.
+            matchPopup.classList.remove('show');
+        }
+    }
+    
+    /**
+     * Open chat with viewed user
+     */
+    openChatWithUser(userName) {
+        // Find user by name in mock data
+        if (this.mockData) {
+            const users = this.mockData.getUsers();
+            const user = users.find(u => u.name === userName);

@@ -42,6 +42,13 @@ import { ReferralManager } from './features/referral.js';
 
 // Import UI modules
 import { NavigationManager } from './ui/navigation.js';
+// Import Firestore functions for main app
+import {
+    doc,
+    setDoc,
+    serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
 
 /**
  * Main application class that orchestrates all modules
@@ -295,7 +302,7 @@ class ClassifiedApp {
 },
 
             // NEW: Helper methods for user actions
-            recordPass: async (fromUserId, toUserId) => {
+            async recordPass(fromUserId, toUserId) {
                 if (!fromUserId) return;
                 
                 try {
@@ -311,7 +318,7 @@ class ClassifiedApp {
                 }
             },
 
-            removeUserFromFeed: (userId) => {
+           removeUserFromFeed(userId) {
                 // Remove user card from UI with animation
                 const userCards = document.querySelectorAll('.user-feed-item');
                 userCards.forEach(card => {
@@ -325,7 +332,7 @@ class ClassifiedApp {
                 });
             },
 
-            showLikeConfirmation: () => {
+            showLikeConfirmation() {
                 // Show brief confirmation
                 const notification = document.createElement('div');
                 notification.className = 'like-notification';
@@ -340,7 +347,7 @@ class ClassifiedApp {
                 setTimeout(() => notification.remove(), 2000);
             },
 
-            sendSuperLikeNotification: (userId) => {
+            sendSuperLikeNotification(userId) {
                 // In a real app, this would send a push notification
                 console.log('🌟 Super like notification sent to user:', userId);
             },

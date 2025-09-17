@@ -171,6 +171,9 @@ body {
 .filter-btn {
     flex-shrink: 0; /* Add this - prevents button from shrinking */
     max-width: 180px; /* Add this - limits button width */
+    min-width: 0;   /* Add this */
+    overflow: hidden; /* Add this */
+    text-overflow: ellipsis; /* Add this */
     background: rgba(255,255,255,0.1);
     border: 1px solid rgba(255,255,255,0.2);
     border-radius: 25px;

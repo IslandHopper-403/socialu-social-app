@@ -779,11 +779,12 @@
         </div>
         
         <!-- Match Popup -->
-        <div id="matchPopup" class="match-popup">
+       <div id="matchPopup" class="match-popup">
             <div class="match-content">
+                <button class="match-close-btn" onclick="CLASSIFIED.closeMatchPopup()">×</button>
                 <div class="match-text">IT'S A MATCH! 🎉</div>
                 <p>You and Jessica both liked each other</p>
-                <button class="match-btn" id="startChatBtn">Start Chatting</button>
+                <button class="match-btn" id="startChatBtn" onclick="CLASSIFIED.startChatFromMatch()">Start Chatting</button>
             </div>
         </div>
         

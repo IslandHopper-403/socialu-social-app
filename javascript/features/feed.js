@@ -1,4 +1,4 @@
-// javascript/features/feed.js
+// javascript/features/feed.js - FIXED VERSION
 
 import {
     collection,
@@ -12,7 +12,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 /**
- * Feed Manager
+ * Feed Manager - FIXED VERSION
  * Handles all feed displays - restaurants, activities, and user feeds
  */
 export class FeedManager {
@@ -127,7 +127,61 @@ export class FeedManager {
             container.innerHTML = '';
             users.forEach((user, index) => {
                 const feedItem = this.createUserFeedItem(user, index);
-                container.appendChild(feedItem);
+                container.appendChild(adminNotice);
+            }
+        } catch (error) {
+            console.error('Error checking pending businesses:', error);
+        }
+    }
+    
+    /**
+     * Show user feed error
+     */
+    showUserFeedError(container) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; opacity: 0.7;">
+                <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+                <div style="font-size: 18px; margin-bottom: 10px;">Unable to load users</div>
+                <div style="font-size: 14px;">Please check your internet connection and try again.</div>
+                <button onclick="CLASSIFIED.populateUserFeed()" style="margin-top: 20px; padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 25px; color: white; cursor: pointer;">
+                    Try Again
+                </button>
+            </div>
+        `;
+    }
+    
+    /**
+     * Switch social tab
+     */
+    switchSocialTab(tabType) {
+        console.log(`🔄 Switching to ${tabType} tab`);
+        this.state.set('currentSocialTab', tabType);
+        
+        // Update tabs
+        document.querySelectorAll('.social-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelector(`[data-tab="${tabType}"]`)?.classList.add('active');
+        
+        // Update content
+        document.querySelectorAll('.social-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`${tabType}Content`)?.classList.add('active');
+    }
+    
+    /**
+     * Format price range
+     */
+    formatPriceRange(priceRange) {
+        const priceMap = {
+            'budget': '$ - Budget Friendly',
+            'moderate': '$ - Moderate',
+            'expensive': '$$ - Expensive'
+        };
+        return priceMap[priceRange] || '$ - Moderate';
+    }
+}appendChild(feedItem);
             });
         }
     }
@@ -173,7 +227,6 @@ export class FeedManager {
             collection(this.db, 'businesses'),
             where('type', '==', 'restaurant'),
             where('status', '==', 'active'),
-            orderBy('updatedAt', 'desc'),
             limit(20)
         );
         
@@ -277,7 +330,6 @@ export class FeedManager {
             collection(this.db, 'businesses'),
             where('type', '==', 'activity'),
             where('status', '==', 'active'),
-            orderBy('updatedAt', 'desc'),
             limit(20)
         );
         
@@ -338,7 +390,7 @@ export class FeedManager {
     }
     
     /**
-     * Populate user feed
+     * FIXED: Populate user feed - Remove problematic orderBy
      */
     async populateUserFeed() {
         if (!this.state.get('isAuthenticated')) return;
@@ -347,67 +399,120 @@ export class FeedManager {
         container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
         
         try {
+            console.log('👥 Attempting to fetch users from Firebase...');
             const users = await this.fetchUsersFromFirebase();
             
             if (users.length > 0) {
+                console.log(`✅ Found ${users.length} users in Firebase`);
                 this.populateUserFeedWithData(users, container);
             } else {
+                console.log('ℹ️ No users found in Firebase, showing demo users with encouraging message');
                 // Show demo users with encouraging message
                 this.populateDemoUserFeed(container);
             }
             
         } catch (error) {
             console.error('❌ Error loading users:', error);
+            console.log('📝 Error details:', error.message);
             this.showUserFeedError(container);
         }
     }
     
     /**
-     * Fetch users from Firebase
+     * FIXED: Fetch users from Firebase - Remove problematic orderBy
      */
     async fetchUsersFromFirebase() {
         const users = [];
         const currentUserId = this.state.get('currentUser')?.uid;
         
-        if (!currentUserId) return users;
+        if (!currentUserId) {
+            console.log('❌ No current user ID found');
+            return users;
+        }
         
-        // Create query that excludes current user
-        const q = query(
-            collection(this.db, 'users'),
-            orderBy('updatedAt', 'desc'),
-            limit(20)
-        );
+        console.log('🔍 Querying users collection...');
         
-        const snapshot = await getDocs(q);
-        
-        snapshot.forEach(doc => {
-            const userData = doc.data();
-            // Skip current user and incomplete profiles
-            if (doc.id === currentUserId || 
-                !userData.name || 
-                !userData.bio || 
-                !userData.interests?.length) {
-                return;
-            }
+        try {
+            // FIXED: Simple query without orderBy to avoid index issues
+            const q = query(
+                collection(this.db, 'users'),
+                limit(20)
+            );
             
-            users.push({
-                id: doc.id,
-                uid: doc.id,
-                name: userData.name,
-                age: userData.age || 25,
-                image: userData.photos?.[0] || userData.photo || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop',
-                interests: userData.interests || ['Travel', 'Adventure'],
-                bio: userData.bio || 'Exploring Hoi An!',
-                isOnline: userData.isOnline || false,
-                distance: userData.distance || `${Math.floor(Math.random() * 5) + 1} km`,
-                matchPercentage: userData.matchPercentage || Math.floor(Math.random() * 30) + 70,
-                category: userData.category || 'all',
-                career: userData.career,
-                lookingFor: userData.lookingFor
+            const snapshot = await getDocs(q);
+            console.log(`📊 Query returned ${snapshot.size} documents`);
+            
+            snapshot.forEach(docSnapshot => {
+                const userData = docSnapshot.data();
+                console.log(`👤 Processing user: ${docSnapshot.id}`, userData);
+                
+                // Skip current user and incomplete profiles
+                if (docSnapshot.id === currentUserId) {
+                    console.log('⏭️ Skipping current user');
+                    return;
+                }
+                
+                if (!userData.name || !userData.bio) {
+                    console.log('⏭️ Skipping incomplete profile:', docSnapshot.id);
+                    return;
+                }
+                
+                users.push({
+                    id: docSnapshot.id,
+                    uid: docSnapshot.id,
+                    name: userData.name,
+                    age: userData.age || this.calculateAge(userData.birthday) || 25,
+                    image: userData.photos?.[0] || userData.photo || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop',
+                    interests: userData.interests || ['Travel', 'Adventure'],
+                    bio: userData.bio || 'Exploring Hoi An!',
+                    isOnline: userData.isOnline || false,
+                    distance: userData.distance || `${Math.floor(Math.random() * 5) + 1} km`,
+                    matchPercentage: userData.matchPercentage || Math.floor(Math.random() * 30) + 70,
+                    category: userData.category || this.determineCategoryFromCareer(userData.career),
+                    career: userData.career || 'Traveler',
+                    lookingFor: userData.lookingFor || 'Friends'
+                });
+                
+                console.log(`✅ Added user to feed: ${userData.name}`);
             });
-        });
+            
+            console.log(`📊 Final user count for feed: ${users.length}`);
+            return users;
+            
+        } catch (error) {
+            console.error('❌ Error in fetchUsersFromFirebase:', error);
+            console.error('🔍 Error code:', error.code);
+            console.error('📝 Error message:', error.message);
+            throw error;
+        }
+    }
+    
+    /**
+     * Helper: Calculate age from birthday
+     */
+    calculateAge(birthday) {
+        if (!birthday) return null;
         
-        return users;
+        const today = new Date();
+        const birthDate = new Date(birthday);
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        
+        return age > 0 ? age : null;
+    }
+    
+    /**
+     * Helper: Determine category from career
+     */
+    determineCategoryFromCareer(career) {
+        if (!career) return 'all';
+        
+        const nomadCareers = ['Digital Nomad', 'Freelancer', 'Remote Worker', 'Developer', 'Designer'];
+        return nomadCareers.includes(career) ? 'nomads' : 'all';
     }
     
     /**
@@ -450,8 +555,11 @@ export class FeedManager {
             <div style="text-align: center; padding: 40px; opacity: 0.9;">
                 <div style="font-size: 48px; margin-bottom: 20px;">🚀</div>
                 <div style="font-size: 20px; margin-bottom: 15px; color: #00D4FF;">You're among the first!</div>
-                <div style="font-size: 16px; margin-bottom: 10px;">These are demo profiles. Complete your profile and invite friends to start real connections!</div>
-                <button onclick="CLASSIFIED.shareApp()" style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; border-radius: 25px; color: white; font-weight: 600; cursor: pointer;">
+                <div style="font-size: 16px; margin-bottom: 10px;">Complete your profile to start appearing in other users' feeds! Invite friends to grow the community.</div>
+                <button onclick="CLASSIFIED.openProfileEditor()" style="margin: 10px; padding: 12px 24px; background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; border-radius: 25px; color: white; font-weight: 600; cursor: pointer;">
+                    Complete Profile ✨
+                </button>
+                <button onclick="CLASSIFIED.shareApp()" style="margin: 10px; padding: 12px 24px; background: linear-gradient(135deg, #FFD700, #FF6B6B); border: none; border-radius: 25px; color: white; font-weight: 600; cursor: pointer;">
                     Share CLASSIFIED 🚀
                 </button>
             </div>
@@ -568,59 +676,55 @@ export class FeedManager {
     /**
      * Create user feed item
      */
-    // In feed.js, find the createUserFeedItem method and ensure it starts like this:
-
-// In feed.js, update the createUserFeedItem method:
-
-createUserFeedItem(user, index) {
-    const feedItem = document.createElement('div');
-    feedItem.className = 'user-feed-item';
-    feedItem.style.animationDelay = `${index * 0.1}s`;
-    feedItem.style.cursor = 'pointer';
-    
-    // Ensure user has an ID properly set
-    const userId = user.uid || user.id || `demo_${user.name.toLowerCase().replace(/\s/g, '_')}`;
-    
-    // Create a properly formatted user object
-    const userWithId = {
-        ...user,
-        uid: userId,
-        id: userId
-    };
-    
-    // Make entire card clickable
-    feedItem.addEventListener('click', (e) => {
-        if (!e.target.closest('.user-actions')) {
-            window.CLASSIFIED.openUserProfile(userWithId);
-        }
-    });
-    
-    feedItem.innerHTML = `
-        <div class="user-status-badges">
-            ${user.isOnline ? '<div class="status-badge status-online">🟢 Online</div>' : ''}
-            <div class="status-badge status-distance">📍 ${user.distance}</div>
-            <div class="status-badge status-match">🔥 ${user.matchPercentage}% Match</div>
-        </div>
-        <div class="user-image" style="background-image: url('${user.image}')">
-            <div class="user-image-overlay">
-                <div class="user-name">${user.name}, ${user.age}</div>
+    createUserFeedItem(user, index) {
+        const feedItem = document.createElement('div');
+        feedItem.className = 'user-feed-item';
+        feedItem.style.animationDelay = `${index * 0.1}s`;
+        feedItem.style.cursor = 'pointer';
+        
+        // Ensure user has an ID properly set
+        const userId = user.uid || user.id || `demo_${user.name.toLowerCase().replace(/\s/g, '_')}`;
+        
+        // Create a properly formatted user object
+        const userWithId = {
+            ...user,
+            uid: userId,
+            id: userId
+        };
+        
+        // Make entire card clickable
+        feedItem.addEventListener('click', (e) => {
+            if (!e.target.closest('.user-actions')) {
+                window.CLASSIFIED.openUserProfile(userWithId);
+            }
+        });
+        
+        feedItem.innerHTML = `
+            <div class="user-status-badges">
+                ${user.isOnline ? '<div class="status-badge status-online">🟢 Online</div>' : ''}
+                <div class="status-badge status-distance">📍 ${user.distance}</div>
+                <div class="status-badge status-match">🔥 ${user.matchPercentage}% Match</div>
             </div>
-        </div>
-        <div class="user-info">
-            <div class="user-bio">${user.bio}</div>
-            <div class="user-interests">
-                ${user.interests.map(interest => `<span class="interest-tag">${interest}</span>`).join('')}
+            <div class="user-image" style="background-image: url('${user.image}')">
+                <div class="user-image-overlay">
+                    <div class="user-name">${user.name}, ${user.age}</div>
+                </div>
             </div>
-            <div class="user-actions">
-                <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${userId}')">✕ Pass</button>
-                <button class="action-btn chat-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${userId}')">💬 Chat</button>
-                <button class="action-btn super-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('superlike', '${userId}')">⭐ Super</button>
+            <div class="user-info">
+                <div class="user-bio">${user.bio}</div>
+                <div class="user-interests">
+                    ${user.interests.map(interest => `<span class="interest-tag">${interest}</span>`).join('')}
+                </div>
+                <div class="user-actions">
+                    <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${userId}')">✕ Pass</button>
+                    <button class="action-btn chat-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${userId}')">💬 Chat</button>
+                    <button class="action-btn super-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('superlike', '${userId}')">⭐ Super</button>
+                </div>
             </div>
-        </div>
-    `;
-    
-    return feedItem;
-}
+        `;
+        
+        return feedItem;
+    }
     
     /**
      * Add business signup banner
@@ -668,58 +772,4 @@ createUserFeedItem(user, index) {
                         </button>
                     </div>
                 `;
-                container.appendChild(adminNotice);
-            }
-        } catch (error) {
-            console.error('Error checking pending businesses:', error);
-        }
-    }
-    
-    /**
-     * Show user feed error
-     */
-    showUserFeedError(container) {
-        container.innerHTML = `
-            <div style="text-align: center; padding: 40px; opacity: 0.7;">
-                <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
-                <div style="font-size: 18px; margin-bottom: 10px;">Unable to load users</div>
-                <div style="font-size: 14px;">Please check your internet connection and try again.</div>
-                <button onclick="CLASSIFIED.populateUserFeed()" style="margin-top: 20px; padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 25px; color: white; cursor: pointer;">
-                    Try Again
-                </button>
-            </div>
-        `;
-    }
-    
-    /**
-     * Switch social tab
-     */
-    switchSocialTab(tabType) {
-        console.log(`🔄 Switching to ${tabType} tab`);
-        this.state.set('currentSocialTab', tabType);
-        
-        // Update tabs
-        document.querySelectorAll('.social-tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        document.querySelector(`[data-tab="${tabType}"]`)?.classList.add('active');
-        
-        // Update content
-        document.querySelectorAll('.social-content').forEach(content => {
-            content.classList.remove('active');
-        });
-        document.getElementById(`${tabType}Content`)?.classList.add('active');
-    }
-    
-    /**
-     * Format price range
-     */
-    formatPriceRange(priceRange) {
-        const priceMap = {
-            'budget': '$ - Budget Friendly',
-            'moderate': '$$ - Moderate',
-            'expensive': '$$$ - Expensive'
-        };
-        return priceMap[priceRange] || '$$ - Moderate';
-    }
-}
+                container.

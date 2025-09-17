@@ -17,9 +17,21 @@ export class NavigationManager {
     }
 
 // Ghost content loading frames - Delete if unwanted
-        showContentSkeleton(containerId, type = 'default') {
+
+// Replace the skeleton section in navigation.js with this clean version:
+
+/**
+ * Show skeleton loading content
+ * @param {string} containerId - ID of container to show skeleton in
+ * @param {string} type - Type of skeleton ('user', 'restaurant', 'default')
+ */
+showContentSkeleton(containerId, type = 'default') {
     const container = document.getElementById(containerId);
     if (!container) return;
+    
+    // Add overflow protection
+    container.style.maxWidth = '100%';
+    container.style.overflow = 'hidden';
     
     const skeletons = {
         user: `
@@ -28,7 +40,11 @@ export class NavigationManager {
                 <div class="skeleton-info">
                     <div class="skeleton-name"></div>
                     <div class="skeleton-bio"></div>
-                    <div class="skeleton-tags"></div>
+                    <div class="skeleton-tags">
+                        <div class="skeleton-tag"></div>
+                        <div class="skeleton-tag"></div>
+                        <div class="skeleton-tag"></div>
+                    </div>
                 </div>
             </div>
         `,

@@ -1997,4 +1997,18 @@ input:disabled + .toggle-slider {
     display: flex !important;
 }
 
+/* User action animations */
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); }
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.like-notification {
+    animation: slideDown 0.3s ease !important;
+}
 

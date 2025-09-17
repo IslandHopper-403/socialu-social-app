@@ -1051,7 +1051,538 @@ listenToChatMessages(chatId) {
         const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
         return this.formatMessageTime(date);
     }
+
+    /**
+ * NEW: Initialize notification system properly
+ */
+async initializeNotifications() {
+    console.log('🔔 Initializing notification system...');
     
+    // Request notification permission
+    await this.requestNotificationPermission();
+    
+    // Set up notification sound
+    this.setupNotificationSound();
+    
+    // Load unread message counts
+    await this.loadUnreadCounts();
+    
+    // Set up periodic cleanup
+    this.setupNotificationCleanup();
+}
+
+/**
+ * NEW: Load unread message counts from storage
+ */
+async loadUnreadCounts() {
+    const currentUser = this.state.get('currentUser');
+    if (!currentUser) return;
+    
+    try {
+        // Get all chats for current user
+        const chatsQuery = query(
+            collection(this.db, 'chats'),
+            where('participants', 'array-contains', currentUser.uid)
+        );
+        
+        const chatsSnapshot = await getDocs(chatsQuery);
+        let totalUnread = 0;
+        
+        for (const chatDoc of chatsSnapshot.docs) {
+            const chatId = chatDoc.id;
+            
+            // Count unread messages in this chat
+            const unreadQuery = query(
+                collection(this.db, 'chats', chatId, 'messages'),
+                where('senderId', '!=', currentUser.uid),
+                where('read', '==', false)
+            );
+            
+            const unreadSnapshot = await getDocs(unreadQuery);
+            const unreadCount = unreadSnapshot.size;
+            
+            if (unreadCount > 0) {
+                this.unreadMessages.set(chatId, unreadCount);
+                totalUnread += unreadCount;
+            }
+        }
+        
+        // Update notification display
+        if (totalUnread > 0) {
+            this.showNotificationDot(totalUnread);
+        }
+        
+        console.log(`📊 Loaded ${totalUnread} unread messages`);
+        
+    } catch (error) {
+        console.error('Error loading unread counts:', error);
+    }
+}
+
+/**
+ * ENHANCED: Show notification dot with count
+ */
+showNotificationDot(count = null) {
+    const notificationDot = document.getElementById('messageNotificationDot');
+    const countBadge = document.getElementById('unreadCountBadge');
+    
+    if (count && count > 0) {
+        // Show count badge instead of dot
+        if (notificationDot) notificationDot.style.display = 'none';
+        if (countBadge) {
+            countBadge.style.display = 'flex';
+            countBadge.textContent = count > 99 ? '99+' : count.toString();
+        }
+    } else {
+        // Show dot only
+        if (notificationDot) notificationDot.style.display = 'block';
+        if (countBadge) countBadge.style.display = 'none';
+    }
+    
+    console.log('💬 Showing message notification', count ? `(${count})` : '');
+}
+
+/**
+ * ENHANCED: Hide notification dot
+ */
+hideNotificationDot() {
+    const notificationDot = document.getElementById('messageNotificationDot');
+    const countBadge = document.getElementById('unreadCountBadge');
+    
+    if (notificationDot) notificationDot.style.display = 'none';
+    if (countBadge) countBadge.style.display = 'none';
+    
+    console.log('💬 Hiding message notification');
+}
+
+/**
+ * FIXED: Enhanced in-app notification system
+ */
+showInAppNotification(messageData, chatId) {
+    // Don't show if already showing notification for this chat
+    if (document.querySelector(`.chat-notification[data-chat-id="${chatId}"]`)) {
+        return;
+    }
+    
+    // Get partner info for notification
+    this.getChatPartnerInfo(chatId).then(partnerInfo => {
+        const notification = document.createElement('div');
+        notification.className = 'chat-notification';
+        notification.setAttribute('data-chat-id', chatId);
+        notification.setAttribute('data-created', Date.now().toString());
+        notification.innerHTML = `
+            <div style="position: fixed; top: 20px; right: 20px; 
+                        background: rgba(0,212,255,0.95); color: white; 
+                        padding: 16px 20px; border-radius: 12px; 
+                        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                        max-width: 300px; z-index: 1000;
+                        animation: slideInRight 0.3s ease; cursor: pointer;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; 
+                                background-image: url('${partnerInfo.avatar}');
+                                background-size: cover; background-position: center;
+                                flex-shrink: 0;"></div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 600; margin-bottom: 2px;">
+                            ${partnerInfo.name}
+                        </div>
+                        <div style="font-size: 14px; opacity: 0.9; 
+                                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${messageData.text}
+                        </div>
+                    </div>
+                </div>
+                <div style="position: absolute; top: 8px; right: 8px; 
+                            width: 20px; height: 20px; cursor: pointer;
+                            display: flex; align-items: center; justify-content: center;"
+                     onclick="event.stopPropagation(); this.parentElement.parentElement.remove();">
+                    ×
+                </div>
+            </div>
+        `;
+        
+        // Click to open chat
+        notification.onclick = () => {
+            this.openChatFromNotification(chatId, partnerInfo);
+            notification.remove();
+        };
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    });
+}
+
+/**
+ * NEW: Get chat partner information
+ */
+async getChatPartnerInfo(chatId) {
+    const currentUser = this.state.get('currentUser');
+    if (!currentUser) return { name: 'Someone', avatar: '' };
+    
+    try {
+        // Get chat document to find participants
+        const chatDoc = await getDoc(doc(this.db, 'chats', chatId));
+        if (!chatDoc.exists()) return { name: 'Someone', avatar: '' };
+        
+        const chatData = chatDoc.data();
+        const partnerId = chatData.participants.find(id => id !== currentUser.uid);
+        
+        if (partnerId) {
+            const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
+            if (partnerDoc.exists()) {
+                const partnerData = partnerDoc.data();
+                return {
+                    id: partnerId,
+                    name: partnerData.name || 'Someone',
+                    avatar: partnerData.photos?.[0] || partnerData.photo || 'https://via.placeholder.com/40'
+                };
+            }
+        }
+    } catch (error) {
+        console.error('Error getting chat partner info:', error);
+    }
+    
+    return { name: 'Someone', avatar: '' };
+}
+
+/**
+ * NEW: Open chat from notification
+ */
+async openChatFromNotification(chatId, partnerInfo) {
+    // Clear notification dot
+    this.hideNotificationDot();
+    
+    // Switch to messaging tab
+    const feedManager = window.classifiedApp?.managers?.feed;
+    if (feedManager) {
+        feedManager.switchSocialTab('messaging');
+    }
+    
+    // Open the specific chat
+    await this.openChat(partnerInfo.name, partnerInfo.avatar, partnerInfo.id);
+}
+
+/**
+ * NEW: Unread message tracking
+ */
+updateUnreadCount(chatId, increment) {
+    const current = this.unreadMessages.get(chatId) || 0;
+    const newCount = Math.max(0, current + increment);
+    
+    this.unreadMessages.set(chatId, newCount);
+    
+    // Update notification dot
+    const totalUnread = Array.from(this.unreadMessages.values()).reduce((sum, count) => sum + count, 0);
+    if (totalUnread > 0) {
+        this.showNotificationDot(totalUnread);
+    } else {
+        this.hideNotificationDot();
+    }
+    
+    // Update chat list UI with unread indicators
+    this.updateChatListUnreadIndicators();
+}
+
+/**
+ * NEW: Mark chat as read
+ */
+async markChatAsRead(chatId) {
+    this.unreadMessages.set(chatId, 0);
+    this.lastSeenMessages.set(chatId, Date.now());
+    
+    // Update total unread count
+    const totalUnread = Array.from(this.unreadMessages.values()).reduce((sum, count) => sum + count, 0);
+    if (totalUnread === 0) {
+        this.hideNotificationDot();
+    }
+    
+    // Update notification display
+    this.updateNotificationState();
+}
+
+/**
+ * NEW: Mark current chat as read when app becomes visible
+ */
+markCurrentChatAsRead() {
+    if (this.currentChatId) {
+        this.markChatAsRead(this.currentChatId);
+    }
+}
+
+/**
+ * NEW: Update chat list with unread indicators
+ */
+updateChatListUnreadIndicators() {
+    const chatItems = document.querySelectorAll('.chat-item');
+    
+    chatItems.forEach(chatItem => {
+        const chatId = chatItem.dataset.chatId;
+        if (chatId) {
+            const unreadCount = this.unreadMessages.get(chatId) || 0;
+            
+            // Remove existing indicator
+            const existingIndicator = chatItem.querySelector('.unread-indicator');
+            if (existingIndicator) {
+                existingIndicator.remove();
+            }
+            
+            // Add new indicator if unread messages exist
+            if (unreadCount > 0) {
+                const indicator = document.createElement('div');
+                indicator.className = 'unread-indicator';
+                indicator.innerHTML = unreadCount > 9 ? '9+' : unreadCount.toString();
+                indicator.style.cssText = `
+                    position: absolute; top: 10px; right: 10px;
+                    background: #FF4444; color: white;
+                    border-radius: 50%; width: 20px; height: 20px;
+                    display: flex; align-items: center; justify-content: center;
+                    font-size: 12px; font-weight: bold;
+                `;
+                
+                chatItem.style.position = 'relative';
+                chatItem.appendChild(indicator);
+            }
+        }
+    });
+}
+
+/**
+ * NEW: Batch notification updates
+ */
+updateNotificationState() {
+    const totalUnread = Array.from(this.unreadMessages.values())
+        .reduce((sum, count) => sum + count, 0);
+    
+    if (totalUnread > 0) {
+        this.showNotificationDot(totalUnread);
+        
+        // Update document title
+        document.title = `(${totalUnread}) CLASSIFIED - Hoi An Social Discovery`;
+        
+        // Update favicon if available
+        this.updateFaviconWithCount(totalUnread);
+    } else {
+        this.hideNotificationDot();
+        document.title = 'CLASSIFIED - Hoi An Social Discovery';
+        this.resetFavicon();
+    }
+    
+    // Update chat list
+    this.updateChatListUnreadIndicators();
+}
+
+/**
+ * NEW: Update favicon with unread count
+ */
+updateFaviconWithCount(count) {
+    try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 32;
+        canvas.height = 32;
+        const ctx = canvas.getContext('2d');
+        
+        // Draw red circle
+        ctx.fillStyle = '#FF4444';
+        ctx.beginPath();
+        ctx.arc(16, 16, 16, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Draw count text
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 20px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(count > 9 ? '9+' : count.toString(), 16, 16);
+        
+        // Update favicon
+        let favicon = document.querySelector('link[rel="icon"]');
+        if (!favicon) {
+            favicon = document.createElement('link');
+            favicon.rel = 'icon';
+            document.head.appendChild(favicon);
+        }
+        favicon.href = canvas.toDataURL();
+        
+    } catch (error) {
+        console.log('Could not update favicon:', error);
+    }
+}
+
+/**
+ * NEW: Reset favicon to default
+ */
+resetFavicon() {
+    try {
+        let favicon = document.querySelector('link[rel="icon"]');
+        if (favicon) {
+            favicon.href = '/favicon.ico'; // Update with your default favicon path
+        }
+    } catch (error) {
+        console.log('Could not reset favicon:', error);
+    }
+}
+
+/**
+ * NEW: Set up notification cleanup (remove old notifications)
+ */
+setupNotificationCleanup() {
+    setInterval(() => {
+        // Clean up old in-app notifications
+        const notifications = document.querySelectorAll('.chat-notification');
+        const now = Date.now();
+        
+        notifications.forEach(notification => {
+            const created = parseInt(notification.dataset.created) || now;
+            if (now - created > 30000) { // 30 seconds
+                notification.remove();
+            }
+        });
+    }, 10000); // Check every 10 seconds
+}
+
+/**
+ * ENHANCED: Better notification sound setup
+ */
+setupNotificationSound() {
+    try {
+        // Create a more pleasant notification sound
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Store for later use
+        this.audioContext = audioContext;
+        
+        // Create notification sound blob
+        const notificationSoundData = this.generateNotificationTone();
+        const blob = new Blob([notificationSoundData], { type: 'audio/wav' });
+        this.notificationSound = new Audio(URL.createObjectURL(blob));
+        this.notificationSound.volume = 0.3; // Gentle volume
+        
+    } catch (error) {
+        console.log('Could not create advanced notification sound, using fallback:', error);
+        // Fallback to simple beep
+        this.notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUYrTp66hVFApGn+DyvmEaAzqM0+/ReigGHXM=');
+    }
+}
+
+/**
+ * NEW: Generate pleasant notification tone
+ */
+generateNotificationTone() {
+    // Generate a pleasant two-tone notification sound
+    const sampleRate = 44100;
+    const duration = 0.3;
+    const samples = sampleRate * duration;
+    const buffer = new ArrayBuffer(samples * 2);
+    const view = new DataView(buffer);
+    
+    for (let i = 0; i < samples; i++) {
+        const t = i / sampleRate;
+        const frequency1 = 800; // First tone
+        const frequency2 = 600; // Second tone
+        
+        let sample = 0;
+        if (t < 0.15) {
+            sample = Math.sin(2 * Math.PI * frequency1 * t) * 0.3;
+        } else {
+            sample = Math.sin(2 * Math.PI * frequency2 * t) * 0.3;
+        }
+        
+        // Apply envelope to avoid clicks
+        const envelope = Math.sin(Math.PI * t / duration);
+        sample *= envelope;
+        
+        // Convert to 16-bit PCM
+        const intSample = Math.max(-1, Math.min(1, sample)) * 0x7FFF;
+        view.setInt16(i * 2, intSample, true);
+    }
+    
+    return buffer;
+}
+
+/**
+ * ENHANCED: Smart notification timing
+ */
+shouldShowNotification(messageData, chatId) {
+    const currentUser = this.state.get('currentUser');
+    
+    // Don't notify for own messages
+    if (messageData.senderId === currentUser?.uid) {
+        return false;
+    }
+    
+    // Don't notify if chat is currently open and app is visible
+    if (this.currentChatId === chatId && this.isAppVisible) {
+        return false;
+    }
+    
+    // Check if we recently showed a notification for this chat
+    const lastNotificationTime = this.lastNotificationTimes?.get(chatId) || 0;
+    const now = Date.now();
+    
+    if (now - lastNotificationTime < 5000) { // 5 second cooldown
+        return false;
+    }
+    
+    this.lastNotificationTimes = this.lastNotificationTimes || new Map();
+    this.lastNotificationTimes.set(chatId, now);
+    
+    return true;
+}
+
+/**
+ * FIXED: Enhanced browser notification
+ */
+async showBrowserNotification(messageData) {
+    if (Notification.permission !== 'granted') return;
+    
+    try {
+        const partnerInfo = await this.getChatPartnerInfo(this.currentChatId);
+        
+        const notification = new Notification(`New message from ${partnerInfo.name}`, {
+            body: messageData.text,
+            icon: partnerInfo.avatar || '/favicon.ico',
+            tag: 'chat-message', // Replaces previous notifications
+            requireInteraction: false,
+            silent: false
+        });
+        
+        notification.onclick = () => {
+            window.focus();
+            this.openChatFromNotification(this.currentChatId, partnerInfo);
+            notification.close();
+        };
+        
+        // Auto-close after 5 seconds
+        setTimeout(() => notification.close(), 5000);
+        
+    } catch (error) {
+        console.error('Error showing browser notification:', error);
+    }
+}
+
+/**
+ * FIXED: Enhanced notification sound
+ */
+playNotificationSound() {
+    try {
+        if (this.notificationSound) {
+            // Reset and play
+            this.notificationSound.currentTime = 0;
+            this.notificationSound.play().catch(e => {
+                console.log('Could not play notification sound:', e);
+            });
+        }
+    } catch (error) {
+        console.log('Error playing notification sound:', error);
+    }
+}
+
     /**
      * Cleanup on destroy
      */

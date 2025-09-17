@@ -1824,27 +1824,4 @@ input:disabled + .toggle-slider {
     display: flex !important;
 }
 
-/* Skeleton Loading Screen CSS Below
 
-.skeleton-user-card {
-    display: flex;
-    padding: 20px;
-    gap: 15px;
-    animation: pulse 1.5s infinite;
-}
-
-.skeleton-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
-/* Skeleton Loading Screen CSS Above - Delete or Move if necessary 

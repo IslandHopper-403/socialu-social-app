@@ -293,7 +293,7 @@ export class MockData {
                 hours: "8:00 AM - 5:00 PM",
                 price: "$ - Budget Friendly",
                 contact: "+84 235 678 901"
-            }
+            },
                {
                         id: 'motorbike-adventures',
                         name: "Hoi An Motorbike Tours",

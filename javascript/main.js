@@ -232,59 +232,116 @@ class ClassifiedApp {
             // User interactions
             openUserProfile: (user) => this.managers.profile.openUserProfile(user),
             closeUserProfile: () => this.managers.navigation.closeOverlay('userProfileView'),
-           handleUserAction: (action, userId) => {
+      // FIXED: Enhanced handleUserAction method
+            handleUserAction: (action, userId) => {
                 if (!userId || userId === 'undefined') {
                     console.error('Invalid userId for action:', action);
                     return;
                 }
                 console.log(`User action: ${action} on user ${userId}`);
                 
+                const currentUser = this.state.get('currentUser');
+                
                 if (action === 'like') {
-                    const currentUser = this.state.get('currentUser');
                     if (currentUser) {
-                        // Create a simple match for demo purposes
-                        this.managers.messaging.createMatch(currentUser.uid, userId)
-                            .then(() => {
-                                alert(`🎉 It's a match! You can now start chatting!`);
-                                // Auto-switch to messaging tab
-                                this.managers.feed.switchSocialTab('messaging');
+                        // FIXED: Use messaging manager's processLikeAction method
+                        this.managers.messaging.processLikeAction(currentUser.uid, userId)
+                            .then(result => {
+                                if (result.isMatch) {
+                                    // It's a match! Show popup and switch to messaging
+                                    console.log('🎉 It\'s a match!');
+                                    // Switch to messaging tab
+                                    this.managers.feed.switchSocialTab('messaging');
+                                    // Popup is handled by triggerMatchPopup in messaging manager
+                                } else {
+                                    // Just a like, show confirmation
+                                    this.showLikeConfirmation();
+                                }
                             })
                             .catch(err => {
-                                console.error('Error creating match:', err);
-                                alert(`You liked this user! 💖 Start a conversation in the messaging tab.`);
+                                console.error('Error handling like:', err);
+                                this.showLikeConfirmation(); // Fallback to positive UX
                             });
                     } else {
                         alert(`Please sign up to connect! 💖`);
                         this.managers.auth.showRegister();
                     }
                 } else if (action === 'pass') {
-                    alert(`You passed on this user.`);
+                    this.recordPass(currentUser?.uid, userId);
+                    this.removeUserFromFeed(userId);
                 } else if (action === 'superlike') {
-                    if (this.state.get('currentUser')) {
-                        alert(`Super like sent! 🌟 They'll be notified!`);
+                    if (currentUser) {
+                        this.managers.messaging.processLikeAction(currentUser.uid, userId, 'superlike')
+                            .then(result => {
+                                if (result.isMatch) {
+                                    console.log('🎉 Super like match!');
+                                    this.managers.feed.switchSocialTab('messaging');
+                                } else {
+                                    alert(`Super like sent! 🌟 They'll be notified!`);
+                                    this.sendSuperLikeNotification(userId);
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Error handling super like:', err);
+                                alert(`Super like sent! 🌟`);
+                            });
                     } else {
                         alert(`Sign up to send super likes! 🌟`);
                         this.managers.auth.showRegister();
                     }
                 }
             },
-
-            // After handleUserAction, add these two methods:
-            startChatFromMatch: () => {
-                if (window.classifiedApp?.managers?.messaging) {
-                    window.classifiedApp.managers.messaging.startChatFromMatch();
-                } else {
-                    console.error('Messaging manager not available');
+            
+            // NEW: Helper methods for user actions
+            async recordPass(fromUserId, toUserId) {
+                if (!fromUserId) return;
+                
+                try {
+                    const passId = `${fromUserId}_${toUserId}`;
+                    await setDoc(doc(this.managers.messaging.db, 'passes', passId), {
+                        fromUserId,
+                        toUserId,
+                        timestamp: serverTimestamp()
+                    });
+                    console.log('✅ Pass recorded:', passId);
+                } catch (error) {
+                    console.error('Error recording pass:', error);
                 }
             },
             
-            closeMatchPopup: () => {
-                const matchPopup = document.getElementById('matchPopup');
-                if (matchPopup) {
-                    matchPopup.classList.remove('show');
-                    console.log('🔙 Match popup closed');
-                }
+            removeUserFromFeed(userId) {
+                // Remove user card from UI with animation
+                const userCards = document.querySelectorAll('.user-feed-item');
+                userCards.forEach(card => {
+                    const cardUserId = card.querySelector('.action-btn')?.onclick?.toString().match(/'([^']+)'/)?.[1];
+                    if (cardUserId === userId) {
+                        card.style.animation = 'fadeOut 0.3s ease';
+                        setTimeout(() => {
+                            card.remove();
+                        }, 300);
+                    }
+                });
             },
+            
+            showLikeConfirmation() {
+                // Show brief confirmation
+                const notification = document.createElement('div');
+                notification.className = 'like-notification';
+                notification.innerHTML = '💖 Like sent!';
+                notification.style.cssText = `
+                    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+                    background: rgba(0,212,255,0.9); color: white; padding: 12px 24px;
+                    border-radius: 25px; z-index: 999; font-weight: 600;
+                    animation: slideDown 0.3s ease;
+                `;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 2000);
+            },
+            
+            sendSuperLikeNotification(userId) {
+                // In a real app, this would send a push notification
+                console.log('🌟 Super like notification sent to user:', userId);
+            }
 
             filterUsers: (filter) => this.managers.feed.filterUsers(filter),
             

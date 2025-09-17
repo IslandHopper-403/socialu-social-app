@@ -1,4 +1,4 @@
-// javascript/features/messaging.js - CORRECTED VERSION
+// javascript/features/messaging.js - COMPLETE VERSION
 
 import {
     collection,
@@ -17,7 +17,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 /**
- * Messaging Manager - CORRECTED VERSION
+ * Messaging Manager - COMPLETE VERSION
  * Handles all messaging and chat functionality
  */
 export class MessagingManager {
@@ -81,10 +81,14 @@ export class MessagingManager {
         
         // Load initial data if authenticated
         if (this.state.get('isAuthenticated')) {
-            await this.loadMatches();
-            await this.loadChats();
-            this.setupRealtimeListeners();
-            this.requestNotificationPermission();
+            try {
+                await this.loadMatches();
+                await this.loadChats();
+                this.setupRealtimeListeners();
+                this.requestNotificationPermission();
+            } catch (error) {
+                console.error('Error initializing messaging:', error);
+            }
         }
     }
     
@@ -215,15 +219,19 @@ export class MessagingManager {
                 const partnerId = matchData.users.find(id => id !== userId);
                 
                 if (partnerId) {
-                    // Get partner info
-                    const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
-                    if (partnerDoc.exists()) {
-                        const partnerData = partnerDoc.data();
-                        matches.push({
-                            userId: partnerId,
-                            name: partnerData.name,
-                            avatar: partnerData.photos?.[0] || partnerData.photo || 'https://via.placeholder.com/100'
-                        });
+                    try {
+                        // Get partner info
+                        const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
+                        if (partnerDoc.exists()) {
+                            const partnerData = partnerDoc.data();
+                            matches.push({
+                                userId: partnerId,
+                                name: partnerData.name,
+                                avatar: partnerData.photos?.[0] || partnerData.photo || 'https://via.placeholder.com/100'
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error getting match partner data:', error);
                     }
                 }
             }
@@ -276,7 +284,7 @@ export class MessagingManager {
     }
     
     /**
-     * FIXED: Load real chats from Firebase
+     * Load real chats from Firebase
      */
     async loadRealChats(userId) {
         try {
@@ -299,8 +307,8 @@ export class MessagingManager {
                 const partnerId = chatData.participants.find(id => id !== userId);
                 
                 if (partnerId) {
-                    // Get partner info
                     try {
+                        // Get partner info
                         const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
                         if (partnerDoc.exists()) {
                             const partnerData = partnerDoc.data();
@@ -369,31 +377,36 @@ export class MessagingManager {
             return;
         }
         
-        // Update UI immediately for better UX
-        document.getElementById('chatName').textContent = name;
-        document.getElementById('chatAvatar').style.backgroundImage = `url('${avatar}')`;
-        
-        // Store current chat context
-        this.currentChatPartner = { name, avatar, userId };
-        this.state.set('currentChatUser', this.currentChatPartner);
-        
-        // Generate chat ID (alphabetically sorted user IDs)
-        const chatId = this.generateChatId(currentUser.uid, userId);
-        this.currentChatId = chatId;
-        
-        console.log('💬 Chat ID:', chatId);
-        
-        // Show chat screen
-        this.navigationManager.showOverlay('individualChat');
-        
-        // Load chat messages
-        await this.loadChatMessages(chatId);
-        
-        // Set up real-time listener for this chat
-        this.listenToChatMessages(chatId);
-        
-        // Create chat document if it doesn't exist
-        await this.ensureChatExists(chatId, currentUser.uid, userId);
+        try {
+            // Update UI immediately for better UX
+            document.getElementById('chatName').textContent = name;
+            document.getElementById('chatAvatar').style.backgroundImage = `url('${avatar}')`;
+            
+            // Store current chat context
+            this.currentChatPartner = { name, avatar, userId };
+            this.state.set('currentChatUser', this.currentChatPartner);
+            
+            // Generate chat ID (alphabetically sorted user IDs)
+            const chatId = this.generateChatId(currentUser.uid, userId);
+            this.currentChatId = chatId;
+            
+            console.log('💬 Chat ID:', chatId);
+            
+            // Show chat screen
+            this.navigationManager.showOverlay('individualChat');
+            
+            // Load chat messages
+            await this.loadChatMessages(chatId);
+            
+            // Set up real-time listener for this chat
+            this.listenToChatMessages(chatId);
+            
+            // Create chat document if it doesn't exist
+            await this.ensureChatExists(chatId, currentUser.uid, userId);
+        } catch (error) {
+            console.error('Error opening chat:', error);
+            alert('Failed to open chat. Please try again.');
+        }
     }
     
     /**
@@ -438,7 +451,7 @@ export class MessagingManager {
     }
     
     /**
-     * FIXED: Send message with proper error handling
+     * Send message with proper error handling
      */
     async sendMessage() {
         const messageInput = document.getElementById('messageInput');
@@ -585,7 +598,7 @@ export class MessagingManager {
             messagesContainer.innerHTML = `
                 <div style="text-align: center; padding: 40px; opacity: 0.7;">
                     <div>Unable to load messages</div>
-                    <button onclick="CLASSIFIED.loadChatMessages('${chatId}')" style="margin-top: 10px; padding: 8px 16px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; color: white; cursor: pointer;">
+                    <button onclick="window.location.reload()" style="margin-top: 10px; padding: 8px 16px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; color: white; cursor: pointer;">
                         Try Again
                     </button>
                 </div>
@@ -627,7 +640,7 @@ export class MessagingManager {
     }
     
     /**
-     * FIXED: Listen to chat messages in real-time
+     * Listen to chat messages in real-time
      */
     listenToChatMessages(chatId) {
         // Remove existing listener if any
@@ -723,7 +736,7 @@ export class MessagingManager {
     }
     
     /**
-     * NEW: Listen for new messages globally (for notifications)
+     * Listen for new messages globally (for notifications)
      */
     listenForNewMessages(userId) {
         try {
@@ -755,7 +768,7 @@ export class MessagingManager {
     }
     
     /**
-     * NEW: Show in-app notification
+     * Show in-app notification
      */
     showInAppNotification(chatData) {
         // Don't show notification if chat is currently open
@@ -854,3 +867,129 @@ export class MessagingManager {
         if (this.mockData) {
             const users = this.mockData.getUsers();
             const user = users.find(u => u.name === userName);
+            if (user) {
+                this.openChat(user.name, user.image, user.uid);
+            }
+        }
+    }
+    
+    /**
+     * Start chat with currently viewed user
+     */
+    startChatWithViewedUser() {
+        const viewedUser = this.state.get('currentViewedUser');
+        if (viewedUser) {
+            this.openChat(viewedUser.name, viewedUser.image, viewedUser.uid);
+        }
+    }
+    
+    /**
+     * Open profile from chat
+     */
+    openProfileFromChat() {
+        if (this.currentChatPartner && this.profileManager) {
+            // Get full user data
+            if (this.mockData) {
+                const user = this.mockData.getUserById(this.currentChatPartner.userId);
+                if (user) {
+                    this.profileManager.openUserProfile(user);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Send notification to user (placeholder for push notifications)
+     */
+    sendNotificationToUser(userId, notificationData) {
+        console.log('🔔 Sending notification to user:', userId, notificationData);
+        // In a real app, this would integrate with Firebase Cloud Messaging
+        // or another push notification service
+        
+        // For now, we'll just log it
+        // You could implement server-side logic to send actual push notifications
+    }
+    
+    /**
+     * Create a match between two users
+     */
+    async createMatch(userId1, userId2) {
+        try {
+            const matchData = {
+                users: [userId1, userId2].sort(), // Sort for consistency
+                timestamp: serverTimestamp(),
+                status: 'active'
+            };
+            
+            // Use sorted IDs as document ID
+            const matchId = `${userId1}_${userId2}`.split('_').sort().join('_');
+            
+            await setDoc(doc(this.db, 'matches', matchId), matchData);
+            console.log('🎉 Match created:', matchId);
+            
+            return matchId;
+        } catch (error) {
+            console.error('Error creating match:', error);
+            throw error;
+        }
+    }
+    
+    /**
+     * Utility Methods
+     */
+    
+    generateChatId(userId1, userId2) {
+        return [userId1, userId2].sort().join('_');
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    formatMessageTime(date) {
+        if (!date) return '';
+        
+        const now = new Date();
+        const diff = now - date;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        
+        if (minutes < 1) return 'Just now';
+        if (minutes < 60) return `${minutes}m ago`;
+        if (hours < 24) return `${hours}h ago`;
+        if (days < 7) return `${days}d ago`;
+        
+        return date.toLocaleDateString();
+    }
+    
+    getTimeAgo(timestamp) {
+        if (!timestamp) return '';
+        
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        return this.formatMessageTime(date);
+    }
+    
+    /**
+     * Cleanup on destroy
+     */
+    cleanup() {
+        console.log('🧹 Cleaning up messaging listeners');
+        
+        // Remove all chat listeners
+        this.chatListeners.forEach(unsubscribe => unsubscribe());
+        this.chatListeners.clear();
+        
+        // Remove match listener
+        if (this.matchListener) {
+            this.matchListener();
+        }
+        
+        // Remove notification listener
+        if (this.notificationListener) {
+            this.notificationListener();
+        }
+    }
+}

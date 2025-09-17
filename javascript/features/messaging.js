@@ -815,8 +815,14 @@ export class MessagingManager {
         console.log('🎉 New match!', matchData);
         
         try {
-            // Show match popup
+            // Prevent duplicate match popups
             const matchPopup = document.getElementById('matchPopup');
+            if (matchPopup && matchPopup.classList.contains('show')) {
+                console.log('Match popup already showing, skipping duplicate');
+                return;
+            }
+            
+            // Show match popup
             if (matchPopup) {
                 matchPopup.classList.add('show');
                 
@@ -831,14 +837,24 @@ export class MessagingManager {
                         this.state.set('lastMatchedUser', {
                             id: partnerId,
                             name: partnerData.name,
-                            avatar: partnerData.photos?.[0]
+                            avatar: partnerData.photos?.[0] || 'https://via.placeholder.com/100'
                         });
                         
                         // Update popup text
-                        matchPopup.querySelector('p').textContent = 
-                            `You and ${partnerData.name} both liked each other`;
+                        const popupText = matchPopup.querySelector('p');
+                        if (popupText) {
+                            popupText.textContent = `You and ${partnerData.name} both liked each other`;
+                        }
                     }
                 }
+                
+                // Auto-close after 10 seconds if user doesn't interact
+                setTimeout(() => {
+                    if (matchPopup.classList.contains('show')) {
+                        matchPopup.classList.remove('show');
+                        console.log('🕐 Match popup auto-closed after 10 seconds');
+                    }
+                }, 10000);
             }
         } catch (error) {
             console.error('Error handling new match:', error);

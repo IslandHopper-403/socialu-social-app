@@ -149,7 +149,7 @@ body {
     gap: 10px;
     margin: 20px;
     align-items: center; /* Add this */
-    max-width: 100%; /* Add this to prevent overflow */
+   max-width: calc(100% - 40px); /* Add this - prevents overflow */
 }
 .search-input {
     flex: 1;

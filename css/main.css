@@ -1500,6 +1500,36 @@ input:disabled + .toggle-slider {
 .match-popup.show {
     display: flex;
 }
+
+/* Match popup close button */
+.match-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 30px;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.match-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.match-content {
+    position: relative; /* Add this to existing .match-content if not already there */
+}
+
 .match-content {
     text-align: center;
     padding: 40px;

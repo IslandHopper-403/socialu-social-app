@@ -13,7 +13,12 @@ import {
     onSnapshot,
     serverTimestamp,
     addDoc,
-    updateDoc
+    updateDoc,
+    writeBatch,
+    arrayUnion,
+    arrayRemove,
+    increment,
+    deleteDoc
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 /**

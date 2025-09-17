@@ -1,4 +1,4 @@
-// javascript/features/photoUpload.js
+// javascript/features/photoUpload.js - FIXED VERSION
 
 import {
     ref,
@@ -14,7 +14,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 /**
- * Photo Upload Manager
+ * Photo Upload Manager - FIXED VERSION
  * Handles photo uploads to Firebase Storage for user and business profiles
  */
 export class PhotoUploadManager {
@@ -52,6 +52,12 @@ export class PhotoUploadManager {
         
         // Set up hidden file inputs if they don't exist
         this.setupFileInputs();
+        
+        // Set up main photo upload areas
+        this.setupMainPhotoUploadAreas();
+        
+        // Set up delete functionality
+        this.setupDeleteFunctionality();
     }
     
     /**
@@ -78,6 +84,193 @@ export class PhotoUploadManager {
             businessInput.onchange = (e) => this.handleBusinessPhotoUpload(e);
             document.body.appendChild(businessInput);
         }
+    }
+    
+    /**
+     * FIXED: Set up main photo upload areas to be clickable
+     */
+    setupMainPhotoUploadAreas() {
+        // User profile main upload area
+        const userUploadArea = document.querySelector('.profile-editor .photo-upload-section');
+        if (userUploadArea) {
+            userUploadArea.onclick = () => this.triggerPhotoUpload(null);
+            console.log('✅ Set up user main upload area');
+        }
+        
+        // Business profile main upload area
+        const businessUploadArea = document.querySelector('#businessProfileEditor .photo-upload-section');
+        if (businessUploadArea) {
+            businessUploadArea.onclick = () => this.triggerBusinessPhotoUpload(null);
+            console.log('✅ Set up business main upload area');
+        }
+    }
+    
+    /**
+     * NEW: Set up delete functionality for photo slots
+     */
+    setupDeleteFunctionality() {
+        // User photo slots
+        const userPhotoSlots = document.querySelectorAll('#photoGrid .photo-slot');
+        userPhotoSlots.forEach((slot, index) => {
+            this.addDeleteButton(slot, 'user', index);
+        });
+        
+        // Business photo slots
+        const businessPhotoSlots = document.querySelectorAll('#businessPhotoGrid .photo-slot');
+        businessPhotoSlots.forEach((slot, index) => {
+            this.addDeleteButton(slot, 'business', index);
+        });
+        
+        console.log('✅ Set up delete functionality for photo slots');
+    }
+    
+    /**
+     * NEW: Add delete button to photo slot
+     */
+    addDeleteButton(slot, profileType, slotIndex) {
+        // Remove existing delete button if present
+        const existingDeleteBtn = slot.querySelector('.delete-photo-btn');
+        if (existingDeleteBtn) {
+            existingDeleteBtn.remove();
+        }
+        
+        // Create delete button
+        const deleteBtn = document.createElement('div');
+        deleteBtn.className = 'delete-photo-btn';
+        deleteBtn.innerHTML = '×';
+        deleteBtn.style.cssText = `
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 107, 107, 0.9);
+            color: white;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 10;
+            transition: all 0.2s ease;
+        `;
+        
+        deleteBtn.onmouseover = () => {
+            deleteBtn.style.background = 'rgba(255, 107, 107, 1)';
+            deleteBtn.style.transform = 'scale(1.1)';
+        };
+        
+        deleteBtn.onmouseout = () => {
+            deleteBtn.style.background = 'rgba(255, 107, 107, 0.9)';
+            deleteBtn.style.transform = 'scale(1)';
+        };
+        
+        deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.deletePhoto(profileType, slotIndex);
+        };
+        
+        slot.appendChild(deleteBtn);
+        
+        // Show/hide delete button based on slot state
+        const observer = new MutationObserver(() => {
+            const isFilled = slot.classList.contains('filled');
+            deleteBtn.style.display = isFilled ? 'flex' : 'none';
+        });
+        
+        observer.observe(slot, { attributes: true, attributeFilter: ['class'] });
+        
+        // Initial check
+        const isFilled = slot.classList.contains('filled');
+        deleteBtn.style.display = isFilled ? 'flex' : 'none';
+    }
+    
+    /**
+     * NEW: Delete photo from slot
+     */
+    async deletePhoto(profileType, slotIndex) {
+        if (!confirm('Are you sure you want to delete this photo?')) {
+            return;
+        }
+        
+        const currentUser = this.state.get('currentUser');
+        if (!currentUser) {
+            alert('Please login to delete photos');
+            return;
+        }
+        
+        try {
+            console.log(`🗑️ Deleting ${profileType} photo from slot ${slotIndex}`);
+            
+            this.navigationManager?.showLoading();
+            
+            // Get current profile
+            const profileKey = profileType === 'user' ? 'userProfile' : 'businessProfile';
+            const profile = this.state.get(profileKey);
+            
+            if (!profile.photos || !profile.photos[slotIndex]) {
+                alert('No photo to delete');
+                this.navigationManager?.hideLoading();
+                return;
+            }
+            
+            // Delete from storage
+            const photoURL = profile.photos[slotIndex];
+            await this.deleteOldPhoto(photoURL);
+            
+            // Update profile array
+            profile.photos[slotIndex] = null;
+            
+            // Clean up array (remove trailing nulls)
+            while (profile.photos.length > 0 && profile.photos[profile.photos.length - 1] === null) {
+                profile.photos.pop();
+            }
+            
+            // Update in Firebase
+            const collection = profileType === 'user' ? 'users' : 'businesses';
+            await updateDoc(doc(this.db, collection, currentUser.uid), {
+                photos: profile.photos,
+                updatedAt: serverTimestamp()
+            });
+            
+            // Update local state
+            this.state.set(profileKey, profile);
+            
+            // Update UI
+            this.clearPhotoSlotUI(profileType, slotIndex);
+            
+            this.navigationManager?.hideLoading();
+            
+            console.log('✅ Photo deleted successfully');
+            
+        } catch (error) {
+            console.error('❌ Error deleting photo:', error);
+            this.navigationManager?.hideLoading();
+            alert('Failed to delete photo: ' + error.message);
+        }
+    }
+    
+    /**
+     * NEW: Clear photo slot UI
+     */
+    clearPhotoSlotUI(profileType, slotIndex) {
+        const gridId = profileType === 'user' ? 'photoGrid' : 'businessPhotoGrid';
+        const grid = document.getElementById(gridId);
+        if (!grid) return;
+        
+        const slots = grid.querySelectorAll('.photo-slot');
+        const slot = slots[slotIndex];
+        if (!slot) return;
+        
+        // Reset slot appearance
+        slot.style.backgroundImage = '';
+        slot.classList.remove('filled');
+        slot.innerHTML = '<span style="font-size: 24px; opacity: 0.5;">+</span>';
+        
+        // Re-add delete button (it will be hidden automatically)
+        this.addDeleteButton(slot, profileType, slotIndex);
     }
     
     /**
@@ -128,7 +321,18 @@ export class PhotoUploadManager {
         // Reset input
         event.target.value = '';
         
-        const slotIndex = this.state.get('currentUploadSlot');
+        let slotIndex = this.state.get('currentUploadSlot');
+        
+        // If no specific slot, find next available slot
+        if (slotIndex === null) {
+            slotIndex = this.findNextAvailableSlot('user');
+        }
+        
+        if (slotIndex === -1) {
+            alert('All photo slots are full. Please delete a photo first.');
+            return;
+        }
+        
         await this.uploadPhoto(file, 'user', slotIndex);
     }
     
@@ -142,8 +346,37 @@ export class PhotoUploadManager {
         // Reset input
         event.target.value = '';
         
-        const slotIndex = this.state.get('currentBusinessUploadSlot');
+        let slotIndex = this.state.get('currentBusinessUploadSlot');
+        
+        // If no specific slot, find next available slot
+        if (slotIndex === null) {
+            slotIndex = this.findNextAvailableSlot('business');
+        }
+        
+        if (slotIndex === -1) {
+            alert('All photo slots are full. Please delete a photo first.');
+            return;
+        }
+        
         await this.uploadPhoto(file, 'business', slotIndex);
+    }
+    
+    /**
+     * NEW: Find next available photo slot
+     */
+    findNextAvailableSlot(profileType) {
+        const profileKey = profileType === 'user' ? 'userProfile' : 'businessProfile';
+        const profile = this.state.get(profileKey);
+        const photos = profile.photos || [];
+        
+        // Find first null or undefined slot, or return next index if all filled
+        for (let i = 0; i < 4; i++) { // Assuming max 4 photos
+            if (!photos[i]) {
+                return i;
+            }
+        }
+        
+        return -1; // All slots full
     }
     
     /**
@@ -164,7 +397,10 @@ export class PhotoUploadManager {
         }
         
         try {
-            console.log(`📤 Uploading ${profileType} photo...`);
+            console.log(`📤 Uploading ${profileType} photo to slot ${slotIndex}...`);
+            
+            // Resize image before upload for better performance
+            const resizedFile = await this.resizeImage(file);
             
             // Show loading state
             this.showUploadProgress(profileType, slotIndex, 0);
@@ -177,7 +413,7 @@ export class PhotoUploadManager {
             const storageRef = ref(this.storage, filename);
             
             // Start upload
-            const uploadTask = uploadBytesResumable(storageRef, file);
+            const uploadTask = uploadBytesResumable(storageRef, resizedFile);
             
             // Track upload for potential cancellation
             const uploadId = `${profileType}_${slotIndex}`;
@@ -212,6 +448,9 @@ export class PhotoUploadManager {
                     
                     // Update UI
                     this.updatePhotoSlotUI(profileType, slotIndex, downloadURL);
+                    
+                    // Show success message
+                    this.showSuccessMessage('Photo uploaded successfully! 📷');
                 }
             );
             
@@ -329,7 +568,7 @@ export class PhotoUploadManager {
             const photoRef = ref(this.storage, path);
             await deleteObject(photoRef);
             
-            console.log('🗑️ Old photo deleted');
+            console.log('🗑️ Old photo deleted from storage');
         } catch (error) {
             console.error('Error deleting old photo:', error);
             // Non-critical error, continue
@@ -408,6 +647,9 @@ export class PhotoUploadManager {
         } else {
             slot.innerHTML = '';
         }
+        
+        // Re-add delete button
+        this.addDeleteButton(slot, profileType, slotIndex);
     }
     
     /**
@@ -448,9 +690,37 @@ export class PhotoUploadManager {
     }
     
     /**
-     * Resize image before upload (optional optimization)
+     * Show success message
      */
-    async resizeImage(file, maxWidth = 1200, maxHeight = 1200) {
+    showSuccessMessage(message) {
+        const successDiv = document.createElement('div');
+        successDiv.className = 'photo-success-message';
+        successDiv.innerHTML = message;
+        successDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            z-index: 1000;
+            font-weight: 600;
+            animation: slideDown 0.3s ease;
+        `;
+        
+        document.body.appendChild(successDiv);
+        
+        setTimeout(() => {
+            successDiv.remove();
+        }, 3000);
+    }
+    
+    /**
+     * IMPROVED: Resize image before upload (better compression)
+     */
+    async resizeImage(file, maxWidth = 1200, maxHeight = 1200, quality = 0.8) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             
@@ -481,9 +751,11 @@ export class PhotoUploadManager {
                     
                     // Draw and compress image
                     const ctx = canvas.getContext('2d');
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    // Convert to blob
+                    // Convert to blob with better compression
                     canvas.toBlob((blob) => {
                         if (blob) {
                             resolve(new File([blob], file.name, {
@@ -493,7 +765,7 @@ export class PhotoUploadManager {
                         } else {
                             reject(new Error('Failed to resize image'));
                         }
-                    }, 'image/jpeg', 0.9);
+                    }, 'image/jpeg', quality);
                 };
                 
                 img.onerror = () => reject(new Error('Failed to load image'));

@@ -152,7 +152,7 @@ body {
    max-width: calc(100% - 40px); /* Add this - prevents overflow */
 }
 .search-input {
-    flex: 1 1 50%;
+    flex: 1 1 auto;
     background: rgba(0, 212, 255, 0.1);
     border: 1px solid rgba(0, 212, 255, 0.3);
     border-radius: 25px;
@@ -169,7 +169,7 @@ body {
     box-shadow: 0 0 0 2px rgba(0,212,255,0.2);
 }
 .filter-btn {
-    flex-shrink: 0; /* Add this - prevents button from shrinking */
+   flex: 0 1 auto; /* Don't grow, but can shrink */
     max-width: 180px; /* Add this - limits button width */
     min-width: 0;   /* Add this */
     overflow: hidden; /* Add this */

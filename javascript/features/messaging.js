@@ -26,29 +26,46 @@ import {
  * Handles all messaging and chat functionality
  */
 export class MessagingManager {
-    constructor(firebaseServices, appState) {
-        this.auth = firebaseServices.auth;
-        this.db = firebaseServices.db;
-        this.state = appState;
-        
-        // References to other managers (set later)
-        this.navigationManager = null;
-        this.profileManager = null;
-        this.mockData = null;
-        
-        // Real-time listeners
-        this.chatListeners = new Map();
-        this.matchListener = null;
-        this.notificationListener = null;
-        
-        // Current chat context
-        this.currentChatId = null;
-        this.currentChatPartner = null;
-        
-        // Notification system
-        this.notificationSound = null;
-        this.setupNotificationSound();
-    }
+   constructor(firebaseServices, appState) {
+    this.auth = firebaseServices.auth;
+    this.db = firebaseServices.db;
+    this.state = appState;
+    
+    // References to other managers (set later)
+    this.navigationManager = null;
+    this.profileManager = null;
+    this.mockData = null;
+    
+    // Real-time listeners
+    this.chatListeners = new Map();
+    this.matchListener = null;
+    this.notificationListener = null;
+    this.globalMessageListener = null;
+    
+    // Current chat context
+    this.currentChatId = null;
+    this.currentChatPartner = null;
+    
+    // ADDED: Notification state tracking
+    this.unreadMessages = new Map(); // chatId -> count
+    this.lastSeenMessages = new Map(); // chatId -> timestamp
+    this.lastNotificationTimes = new Map(); // chatId -> timestamp
+    this.notificationQueue = [];
+    this.isAppVisible = !document.hidden;
+    
+    // Notification system
+    this.notificationSound = null;
+    this.audioContext = null;
+    this.setupNotificationSound();
+    
+    // ADDED: Track app visibility for smart notifications
+    document.addEventListener('visibilitychange', () => {
+        this.isAppVisible = !document.hidden;
+        if (this.isAppVisible) {
+            this.markCurrentChatAsRead();
+        }
+    });
+}
     
     /**
      * Set up notification sound

@@ -248,6 +248,61 @@ body {
     opacity: 0.8;
 }
 
+
+/* ADDED PROMO BANNER CSS - DELETE IF UNWANTED BELOW */
+
+   /* ===== PROMOTIONAL BANNER ===== */
+        .promo-banner {
+            background: linear-gradient(135deg, #00D4FF, #0099CC);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,212,255,0.3);
+        }
+        
+        .promo-banner h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .promo-banner p {
+            font-size: 14px;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+        
+        .promo-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .promo-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 25px;
+            padding: 10px 20px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .promo-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+/* ADDED PROMO BANNER Delete Above if unwanted */
+
 /* Feed Container */
 .feed-container {
     padding: 0 20px 20px 20px;

@@ -1774,23 +1774,72 @@ playNotificationSound() {
     /**
      * Cleanup on destroy
      */
-    cleanup() {
-        console.log('🧹 Cleaning up messaging listeners');
-        
-        // Remove all chat listeners
-        this.chatListeners.forEach(unsubscribe => unsubscribe());
-        this.chatListeners.clear();
-        
-        // Remove match listener
-        if (this.matchListener) {
-            this.matchListener();
+   /**
+ * ENHANCED: Cleanup on destroy with better resource management
+ */
+cleanup() {
+    console.log('🧹 Cleaning up messaging listeners and resources');
+    
+    // Remove all chat listeners
+    this.chatListeners.forEach(unsubscribe => {
+        try {
+            unsubscribe();
+        } catch (error) {
+            console.error('Error unsubscribing from chat listener:', error);
         }
-        
-        // Remove notification listener
-        if (this.notificationListener) {
-            this.notificationListener();
+    });
+    this.chatListeners.clear();
+    
+    // Remove global listeners
+    if (this.matchListener) {
+        try {
+            this.matchListener();
+        } catch (error) {
+            console.error('Error unsubscribing from match listener:', error);
         }
     }
+    
+    if (this.globalMessageListener) {
+        try {
+            this.globalMessageListener();
+        } catch (error) {
+            console.error('Error unsubscribing from global message listener:', error);
+        }
+    }
+    
+    if (this.notificationListener) {
+        try {
+            this.notificationListener();
+        } catch (error) {
+            console.error('Error unsubscribing from notification listener:', error);
+        }
+    }
+    
+    // Clean up notification resources
+    if (this.audioContext) {
+        try {
+            this.audioContext.close();
+        } catch (error) {
+            console.error('Error closing audio context:', error);
+        }
+    }
+    
+    // Clear notification state
+    this.unreadMessages.clear();
+    this.lastSeenMessages.clear();
+    this.lastNotificationTimes.clear();
+    this.notificationQueue = [];
+    
+    // Remove notification elements
+    document.querySelectorAll('.chat-notification').forEach(el => el.remove());
+    
+    // Reset title and favicon
+    document.title = 'CLASSIFIED - Hoi An Social Discovery';
+    this.resetFavicon();
+    
+    // Hide notification dots
+    this.hideNotificationDot();
+}
 /**
      * Show notification dot on messaging tab
      */

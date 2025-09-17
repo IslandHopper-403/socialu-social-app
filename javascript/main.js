@@ -232,18 +232,40 @@ class ClassifiedApp {
             // User interactions
             openUserProfile: (user) => this.managers.profile.openUserProfile(user),
             closeUserProfile: () => this.managers.navigation.closeOverlay('userProfileView'),
-            handleUserAction: (action, userId) => {
+           handleUserAction: (action, userId) => {
                 if (!userId || userId === 'undefined') {
                     console.error('Invalid userId for action:', action);
                     return;
                 }
                 console.log(`User action: ${action} on user ${userId}`);
+                
                 if (action === 'like') {
-                    alert(`You liked this user! Start a conversation in the messaging tab.`);
+                    const currentUser = this.state.get('currentUser');
+                    if (currentUser) {
+                        // Create a simple match for demo purposes
+                        this.managers.messaging.createMatch(currentUser.uid, userId)
+                            .then(() => {
+                                alert(`🎉 It's a match! You can now start chatting!`);
+                                // Auto-switch to messaging tab
+                                this.managers.feed.switchSocialTab('messaging');
+                            })
+                            .catch(err => {
+                                console.error('Error creating match:', err);
+                                alert(`You liked this user! 💖 Start a conversation in the messaging tab.`);
+                            });
+                    } else {
+                        alert(`Please sign up to connect! 💖`);
+                        this.managers.auth.showRegister();
+                    }
                 } else if (action === 'pass') {
                     alert(`You passed on this user.`);
                 } else if (action === 'superlike') {
-                    alert(`Super like sent! 🌟`);
+                    if (this.state.get('currentUser')) {
+                        alert(`Super like sent! 🌟 They'll be notified!`);
+                    } else {
+                        alert(`Sign up to send super likes! 🌟`);
+                        this.managers.auth.showRegister();
+                    }
                 }
             },
             filterUsers: (filter) => this.managers.feed.filterUsers(filter),

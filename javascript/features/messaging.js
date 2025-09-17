@@ -782,6 +782,8 @@ export class MessagingManager {
         notification.innerHTML = `💬 New message: ${chatData.lastMessage}`;
         
         document.body.appendChild(notification);
+        // Show notification dot
+        this.showNotificationDot();
         
         // Play sound
         if (this.notificationSound) {

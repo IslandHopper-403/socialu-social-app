@@ -169,6 +169,8 @@ body {
     box-shadow: 0 0 0 2px rgba(0,212,255,0.2);
 }
 .filter-btn {
+    flex-shrink: 0; /* Add this - prevents button from shrinking */
+    max-width: 180px; /* Add this - limits button width */
     background: rgba(255,255,255,0.1);
     border: 1px solid rgba(255,255,255,0.2);
     border-radius: 25px;

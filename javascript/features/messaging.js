@@ -663,48 +663,73 @@ export class MessagingManager {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
     
-    /**
-     * Listen to chat messages in real-time
-     */
-    listenToChatMessages(chatId) {
-        // Remove existing listener if any
-        if (this.chatListeners.has(chatId)) {
-            const unsubscribe = this.chatListeners.get(chatId);
-            unsubscribe();
-        }
-        
-        const currentUser = this.state.get('currentUser');
-        const messagesRef = collection(this.db, 'chats', chatId, 'messages');
-        const q = query(messagesRef, orderBy('timestamp', 'asc'));
-        
-        try {
-            const unsubscribe = onSnapshot(q, (snapshot) => {
-                const messages = [];
-                snapshot.forEach(messageDoc => {
-                    messages.push({ id: messageDoc.id, ...messageDoc.data() });
-                });
-                
-                this.displayMessages(messages, currentUser.uid);
-                
-                // Play notification sound for new messages
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === 'added') {
-                        const message = change.doc.data();
-                        if (message.senderId !== currentUser.uid && this.notificationSound) {
-                            this.notificationSound.play().catch(e => console.log('Could not play sound:', e));
-                        }
-                    }
-                });
-            }, (error) => {
-                console.error('❌ Error in chat listener:', error);
+   /**
+ * FIXED: Enhanced real-time message listener with proper notifications
+ */
+listenToChatMessages(chatId) {
+    // Remove existing listener if any
+    if (this.chatListeners.has(chatId)) {
+        const unsubscribe = this.chatListeners.get(chatId);
+        unsubscribe();
+    }
+    
+    const currentUser = this.state.get('currentUser');
+    const messagesRef = collection(this.db, 'chats', chatId, 'messages');
+    const q = query(messagesRef, orderBy('timestamp', 'asc'));
+    
+    try {
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const messages = [];
+            let hasNewMessages = false;
+            
+            snapshot.forEach(messageDoc => {
+                messages.push({ id: messageDoc.id, ...messageDoc.data() });
             });
             
-            this.chatListeners.set(chatId, unsubscribe);
-            console.log('👂 Set up real-time listener for chat:', chatId);
-        } catch (error) {
-            console.error('Error setting up chat listener:', error);
-        }
+            // Check for new messages (not from current user)
+            snapshot.docChanges().forEach(change => {
+                if (change.type === 'added') {
+                    const message = change.doc.data();
+                    
+                    // Only notify for messages from other users
+                    if (message.senderId !== currentUser.uid) {
+                        hasNewMessages = true;
+                        
+                        // Play notification sound
+                        this.playNotificationSound();
+                        
+                        // Show browser notification if app not visible
+                        if (!this.isAppVisible) {
+                            this.showBrowserNotification(message);
+                        }
+                        
+                        // Show in-app notification if not in this chat
+                        if (this.currentChatId !== chatId) {
+                            this.showInAppNotification(message, chatId);
+                            this.updateUnreadCount(chatId, 1);
+                        }
+                    }
+                }
+            });
+            
+            // Update UI
+            this.displayMessages(messages, currentUser.uid);
+            
+            // Mark as read if chat is currently open and app is visible
+            if (this.currentChatId === chatId && this.isAppVisible && hasNewMessages) {
+                this.markChatAsRead(chatId);
+            }
+            
+        }, (error) => {
+            console.error('❌ Error in chat listener:', error);
+        });
+        
+        this.chatListeners.set(chatId, unsubscribe);
+        console.log('👂 Set up real-time listener for chat:', chatId);
+    } catch (error) {
+        console.error('Error setting up chat listener:', error);
     }
+}
     
     /**
      * Listen for new matches

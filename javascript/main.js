@@ -268,6 +268,24 @@ class ClassifiedApp {
                     }
                 }
             },
+
+            // After handleUserAction, add these two methods:
+            startChatFromMatch: () => {
+                if (window.classifiedApp?.managers?.messaging) {
+                    window.classifiedApp.managers.messaging.startChatFromMatch();
+                } else {
+                    console.error('Messaging manager not available');
+                }
+            },
+            
+            closeMatchPopup: () => {
+                const matchPopup = document.getElementById('matchPopup');
+                if (matchPopup) {
+                    matchPopup.classList.remove('show');
+                    console.log('🔙 Match popup closed');
+                }
+            },
+
             filterUsers: (filter) => this.managers.feed.filterUsers(filter),
             
             // Business interactions

@@ -1,0 +1,199 @@
+/* ===== SKELETON LOADING ANIMATIONS ===== */
+
+/* Base skeleton animations */
+@keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* User card skeleton */
+.skeleton-user-card {
+    display: flex;
+    padding: 20px;
+    gap: 15px;
+    max-width: 100%;
+    animation: pulse 1.5s infinite;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.02);
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.skeleton-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    flex-shrink: 0;
+}
+
+.skeleton-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.skeleton-name {
+    height: 20px;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    width: 60%;
+}
+
+.skeleton-bio {
+    height: 16px;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    width: 90%;
+}
+
+.skeleton-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.skeleton-tag {
+    height: 12px;
+    width: 60px;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+}
+
+/* Business card skeleton */
+.skeleton-business-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 15px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+    animation: pulse 1.5s infinite;
+    max-width: 100%;
+}
+
+.skeleton-image {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.skeleton-title {
+    height: 20px;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    margin: 15px;
+    width: 70%;
+}
+
+.skeleton-description {
+    height: 16px;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    margin: 15px;
+    width: 90%;
+}
+
+/* Generic skeleton card */
+.skeleton-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    animation: pulse 1.5s infinite;
+    max-width: 100%;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.skeleton-header {
+    height: 24px;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    width: 60%;
+}
+
+.skeleton-body {
+    height: 16px;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.skeleton-body:last-child {
+    width: 70%;
+    margin-bottom: 0;
+}
+
+.skeleton-footer {
+    height: 14px;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    width: 40%;
+    margin-top: 15px;
+}
+
+/* ===== RESPONSIVE SKELETON ADJUSTMENTS ===== */
+@media (max-width: 390px) {
+    .skeleton-user-card {
+        padding: 15px;
+        gap: 12px;
+    }
+    
+    .skeleton-avatar {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .skeleton-card {
+        padding: 15px;
+    }
+    
+    .skeleton-image {
+        height: 150px;
+    }
+    
+    .skeleton-title,
+    .skeleton-description {
+        margin: 10px;
+    }
+}
+
+@media (max-width: 320px) {
+    .skeleton-user-card {
+        padding: 12px;
+        gap: 10px;
+    }
+    
+    .skeleton-avatar {
+        width: 45px;
+        height: 45px;
+    }
+}

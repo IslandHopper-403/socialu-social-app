@@ -993,26 +993,214 @@ listenToChatMessages(chatId) {
     /**
      * Create a match between two users
      */
-    async createMatch(userId1, userId2) {
-        try {
-            const matchData = {
-                users: [userId1, userId2].sort(), // Sort for consistency
-                timestamp: serverTimestamp(),
-                status: 'active'
-            };
-            
-            // Use sorted IDs as document ID
-            const matchId = `${userId1}_${userId2}`.split('_').sort().join('_');
-            
-            await setDoc(doc(this.db, 'matches', matchId), matchData);
-            console.log('🎉 Match created:', matchId);
-            
-            return matchId;
-        } catch (error) {
-            console.error('Error creating match:', error);
-            throw error;
-        }
+  /**
+ * FIXED: Create a match between two users with proper chat setup
+ */
+async createMatch(userId1, userId2) {
+    try {
+        console.log('🎉 Creating match between', userId1, 'and', userId2);
+        
+        const matchData = {
+            users: [userId1, userId2].sort(), // Sort for consistency
+            timestamp: serverTimestamp(),
+            status: 'active',
+            createdBy: 'system', // or userId1 if user-initiated
+            chatCreated: false
+        };
+        
+        // Use sorted IDs as document ID for consistency
+        const matchId = [userId1, userId2].sort().join('_');
+        
+        // Create the match document
+        await setDoc(doc(this.db, 'matches', matchId), matchData);
+        
+        // Create corresponding chat document
+        const chatId = matchId; // Use same ID for simplicity
+        await setDoc(doc(this.db, 'chats', chatId), {
+            participants: [userId1, userId2].sort(),
+            createdAt: serverTimestamp(),
+            lastMessage: '',
+            lastMessageTime: serverTimestamp(),
+            lastMessageSender: null,
+            matchId: matchId,
+            type: 'match_chat'
+        });
+        
+        // Update match to indicate chat was created
+        await updateDoc(doc(this.db, 'matches', matchId), {
+            chatCreated: true,
+            chatId: chatId
+        });
+        
+        // Send match notification to both users
+        await this.sendMatchNotifications(userId1, userId2, matchId);
+        
+        console.log('✅ Match created successfully:', matchId);
+        return matchId;
+        
+    } catch (error) {
+        console.error('❌ Error creating match:', error);
+        throw error;
     }
+}
+
+/**
+ * NEW: Send match notifications to both users
+ */
+async sendMatchNotifications(userId1, userId2, matchId) {
+    try {
+        // Get user data for notifications
+        const [user1Doc, user2Doc] = await Promise.all([
+            getDoc(doc(this.db, 'users', userId1)),
+            getDoc(doc(this.db, 'users', userId2))
+        ]);
+        
+        const user1Data = user1Doc.exists() ? user1Doc.data() : null;
+        const user2Data = user2Doc.exists() ? user2Doc.data() : null;
+        
+        // Create notification documents
+        const notifications = [];
+        
+        if (user1Data && user2Data) {
+            // Notification for user1
+            notifications.push(
+                setDoc(doc(collection(this.db, 'notifications')), {
+                    userId: userId1,
+                    type: 'match',
+                    title: '🎉 It\'s a Match!',
+                    message: `You and ${user2Data.name} liked each other!`,
+                    matchId: matchId,
+                    partnerId: userId2,
+                    partnerName: user2Data.name,
+                    partnerPhoto: user2Data.photos?.[0] || user2Data.photo,
+                    read: false,
+                    timestamp: serverTimestamp()
+                })
+            );
+            
+            // Notification for user2
+            notifications.push(
+                setDoc(doc(collection(this.db, 'notifications')), {
+                    userId: userId2,
+                    type: 'match',
+                    title: '🎉 It\'s a Match!',
+                    message: `You and ${user1Data.name} liked each other!`,
+                    matchId: matchId,
+                    partnerId: userId1,
+                    partnerName: user1Data.name,
+                    partnerPhoto: user1Data.photos?.[0] || user1Data.photo,
+                    read: false,
+                    timestamp: serverTimestamp()
+                })
+            );
+            
+            await Promise.all(notifications);
+            console.log('📬 Match notifications sent');
+        }
+        
+    } catch (error) {
+        console.error('Error sending match notifications:', error);
+        // Don't throw - match creation should still succeed
+    }
+}
+
+/**
+ * NEW: Check if two users have mutual likes (for match detection)
+ */
+async checkMutualLikes(userId1, userId2) {
+    try {
+        // Check if user1 liked user2
+        const like1Doc = await getDoc(doc(this.db, 'likes', `${userId1}_${userId2}`));
+        
+        // Check if user2 liked user1
+        const like2Doc = await getDoc(doc(this.db, 'likes', `${userId2}_${userId1}`));
+        
+        return like1Doc.exists() && like2Doc.exists();
+    } catch (error) {
+        console.error('Error checking mutual likes:', error);
+        return false;
+    }
+}
+
+/**
+ * ENHANCED: Better match detection when processing likes
+ */
+async processLikeAction(fromUserId, toUserId, type = 'like') {
+    try {
+        // Record the like
+        const likeId = `${fromUserId}_${toUserId}`;
+        await setDoc(doc(this.db, 'likes', likeId), {
+            fromUserId,
+            toUserId,
+            timestamp: serverTimestamp(),
+            type: type // 'like' or 'superlike'
+        });
+        
+        console.log(`✅ ${type} recorded:`, likeId);
+        
+        // Check for mutual likes
+        const isMutual = await this.checkMutualLikes(fromUserId, toUserId);
+        
+        if (isMutual) {
+            // Create match
+            const matchId = await this.createMatch(fromUserId, toUserId);
+            
+            // Trigger match popup for current user
+            this.triggerMatchPopup(fromUserId, toUserId);
+            
+            return { isMatch: true, matchId };
+        }
+        
+        return { isMatch: false };
+        
+    } catch (error) {
+        console.error('Error processing like action:', error);
+        throw error;
+    }
+}
+
+/**
+ * NEW: Trigger match popup
+ */
+async triggerMatchPopup(currentUserId, matchedUserId) {
+    try {
+        // Get matched user data
+        const matchedUserDoc = await getDoc(doc(this.db, 'users', matchedUserId));
+        
+        if (matchedUserDoc.exists()) {
+            const userData = matchedUserDoc.data();
+            
+            // Store matched user data
+            this.state.set('lastMatchedUser', {
+                id: matchedUserId,
+                name: userData.name,
+                avatar: userData.photos?.[0] || userData.photo || 'https://via.placeholder.com/100'
+            });
+            
+            // Show match popup
+            const matchPopup = document.getElementById('matchPopup');
+            if (matchPopup) {
+                matchPopup.classList.add('show');
+                
+                // Update popup content
+                const popupText = matchPopup.querySelector('p');
+                if (popupText) {
+                    popupText.textContent = `You and ${userData.name} both liked each other`;
+                }
+                
+                // Auto-close after 10 seconds
+                setTimeout(() => {
+                    if (matchPopup.classList.contains('show')) {
+                        matchPopup.classList.remove('show');
+                    }
+                }, 10000);
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error triggering match popup:', error);
+    }
+}
     
     /**
      * Utility Methods

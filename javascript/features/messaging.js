@@ -95,11 +95,14 @@ export class MessagingManager {
     /**
      * Initialize messaging system
      */
-    async init() {
+       async init() {
         console.log('💬 Initializing messaging manager...');
         
         // Set up event listeners
         this.setupEventListeners();
+        
+        // Initialize notification system
+        await this.initializeNotifications();
         
         // Load initial data if authenticated
         if (this.state.get('isAuthenticated')) {
@@ -107,7 +110,6 @@ export class MessagingManager {
                 await this.loadMatches();
                 await this.loadChats();
                 this.setupRealtimeListeners();
-                this.requestNotificationPermission();
             } catch (error) {
                 console.error('Error initializing messaging:', error);
             }

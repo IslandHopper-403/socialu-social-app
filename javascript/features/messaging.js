@@ -861,19 +861,32 @@ export class MessagingManager {
         }
     }
     
-    /**
+   /**
      * Start chat from match popup
      */
     startChatFromMatch() {
         const matchedUser = this.state.get('lastMatchedUser');
         if (matchedUser) {
-            this.openChat(matchedUser.name, matchedUser.avatar, matchedUser.id);
-        }
-        
-        // Hide match popup
-        const matchPopup = document.getElementById('matchPopup');
-        if (matchPopup) {
-            matchPopup.classList.remove('show');
+            console.log('🚀 Starting chat with matched user:', matchedUser.name);
+            
+            // Hide match popup first
+            const matchPopup = document.getElementById('matchPopup');
+            if (matchPopup) {
+                matchPopup.classList.remove('show');
+            }
+            
+            // Switch to social tab first
+            if (window.classifiedApp?.managers?.feed) {
+                window.classifiedApp.managers.feed.switchSocialTab('messaging');
+            }
+            
+            // Small delay to ensure UI updates, then open chat
+            setTimeout(() => {
+                this.openChat(matchedUser.name, matchedUser.avatar, matchedUser.id);
+            }, 300);
+        } else {
+            console.error('No matched user found');
+            alert('Unable to start chat. Please try again.');
         }
     }
     

@@ -992,4 +992,25 @@ export class MessagingManager {
             this.notificationListener();
         }
     }
+/**
+     * Show notification dot on messaging tab
+     */
+    showNotificationDot() {
+        const notificationDot = document.getElementById('messageNotificationDot');
+        if (notificationDot) {
+            notificationDot.style.display = 'block';
+            console.log('💬 Showing message notification dot');
+        }
+    }
+
+    /**
+     * Hide notification dot
+     */
+    hideNotificationDot() {
+        const notificationDot = document.getElementById('messageNotificationDot');
+        if (notificationDot) {
+            notificationDot.style.display = 'none';
+            console.log('💬 Hiding message notification dot');
+        }
+    }
 }

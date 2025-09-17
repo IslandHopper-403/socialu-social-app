@@ -75,6 +75,13 @@ export class FeedManager {
             tab.addEventListener('click', (e) => {
                 const tabType = tab.dataset.tab;
                 this.switchSocialTab(tabType);
+                // Hide notification dot when user opens messaging
+                if (tabType === 'messaging') {
+                const messagingManager = window.classifiedApp?.managers?.messaging;
+                if (messagingManager) {
+                    messagingManager.hideNotificationDot();
+                }
+             }
             });
         });
         

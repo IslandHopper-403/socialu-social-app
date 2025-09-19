@@ -1248,6 +1248,11 @@ async initializeNotifications() {
     
     // Request notification permission
     await this.requestNotificationPermission();
+
+    // Initialize notification tracking // added from "Github repo auth debugging" 
+    this.unreadMessages = new Map(); // added from "Github repo auth debugging" 
+    this.lastSeenMessages = new Map(); // added from "Github repo auth debugging" 
+    this.notificationQueue = []; // added from "Github repo auth debugging" 
     
     // Set up notification sound
     this.setupNotificationSound();
@@ -1257,6 +1262,9 @@ async initializeNotifications() {
     
     // Set up periodic cleanup
     this.setupNotificationCleanup();
+
+    // Set up periodic updates
+    this.setupNotificationUpdates();
 }
 
 /**
@@ -1308,39 +1316,128 @@ async loadUnreadCounts() {
 }
 
 /**
- * ENHANCED: Show notification dot with count
+ * ENHANCED: Show notification with count - guaranteed to work
  */
 showNotificationDot(count = null) {
-    const notificationDot = document.getElementById('messageNotificationDot');
-    const countBadge = document.getElementById('unreadCountBadge');
+    console.log('🔔 Showing notification dot, count:', count);
     
-    if (count && count > 0) {
-        // Show count badge instead of dot
-        if (notificationDot) notificationDot.style.display = 'none';
-        if (countBadge) {
-            countBadge.style.display = 'flex';
-            countBadge.textContent = count > 99 ? '99+' : count.toString();
-        }
-    } else {
-        // Show dot only
-        if (notificationDot) notificationDot.style.display = 'block';
-        if (countBadge) countBadge.style.display = 'none';
+    const messagingTab = document.querySelector('[data-tab="messaging"]');
+    if (!messagingTab) {
+        console.error('❌ Messaging tab not found');
+        return;
     }
     
-    console.log('💬 Showing message notification', count ? `(${count})` : '');
+    // Ensure tab has relative positioning
+    messagingTab.style.position = 'relative';
+    
+    // Remove any existing notifications
+    const existingNotifications = messagingTab.querySelectorAll('.message-notification-dot, .unread-count-badge');
+    existingNotifications.forEach(el => el.remove());
+    
+    // Always show count badge if we have a number, even if it's 1
+    if (count && count > 0) {
+        const badge = document.createElement('div');
+        badge.className = 'unread-count-badge';
+        badge.textContent = count > 99 ? '99+' : count.toString();
+        
+        // Enhanced styles to ensure visibility
+        badge.style.cssText = `
+            position: absolute !important;
+            top: 2px !important;
+            right: 2px !important;
+            background: #FF4444 !important;
+            color: white !important;
+            border-radius: 50% !important;
+            min-width: 20px !important;
+            height: 20px !important;
+            font-size: 12px !important;
+            font-weight: bold !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 1000 !important;
+            border: 2px solid #1a1a1a !important;
+            box-shadow: 0 2px 8px rgba(255, 68, 68, 0.5) !important;
+            animation: pulse 2s infinite !important;
+        `;
+        
+        messagingTab.appendChild(badge);
+        console.log(`✅ Count badge shown with count: ${count}`);
+    } else {
+        // Fallback to simple dot
+        const dot = document.createElement('div');
+        dot.className = 'message-notification-dot';
+        dot.style.cssText = `
+            position: absolute !important;
+            top: 6px !important;
+            right: 6px !important;
+            width: 10px !important;
+            height: 10px !important;
+            background: #FF4444 !important;
+            border-radius: 50% !important;
+            z-index: 1000 !important;
+            animation: pulse 2s infinite !important;
+        `;
+        
+        messagingTab.appendChild(dot);
+        console.log('✅ Simple notification dot shown');
+    }
 }
 
 /**
- * ENHANCED: Hide notification dot
+ * ENHANCED: Hide notification dot properly
  */
 hideNotificationDot() {
-    const notificationDot = document.getElementById('messageNotificationDot');
-    const countBadge = document.getElementById('unreadCountBadge');
+    const messagingTab = document.querySelector('[data-tab="messaging"]');
+    if (!messagingTab) return;
     
-    if (notificationDot) notificationDot.style.display = 'none';
-    if (countBadge) countBadge.style.display = 'none';
+    const dot = messagingTab.querySelector('.message-notification-dot');
+    const badge = messagingTab.querySelector('.unread-count-badge');
     
-    console.log('💬 Hiding message notification');
+    if (dot) dot.remove();
+    if (badge) badge.remove();
+    
+    console.log('✅ Notification dot hidden');
+}
+
+ /**
+ * ENHANCED: Better unread count tracking
+ */
+updateUnreadCount(chatId, increment) {
+    console.log(`📊 Updating unread count for ${chatId}: increment=${increment}`);
+    
+    // Initialize if needed
+    if (!this.unreadMessages) {
+        this.unreadMessages = new Map();
+    }
+    
+    const current = this.unreadMessages.get(chatId) || 0;
+    const newCount = Math.max(0, current + increment);
+    
+    this.unreadMessages.set(chatId, newCount);
+    console.log(`📊 Chat ${chatId} now has ${newCount} unread messages`);
+    
+    // Calculate total unread across all chats
+    let totalUnread = 0;
+    this.unreadMessages.forEach((count, id) => {
+        totalUnread += count;
+    });
+    
+    console.log(`📊 TOTAL unread messages: ${totalUnread}`);
+    
+    // Always show count if > 0
+    if (totalUnread > 0) {
+        this.showNotificationDot(totalUnread);
+    } else {
+        this.hideNotificationDot();
+    }
+    
+    // Update document title
+    document.title = totalUnread > 0 
+        ? `(${totalUnread}) CLASSIFIED - Hoi An Social Discovery`
+        : 'CLASSIFIED - Hoi An Social Discovery';
+    
+    return totalUnread;
 }
 
 /**
@@ -1349,8 +1446,10 @@ hideNotificationDot() {
 showInAppNotification(messageData, chatId) {
     // Don't show if already showing notification for this chat
     if (document.querySelector(`.chat-notification[data-chat-id="${chatId}"]`)) {
-        return;
+        return; 
     }
+    // Update unread count first
+        const totalUnread = this.updateUnreadCount(chatId, 1);
     
     // Get partner info for notification
     this.getChatPartnerInfo(chatId).then(partnerInfo => {
@@ -1372,7 +1471,7 @@ showInAppNotification(messageData, chatId) {
                                 flex-shrink: 0;"></div>
                     <div style="flex: 1; min-width: 0;">
                         <div style="font-weight: 600; margin-bottom: 2px;">
-                            ${partnerInfo.name}
+                            ${partnerInfo.name} (${totalUnread})
                         </div>
                         <div style="font-size: 14px; opacity: 0.9; 
                                     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">

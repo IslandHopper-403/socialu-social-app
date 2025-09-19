@@ -492,14 +492,25 @@ enableGuestMode() {
     }, 2000);
 }
     
+Ok so this you want to replace last?:
+
 /**
  * Add a state change listener to detect flipping
  */
 preventStateFlipping() {
-    console.log('🔍 State monitoring DISABLED to prevent flipping');
-    // Comment out or remove the state.subscribe calls that were causing issues
-    // this.state.subscribe('isAuthenticated', ...);
-    // this.state.subscribe('isGuestMode', ...);
+    // Add a state change listener to detect flipping
+    this.state.subscribe('isAuthenticated', (newValue, oldValue) => {
+        console.log(🔍 Auth state changed: ${oldValue} → ${newValue});
+
+        // Log stack trace for debugging
+        if (console.trace) {
+            console.trace('Auth state change source:');
+        }
+    });
+
+    this.state.subscribe('isGuestMode', (newValue, oldValue) => {
+        console.log(🔍 Guest mode changed: ${oldValue} → ${newValue});
+    });
 }
 
     /**

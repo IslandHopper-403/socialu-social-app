@@ -929,24 +929,35 @@
     <script type="module" src="javascript/main.js"></script>
 
 <script>
- // Fixed initialization - no auto guest mode
+// Ultra-conservative initialization - minimal auto-guest mode
 document.addEventListener('DOMContentLoaded', () => {
-    // Let the main app handle initialization
-    console.log('🎯 DOM ready, main app will handle auth state');
+    console.log('🎯 DOM ready, waiting for app initialization...');
     
-    // Only enable guest mode after a longer delay if truly no auth state
+    // Wait much longer and be more careful about auto-guest mode
     setTimeout(() => {
         if (window.CLASSIFIED && window.classifiedApp) {
             const isAuthenticated = window.classifiedApp.state.get('isAuthenticated');
             const isGuestMode = window.classifiedApp.state.get('isGuestMode');
             
-            // Only auto-enable guest mode if no auth state is determined after 3 seconds
+            console.log('🔍 Checking auth state after 5s:', { isAuthenticated, isGuestMode });
+            
+            // Only enable guest mode if absolutely no auth state
             if (!isAuthenticated && !isGuestMode) {
-                console.log('🚀 No auth detected after 3s, enabling guest mode...');
-                window.CLASSIFIED.enableGuestMode();
+                console.log('🚀 No auth detected after 5s, enabling guest mode...');
+                
+                // Extra safety check - make sure we're not in the middle of login
+                if (!window.classifiedApp.managers.auth._isProcessingLogin) {
+                    window.CLASSIFIED.enableGuestMode();
+                } else {
+                    console.log('🔒 Login in progress, skipping guest mode');
+                }
+            } else {
+                console.log('✅ Auth state already determined, no action needed');
             }
+        } else {
+            console.log('❌ App not ready after 5s');
         }
-    }, 3000); // Increased timeout to 3 seconds
+    }, 5000); // Wait 5 full seconds
 });
 
 </script>

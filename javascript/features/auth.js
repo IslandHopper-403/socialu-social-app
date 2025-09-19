@@ -57,6 +57,8 @@ export class AuthManager {
      */
     async init() {
         console.log('🔐 Initializing authentication...');
+         // Add state monitoring
+        this.preventStateFlipping();  // <-- ADD THIS LINE
         this.setupAuthListener();
         this.checkReferralCode();
     }

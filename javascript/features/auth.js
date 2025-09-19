@@ -57,136 +57,60 @@ export class AuthManager {
      */
     async init() {
         console.log('🔐 Initializing authentication...');
-         // Add state monitoring
-        this.preventStateFlipping();  // <-- ADD THIS LINE
         this.setupAuthListener();
         this.checkReferralCode();
     }
     
- /**
- * Set up Firebase auth state listener with debouncing
- */
-setupAuthListener() {
-    // Prevent multiple listeners
-    if (this.authUnsubscribe) {
-        console.log('🔄 Auth listener already exists, skipping setup');
-        return;
-    }
-    
-    // Add debouncing to prevent rapid state changes
-    let authTimeout = null;
-    let lastAuthState = null;
-    
-    this.authUnsubscribe = onAuthStateChanged(this.auth, (user) => {
-        // Clear any pending auth state changes
-        if (authTimeout) {
-            clearTimeout(authTimeout);
-        }
-        
-        // Debounce auth state changes
-        authTimeout = setTimeout(() => {
-            const currentAuthState = !!user;
+    /**
+     * Set up Firebase auth state listener
+     */
+    setupAuthListener() {
+        this.authUnsubscribe = onAuthStateChanged(this.auth, async (user) => {
+            console.log('🔐 Auth state changed:', user ? user.email : 'No user');
             
-            // Only process if auth state actually changed
-            if (lastAuthState !== currentAuthState) {
-                console.log('🔐 Auth state ACTUALLY changed:', user ? user.email : 'No user');
-                lastAuthState = currentAuthState;
-                
-                if (user) {
-                    this.handleUserLogin(user);
-                } else {
-                    this.handleUserLogout();
-                }
+            if (user) {
+                await this.handleUserLogin(user);
             } else {
-                console.log('🔐 Auth state duplicate event ignored');
+                this.handleUserLogout();
             }
-        }, 500); // 500ms debounce
-    });
-    
-    console.log('👂 Auth listener set up with debouncing');
-}
+        });
+    }
     
     /**
      * Handle user login
      */
-  async handleUserLogin(user) {
-    // Prevent multiple simultaneous login processes
-    if (this._isProcessingLogin) {
-        console.log('🔒 Login already in progress, skipping...');
-        return;
-    }
+   async handleUserLogin(user) {
+    this.state.update({
+        currentUser: user,
+        isAuthenticated: true,
+        isGuestMode: false
+    });
     
-    this._isProcessingLogin = true;
-    
-    try {
-        console.log('🔐 Processing user login:', user.email);
+    // ADD THIS LINE to force nav visibility
+    document.querySelector('.bottom-nav').style.display = 'flex';
         
-        // ATOMIC state update - all at once to prevent flipping
-        this.state.update({
-            currentUser: user,
-            isAuthenticated: true,
-            isGuestMode: false
-        });
-        
-        // Force navigation to show immediately
-        const bottomNav = document.querySelector('.bottom-nav');
-        if (bottomNav) {
-            bottomNav.style.display = 'flex';
-        }
-        
-        // Hide auth screens immediately
+        // Hide auth screens
         this.hideAuthScreens();
         
-        // Load user profile (non-blocking)
-        this.loadUserProfile(user.uid).catch(err => {
-            console.error('Error loading profile:', err);
-        });
+        // Load user profile
+        await this.loadUserProfile(user.uid);
         
-        // Check if business user (non-blocking)
-        this.checkIfBusiness(user).catch(err => {
-            console.error('Error checking business status:', err);
-        });
+        // Check if business user
+        await this.checkIfBusiness(user);
         
-        // Initialize messaging if available (non-blocking)
+        // Initialize messaging if available
         if (this.messagingManager) {
-            this.messagingManager.init().catch(err => {
-                console.error('Error initializing messaging:', err);
-            });
+            this.messagingManager.init();
         }
         
-        // Notify other managers (non-blocking)
+        // Notify other managers
         this.notifyLogin(user);
-        
-        console.log('✅ User login processed successfully');
-        
-    } catch (error) {
-        console.error('❌ Error in handleUserLogin:', error);
-    } finally {
-        this._isProcessingLogin = false;
     }
-}  
+    
     /**
      * Handle user logout
      */
-   handleUserLogout() {
-    // Prevent multiple simultaneous logout processes
-    if (this._isProcessingLogout) {
-        console.log('🔒 Logout already in progress, skipping...');
-        return;
-    }
-    
-    this._isProcessingLogout = true;
-    
-    try {
-        console.log('🔐 Processing user logout');
-        
-        // Only logout if we're actually authenticated
-        if (!this.state.get('isAuthenticated')) {
-            console.log('Already logged out, skipping...');
-            return;
-        }
-        
-        // ATOMIC state update
+    handleUserLogout() {
         this.state.update({
             currentUser: null,
             isAuthenticated: false,
@@ -205,15 +129,7 @@ setupAuthListener() {
         
         // Reset user data
         this.state.reset(['userProfile', 'businessProfile']);
-        
-        console.log('✅ User logout processed successfully');
-        
-    } catch (error) {
-        console.error('❌ Error in handleUserLogout:', error);
-    } finally {
-        this._isProcessingLogout = false;
     }
-}
     
     /**
      * Email login
@@ -434,64 +350,30 @@ setupAuthListener() {
     /**
      * Enable guest mode
      */
-enableGuestMode() {
-    console.log('👤 Attempting to enable guest mode...');
-    
-    // Prevent enabling guest mode if already authenticated or processing
-    if (this.state.get('isAuthenticated') || this._isProcessingLogin) {
-        console.log('🔒 User authenticated or login in progress, not enabling guest mode');
-        return;
-    }
-    
-    // Prevent multiple guest mode activations
-    if (this.state.get('isGuestMode')) {
-        console.log('🔒 Guest mode already enabled');
-        return;
-    }
-    
-    console.log('✅ Enabling guest mode');
-    
-    // ATOMIC state update
-    this.state.update({
-        isGuestMode: true,
-        isAuthenticated: false,
-        currentUser: null
-    });
-    
-    // Hide auth screens
-    this.hideAuthScreens();
-    
-    // Show navigation
-    const bottomNav = document.querySelector('.bottom-nav');
-    if (bottomNav) {
-        bottomNav.style.display = 'flex';
-    }
-    
-    // Notify other managers
-    this.notifyGuestMode();
-    
-    console.log('✅ Guest mode enabled successfully');
-}
-    
-/**
- * Add a state change listener to detect flipping
- */
-preventStateFlipping() {
-    // Add a state change listener to detect flipping
-    this.state.subscribe('isAuthenticated', (newValue, oldValue) => {
-        console.log(`🔍 Auth state changed: ${oldValue} → ${newValue}`);
+    enableGuestMode() {
+        console.log('👤 Enabling guest mode');
+        this.state.update({
+            isGuestMode: true,
+            isAuthenticated: false
+        });
         
-        // Log stack trace for debugging
-        if (console.trace) {
-            console.trace('Auth state change source:');
+        // Hide auth screens
+        this.hideAuthScreens();
+        
+        // Show guest banner
+        if (this.navigationManager) {
+            this.navigationManager.toggleGuestBanner(true);
+        } else {
+            const guestBanner = document.getElementById('guestBanner');
+            if (guestBanner) {
+                guestBanner.style.display = 'block';
+            }
         }
-    });
+        
+        // Notify other managers
+        this.notifyGuestMode();
+    }
     
-    this.state.subscribe('isGuestMode', (newValue, oldValue) => {
-        console.log(`🔍 Guest mode changed: ${oldValue} → ${newValue}`);
-    });
-}
-
     /**
      * Create user profile in Firestore
      */

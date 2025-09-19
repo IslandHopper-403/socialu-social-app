@@ -109,7 +109,7 @@ setupAuthListener() {
     /**
      * Handle user login
      */
- async handleUserLogin(user) {
+  async handleUserLogin(user) {
     // Prevent multiple simultaneous login processes
     if (this._isProcessingLogin) {
         console.log('🔒 Login already in progress, skipping...');
@@ -479,16 +479,16 @@ enableGuestMode() {
 preventStateFlipping() {
     // Add a state change listener to detect flipping
     this.state.subscribe('isAuthenticated', (newValue, oldValue) => {
-        console.log(🔍 Auth state changed: ${oldValue} → ${newValue});
-
+        console.log(`🔍 Auth state changed: ${oldValue} → ${newValue}`);
+        
         // Log stack trace for debugging
         if (console.trace) {
             console.trace('Auth state change source:');
         }
     });
-
+    
     this.state.subscribe('isGuestMode', (newValue, oldValue) => {
-        console.log(🔍 Guest mode changed: ${oldValue} → ${newValue});
+        console.log(`🔍 Guest mode changed: ${oldValue} → ${newValue}`);
     });
 }
 

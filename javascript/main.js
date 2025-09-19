@@ -265,20 +265,20 @@ class ClassifiedApp {
                                     // Popup is handled by triggerMatchPopup in messaging manager
                                 } else {
                                     // Just a like, show confirmation
-                                    this.showLikeConfirmation();
+                                     window.CLASSIFIED.showLikeConfirmation(); // <-- CHANGED
                                 }
                             })
                             .catch(err => {
                                 console.error('Error handling like:', err);
-                                this.showLikeConfirmation(); // Fallback to positive UX
+                                window.CLASSIFIED.showLikeConfirmation(); // Fallback to positive UX
                             });
                     } else {
                         alert(`Please sign up to connect! 💖`);
                         this.managers.auth.showRegister();
                     }
                 } else if (action === 'pass') {
-                    this.recordPass(currentUser?.uid, userId);
-                    this.removeUserFromFeed(userId);
+                    window.CLASSIFIED.recordPass(currentUser?.uid, userId);     // <-- CHANGED
+                    window.CLASSIFIED.removeUserFromFeed(userId);              // <-- CHANGED
                 } else if (action === 'superlike') {
                     if (currentUser) {
                         this.managers.messaging.processLikeAction(currentUser.uid, userId, 'superlike')
@@ -288,7 +288,7 @@ class ClassifiedApp {
                                     this.managers.feed.switchSocialTab('messaging');
                                 } else {
                                     alert(`Super like sent! 🌟 They'll be notified!`);
-                                    this.sendSuperLikeNotification(userId);
+                                    window.CLASSIFIED.sendSuperLikeNotification(userId);  // <-- CHANGED
                                 }
                             })
                             .catch(err => {
@@ -300,57 +300,6 @@ class ClassifiedApp {
                         this.managers.auth.showRegister();
                     }
                 }
-            },
-
-            // NEW: Helper methods for user actions
-            async recordPass(fromUserId, toUserId) {
-                if (!fromUserId) return;
-                
-                try {
-                    const passId = `${fromUserId}_${toUserId}`;
-                    await setDoc(doc(this.managers.messaging.db, 'passes', passId), {
-                        fromUserId,
-                        toUserId,
-                        timestamp: serverTimestamp()
-                    });
-                    console.log('✅ Pass recorded:', passId);
-                } catch (error) {
-                    console.error('Error recording pass:', error);
-                }
-            },
-
-           removeUserFromFeed(userId) {
-                // Remove user card from UI with animation
-                const userCards = document.querySelectorAll('.user-feed-item');
-                userCards.forEach(card => {
-                    const cardUserId = card.querySelector('.action-btn')?.onclick?.toString().match(/'([^']+)'/)?.[1];
-                    if (cardUserId === userId) {
-                        card.style.animation = 'fadeOut 0.3s ease';
-                        setTimeout(() => {
-                            card.remove();
-                        }, 300);
-                    }
-                });
-            },
-
-            showLikeConfirmation() {
-                // Show brief confirmation
-                const notification = document.createElement('div');
-                notification.className = 'like-notification';
-                notification.innerHTML = '💖 Like sent!';
-                notification.style.cssText = `
-                    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                    background: rgba(0,212,255,0.9); color: white; padding: 12px 24px;
-                    border-radius: 25px; z-index: 999; font-weight: 600;
-                    animation: slideDown 0.3s ease;
-                `;
-                document.body.appendChild(notification);
-                setTimeout(() => notification.remove(), 2000);
-            },
-
-            sendSuperLikeNotification(userId) {
-                // In a real app, this would send a push notification
-                console.log('🌟 Super like notification sent to user:', userId);
             },
             
             // NEW: Helper methods for user actions
@@ -402,7 +351,7 @@ class ClassifiedApp {
             sendSuperLikeNotification(userId) {
                 // In a real app, this would send a push notification
                 console.log('🌟 Super like notification sent to user:', userId);
-            }
+            },
 
             filterUsers: (filter) => this.managers.feed.filterUsers(filter),
             

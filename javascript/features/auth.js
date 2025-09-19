@@ -109,7 +109,7 @@ setupAuthListener() {
     /**
      * Handle user login
      */
-  async handleUserLogin(user) {
+ async handleUserLogin(user) {
     // Prevent multiple simultaneous login processes
     if (this._isProcessingLogin) {
         console.log('🔒 Login already in progress, skipping...');
@@ -121,12 +121,21 @@ setupAuthListener() {
     try {
         console.log('🔐 Processing user login:', user.email);
         
+        // NUCLEAR OPTION: Unlock auth state first, then lock after setting
+        this.state.unlockAuthState();
+        
         // ATOMIC state update - all at once to prevent flipping
         this.state.update({
             currentUser: user,
             isAuthenticated: true,
             isGuestMode: false
         });
+        
+        // NUCLEAR OPTION: Lock auth state to prevent any further changes
+        setTimeout(() => {
+            this.state.lockAuthState();
+            console.log('🔒 Auth state locked after successful login');
+        }, 1000);
         
         // Force navigation to show immediately
         const bottomNav = document.querySelector('.bottom-nav');
@@ -161,10 +170,11 @@ setupAuthListener() {
         
     } catch (error) {
         console.error('❌ Error in handleUserLogin:', error);
+        this.state.unlockAuthState(); // Unlock on error
     } finally {
         this._isProcessingLogin = false;
     }
-}  
+} 
     /**
      * Handle user logout
      */
@@ -451,6 +461,9 @@ enableGuestMode() {
     
     console.log('✅ Enabling guest mode');
     
+    // NUCLEAR OPTION: Temporarily unlock for guest mode
+    this.state.unlockAuthState();
+    
     // ATOMIC state update
     this.state.update({
         isGuestMode: true,
@@ -471,25 +484,22 @@ enableGuestMode() {
     this.notifyGuestMode();
     
     console.log('✅ Guest mode enabled successfully');
+    
+    // NUCLEAR OPTION: Lock state after guest mode is set
+    setTimeout(() => {
+        this.state.lockAuthState();
+        console.log('🔒 Auth state locked after guest mode enabled');
+    }, 2000);
 }
     
 /**
  * Add a state change listener to detect flipping
  */
 preventStateFlipping() {
-    // Add a state change listener to detect flipping
-    this.state.subscribe('isAuthenticated', (newValue, oldValue) => {
-        console.log(`🔍 Auth state changed: ${oldValue} → ${newValue}`);
-        
-        // Log stack trace for debugging
-        if (console.trace) {
-            console.trace('Auth state change source:');
-        }
-    });
-    
-    this.state.subscribe('isGuestMode', (newValue, oldValue) => {
-        console.log(`🔍 Guest mode changed: ${oldValue} → ${newValue}`);
-    });
+    console.log('🔍 State monitoring DISABLED to prevent flipping');
+    // Comment out or remove the state.subscribe calls that were causing issues
+    // this.state.subscribe('isAuthenticated', ...);
+    // this.state.subscribe('isGuestMode', ...);
 }
 
     /**

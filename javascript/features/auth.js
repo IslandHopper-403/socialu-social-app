@@ -61,52 +61,108 @@ export class AuthManager {
         this.checkReferralCode();
     }
     
-    /**
-     * Set up Firebase auth state listener
-     */
-    setupAuthListener() {
-        this.authUnsubscribe = onAuthStateChanged(this.auth, async (user) => {
-            console.log('🔐 Auth state changed:', user ? user.email : 'No user');
-            
-            if (user) {
-                await this.handleUserLogin(user);
-            } else {
-                this.handleUserLogout();
-            }
-        });
+ /**
+ * Set up Firebase auth state listener with debouncing
+ */
+setupAuthListener() {
+    // Prevent multiple listeners
+    if (this.authUnsubscribe) {
+        console.log('🔄 Auth listener already exists, skipping setup');
+        return;
     }
+    
+    // Add debouncing to prevent rapid state changes
+    let authTimeout = null;
+    let lastAuthState = null;
+    
+    this.authUnsubscribe = onAuthStateChanged(this.auth, (user) => {
+        // Clear any pending auth state changes
+        if (authTimeout) {
+            clearTimeout(authTimeout);
+        }
+        
+        // Debounce auth state changes
+        authTimeout = setTimeout(() => {
+            const currentAuthState = !!user;
+            
+            // Only process if auth state actually changed
+            if (lastAuthState !== currentAuthState) {
+                console.log('🔐 Auth state ACTUALLY changed:', user ? user.email : 'No user');
+                lastAuthState = currentAuthState;
+                
+                if (user) {
+                    this.handleUserLogin(user);
+                } else {
+                    this.handleUserLogout();
+                }
+            } else {
+                console.log('🔐 Auth state duplicate event ignored');
+            }
+        }, 500); // 500ms debounce
+    });
+    
+    console.log('👂 Auth listener set up with debouncing');
+}
     
     /**
      * Handle user login
      */
-   async handleUserLogin(user) {
-    this.state.update({
-        currentUser: user,
-        isAuthenticated: true,
-        isGuestMode: false
-    });
-    
-    // ADD THIS LINE to force nav visibility
-    document.querySelector('.bottom-nav').style.display = 'flex';
-        
-        // Hide auth screens
-        this.hideAuthScreens();
-        
-        // Load user profile
-        await this.loadUserProfile(user.uid);
-        
-        // Check if business user
-        await this.checkIfBusiness(user);
-        
-        // Initialize messaging if available
-        if (this.messagingManager) {
-            this.messagingManager.init();
-        }
-        
-        // Notify other managers
-        this.notifyLogin(user);
+  async handleUserLogin(user) {
+    // Prevent multiple simultaneous login processes
+    if (this._isProcessingLogin) {
+        console.log('🔒 Login already in progress, skipping...');
+        return;
     }
     
+    this._isProcessingLogin = true;
+    
+    try {
+        console.log('🔐 Processing user login:', user.email);
+        
+        // ATOMIC state update - all at once to prevent flipping
+        this.state.update({
+            currentUser: user,
+            isAuthenticated: true,
+            isGuestMode: false
+        });
+        
+        // Force navigation to show immediately
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (bottomNav) {
+            bottomNav.style.display = 'flex';
+        }
+        
+        // Hide auth screens immediately
+        this.hideAuthScreens();
+        
+        // Load user profile (non-blocking)
+        this.loadUserProfile(user.uid).catch(err => {
+            console.error('Error loading profile:', err);
+        });
+        
+        // Check if business user (non-blocking)
+        this.checkIfBusiness(user).catch(err => {
+            console.error('Error checking business status:', err);
+        });
+        
+        // Initialize messaging if available (non-blocking)
+        if (this.messagingManager) {
+            this.messagingManager.init().catch(err => {
+                console.error('Error initializing messaging:', err);
+            });
+        }
+        
+        // Notify other managers (non-blocking)
+        this.notifyLogin(user);
+        
+        console.log('✅ User login processed successfully');
+        
+    } catch (error) {
+        console.error('❌ Error in handleUserLogin:', error);
+    } finally {
+        this._isProcessingLogin = false;
+    }
+}  
     /**
      * Handle user logout
      */

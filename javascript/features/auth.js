@@ -121,21 +121,12 @@ setupAuthListener() {
     try {
         console.log('🔐 Processing user login:', user.email);
         
-        // NUCLEAR OPTION: Unlock auth state first, then lock after setting
-        this.state.unlockAuthState();
-        
         // ATOMIC state update - all at once to prevent flipping
         this.state.update({
             currentUser: user,
             isAuthenticated: true,
             isGuestMode: false
         });
-        
-        // NUCLEAR OPTION: Lock auth state to prevent any further changes
-        setTimeout(() => {
-            this.state.lockAuthState();
-            console.log('🔒 Auth state locked after successful login');
-        }, 1000);
         
         // Force navigation to show immediately
         const bottomNav = document.querySelector('.bottom-nav');
@@ -170,11 +161,10 @@ setupAuthListener() {
         
     } catch (error) {
         console.error('❌ Error in handleUserLogin:', error);
-        this.state.unlockAuthState(); // Unlock on error
     } finally {
         this._isProcessingLogin = false;
     }
-} 
+}  
     /**
      * Handle user logout
      */

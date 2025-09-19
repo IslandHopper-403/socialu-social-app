@@ -451,9 +451,6 @@ enableGuestMode() {
     
     console.log('✅ Enabling guest mode');
     
-    // NUCLEAR OPTION: Temporarily unlock for guest mode
-    this.state.unlockAuthState();
-    
     // ATOMIC state update
     this.state.update({
         isGuestMode: true,
@@ -474,16 +471,8 @@ enableGuestMode() {
     this.notifyGuestMode();
     
     console.log('✅ Guest mode enabled successfully');
-    
-    // NUCLEAR OPTION: Lock state after guest mode is set
-    setTimeout(() => {
-        this.state.lockAuthState();
-        console.log('🔒 Auth state locked after guest mode enabled');
-    }, 2000);
 }
     
-Ok so this you want to replace last?:
-
 /**
  * Add a state change listener to detect flipping
  */

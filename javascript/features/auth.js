@@ -166,7 +166,25 @@ setupAuthListener() {
     /**
      * Handle user logout
      */
-    handleUserLogout() {
+   handleUserLogout() {
+    // Prevent multiple simultaneous logout processes
+    if (this._isProcessingLogout) {
+        console.log('🔒 Logout already in progress, skipping...');
+        return;
+    }
+    
+    this._isProcessingLogout = true;
+    
+    try {
+        console.log('🔐 Processing user logout');
+        
+        // Only logout if we're actually authenticated
+        if (!this.state.get('isAuthenticated')) {
+            console.log('Already logged out, skipping...');
+            return;
+        }
+        
+        // ATOMIC state update
         this.state.update({
             currentUser: null,
             isAuthenticated: false,
@@ -185,7 +203,15 @@ setupAuthListener() {
         
         // Reset user data
         this.state.reset(['userProfile', 'businessProfile']);
+        
+        console.log('✅ User logout processed successfully');
+        
+    } catch (error) {
+        console.error('❌ Error in handleUserLogout:', error);
+    } finally {
+        this._isProcessingLogout = false;
     }
+}
     
     /**
      * Email login

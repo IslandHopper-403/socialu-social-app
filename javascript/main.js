@@ -42,12 +42,14 @@ import { ReferralManager } from './features/referral.js';
 
 // Import UI modules
 import { NavigationManager } from './ui/navigation.js';
+
 // Import Firestore functions for main app
 import {
     doc,
     setDoc,
     serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
 
 
 /**
@@ -239,7 +241,8 @@ class ClassifiedApp {
             // User interactions
             openUserProfile: (user) => this.managers.profile.openUserProfile(user),
             closeUserProfile: () => this.managers.navigation.closeOverlay('userProfileView'),
-      // FIXED: Enhanced handleUserAction method
+      
+            // FIXED: Enhanced handleUserAction method
             handleUserAction: (action, userId) => {
                 if (!userId || userId === 'undefined') {
                     console.error('Invalid userId for action:', action);
@@ -298,8 +301,6 @@ class ClassifiedApp {
                     }
                 }
             },
-
-},
 
             // NEW: Helper methods for user actions
             async recordPass(fromUserId, toUserId) {

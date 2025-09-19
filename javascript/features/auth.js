@@ -350,8 +350,11 @@ export class AuthManager {
     /**
      * Enable guest mode
      */
-    enableGuestMode() {
-        console.log('👤 Enabling guest mode');
+ enableGuestMode() {
+    console.log('👤 Enabling guest mode');
+    
+    // PREVENT FLIPPING - only set if not already authenticated
+    if (!this.state.get('isAuthenticated')) {
         this.state.update({
             isGuestMode: true,
             isAuthenticated: false
@@ -360,19 +363,16 @@ export class AuthManager {
         // Hide auth screens
         this.hideAuthScreens();
         
-        // Show guest banner
-        if (this.navigationManager) {
-            this.navigationManager.toggleGuestBanner(true);
-        } else {
-            const guestBanner = document.getElementById('guestBanner');
-            if (guestBanner) {
-                guestBanner.style.display = 'block';
-            }
+        // Show navigation
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (bottomNav) {
+            bottomNav.style.display = 'flex';
         }
         
         // Notify other managers
         this.notifyGuestMode();
     }
+}
     
     /**
      * Create user profile in Firestore

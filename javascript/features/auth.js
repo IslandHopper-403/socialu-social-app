@@ -432,28 +432,43 @@ setupAuthListener() {
     /**
      * Enable guest mode
      */
- enableGuestMode() {
-    console.log('👤 Enabling guest mode');
+enableGuestMode() {
+    console.log('👤 Attempting to enable guest mode...');
     
-    // PREVENT FLIPPING - only set if not already authenticated
-    if (!this.state.get('isAuthenticated')) {
-        this.state.update({
-            isGuestMode: true,
-            isAuthenticated: false
-        });
-        
-        // Hide auth screens
-        this.hideAuthScreens();
-        
-        // Show navigation
-        const bottomNav = document.querySelector('.bottom-nav');
-        if (bottomNav) {
-            bottomNav.style.display = 'flex';
-        }
-        
-        // Notify other managers
-        this.notifyGuestMode();
+    // Prevent enabling guest mode if already authenticated or processing
+    if (this.state.get('isAuthenticated') || this._isProcessingLogin) {
+        console.log('🔒 User authenticated or login in progress, not enabling guest mode');
+        return;
     }
+    
+    // Prevent multiple guest mode activations
+    if (this.state.get('isGuestMode')) {
+        console.log('🔒 Guest mode already enabled');
+        return;
+    }
+    
+    console.log('✅ Enabling guest mode');
+    
+    // ATOMIC state update
+    this.state.update({
+        isGuestMode: true,
+        isAuthenticated: false,
+        currentUser: null
+    });
+    
+    // Hide auth screens
+    this.hideAuthScreens();
+    
+    // Show navigation
+    const bottomNav = document.querySelector('.bottom-nav');
+    if (bottomNav) {
+        bottomNav.style.display = 'flex';
+    }
+    
+    // Notify other managers
+    this.notifyGuestMode();
+    
+    console.log('✅ Guest mode enabled successfully');
 }
     
     /**

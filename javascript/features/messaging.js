@@ -456,7 +456,7 @@ export class MessagingManager {
             localStorage.setItem(`seen_${chatId}_${currentUser.uid}`, Date.now().toString());
             this.saveUnreadStateToStorage();
             this.updateTotalUnreadCount();
-            setTimeout(() => this.loadChats(), 100);
+            // setTimeout(() => this.loadChats(), 100); COMMENT OUT TO TEST - CRASHING
             
             console.log('💬 Chat ID:', chatId);
             

@@ -146,11 +146,11 @@ body {
 /* Message Notification Dot */
 .message-notification-dot {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 8px;
-    height: 8px;
-    background: #FF4444;
+    top: -5px;
+    right: -5px;
+    width: 12px;
+    height: 12px;
+    background: #FD493F;
     border-radius: 50%;
     animation: pulse 1.5s infinite;
     border: 2px solid rgba(255, 68, 68, 0.3);

@@ -186,6 +186,41 @@ body {
     position: relative !important;
 }
 
+/* Individual chat item unread indicators */
+.chat-item {
+    position: relative !important;
+}
+
+.chat-item .chat-unread-dot {
+    position: absolute !important;
+    top: 15px !important;
+    right: 15px !important;
+    width: 12px !important;
+    height: 12px !important;
+    background: #FF4444 !important;
+    border-radius: 50% !important;
+    border: 2px solid #1a1a1a !important;
+    z-index: 10 !important;
+}
+
+.chat-item .chat-unread-count {
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+    background: #FF4444 !important;
+    color: white !important;
+    border-radius: 50% !important;
+    min-width: 22px !important;
+    height: 22px !important;
+    padding: 0 5px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    border: 2px solid #1a1a1a !important;
+}
+
 /* Hide notification when messaging tab is active */
 .social-tab.active .message-notification-dot,
 .social-tab.active .unread-count-badge {

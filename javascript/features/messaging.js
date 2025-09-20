@@ -328,32 +328,45 @@ export class MessagingManager {
             
             const realChats = [];
             
-            for (const chatDoc of snapshot.docs) {
-                const chatData = chatDoc.data();
-                const partnerId = chatData.participants.find(id => id !== userId);
-                
-                if (partnerId) {
-                    try {
-                        // Get partner info
-                        const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
-                        if (partnerDoc.exists()) {
-                            const partnerData = partnerDoc.data();
-                            realChats.push({
-                                id: chatDoc.id,
-                                partnerId: partnerId,
-                                partnerName: partnerData.name,
-                                partnerAvatar: partnerData.photos?.[0] || partnerData.photo || 'https://via.placeholder.com/100',
-                                lastMessage: chatData.lastMessage || 'No messages yet',
-                                lastMessageTime: chatData.lastMessageTime,
-                                isNew: !chatData.lastMessage // Flag for new chats
-                            });
+                        for (const chatDoc of snapshot.docs) {
+            const chatData = chatDoc.data();
+            const partnerId = chatData.participants.find(id => id !== userId);
+            
+            if (partnerId) {
+                try {
+                    // Get partner info
+                    const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
+                    if (partnerDoc.exists()) {
+                        const partnerData = partnerDoc.data();
+                        
+                        // Check unread status
+                        const hasUnread = chatData.lastMessageSender && 
+                                         chatData.lastMessageSender !== userId &&
+                                         chatData.lastMessageSender !== null;
+                        
+                        realChats.push({
+                            id: chatDoc.id,
+                            partnerId: partnerId,
+                            partnerName: partnerData.name,
+                            partnerAvatar: partnerData.photos?.[0] || partnerData.photo || 'https://via.placeholder.com/100',
+                            lastMessage: chatData.lastMessage || 'No messages yet',
+                            lastMessageTime: chatData.lastMessageTime,
+                            lastMessageSender: chatData.lastMessageSender,
+                            isNew: !chatData.lastMessage,
+                            hasUnread: hasUnread
+                        });
+                        
+                        // Initialize unread count if needed
+                        if (hasUnread && !this.unreadMessages.has(chatDoc.id)) {
+                            this.unreadMessages.set(chatDoc.id, 1);
                         }
-                    } catch (error) {
-                        console.error('Error getting partner data:', error);
                     }
+                } catch (error) {
+                    console.error('Error getting partner data:', error);
                 }
             }
-            
+        }
+                    
             // If we have real chats, update the UI
             if (realChats.length > 0) {
                 console.log(`✅ Updating UI with ${realChats.length} real chats`);

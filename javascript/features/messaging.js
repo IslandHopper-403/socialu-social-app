@@ -432,6 +432,14 @@ export class MessagingManager {
             // Generate chat ID (alphabetically sorted user IDs)
             const chatId = this.generateChatId(currentUser.uid, userId);
             this.currentChatId = chatId;
+
+            // Clear unread count for this chat
+            if (this.unreadMessages.has(chatId)) {
+                this.unreadMessages.set(chatId, 0);
+                this.updateTotalUnreadCount();
+                // Refresh chat list to update UI
+                this.loadChats();
+            }
             
             console.log('💬 Chat ID:', chatId);
             

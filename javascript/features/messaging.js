@@ -834,130 +834,139 @@ listenForMatches(userId) {
     /**
      * Listen for new messages globally (for notifications)
      */
-    listenForNewMessages(userId) {
-        try {
-            // This is a simplified approach - in production you'd want a more efficient solution
-            const chatsRef = collection(this.db, 'chats');
-            const q = query(
-                chatsRef,
-                where('participants', 'array-contains', userId)
-            );
-            
-            this.notificationListener = onSnapshot(q, (snapshot) => {
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === 'modified') {
-                        const chatData = change.doc.data();
-                        // Check if there's a new message not from current user
-                        if (chatData.lastMessageSender && chatData.lastMessageSender !== userId) {
-                            this.showInAppNotification(chatData);
-                        }
-                    }
-                });
-            }, (error) => {
-                console.error('Error in global message listener:', error);
-            });
-            
-            console.log('👂 Set up global message notifications for user:', userId);
-        } catch (error) {
-            console.error('Error setting up global message listener:', error);
-        }
-    }
     
-    /**
-     * Show in-app notification
-     */
-    showInAppNotification(chatData) {
-        // Don't show notification if chat is currently open
-        if (this.currentChatId && this.currentChatId.includes(chatData.lastMessageSender)) {
-            return;
-        }
+listenForNewMessages(userId) {
+    try {
+        const chatsRef = collection(this.db, 'chats');
+        const q = query(
+            chatsRef,
+            where('participants', 'array-contains', userId)
+        );
         
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = 'social-proof-notification';
-        notification.innerHTML = `💬 New message: ${chatData.lastMessage}`;
-        
-        document.body.appendChild(notification);
-        // Show notification dot
-        this.showNotificationDot();
-        
-        // Play sound
-        if (this.notificationSound) {
-            this.notificationSound.play().catch(e => console.log('Could not play sound:', e));
-        }
-        
-        // Show browser notification if permission granted
-        try {
-            if (Notification.permission === 'granted') {
-                new Notification('New message', {
-                    body: chatData.lastMessage,
-                    icon: '/path/to/icon.png' // Add your app icon
-                });
-            }
-        } catch (error) {
-            console.log('Could not show browser notification:', error);
-        }
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
-    }
-    
-    /**
-     * Handle new match
-     */
-    async handleNewMatch(matchData) {
-        console.log('🎉 New match!', matchData);
-        
-        try {
-            // Prevent duplicate match popups
-            const matchPopup = document.getElementById('matchPopup');
-            if (matchPopup && matchPopup.classList.contains('show')) {
-                console.log('Match popup already showing, skipping duplicate');
-                return;
-            }
-            
-            // Show match popup
-            if (matchPopup) {
-                matchPopup.classList.add('show');
-                
-                // Update match popup content
-                const currentUser = this.state.get('currentUser');
-                const partnerId = matchData.users.find(id => id !== currentUser.uid);
-                
-                if (partnerId) {
-                    const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
-                    if (partnerDoc.exists()) {
-                        const partnerData = partnerDoc.data();
-                        this.state.set('lastMatchedUser', {
-                            id: partnerId,
-                            name: partnerData.name,
-                            avatar: partnerData.photos?.[0] || 'https://via.placeholder.com/100'
-                        });
-                        
-                        // Update popup text
-                        const popupText = matchPopup.querySelector('p');
-                        if (popupText) {
-                            popupText.textContent = `You and ${partnerData.name} both liked each other`;
+        this.notificationListener = onSnapshot(q, (snapshot) => {
+            snapshot.docChanges().forEach(change => {
+                if (change.type === 'modified') {
+                    const chatData = change.doc.data();
+                    const chatId = change.doc.id; // IMPORTANT: Get the chat ID
+                    
+                    // Check if there's a new message not from current user
+                    if (chatData.lastMessageSender && chatData.lastMessageSender !== userId) {
+                        // Don't show notification if this chat is currently open
+                        if (this.currentChatId !== chatId) {
+                            // Pass both chatData AND chatId
+                            this.showInAppNotification(chatData, chatId);
+                            
+                            // Update notification dot
+                            this.updateUnreadCount(chatId, 1);
                         }
                     }
                 }
-                
-                // Auto-close after 10 seconds if user doesn't interact
-                setTimeout(() => {
-                    if (matchPopup.classList.contains('show')) {
-                        matchPopup.classList.remove('show');
-                        console.log('🕐 Match popup auto-closed after 10 seconds');
-                    }
-                }, 10000);
-            }
-        } catch (error) {
-            console.error('Error handling new match:', error);
-        }
-        // At the end of the method:
-        this.saveSeenMatches();
+            });
+        }, (error) => {
+            console.error('Error in global message listener:', error);
+        });
+        
+        console.log('👂 Set up global message notifications for user:', userId);
+    } catch (error) {
+        console.error('Error setting up global message listener:', error);
     }
+}
+
+    /**
+     * Show in-app notification
+     */
+        showInAppNotification(chatData) {
+            // Don't show notification if chat is currently open
+            if (this.currentChatId && this.currentChatId.includes(chatData.lastMessageSender)) {
+                return;
+            }
+            
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = 'social-proof-notification';
+            notification.innerHTML = `💬 New message: ${chatData.lastMessage}`;
+            
+            document.body.appendChild(notification);
+            // Show notification dot
+            this.showNotificationDot();
+            
+            // Play sound
+            if (this.notificationSound) {
+                this.notificationSound.play().catch(e => console.log('Could not play sound:', e));
+            }
+            
+            // Show browser notification if permission granted
+            try {
+                if (Notification.permission === 'granted') {
+                    new Notification('New message', {
+                        body: chatData.lastMessage,
+                        icon: '/path/to/icon.png' // Add your app icon
+                    });
+                }
+            } catch (error) {
+                console.log('Could not show browser notification:', error);
+            }
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        /**
+         * Handle new match
+         */
+        async handleNewMatch(matchData) {
+            console.log('🎉 New match!', matchData);
+            
+            try {
+                // Prevent duplicate match popups
+                const matchPopup = document.getElementById('matchPopup');
+                if (matchPopup && matchPopup.classList.contains('show')) {
+                    console.log('Match popup already showing, skipping duplicate');
+                    return;
+                }
+                
+                // Show match popup
+                if (matchPopup) {
+                    matchPopup.classList.add('show');
+                    
+                    // Update match popup content
+                    const currentUser = this.state.get('currentUser');
+                    const partnerId = matchData.users.find(id => id !== currentUser.uid);
+                    
+                    if (partnerId) {
+                        const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
+                        if (partnerDoc.exists()) {
+                            const partnerData = partnerDoc.data();
+                            this.state.set('lastMatchedUser', {
+                                id: partnerId,
+                                name: partnerData.name,
+                                avatar: partnerData.photos?.[0] || 'https://via.placeholder.com/100'
+                            });
+                            
+                            // Update popup text
+                            const popupText = matchPopup.querySelector('p');
+                            if (popupText) {
+                                popupText.textContent = `You and ${partnerData.name} both liked each other`;
+                            }
+                        }
+                    }
+                    
+                    // Auto-close after 10 seconds if user doesn't interact
+                    setTimeout(() => {
+                        if (matchPopup.classList.contains('show')) {
+                            matchPopup.classList.remove('show');
+                            console.log('🕐 Match popup auto-closed after 10 seconds');
+                        }
+                    }, 10000);
+                }
+            } catch (error) {
+                console.error('Error handling new match:', error);
+            }
+            // At the end of the method:
+            this.saveSeenMatches();
+        }
     
    /**
      * Start chat from match popup

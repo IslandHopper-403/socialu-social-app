@@ -146,7 +146,7 @@ body {
 /* Message Notification Dot */
 .message-notification-dot {
     position: absolute;
-    top: -8px;
+    top: -12px;
     right: 0px;
     width: 24px;
     height: 24px;

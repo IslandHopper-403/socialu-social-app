@@ -48,7 +48,6 @@ export class MessagingManager {
     
     // ADDED: Notification state tracking
     this.unreadMessages = new Map(); // chatId -> count
-    this.loadUnreadStateFromStorage(); // ADD THIS LINE
     this.lastSeenMessages = new Map(); // chatId -> timestamp
     this.lastNotificationTimes = new Map(); // chatId -> timestamp
     this.notificationQueue = [];
@@ -340,14 +339,11 @@ export class MessagingManager {
                     if (partnerDoc.exists()) {
                         const partnerData = partnerDoc.data();
                         
-                     // Check unread status
-                    const seenTime = localStorage.getItem(`seen_${chatDoc.id}_${userId}`);
-                    const messageTime = chatData.lastMessageTime?.toMillis?.() || 0;
-                    
-                    // It's unread if: message is from other user AND we haven't seen it yet
-                    const hasUnread = chatData.lastMessageSender && 
+                    // Check unread status (only for current session)
+                    const hasUnread = chatData.lastMessage && 
+                                     chatData.lastMessageSender && 
                                      chatData.lastMessageSender !== userId &&
-                                     (!seenTime || messageTime > parseInt(seenTime));
+                                     !this.unreadMessages.has(chatDoc.id); // Only if we haven't marked it read this session
                         
                         realChats.push({
                             id: chatDoc.id,
@@ -451,13 +447,10 @@ export class MessagingManager {
             const chatId = this.generateChatId(currentUser.uid, userId);
             this.currentChatId = chatId;
 
-            // Mark this chat as seen
+            // Clear unread count for this chat
             this.unreadMessages.delete(chatId);
-            localStorage.setItem(`seen_${chatId}_${currentUser.uid}`, Date.now().toString());
-            this.saveUnreadStateToStorage();
             this.updateTotalUnreadCount();
-            // setTimeout(() => this.loadChats(), 100); COMMENT OUT TO TEST - CRASHING
-            
+                        
             console.log('💬 Chat ID:', chatId);
             
             // Show chat screen
@@ -848,42 +841,7 @@ listenForMatches(userId) {
             localStorage.setItem('seenMatches', JSON.stringify(Array.from(this.seenMatches)));
         }
     }
-            /**
-         * Load unread state from localStorage
-         */
-        loadUnreadStateFromStorage() {
-            try {
-                const savedUnreadState = localStorage.getItem('unreadMessages');
-                if (savedUnreadState) {
-                    const parsed = JSON.parse(savedUnreadState);
-                    Object.entries(parsed).forEach(([chatId, count]) => {
-                        this.unreadMessages.set(chatId, count);
-                    });
-                    console.log('📚 Loaded unread state from storage:', this.unreadMessages.size, 'chats');
-                }
-            } catch (error) {
-                console.error('Error loading unread state:', error);
-            }
-        }
-
-        /**
-         * Save unread state to localStorage
-         */
-        saveUnreadStateToStorage() {
-            try {
-                const unreadObject = {};
-                this.unreadMessages.forEach((count, chatId) => {
-                    if (count > 0) {
-                        unreadObject[chatId] = count;
-                    }
-                });
-                localStorage.setItem('unreadMessages', JSON.stringify(unreadObject));
-                console.log('💾 Saved unread state to storage');
-            } catch (error) {
-                console.error('Error saving unread state:', error);
-            }
-        }
-    
+        
     
     /**
      * Listen for chat updates
@@ -905,17 +863,14 @@ listenForMatches(userId) {
                     const chatData = change.doc.data();
                     const chatId = change.doc.id;
                     
-                    // Check if there's a new message not from current user
+                    // Only track unread if chat is not currently open
                     if (chatData.lastMessageSender && 
                         chatData.lastMessageSender !== userId &&
                         this.currentChatId !== chatId) {
                         
-                        // Increment unread count for this chat
-                        const currentUnread = this.unreadMessages.get(chatId) || 0;
-                        this.unreadMessages.set(chatId, currentUnread + 1);
+                        // Set to 1 (not increment) - just indicates "has unread"
+                        this.unreadMessages.set(chatId, 1);
                     }
-                    // Save the updated state
-                    this.saveUnreadStateToStorage();  // <-- ADD THIS LINE HERE
                 }
             }
             
@@ -1724,8 +1679,7 @@ updateTotalUnreadCount() {
  * NEW: Mark chat as read
  */
 async markChatAsRead(chatId) {
-    this.unreadMessages.set(chatId, 0);
-    this.saveUnreadStateToStorage(); // ADD THIS LINE
+    this.unreadMessages.delete(chatId); // Use delete instead of set to 0
     this.lastSeenMessages.set(chatId, Date.now());
     
     // Update total unread count

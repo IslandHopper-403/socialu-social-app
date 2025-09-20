@@ -1359,23 +1359,41 @@ async loadUnreadCounts() {
 showNotificationDot(count = null) {
     const notificationDot = document.getElementById('messageNotificationDot');
     const countBadge = document.getElementById('unreadCountBadge');
+    const socialTab = document.querySelector('.social-tab[data-tab="messaging"]');
+    
+    // Ensure the tab is positioned relatively
+    if (socialTab) {
+        socialTab.style.position = 'relative';
+    }
     
     if (count && count > 0) {
-        // Show count badge instead of dot
-        if (notificationDot) notificationDot.style.display = 'none';
+        // Show count badge instead of dot for specific counts
+        if (notificationDot) {
+            notificationDot.style.display = 'none';
+        }
         if (countBadge) {
             countBadge.style.display = 'flex';
             countBadge.textContent = count > 99 ? '99+' : count.toString();
+            countBadge.style.position = 'absolute';
+            countBadge.style.top = '4px';
+            countBadge.style.right = '4px';
         }
     } else {
-        // Show dot only
-        if (notificationDot) notificationDot.style.display = 'block';
-        if (countBadge) countBadge.style.display = 'none';
+        // Show just the dot
+        if (notificationDot) {
+            notificationDot.style.display = 'block';
+            notificationDot.style.position = 'absolute';
+            notificationDot.style.top = '8px';
+            notificationDot.style.right = '8px';
+        }
+        if (countBadge) {
+            countBadge.style.display = 'none';
+        }
     }
     
-    console.log('💬 Showing message notification', count ? `(${count})` : '');
+    console.log('💬 Showing message notification', count ? `(${count})` : '(dot)');
 }
-
+    
 /**
  * ENHANCED: Hide notification dot
  */

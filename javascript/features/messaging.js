@@ -827,26 +827,50 @@ listenForMatches(userId) {
     /**
      * Listen for chat updates
      */
-    listenForChatUpdates(userId) {
-        try {
-            const chatsRef = collection(this.db, 'chats');
-            const q = query(
-                chatsRef,
-                where('participants', 'array-contains', userId)
-            );
+   listenForChatUpdates(userId) {
+    try {
+        const chatsRef = collection(this.db, 'chats');
+        const q = query(
+            chatsRef,
+            where('participants', 'array-contains', userId)
+        );
+        
+        onSnapshot(q, async (snapshot) => {
+            console.log('🔄 Chat updates detected');
             
-            onSnapshot(q, (snapshot) => {
-                console.log('🔄 Chat updates detected, refreshing chat list');
-                this.loadChats(); // Reload chat list when updates occur
-            }, (error) => {
-                console.error('Error in chat updates listener:', error);
-            });
+            // Track unread messages for each chat
+            for (const change of snapshot.docChanges()) {
+                if (change.type === 'modified') {
+                    const chatData = change.doc.data();
+                    const chatId = change.doc.id;
+                    
+                    // Check if there's a new message not from current user
+                    if (chatData.lastMessageSender && 
+                        chatData.lastMessageSender !== userId &&
+                        this.currentChatId !== chatId) {
+                        
+                        // Increment unread count for this chat
+                        const currentUnread = this.unreadMessages.get(chatId) || 0;
+                        this.unreadMessages.set(chatId, currentUnread + 1);
+                    }
+                }
+            }
             
-            console.log('👂 Set up chat updates listener for user:', userId);
-        } catch (error) {
-            console.error('Error setting up chat updates listener:', error);
-        }
+            // Reload chat list with updated unread counts
+            await this.loadChats();
+            
+            // Update total notification count
+            this.updateTotalUnreadCount();
+            
+        }, (error) => {
+            console.error('Error in chat updates listener:', error);
+        });
+        
+        console.log('👂 Set up chat updates listener for user:', userId);
+    } catch (error) {
+        console.error('Error setting up chat updates listener:', error);
     }
+}
     
     /**
      * Listen for new messages globally (for notifications)

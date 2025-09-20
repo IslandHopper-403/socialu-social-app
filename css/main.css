@@ -181,6 +181,10 @@ body {
 }
 
 /* Chat notification styles */
+/* Ensure social tab has proper positioning context */
+.social-tab {
+    position: relative !important;
+}
 /* Fix notification dot visibility and positioning */
 .message-notification-dot {
     position: absolute !important;
@@ -292,33 +296,6 @@ body {
         opacity: 1; 
         transform: translateX(0); 
     }
-}
-
-/* Unread indicator for chat list items */
-.chat-item {
-    position: relative;
-}
-
-.unread-indicator {
-    position: absolute !important;
-    top: 10px !important;
-    right: 10px !important;
-    background: #FF4444 !important;
-    color: white !important;
-    border-radius: 50% !important;
-    width: 20px !important;
-    height: 20px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-size: 12px !important;
-    font-weight: bold !important;
-    z-index: 5 !important;
-}
-
-/* Ensure social tab has proper positioning context */
-.social-tab {
-    position: relative !important;
 }
 
 @keyframes pulse {

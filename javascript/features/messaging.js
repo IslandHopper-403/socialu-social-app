@@ -1532,10 +1532,25 @@ updateUnreadCount(chatId, increment) {
     
     this.unreadMessages.set(chatId, newCount);
     
-    // Update notification dot
+    // Calculate total unread
     const totalUnread = Array.from(this.unreadMessages.values()).reduce((sum, count) => sum + count, 0);
+    
+    // Always show notification if there are unread messages
     if (totalUnread > 0) {
         this.showNotificationDot(totalUnread);
+        
+        // Make sure the dot stays visible even when switching tabs
+        const checkAndShowDot = () => {
+            const dot = document.getElementById('messageNotificationDot');
+            const badge = document.getElementById('unreadCountBadge');
+            if (totalUnread > 0 && (!dot || dot.style.display === 'none') && (!badge || badge.style.display === 'none')) {
+                this.showNotificationDot(totalUnread);
+            }
+        };
+        
+        // Check periodically to ensure dot stays visible
+        setTimeout(checkAndShowDot, 100);
+        setTimeout(checkAndShowDot, 500);
     } else {
         this.hideNotificationDot();
     }
@@ -1543,7 +1558,6 @@ updateUnreadCount(chatId, increment) {
     // Update chat list UI with unread indicators
     this.updateChatListUnreadIndicators();
 }
-
 /**
  * NEW: Mark chat as read
  */

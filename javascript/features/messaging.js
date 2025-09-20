@@ -48,6 +48,7 @@ export class MessagingManager {
     
     // ADDED: Notification state tracking
     this.unreadMessages = new Map(); // chatId -> count
+    this.loadUnreadStateFromStorage(); // ADD THIS LINE
     this.lastSeenMessages = new Map(); // chatId -> timestamp
     this.lastNotificationTimes = new Map(); // chatId -> timestamp
     this.notificationQueue = [];

@@ -146,13 +146,13 @@ body {
 /* Message Notification Dot */
 .message-notification-dot {
     position: absolute;
-    top: -5px;
-    right: -5px;
-    width: 12px;
-    height: 12px;
+    top: -8px;
+    right: -24px;
+    width: 24px;
+    height: 24px;
     background: #FD493F;
     border-radius: 50%;
-    animation: pulse 1.5s infinite;
+   /* animation: pulse 1.5s infinite; */ 
     border: 2px solid rgba(255, 68, 68, 0.3);
     z-index: 100;  /* Changed from 10 to 100 */
     pointer-events: none;  /* Add this to prevent blocking clicks */

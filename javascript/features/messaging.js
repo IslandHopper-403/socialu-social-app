@@ -731,34 +731,69 @@ listenToChatMessages(chatId) {
     }
 }
     
-    /**
-     * Listen for new matches
-     */
-    listenForMatches(userId) {
-        try {
-            const matchesRef = collection(this.db, 'matches');
-            const q = query(
-                matchesRef,
-                where('users', 'array-contains', userId)
-            );
-            
-            this.matchListener = onSnapshot(q, (snapshot) => {
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === 'added') {
-                        const matchData = change.doc.data();
-                        // Handle new match
-                        this.handleNewMatch(matchData);
-                    }
+   /**
+ * Listen for new matches (FIXED to prevent showing old matches)
+ */
+listenForMatches(userId) {
+    try {
+        const matchesRef = collection(this.db, 'matches');
+        const q = query(
+            matchesRef,
+            where('users', 'array-contains', userId)
+        );
+        
+        // Track initial load to prevent showing old matches
+        let isInitialLoad = true;
+        
+        this.matchListener = onSnapshot(q, (snapshot) => {
+            // On initial load, just mark existing matches as seen
+            if (isInitialLoad) {
+                isInitialLoad = false;
+                console.log(`👂 Found ${snapshot.size} existing matches, not showing popups`);
+                
+                // Store existing match IDs to prevent future popups
+                snapshot.forEach(doc => {
+                    const matchId = doc.id;
+                    this.seenMatches = this.seenMatches || new Set();
+                    this.seenMatches.add(matchId);
                 });
-            }, (error) => {
-                console.error('Error in match listener:', error);
-            });
+                return;
+            }
             
-            console.log('👂 Set up match listener for user:', userId);
-        } catch (error) {
-            console.error('Error setting up match listener:', error);
-        }
+            // After initial load, only process truly new matches
+            snapshot.docChanges().forEach(change => {
+                if (change.type === 'added') {
+                    const matchId = change.doc.id;
+                    const matchData = change.doc.data();
+                    
+                    // Check if we've already seen this match
+                    this.seenMatches = this.seenMatches || new Set();
+                    if (!this.seenMatches.has(matchId)) {
+                        this.seenMatches.add(matchId);
+                        
+                        // Only show popup for matches created in the last 30 seconds
+                        const matchTime = matchData.timestamp?.toDate?.() || new Date();
+                        const now = new Date();
+                        const timeDiff = now - matchTime;
+                        
+                        if (timeDiff < 30000) { // 30 seconds
+                            console.log('🎉 New match detected!', matchId);
+                            this.handleNewMatch(matchData);
+                        } else {
+                            console.log('⏭️ Skipping old match popup:', matchId);
+                        }
+                    }
+                }
+            });
+        }, (error) => {
+            console.error('Error in match listener:', error);
+        });
+        
+        console.log('👂 Set up match listener for user:', userId);
+    } catch (error) {
+        console.error('Error setting up match listener:', error);
     }
+}
     
     /**
      * Listen for chat updates

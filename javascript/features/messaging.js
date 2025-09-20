@@ -716,6 +716,14 @@ listenToChatMessages(chatId) {
                     }
                 }
             });
+
+              // Update UI
+            this.displayMessages(messages, currentUser.uid);
+            
+            // Mark as read if chat is open and visible
+            if (this.currentChatId === chatId && this.isAppVisible && newMessageCount > 0) {
+                this.markChatAsRead(chatId);
+            }
             
         }, (error) => {
             console.error('❌ Error in chat listener:', error);

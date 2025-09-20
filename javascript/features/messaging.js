@@ -845,6 +845,42 @@ listenForMatches(userId) {
             localStorage.setItem('seenMatches', JSON.stringify(Array.from(this.seenMatches)));
         }
     }
+            /**
+         * Load unread state from localStorage
+         */
+        loadUnreadStateFromStorage() {
+            try {
+                const savedUnreadState = localStorage.getItem('unreadMessages');
+                if (savedUnreadState) {
+                    const parsed = JSON.parse(savedUnreadState);
+                    Object.entries(parsed).forEach(([chatId, count]) => {
+                        this.unreadMessages.set(chatId, count);
+                    });
+                    console.log('📚 Loaded unread state from storage:', this.unreadMessages.size, 'chats');
+                }
+            } catch (error) {
+                console.error('Error loading unread state:', error);
+            }
+        }
+
+        /**
+         * Save unread state to localStorage
+         */
+        saveUnreadStateToStorage() {
+            try {
+                const unreadObject = {};
+                this.unreadMessages.forEach((count, chatId) => {
+                    if (count > 0) {
+                        unreadObject[chatId] = count;
+                    }
+                });
+                localStorage.setItem('unreadMessages', JSON.stringify(unreadObject));
+                console.log('💾 Saved unread state to storage');
+            } catch (error) {
+                console.error('Error saving unread state:', error);
+            }
+        }
+    
     
     /**
      * Listen for chat updates

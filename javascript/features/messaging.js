@@ -1489,13 +1489,22 @@ async getChatPartnerInfo(chatId) {
     const currentUser = this.state.get('currentUser');
     if (!currentUser) return { name: 'Someone', avatar: '' };
     
+    // Add validation for chatId
+    if (!chatId) {
+        console.error('getChatPartnerInfo called without chatId');
+        return { name: 'Someone', avatar: '' };
+    }
+    
     try {
         // Get chat document to find participants
         const chatDoc = await getDoc(doc(this.db, 'chats', chatId));
-        if (!chatDoc.exists()) return { name: 'Someone', avatar: '' };
+        if (!chatDoc.exists()) {
+            console.error('Chat document not found:', chatId);
+            return { name: 'Someone', avatar: '' };
+        }
         
         const chatData = chatDoc.data();
-        const partnerId = chatData.participants.find(id => id !== currentUser.uid);
+        const partnerId = chatData.participants?.find(id => id !== currentUser.uid);
         
         if (partnerId) {
             const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
@@ -1510,6 +1519,7 @@ async getChatPartnerInfo(chatId) {
         }
     } catch (error) {
         console.error('Error getting chat partner info:', error);
+        // Don't throw - return fallback values
     }
     
     return { name: 'Someone', avatar: '' };

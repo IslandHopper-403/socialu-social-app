@@ -1616,6 +1616,30 @@ updateUnreadCount(chatId, increment) {
     // Update chat list UI with unread indicators
     this.updateChatListUnreadIndicators();
 }
+
+    /**
+ * Update total unread count from all chats
+ */
+updateTotalUnreadCount() {
+    // Calculate total unread from all chats
+    let totalUnread = 0;
+    this.unreadMessages.forEach((count, chatId) => {
+        // Only count chats that are not currently open
+        if (chatId !== this.currentChatId) {
+            totalUnread += count;
+        }
+    });
+    
+    // Update the notification badge
+    if (totalUnread > 0) {
+        this.showNotificationDot(totalUnread);
+    } else {
+        this.hideNotificationDot();
+    }
+    
+    console.log(`📊 Total unread messages: ${totalUnread}`);
+}
+    
 /**
  * NEW: Mark chat as read
  */

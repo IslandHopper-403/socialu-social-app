@@ -65,6 +65,8 @@ export class MessagingManager {
             this.markCurrentChatAsRead();
         }
     });
+       // Add this line to track seen matches across sessions
+       this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
 }
     
     /**

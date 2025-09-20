@@ -154,7 +154,9 @@ body {
     border-radius: 50%;
     animation: pulse 1.5s infinite;
     border: 2px solid rgba(255, 68, 68, 0.3);
-    z-index: 10;
+    z-index: 100;  /* Changed from 10 to 100 */
+    pointer-events: none;  /* Add this to prevent blocking clicks */
+    /* NO display: none here - let JavaScript control visibility */
 }
 
 .unread-count-badge {
@@ -164,68 +166,24 @@ body {
     background: #FF4444;
     color: white;
     border-radius: 50%;
-    width: 18px;
-    height: 18px;
+    min-width: 20px;  /* Changed from width: 18px to min-width: 20px */
+    height: 20px;  /* Changed from 18px to 20px */
+    padding: 0 4px;  /* Added padding */
     font-size: 11px;
     font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10;
+    z-index: 100;  /* Changed from 10 to 100 */
     border: 2px solid #1a1a1a;
-}
-
-.social-tab.active .message-notification-dot,
-.social-tab.active .unread-count-badge {
-    display: none !important;
+    pointer-events: none;  /* Add this */
+    /* NO display: none here - let JavaScript control visibility */
 }
 
 /* Chat notification styles */
 /* Ensure social tab has proper positioning context */
 .social-tab {
     position: relative !important;
-}
-/* Fix notification dot visibility and positioning */
-.message-notification-dot {
-    position: absolute !important;
-    top: 8px !important;
-    right: 8px !important;
-    width: 8px !important;
-    height: 8px !important;
-    background: #FF4444 !important;
-    border-radius: 50% !important;
-    animation: pulse 1.5s infinite !important;
-    border: 2px solid rgba(255, 68, 68, 0.3) !important;
-    z-index: 100 !important;
-    pointer-events: none !important; /* Prevent dot from blocking clicks */
-    display: none; /* Hidden by default */
-}
-
-/* Fix unread count badge */
-.unread-count-badge {
-    position: absolute !important;
-    top: 4px !important;
-    right: 4px !important;
-    background: #FF4444 !important;
-    color: white !important;
-    border-radius: 50% !important;
-    min-width: 20px !important;
-    height: 20px !important;
-    padding: 0 4px !important;
-    font-size: 11px !important;
-    font-weight: bold !important;
-    display: none !important; /* Hidden by default, shown via JS */
-    align-items: center !important;
-    justify-content: center !important;
-    z-index: 100 !important;
-    border: 2px solid #1a1a1a !important;
-    pointer-events: none !important;
-}
-
-/* Ensure dot/badge are visible when active */
-.message-notification-dot[style*="display: block"],
-.unread-count-badge[style*="display: flex"] {
-    display: block !important;
 }
 
 /* Hide notification when messaging tab is active */
@@ -234,7 +192,7 @@ body {
     display: none !important;
 }
 
-/* Enhanced pulse animation */
+/* Enhanced pulse animation - KEEP ONLY THIS ONE */
 @keyframes pulse {
     0% { 
         transform: scale(1); 
@@ -253,7 +211,7 @@ body {
     }
 }
 
-/* Chat list unread indicators */
+/* Chat list unread indicators - KEEP THIS */
 .chat-item {
     position: relative !important;
 }
@@ -278,7 +236,7 @@ body {
     border: 2px solid #1a1a1a !important;
 }
 
-/* In-app notification styling */
+/* In-app notification styling - KEEP THIS */
 .chat-notification {
     position: fixed !important;
     top: 20px !important;
@@ -296,12 +254,6 @@ body {
         opacity: 1; 
         transform: translateX(0); 
     }
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.2); opacity: 0.8; }
-    100% { transform: scale(1); opacity: 1; }
 }
 
 /* Search Bar */

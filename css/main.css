@@ -154,7 +154,7 @@ body {
     border-radius: 50%;
    /* animation: pulse 1.5s infinite; */ 
     border: 2px solid rgba(255, 68, 68, 0.3);
-    z-index: 100;  /* Changed from 10 to 100 */
+    z-index: 10;  /* Changed from 10 to 100 */
     pointer-events: none;  /* Add this to prevent blocking clicks */
     /* NO display: none here - let JavaScript control visibility */
 }

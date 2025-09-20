@@ -340,10 +340,14 @@ export class MessagingManager {
                     if (partnerDoc.exists()) {
                         const partnerData = partnerDoc.data();
                         
-                        // Check unread status
-                        const hasUnread = chatData.lastMessageSender && 
-                                         chatData.lastMessageSender !== userId &&
-                                         chatData.lastMessageSender !== null;
+                     // Check unread status
+                    const seenTime = localStorage.getItem(`seen_${chatDoc.id}_${userId}`);
+                    const messageTime = chatData.lastMessageTime?.toMillis?.() || 0;
+                    
+                    // It's unread if: message is from other user AND we haven't seen it yet
+                    const hasUnread = chatData.lastMessageSender && 
+                                     chatData.lastMessageSender !== userId &&
+                                     (!seenTime || messageTime > parseInt(seenTime));
                         
                         realChats.push({
                             id: chatDoc.id,
@@ -447,13 +451,12 @@ export class MessagingManager {
             const chatId = this.generateChatId(currentUser.uid, userId);
             this.currentChatId = chatId;
 
-            // Clear unread count for this chat
-            if (this.unreadMessages.has(chatId)) {
-                this.unreadMessages.set(chatId, 0);
-                this.updateTotalUnreadCount();
-                // Refresh chat list to update UI
-                this.loadChats();
-            }
+            // Mark this chat as seen
+            this.unreadMessages.delete(chatId);
+            localStorage.setItem(`seen_${chatId}_${currentUser.uid}`, Date.now().toString());
+            this.saveUnreadStateToStorage();
+            this.updateTotalUnreadCount();
+            setTimeout(() => this.loadChats(), 100);
             
             console.log('💬 Chat ID:', chatId);
             

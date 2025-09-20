@@ -161,15 +161,15 @@ body {
 
 .unread-count-badge {
     position: absolute;
-    top: 4px;
-    right: 4px;
-    background: #FF4444;
+    top: -12px;
+    right: 0px;
+    background: #FFFFFF;
     color: white;
     border-radius: 50%;
     min-width: 20px;  /* Changed from width: 18px to min-width: 20px */
     height: 20px;  /* Changed from 18px to 20px */
     padding: 0 4px;  /* Added padding */
-    font-size: 11px;
+    font-size: 24px;
     font-weight: bold;
     display: flex;
     align-items: center;

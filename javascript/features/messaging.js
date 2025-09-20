@@ -679,23 +679,23 @@ listenToChatMessages(chatId) {
     const messagesRef = collection(this.db, 'chats', chatId, 'messages');
     const q = query(messagesRef, orderBy('timestamp', 'asc'));
     
-    try {
+   try {
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const messages = [];
-            let hasNewMessages = false;
+            let newMessageCount = 0;
             
             snapshot.forEach(messageDoc => {
                 messages.push({ id: messageDoc.id, ...messageDoc.data() });
             });
             
-            // Check for new messages (not from current user)
+            // Check for new messages from other users
             snapshot.docChanges().forEach(change => {
                 if (change.type === 'added') {
                     const message = change.doc.data();
                     
-                    // Only notify for messages from other users
+                    // Only count messages from other users
                     if (message.senderId !== currentUser.uid) {
-                        hasNewMessages = true;
+                        newMessageCount++;
                         
                         // Play notification sound
                         this.playNotificationSound();
@@ -705,22 +705,17 @@ listenToChatMessages(chatId) {
                             this.showBrowserNotification(message);
                         }
                         
-                        // Show in-app notification if not in this chat
+                        // Always update notification dot for messages in other chats
                         if (this.currentChatId !== chatId) {
-                            this.showInAppNotification(message, chatId);
+                            // Increment unread count
+                            this.updateUnreadCount(chatId, 1);
+                        } else if (!this.isAppVisible) {
+                            // Also show dot if current chat is open but app not visible
                             this.updateUnreadCount(chatId, 1);
                         }
                     }
                 }
             });
-            
-            // Update UI
-            this.displayMessages(messages, currentUser.uid);
-            
-            // Mark as read if chat is currently open and app is visible
-            if (this.currentChatId === chatId && this.isAppVisible && hasNewMessages) {
-                this.markChatAsRead(chatId);
-            }
             
         }, (error) => {
             console.error('❌ Error in chat listener:', error);

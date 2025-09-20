@@ -1479,6 +1479,20 @@ hideNotificationDot() {
     console.log('💬 Hiding message notification');
 }
 
+    /**
+ * Clear all notifications when messaging tab is opened
+ */
+clearNotificationsForMessagingTab() {
+    // Only clear the main tab notification, not individual chat unreads
+    const notificationDot = document.getElementById('messageNotificationDot');
+    const countBadge = document.getElementById('unreadCountBadge');
+    
+    if (notificationDot) notificationDot.style.display = 'none';
+    if (countBadge) countBadge.style.display = 'none';
+    
+    console.log('💬 Cleared messaging tab notifications');
+}
+
 /**
  * FIXED: Enhanced in-app notification system
  */

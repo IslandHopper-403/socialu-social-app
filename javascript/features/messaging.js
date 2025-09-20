@@ -797,6 +797,13 @@ listenForMatches(userId) {
     }
 }
     
+    // Add this method to save seen matches to localStorage:
+    saveSeenMatches() {
+        if (this.seenMatches) {
+            localStorage.setItem('seenMatches', JSON.stringify(Array.from(this.seenMatches)));
+        }
+    }
+    
     /**
      * Listen for chat updates
      */
@@ -945,6 +952,8 @@ listenForMatches(userId) {
         } catch (error) {
             console.error('Error handling new match:', error);
         }
+        // At the end of the method:
+        this.saveSeenMatches();
     }
     
    /**

@@ -368,28 +368,45 @@ export class MessagingManager {
     /**
      * Update chat list UI
      */
-    updateChatList(chats) {
-        const chatList = document.getElementById('chatList');
-        if (!chatList) return;
+ updateChatList(chats) {
+    const chatList = document.getElementById('chatList');
+    if (!chatList) return;
+    
+    console.log('🔄 Updating chat list with', chats.length, 'chats');
+    
+    // Sort chats by last message time (newest first) and unread status
+    chats.sort((a, b) => {
+        // First priority: unread messages
+        const aUnread = this.unreadMessages.get(a.id) || 0;
+        const bUnread = this.unreadMessages.get(b.id) || 0;
         
-        console.log('🔄 Updating chat list with', chats.length, 'chats');
+        if (aUnread > 0 && bUnread === 0) return -1;
+        if (bUnread > 0 && aUnread === 0) return 1;
         
-        chatList.innerHTML = chats.map(chat => {
-            const timeAgo = chat.lastMessageTime ? this.getTimeAgo(chat.lastMessageTime) : 'New';
-            const messageText = chat.isNew ? 'Start a conversation!' : chat.lastMessage;
-            
-            return `
-                <div class="chat-item" onclick="CLASSIFIED.openChat('${chat.partnerName}', '${chat.partnerAvatar}', '${chat.partnerId}')">
-                    <div class="chat-avatar" style="background-image: url('${chat.partnerAvatar}')"></div>
-                    <div class="chat-info">
-                        <div class="chat-name">${chat.partnerName}</div>
-                        <div class="chat-message">${messageText}</div>
-                    </div>
-                    <div class="chat-time">${timeAgo}</div>
+        // Second priority: last message time
+        const aTime = a.lastMessageTime?.toDate?.() || new Date(0);
+        const bTime = b.lastMessageTime?.toDate?.() || new Date(0);
+        return bTime - aTime;
+    });
+    
+    chatList.innerHTML = chats.map(chat => {
+        const timeAgo = chat.lastMessageTime ? this.getTimeAgo(chat.lastMessageTime) : 'New';
+        const messageText = chat.isNew ? 'Start a conversation!' : chat.lastMessage;
+        const unreadCount = this.unreadMessages.get(chat.id) || 0;
+        
+        return `
+            <div class="chat-item" data-chat-id="${chat.id}" onclick="CLASSIFIED.openChat('${chat.partnerName}', '${chat.partnerAvatar}', '${chat.partnerId}')">
+                <div class="chat-avatar" style="background-image: url('${chat.partnerAvatar}')"></div>
+                <div class="chat-info">
+                    <div class="chat-name">${chat.partnerName}</div>
+                    <div class="chat-message" ${unreadCount > 0 ? 'style="font-weight: 600;"' : ''}>${messageText}</div>
                 </div>
-            `;
-        }).join('');
-    }
+                <div class="chat-time">${timeAgo}</div>
+                ${unreadCount > 0 ? `<div class="chat-unread-count">${unreadCount > 9 ? '9+' : unreadCount}</div>` : ''}
+            </div>
+        `;
+    }).join('');
+}
     
     /**
      * Open chat with user

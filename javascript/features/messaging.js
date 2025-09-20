@@ -911,6 +911,8 @@ listenForMatches(userId) {
                         const currentUnread = this.unreadMessages.get(chatId) || 0;
                         this.unreadMessages.set(chatId, currentUnread + 1);
                     }
+                    // Save the updated state
+                    this.saveUnreadStateToStorage();  // <-- ADD THIS LINE HERE
                 }
             }
             

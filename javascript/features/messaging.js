@@ -1687,6 +1687,9 @@ updateUnreadCount(chatId, increment) {
     
     // Update chat list UI with unread indicators
     this.updateChatListUnreadIndicators();
+    // Save to localStorage
+    this.saveUnreadStateToStorage();
+
 }
 
     /**

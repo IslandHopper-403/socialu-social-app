@@ -1720,6 +1720,7 @@ updateTotalUnreadCount() {
  */
 async markChatAsRead(chatId) {
     this.unreadMessages.set(chatId, 0);
+    this.saveUnreadStateToStorage(); // ADD THIS LINE
     this.lastSeenMessages.set(chatId, Date.now());
     
     // Update total unread count

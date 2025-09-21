@@ -29,6 +29,7 @@ export class MessagingManager {
    constructor(firebaseServices, appState) {
     this.auth = firebaseServices.auth;
     this.db = firebaseServices.db;
+    this.storage = firebaseServices.storage; // Add if using storage
     this.state = appState;
     
     // References to other managers (set later)

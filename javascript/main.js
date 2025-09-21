@@ -39,6 +39,8 @@ import { BusinessManager } from './features/business.js';
 import { PhotoUploadManager } from './features/photoUpload.js';
 import { AdminManager } from './features/admin.js';
 import { ReferralManager } from './features/referral.js';
+import MapManager from './features/map.js';
+
 
 // Import UI modules
 import { NavigationManager } from './ui/navigation.js';
@@ -602,10 +604,19 @@ Need help? Contact: support@classified.com
 
 // Initialize the app when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Initialize ClassifiedApp
         window.classifiedApp = new ClassifiedApp();
+
+        // New code from the update
+        await MapManager.initialize();
+        replaceSettingsWithMapIcons();
     });
 } else {
     // DOM already loaded
     window.classifiedApp = new ClassifiedApp();
+
+    // New code from the update
+    await MapManager.initialize();
+    replaceSettingsWithMapIcons();
 }

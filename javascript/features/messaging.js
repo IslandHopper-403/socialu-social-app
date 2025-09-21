@@ -25,66 +25,51 @@ import {
  * Messaging Manager - COMPLETE VERSION
  * Handles all messaging and chat functionality
  */
-/**
- * FIXED: MessagingManager with corrected notification system
- */
 export class MessagingManager {
-    constructor(firebaseServices, appState) {
-        this.auth = firebaseServices.auth;
-        this.db = firebaseServices.db;
-        this.storage = firebaseServices.storage; // Add if using storage
-        this.state = appState;
-        
-        // FIX: Initialize all required properties
-        this.navigationManager = null;
-        this.profileManager = null;
-        this.mockData = null;
-        
-        // Real-time listeners
-        this.chatListeners = new Map();
-        this.matchListener = null;
-        this.notificationListener = null;
-        this.globalMessageListener = null;
-        
-        // Current chat context
-        this.currentChatId = null;
-        this.currentChatPartner = null;
-        
-        // FIX: Initialize notification state properly
-        this.unreadMessages = new Map();
-        this.lastSeenMessages = new Map();
-        this.lastNotificationTimes = new Map();
-        this.notificationQueue = [];
+   constructor(firebaseServices, appState) {
+    this.auth = firebaseServices.auth;
+    this.db = firebaseServices.db;
+    this.state = appState;
+    
+    // References to other managers (set later)
+    this.navigationManager = null;
+    this.profileManager = null;
+    this.mockData = null;
+    
+    // Real-time listeners
+    this.chatListeners = new Map();
+    this.matchListener = null;
+    this.notificationListener = null;
+    this.globalMessageListener = null;
+    
+    // Current chat context
+    this.currentChatId = null;
+    this.currentChatPartner = null;
+    
+    // ADDED: Notification state tracking
+    this.unreadMessages = new Map(); // chatId -> count
+    this.loadUnreadStateFromStorage(); // ADD THIS LINE
+    this.lastSeenMessages = new Map(); // chatId -> timestamp
+    this.lastNotificationTimes = new Map(); // chatId -> timestamp
+    this.notificationQueue = [];
+    this.isAppVisible = !document.hidden;
+    
+    // Notification system
+    this.notificationSound = null;
+    this.audioContext = null;
+    this.setupNotificationSound();
+    
+    // ADDED: Track app visibility for smart notifications
+    document.addEventListener('visibilitychange', () => {
         this.isAppVisible = !document.hidden;
-        
-        // FIX: Initialize seen matches from localStorage
-        this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
-        
-        // FIX: Proper notification sound setup
-        this.notificationSound = null;
-        this.audioContext = null;
-        
-        // FIX: Bind methods to prevent context loss
-        this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
-        this.cleanupOldNotifications = this.cleanupOldNotifications.bind(this);
-        
-     /**
-         * FIX: Setup critical features immediately
-         */
-        setupImmediately() {
-            // Setup notification sound without waiting
-            this.setupNotificationSound();
-            
-            // Load unread state from storage immediately
-            this.loadUnreadStateFromStorage();
-            
-            // Setup visibility change listener
-            document.addEventListener('visibilitychange', this.handleVisibilityChange);
-            
-            // Start notification cleanup interval
-            this.notificationCleanupInterval = setInterval(this.cleanupOldNotifications, 10000);
+        if (this.isAppVisible) {
+            this.markCurrentChatAsRead();
         }
-    } 
+    });
+       // Add this line to track seen matches across sessions
+       this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
+}
+    
     /**
      * Set up notification sound
      */

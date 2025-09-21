@@ -1,0 +1,226 @@
+/* css/map.css */
+
+/* Map Overlay Container */
+.map-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #1a1a1a;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.map-overlay.hidden {
+    transform: translateY(100%);
+}
+
+/* Map Header */
+.map-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: linear-gradient(180deg, #1a1a1a 0%, rgba(26, 26, 26, 0.95) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    z-index: 10;
+}
+
+.map-title {
+    flex: 1;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+}
+
+.map-close-btn,
+.map-center-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.map-close-btn:hover,
+.map-center-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.map-close-btn:active,
+.map-center-btn:active {
+    transform: scale(0.95);
+}
+
+/* Map Filters */
+.map-filters {
+    display: flex;
+    gap: 10px;
+    padding: 12px 20px;
+    background: #1a1a1a;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.map-filters::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.filter-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #00D4FF 0%, #0099CC 100%);
+    border-color: transparent;
+    color: #ffffff;
+}
+
+.filter-count {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Map Container */
+.map-container-wrapper {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.map-container {
+    width: 100%;
+    height: 100%;
+    background: #0a0a0a;
+}
+
+/* Loading Overlay */
+.map-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(26, 26, 26, 0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.map-loading-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.map-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #00D4FF;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.map-loading-overlay p {
+    margin-top: 16px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Custom Marker Styles */
+.business-marker {
+    background: #ffffff;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.business-marker:hover {
+    transform: rotate(-45deg) scale(1.1);
+}
+
+.business-marker .marker-icon {
+    transform: rotate(45deg);
+    font-size: 16px;
+}
+
+.restaurant-marker {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+}
+
+.activity-marker {
+    background: linear-gradient(135deg, #00D4FF 0%, #0099CC 100%);
+}
+
+/* User Location Marker */
+.user-location-marker {
+    position: relative;
+}
+
+.user-location-marker .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #4285F4;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+}
+
+.user-location-marker .pulse {
+    width: 40px;
+    height: 40px;
+    border-radius:

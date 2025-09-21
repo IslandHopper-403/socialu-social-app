@@ -39,7 +39,6 @@ import { BusinessManager } from './features/business.js';
 import { PhotoUploadManager } from './features/photoUpload.js';
 import { AdminManager } from './features/admin.js';
 import { ReferralManager } from './features/referral.js';
-import MapManager from './features/map.js';
 
 // Import UI modules
 import { NavigationManager } from './ui/navigation.js';

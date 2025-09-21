@@ -68,8 +68,22 @@ export class MessagingManager {
         this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
         this.cleanupOldNotifications = this.cleanupOldNotifications.bind(this);
         
-        // FIX: Setup immediately
-        this.setupImmediately();
+     /**
+         * FIX: Setup critical features immediately
+         */
+        setupImmediately() {
+            // Setup notification sound without waiting
+            this.setupNotificationSound();
+            
+            // Load unread state from storage immediately
+            this.loadUnreadStateFromStorage();
+            
+            // Setup visibility change listener
+            document.addEventListener('visibilitychange', this.handleVisibilityChange);
+            
+            // Start notification cleanup interval
+            this.notificationCleanupInterval = setInterval(this.cleanupOldNotifications, 10000);
+        }
     } 
     /**
      * Set up notification sound

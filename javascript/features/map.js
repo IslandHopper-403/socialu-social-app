@@ -64,24 +64,49 @@ export class MapManager {
     async init() {
         console.log('🗺️ Initializing map manager...');
         
-        // Set up event listeners for map triggers
-        this.setupEventListeners();
-        
         // Inject map HTML if not exists
         this.injectMapHTML();
         
+        // Set up event listeners for map triggers
+        this.setupEventListeners();
+        
         // Request user location (non-blocking)
         this.requestUserLocation();
+        
+        console.log('✅ Map manager initialized');
     }
     
     /**
      * Set up event listeners
      */
     setupEventListeners() {
-        // Map trigger buttons will be in HTML
+        console.log('🗺️ Setting up map event listeners...');
+        
+        // Directly bind to map trigger buttons
+        const mapTriggerButtons = document.querySelectorAll('.map-trigger-btn');
+        console.log(`🗺️ Found ${mapTriggerButtons.length} map trigger buttons`);
+        
+        mapTriggerButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                console.log('🗺️ Map button clicked!');
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Determine category based on current screen
+                const currentScreen = this.state.get('currentScreen');
+                const category = currentScreen === 'restaurant' ? 'restaurant' : 
+                               currentScreen === 'activity' ? 'activity' : 'all';
+                
+                console.log(`🗺️ Opening map with category: ${category}`);
+                this.showMap(category);
+            });
+        });
+        
+        // Also add document listener for dynamically added elements
         document.addEventListener('click', (e) => {
             // Check for map trigger button click
             if (e.target.closest('.map-trigger-btn')) {
+                console.log('🗺️ Map button clicked (document listener)!');
                 e.preventDefault();
                 e.stopPropagation();
                 

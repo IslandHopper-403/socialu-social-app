@@ -1,6 +1,6 @@
 // 🎯 CLASSIFIED v7.0 - Complete Business Management System
 // 
-// Update to fix Auth state / Guest mode flipping
+// WORKING CONDITION - Stable point with Map Feature
 // BUSINESS WORKFLOW:
 // 1. Business signs up → gets instant account with temp password
 // 2. Business logs in → completes profile → status: pending_approval
@@ -19,17 +19,21 @@
 // 3. Complete profile → appears in user feed
 // 4. Referral system for growth
 
+
 // 🎯 CLASSIFIED v7.0 - Complete Business Management System
 // 
 // IMPORTANT: This app requires proper Firestore Security Rules!
 // Add these rules in Firebase Console > Firestore > Rules:
 
+
 // javascript/main.js
+
 
 // Import core modules
 import { FirebaseConfig } from './config/firebase.js';
 import { AppState } from './core/state.js';
 import { MockData } from './data/mockData.js';
+
 
 // Import feature modules
 import { AuthManager } from './features/auth.js';
@@ -43,8 +47,11 @@ import { ReferralManager } from './features/referral.js';
 import { MapManager } from './features/map.js';
 
 
+
+
 // Import UI modules
 import { NavigationManager } from './ui/navigation.js';
+
 
 // Import Firestore functions for main app
 import {
@@ -52,6 +59,9 @@ import {
     setDoc,
     serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+
+
 
 
 
@@ -358,6 +368,7 @@ class ClassifiedApp {
                 console.log('🌟 Super like notification sent to user:', userId);
             },
 
+
             filterUsers: (filter) => this.managers.feed.filterUsers(filter),
             
             // Business interactions
@@ -520,10 +531,12 @@ class ClassifiedApp {
         alert(`
 🌟 Welcome to CLASSIFIED!
 
+
 🔍 Discover: Find the best restaurants and activities
 👥 Connect: Meet travelers and locals
 💬 Chat: Connect with matches
 🏪 Business: Promote your business
+
 
 Need help? Contact: support@classified.com
         `);
@@ -561,11 +574,22 @@ Need help? Contact: support@classified.com
     /**
      * Set up initial auth state
      */
-   // New code for main.js
     setupInitialAuthState() {
-        console.log('🔐 Checking initial auth state... waiting for Firebase listener.');
-        // The onAuthStateChanged listener in AuthManager will handle the initial UI.
-        // We can remove the timeout entirely.
+        // Check if user is already logged in
+        console.log('🔐 Checking initial auth state...');
+        
+        // Show initial content while waiting for auth
+        setTimeout(() => {
+            // If no auth state determined after 2 seconds, show login
+            if (!this.state.get('isAuthenticated') && !this.state.get('isGuestMode')) {
+                console.log('🔑 No auth state detected, showing login screen');
+                this.managers.auth.showLogin();
+                
+                // Also load demo data in feeds for preview
+                this.managers.feed.populateRestaurantFeedWithData(this.mockData.getRestaurants());
+                this.managers.feed.populateActivityFeedWithData(this.mockData.getActivities());
+            }
+        }, 2000);
     }
     
     /**
@@ -593,6 +617,7 @@ Need help? Contact: support@classified.com
         document.body.appendChild(errorMessage);
     }
 }
+
 
 // Initialize the app when DOM is ready
 if (document.readyState === 'loading') {

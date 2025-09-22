@@ -604,13 +604,14 @@ Need help? Contact: support@classified.com
     }
 }
 
-// Initialize the app when DOM is ready
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', async () => {
-        // Initialize ClassifiedApp
-        window.classifiedApp = new ClassifiedApp();
+        const app = new ClassifiedApp();
+        await app.init();
     });
 } else {
     // DOM already loaded
-    window.classifiedApp = new ClassifiedApp();
+    const app = new ClassifiedApp();
+    await app.init();
 }

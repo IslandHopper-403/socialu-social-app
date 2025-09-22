@@ -35,7 +35,7 @@
                   <div class="header">
                     <button class="back-btn">←</button>
                     <div class="header-title">Hungry?</div>
-                    <button class="map-trigger-btn" aria-label="Open map" title="View on map">🗺️</button>
+                    <button class="map-trigger-btn" aria-label="Open map" title="View on map" onclick="if(window.CLASSIFIED) { window.CLASSIFIED.showMap('restaurant'); } else { console.error('CLASSIFIED not ready'); }">🗺️</button>
                 </div>
                 <div class="search-bar">
                     <input type="text" class="search-input" placeholder="Find Restaurant...">

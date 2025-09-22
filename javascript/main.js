@@ -128,6 +128,8 @@ class ClassifiedApp {
             referral: new ReferralManager(firebaseServices, this.state),
             photoUpload: new PhotoUploadManager(firebaseServices, this.state),
             navigation: new NavigationManager(firebaseServices, this.state),
+            // ADD THIS LINE
+            map: new MapManager(firebaseServices, this.state, this.mockData),
         };
     }
     

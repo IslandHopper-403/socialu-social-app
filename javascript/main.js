@@ -114,7 +114,11 @@ class ClassifiedApp {
             this.setupGlobalAPI();
             
             // Step 6: Check for existing auth state
-            this.setupInitialAuthState();
+            // Commented out this.setupInitialAuthState();
+
+            // OPTIONAL: Load demo content immediately for better UX
+            // This is non-blocking and just populates the feeds with preview content
+            this.loadDemoContent();
             
             console.log('✅ CLASSIFIED app ready!');
             
@@ -123,6 +127,20 @@ class ClassifiedApp {
             this.handleInitError(error);
         }
     }
+
+    // Optional: Add this new method if you want to keep the demo data preview
+loadDemoContent() {
+    // Load demo data in background for immediate visual feedback
+    // This doesn't interfere with auth state
+    try {
+        this.managers.feed.populateRestaurantFeedWithData(this.mockData.getRestaurants());
+        this.managers.feed.populateActivityFeedWithData(this.mockData.getActivities());
+        console.log('📊 Demo content loaded for preview');
+    } catch (error) {
+        console.error('Could not load demo content:', error);
+        // Non-critical error, don't block app
+    }
+}
     
     /**
      * Create all manager instances
@@ -574,23 +592,23 @@ Need help? Contact: support@classified.com
     /**
      * Set up initial auth state
      */
-    setupInitialAuthState() {
+ //   setupInitialAuthState() {
         // Check if user is already logged in
-        console.log('🔐 Checking initial auth state...');
+     //   console.log('🔐 Checking initial auth state...');
         
         // Show initial content while waiting for auth
-        setTimeout(() => {
+      //  setTimeout(() => {
             // If no auth state determined after 2 seconds, show login
-            if (!this.state.get('isAuthenticated') && !this.state.get('isGuestMode')) {
-                console.log('🔑 No auth state detected, showing login screen');
-                this.managers.auth.showLogin();
+           // if (!this.state.get('isAuthenticated') && !this.state.get('isGuestMode')) {
+             //   console.log('🔑 No auth state detected, showing login screen');
+              //  this.managers.auth.showLogin();
                 
                 // Also load demo data in feeds for preview
-                this.managers.feed.populateRestaurantFeedWithData(this.mockData.getRestaurants());
-                this.managers.feed.populateActivityFeedWithData(this.mockData.getActivities());
-            }
-        }, 2000);
-    }
+             //   this.managers.feed.populateRestaurantFeedWithData(this.mockData.getRestaurants());
+               // this.managers.feed.populateActivityFeedWithData(this.mockData.getActivities());
+          //  }
+       // }, 2000);
+  //  }
     
     /**
      * Handle initialization errors

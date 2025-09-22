@@ -71,6 +71,9 @@ class ClassifiedApp {
         
         // Store listeners for cleanup
         this.listeners = [];
+        
+        // Initialize the app
+        this.init();
     }
     
     /**
@@ -85,8 +88,7 @@ class ClassifiedApp {
             
             // Step 2: Create manager instances
             console.log('📦 Creating manager instances...');
-            // Await is not needed because createManagers is synchronous
-            this.createManagers(firebaseServices);
+            await this.createManagers(firebaseServices);
             
             // Step 3: Set up cross-manager references
             console.log('🔗 Setting up manager references...');
@@ -114,7 +116,8 @@ class ClassifiedApp {
     /**
      * Create all manager instances
      */
-    createManagers(firebaseServices) {
+    async createManagers(firebaseServices) {
+        // Create manager instances
         this.managers = {
             auth: new AuthManager(firebaseServices, this.state),
             feed: new FeedManager(firebaseServices, this.state, this.mockData),
@@ -125,86 +128,35 @@ class ClassifiedApp {
             referral: new ReferralManager(firebaseServices, this.state),
             photoUpload: new PhotoUploadManager(firebaseServices, this.state),
             navigation: new NavigationManager(firebaseServices, this.state),
+            // ADD THIS LINE
             map: new MapManager(firebaseServices, this.state, this.mockData),
         };
     }
     
     /**
-     * Set references between managers for communication
+     * Set up cross-manager references
      */
     setupManagerReferences() {
-        this.managers.auth.setManagers(this.managers);
-        this.managers.profile.setManagers(this.managers);
-        this.managers.business.setManagers(this.managers);
-        this.managers.referral.setManagers(this.managers);
-        this.managers.messaging.setManagers(this.managers);
-        this.managers.feed.setManagers(this.managers);
-        this.managers.navigation.setManagers(this.managers);
-        this.managers.map.setManagers(this.managers);
+        // Each manager gets references to other managers it needs
+        Object.values(this.managers).forEach(manager => {
+            if (manager && typeof manager.setManagers === 'function') {
+                manager.setManagers(this.managers);
+            }
+        });
     }
     
     /**
-     * Run initial setup for each manager
+     * Initialize all managers
      */
     async initializeManagers() {
-        const managerKeys = Object.keys(this.managers);
-        for (const key of managerKeys) {
-            const manager = this.managers[key];
-            if (manager.init) {
+        // Initialize each manager that has an init method
+        for (const [name, manager] of Object.entries(this.managers)) {
+            if (manager && typeof manager.init === 'function') {
+                console.log(`🔧 Initializing ${name} manager...`);
                 await manager.init();
             }
         }
     }
-    
-    /**
-     * Expose managers globally for backward compatibility and debugging
-     */
-    setupGlobalAPI() {
-        window.classifiedApp = {
-            state: this.state,
-            managers: this.managers
-        };
-    }
-    
-    /**
-     * Check initial authentication state to prevent flickering on first load
-     */
-    setupInitialAuthState() {
-        if (!this.state.get('isAuthenticated') && !this.state.get('isGuestMode')) {
-            // Wait for a short period to allow auth state to be read
-            setTimeout(() => {
-                if (!this.state.get('isAuthenticated') && !this.state.get('isGuestMode')) {
-                    this.managers.auth.handleUserLogout();
-                }
-            }, 1500);
-        }
-    }
-
-    /**
-     * Handle app initialization errors
-     */
-    handleInitError(error) {
-        console.error('Failed to initialize app:', error);
-        // Show user-friendly error message
-        const errorMessage = document.createElement('div');
-        errorMessage.innerHTML = `
-            <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-                        background: #2a2a2a; padding: 30px; border-radius: 10px; 
-                        text-align: center; z-index: 9999;">
-                <h3 style="color: #FF6B6B; margin-bottom: 10px;">⚠️ Initialization Error</h3>
-                <p style="color: white; margin-bottom: 20px;">
-                    Failed to initialize the app. Please refresh the page or check your internet connection.
-                </p>
-                <button onclick="location.reload()" 
-                        style="background: #00D4FF; border: none; padding: 10px 20px; 
-                               border-radius: 5px; color: white; cursor: pointer;">
-                    Refresh Page
-                </button>
-            </div>
-        `;
-        document.body.appendChild(errorMessage);
-    }
-}
     
     /**
      * Set up global CLASSIFIED object for backward compatibility

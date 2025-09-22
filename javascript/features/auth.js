@@ -376,6 +376,12 @@ export class AuthManager {
      * Enable guest mode
      */
     enableGuestMode() {
+        // ADD THIS CHECK AT THE TOP
+        if (this.state.get('isAuthenticated')) {
+            console.warn('⚠️ Cannot enable guest mode while authenticated.');
+            return;
+        }
+
         console.log('👤 Enabling guest mode');
         this.state.update({
             isGuestMode: true,
@@ -483,6 +489,22 @@ export class AuthManager {
     
     showBusinessAuth() {
         this.showAuthScreen('businessAuth');
+    }
+
+        // ADD THESE NEW METHODS
+    showAuthOptions() {
+        // This function decides what the user sees if they are not logged in on startup.
+        // For now, it just shows the login screen, which includes the guest option.
+        this.showLogin();
+    }
+    
+    showAuthLoading() {
+        // This uses your existing loading overlay to show the initial app load state.
+        document.getElementById('loadingOverlay')?.classList.add('show');
+    }
+    
+    hideAuthLoading() {
+        document.getElementById('loadingOverlay')?.classList.remove('show');
     }
     
     showAuthScreen(type) {

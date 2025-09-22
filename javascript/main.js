@@ -607,16 +607,8 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', async () => {
         // Initialize ClassifiedApp
         window.classifiedApp = new ClassifiedApp();
-
-        // New code from the update
-        await MapManager.initialize();
-        replaceSettingsWithMapIcons();
     });
 } else {
     // DOM already loaded
     window.classifiedApp = new ClassifiedApp();
-
-    // New code from the update
-    await MapManager.initialize();
-    replaceSettingsWithMapIcons();
 }

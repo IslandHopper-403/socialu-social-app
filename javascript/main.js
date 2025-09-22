@@ -1,6 +1,6 @@
 // 🎯 CLASSIFIED v7.0 - Complete Business Management System
 // 
-// WORKING CONDITION - Good Reset Point
+// Update to fix Auth state / Guest mode flipping
 // BUSINESS WORKFLOW:
 // 1. Business signs up → gets instant account with temp password
 // 2. Business logs in → completes profile → status: pending_approval
@@ -561,22 +561,11 @@ Need help? Contact: support@classified.com
     /**
      * Set up initial auth state
      */
+   // New code for main.js
     setupInitialAuthState() {
-        // Check if user is already logged in
-        console.log('🔐 Checking initial auth state...');
-        
-        // Show initial content while waiting for auth
-        setTimeout(() => {
-            // If no auth state determined after 2 seconds, show login
-            if (!this.state.get('isAuthenticated') && !this.state.get('isGuestMode')) {
-                console.log('🔑 No auth state detected, showing login screen');
-                this.managers.auth.showLogin();
-                
-                // Also load demo data in feeds for preview
-                this.managers.feed.populateRestaurantFeedWithData(this.mockData.getRestaurants());
-                this.managers.feed.populateActivityFeedWithData(this.mockData.getActivities());
-            }
-        }, 2000);
+        console.log('🔐 Checking initial auth state... waiting for Firebase listener.');
+        // The onAuthStateChanged listener in AuthManager will handle the initial UI.
+        // We can remove the timeout entirely.
     }
     
     /**

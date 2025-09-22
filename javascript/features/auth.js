@@ -39,29 +39,14 @@ export class AuthManager {
         // Auth state listener
         this.authUnsubscribe = null;
     }
-    
-    /**
-     * Set references to other managers
-     */
-    setManagers(managers) {
-        this.profileManager = managers.profile;
-        this.businessManager = managers.business;
-        this.referralManager = managers.referral;
-        this.messagingManager = managers.messaging;
-        this.feedManager = managers.feed;
-        this.navigationManager = managers.navigation;
-    }
-    
-    /**
-     * Initialize authentication system
-     */
-    async init() {
-        console.log('🔐 Initializing authentication...');
+
+     // ADD THIS NEW METHOD
+    init() {
+        // This is the new, correct place to set up the listener
         this.setupAuthListener();
-        this.checkReferralCode();
     }
-    
-    /**
+
+     /**
      * Set up Firebase auth state listener
      */
     setupAuthListener() {
@@ -75,6 +60,19 @@ export class AuthManager {
             }
         });
     }
+    
+    /**
+     * Set references to other managers
+     */
+    setManagers(managers) {
+        this.profileManager = managers.profile;
+        this.businessManager = managers.business;
+        this.referralManager = managers.referral;
+        this.messagingManager = managers.messaging;
+        this.feedManager = managers.feed;
+        this.navigationManager = managers.navigation;
+    }
+    
     
     /**
      * Handle user login

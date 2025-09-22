@@ -52,30 +52,55 @@ export class AuthManager {
         this.navigationManager = managers.navigation;
     }
     
-    /**
-     * Initialize authentication system
-     */
-    async init() {
-        console.log('🔐 Initializing authentication...');
-        this.setupAuthListener();
-        this.checkReferralCode();
-    }
-    
-    /**
-     * Set up Firebase auth state listener
-     */
-    setupAuthListener() {
-        this.authUnsubscribe = onAuthStateChanged(this.auth, async (user) => {
-            console.log('🔐 Auth state changed:', user ? user.email : 'No user');
+         // PASTE THIS IN ITS PLACE
+        async init() {
+            console.log('🔐 Initializing authentication...');
             
-            if (user) {
-                await this.handleUserLogin(user);
-            } else {
-                this.handleUserLogout();
-            }
-        });
-    }
-    
+            // Set a loading state immediately
+            this.state.update({
+                authLoading: true,
+                isAuthenticated: false,
+                isGuestMode: false
+            });
+            
+            // Show a loading indicator to the user
+            this.showAuthLoading();
+            
+            // Set up the auth listener with a proper initial check
+            this.setupAuthListener();
+            
+            // Check referral codes, etc.
+            this.checkReferralCode();
+        }
+        
+        setupAuthListener() {
+            let isInitialCheck = true;
+            
+            this.authUnsubscribe = onAuthStateChanged(this.auth, async (user) => {
+                console.log('🔐 Auth state changed:', user ? user.email : 'No user');
+                
+                try {
+                    if (user) {
+                        await this.handleUserLogin(user);
+                    } else {
+                        // Only show login/guest options after the very first check
+                        if (isInitialCheck) {
+                            this.showAuthOptions();
+                        } else {
+                            this.handleUserLogout();
+                        }
+                    }
+                } finally {
+                    // Clear loading state only after the first check is complete
+                    if (isInitialCheck) {
+                        isInitialCheck = false;
+                        this.state.set('authLoading', false);
+                        this.hideAuthLoading();
+                    }
+                }
+            });
+        }
+            
     /**
      * Handle user login
      */

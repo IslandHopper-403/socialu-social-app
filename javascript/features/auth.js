@@ -379,6 +379,11 @@ export class AuthManager {
      * Enable guest mode
      */
     enableGuestMode() {
+        // ADD THIS CHECK AT THE TOP
+        if (this.state.get('isAuthenticated')) {
+            console.warn('⚠️ Cannot enable guest mode while authenticated.');
+            return;
+        }
         console.log('👤 Enabling guest mode');
         this.state.update({
             isGuestMode: true,

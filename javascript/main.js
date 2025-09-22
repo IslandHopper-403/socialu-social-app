@@ -66,14 +66,13 @@ class ClassifiedApp {
         this.state = new AppState();
         this.mockData = new MockData();
         
+        
         // Manager instances will be created after Firebase init
         this.managers = {};
         
         // Store listeners for cleanup
         this.listeners = [];
         
-        // Initialize the app
-        this.init();
     }
     
     /**
@@ -604,14 +603,13 @@ Need help? Contact: support@classified.com
     }
 }
 
-
+// Initialize the app when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', async () => {
-        const app = new ClassifiedApp();
-        await app.init();
+        // Initialize ClassifiedApp
+        window.classifiedApp = new ClassifiedApp();
     });
 } else {
     // DOM already loaded
-    const app = new ClassifiedApp();
-    await app.init();
+    window.classifiedApp = new ClassifiedApp();
 }

@@ -686,10 +686,10 @@ export class FeedManager {
         const banner = document.createElement('div');
         banner.className = 'business-signup-banner';
         banner.innerHTML = `
-            <h3>🤖 Own a Business in Hoi An?</h3>
+            <h3>🏪 Own a Business in Hoi An?</h3>
             <p>Create your account instantly and reach 100+ travelers daily</p>
             <div class="cta-button" onclick="CLASSIFIED.showBusinessSignup()">
-            🚀 Create Business Account
+                Create Business Account 🚀
             </div>
         `;
         

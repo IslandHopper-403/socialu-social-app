@@ -540,36 +540,50 @@ body {
 
 /* Business Signup Banner */
 .business-signup-banner {
-    background: linear-gradient(135deg, #FFD700, #FF6B6B);
-    padding: 20px;
-    margin: 20px 0;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
     border-radius: 15px;
+    padding: 30px 20px;
+    margin: 20px;
     text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255,215,0,0.3);
 }
 .business-signup-banner:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(255,215,0,0.3);
 }
 .business-signup-banner h3 {
-    margin: 0 0 10px 0;
-    font-size: 18px;
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 }
 .business-signup-banner p {
-    margin: 0 0 15px 0;
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 20px;
     opacity: 0.9;
 }
 .business-signup-banner .cta-button {
-    background: rgba(255,255,255,0.2);
-    padding: 8px 16px;
-    border-radius: 20px;
-    display: inline-block;
-    font-weight: 600;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 15px 30px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
     transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
 }
 .business-signup-banner .cta-button:hover {
-    background: rgba(255,255,255,0.3);
+    background: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
 
 /* User Feed Styles */

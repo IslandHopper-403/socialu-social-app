@@ -1,5 +1,6 @@
 // javascript/features/auth.js
 
+
 import { 
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
@@ -9,6 +10,7 @@ import {
     updateProfile
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 
+
 import {
     doc,
     setDoc,
@@ -16,6 +18,7 @@ import {
     serverTimestamp,
     updateDoc
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
 
 /**
  * Authentication Manager
@@ -52,55 +55,30 @@ export class AuthManager {
         this.navigationManager = managers.navigation;
     }
     
-         // PASTE THIS IN ITS PLACE
-        async init() {
-            console.log('🔐 Initializing authentication...');
+    /**
+     * Initialize authentication system
+     */
+    async init() {
+        console.log('🔐 Initializing authentication...');
+        this.setupAuthListener();
+        this.checkReferralCode();
+    }
+    
+    /**
+     * Set up Firebase auth state listener
+     */
+    setupAuthListener() {
+        this.authUnsubscribe = onAuthStateChanged(this.auth, async (user) => {
+            console.log('🔐 Auth state changed:', user ? user.email : 'No user');
             
-            // Set a loading state immediately
-            this.state.update({
-                authLoading: true,
-                isAuthenticated: false,
-                isGuestMode: false
-            });
-            
-            // Show a loading indicator to the user
-            this.showAuthLoading();
-            
-            // Set up the auth listener with a proper initial check
-            this.setupAuthListener();
-            
-            // Check referral codes, etc.
-            this.checkReferralCode();
-        }
-        
-        setupAuthListener() {
-            let isInitialCheck = true;
-            
-            this.authUnsubscribe = onAuthStateChanged(this.auth, async (user) => {
-                console.log('🔐 Auth state changed:', user ? user.email : 'No user');
-                
-                try {
-                    if (user) {
-                        await this.handleUserLogin(user);
-                    } else {
-                        // Only show login/guest options after the very first check
-                        if (isInitialCheck) {
-                            this.showAuthOptions();
-                        } else {
-                            this.handleUserLogout();
-                        }
-                    }
-                } finally {
-                    // Clear loading state only after the first check is complete
-                    if (isInitialCheck) {
-                        isInitialCheck = false;
-                        this.state.set('authLoading', false);
-                        this.hideAuthLoading();
-                    }
-                }
-            });
-        }
-            
+            if (user) {
+                await this.handleUserLogin(user);
+            } else {
+                this.handleUserLogout();
+            }
+        });
+    }
+    
     /**
      * Handle user login
      */
@@ -376,12 +354,6 @@ export class AuthManager {
      * Enable guest mode
      */
     enableGuestMode() {
-        // ADD THIS CHECK AT THE TOP
-        if (this.state.get('isAuthenticated')) {
-            console.warn('⚠️ Cannot enable guest mode while authenticated.');
-            return;
-        }
-
         console.log('👤 Enabling guest mode');
         this.state.update({
             isGuestMode: true,
@@ -489,22 +461,6 @@ export class AuthManager {
     
     showBusinessAuth() {
         this.showAuthScreen('businessAuth');
-    }
-
-        // ADD THESE NEW METHODS
-    showAuthOptions() {
-        // This function decides what the user sees if they are not logged in on startup.
-        // For now, it just shows the login screen, which includes the guest option.
-        this.showLogin();
-    }
-    
-    showAuthLoading() {
-        // This uses your existing loading overlay to show the initial app load state.
-        document.getElementById('loadingOverlay')?.classList.add('show');
-    }
-    
-    hideAuthLoading() {
-        document.getElementById('loadingOverlay')?.classList.remove('show');
     }
     
     showAuthScreen(type) {

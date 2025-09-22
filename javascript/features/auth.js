@@ -35,18 +35,19 @@ export class AuthManager {
         this.messagingManager = null;
         this.feedManager = null;
         this.navigationManager = null;
-        
+
         // Auth state listener
         this.authUnsubscribe = null;
     }
 
-     // ADD THIS NEW METHOD
+    /**
+     * Initialize the manager
+     */
     init() {
-        // This is the new, correct place to set up the listener
         this.setupAuthListener();
     }
 
-     /**
+    /**
      * Set up Firebase auth state listener
      */
     setupAuthListener() {
@@ -60,7 +61,7 @@ export class AuthManager {
             }
         });
     }
-    
+
     /**
      * Set references to other managers
      */
@@ -73,19 +74,18 @@ export class AuthManager {
         this.navigationManager = managers.navigation;
     }
     
-    
     /**
      * Handle user login
      */
-   async handleUserLogin(user) {
-    this.state.update({
-        currentUser: user,
-        isAuthenticated: true,
-        isGuestMode: false
-    });
-    
-    // ADD THIS LINE to force nav visibility
-    document.querySelector('.bottom-nav').style.display = 'flex';
+    async handleUserLogin(user) {
+        this.state.update({
+            currentUser: user,
+            isAuthenticated: true,
+            isGuestMode: false
+        });
+        
+        // ADD THIS LINE to force nav visibility
+        document.querySelector('.bottom-nav').style.display = 'flex';
         
         // Hide auth screens
         this.hideAuthScreens();
@@ -106,27 +106,32 @@ export class AuthManager {
     }
     
     /**
-     * Handle user logout
+     * Handle user logout logic
      */
     handleUserLogout() {
-        this.state.update({
-            currentUser: null,
-            isAuthenticated: false,
-            isBusinessUser: false
-        });
+        console.log('🚪 User logged out or is a guest');
+        this.state.set('isAuthenticated', false);
+        this.state.set('isGuestMode', true);
+        this.state.set('isBusinessUser', false);
+        this.state.set('currentUser', null);
         
-        // Clean up messaging listeners
-        if (this.messagingManager) {
-            this.messagingManager.cleanup();
+        // Hide business profile UI if visible
+        if (this.businessManager) {
+            this.businessManager.hideBusinessProfile();
         }
         
-        // Show login screen unless in guest mode
-        if (!this.state.get('isGuestMode')) {
-            this.showLogin();
+        // Hide user profile UI if visible
+        if (this.profileManager) {
+            this.profileManager.hideUserProfile();
         }
         
-        // Reset user data
-        this.state.reset(['userProfile', 'businessProfile']);
+        // Notify other managers of logout
+        this.notifyLogout();
+        
+        // Redirect to login screen
+        if (this.navigationManager) {
+            this.navigationManager.goToLogin();
+        }
     }
     
     /**
@@ -168,7 +173,6 @@ export class AuthManager {
         
         try {
             this.showLoading();
-            
             // Create auth account
             const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
             const user = userCredential.user;
@@ -193,9 +197,9 @@ export class AuthManager {
                 location: 'Hoi An, Vietnam',
                 isOnline: true,
                 isPremium: !!referredBy,
-                premiumUntil: referredBy ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) : null
+                premiumUntil: referredBy ?
+                    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) : null
             };
-            
             await this.createUserProfile(user.uid, profileData);
             
             // Handle referral if exists
@@ -223,13 +227,11 @@ export class AuthManager {
     async loginWithGoogle() {
         try {
             this.showLoading();
-            
             const result = await signInWithPopup(this.auth, this.googleProvider);
             const user = result.user;
             
             // Check if new user
             const userDoc = await getDoc(doc(this.db, 'users', user.uid));
-            
             if (!userDoc.exists()) {
                 // Create profile for new Google user
                 const referralCode = this.generateReferralCode();
@@ -284,14 +286,12 @@ export class AuthManager {
      */
     async businessSignup(businessData) {
         const { name, email, phone, type } = businessData;
-        
         if (!name || !email || !phone || !type) {
             throw new Error('Please fill in all fields');
         }
         
         try {
             this.showLoading();
-            
             // Create temporary password
             const tempPassword = this.generateTempPassword();
             
@@ -393,10 +393,7 @@ export class AuthManager {
             const userDoc = await getDoc(doc(this.db, 'users', uid));
             if (userDoc.exists()) {
                 const userData = userDoc.data();
-                this.state.set('userProfile', { 
-                    ...this.state.get('userProfile'), 
-                    ...userData 
-                });
+                this.state.set('userProfile', { ...this.state.get('userProfile'), ...userData });
                 console.log('✅ User profile loaded:', userData);
             }
         } catch (error) {
@@ -432,10 +429,8 @@ export class AuthManager {
     checkReferralCode() {
         const urlParams = new URLSearchParams(window.location.search);
         const referralCode = urlParams.get('ref');
-        
         if (referralCode) {
             sessionStorage.setItem('referralCode', referralCode);
-            
             // Show referral welcome if referral manager exists
             if (this.referralManager) {
                 this.referralManager.showReferralWelcome(referralCode);
@@ -494,9 +489,7 @@ export class AuthManager {
             document.querySelector('.main-screens')?.classList.add('authenticated');
             document.querySelector('.bottom-nav')?.style.setProperty('display', 'flex');
         }
-        
         document.getElementById('guestBanner')?.style.setProperty('display', 'none');
-        
         this.hideLoading();
     }
     
@@ -569,13 +562,17 @@ export class AuthManager {
             user.email === 'your-admin-email@gmail.com' // Replace with your email
         );
     }
-    
+
     /**
-     * Cleanup on destroy
+     * Notify other managers of auth events
      */
-    destroy() {
-        if (this.authUnsubscribe) {
-            this.authUnsubscribe();
+    notifyLogout() {
+        if (this.profileManager) {
+            this.profileManager.onUserLogout();
+        }
+        
+        if (this.feedManager) {
+            this.feedManager.onUserLogout();
         }
     }
 }

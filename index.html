@@ -937,39 +937,5 @@
     <!-- Note: Firebase is loaded as ES6 modules via CDN in firebase.js -->
     <script type="module" src="javascript/main.js"></script>
 
-<script>
-// Ultra-conservative initialization - minimal auto-guest mode
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🎯 DOM ready, waiting for app initialization...');
-    
-    // Wait much longer and be more careful about auto-guest mode
-    setTimeout(() => {
-        if (window.CLASSIFIED && window.classifiedApp) {
-            const isAuthenticated = window.classifiedApp.state.get('isAuthenticated');
-            const isGuestMode = window.classifiedApp.state.get('isGuestMode');
-            
-            console.log('🔍 Checking auth state after 5s:', { isAuthenticated, isGuestMode });
-            
-            // Only enable guest mode if absolutely no auth state
-            if (!isAuthenticated && !isGuestMode) {
-                console.log('🚀 No auth detected after 5s, enabling guest mode...');
-                
-                // Extra safety check - make sure we're not in the middle of login
-                if (!window.classifiedApp.managers.auth._isProcessingLogin) {
-                    window.CLASSIFIED.enableGuestMode();
-                } else {
-                    console.log('🔒 Login in progress, skipping guest mode');
-                }
-            } else {
-                console.log('✅ Auth state already determined, no action needed');
-            }
-        } else {
-            console.log('❌ App not ready after 5s');
-        }
-    }, 5000); // Wait 5 full seconds
-});
-
-</script>
-
 </body>
 </html>

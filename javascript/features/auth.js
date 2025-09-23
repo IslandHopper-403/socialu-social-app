@@ -378,105 +378,48 @@ export class AuthManager {
     /**
      * Enable guest mode
      */
-enableGuestMode() {
-    // ADD THIS CHECK AT THE TOP
-    if (this.state.get('isAuthenticated')) {
-        console.warn('⚠️ Cannot enable guest mode while authenticated.');
-        return;
-    }
-    
-    console.log('👤 Enabling guest mode');
-    this.state.update({
-        isGuestMode: true,
-        isAuthenticated: false
-    });
-    
-    // Hide auth screens
-    this.hideAuthScreens();
-    
-    // Show guest banner
-    if (this.navigationManager) {
-        this.navigationManager.toggleGuestBanner(true);
-    } else {
-        const guestBanner = document.getElementById('guestBanner');
-        if (guestBanner) {
-            guestBanner.style.display = 'block';
-        }
-    }
-    
- 
-// 🔥 NEW: Add this method to AuthManager
-populateGuestModeFeeds() {
-    console.log('🎭 Populating guest mode feeds with mock data...');
-    
-    try {
-        // Get mock data through the global app instance
-        const mockData = window.classifiedApp?.mockData;
-        if (!mockData) {
-            console.error('❌ Mock data not available');
+    enableGuestMode() {
+        // ADD THIS CHECK AT THE TOP
+        if (this.state.get('isAuthenticated')) {
+            console.warn('⚠️ Cannot enable guest mode while authenticated.');
             return;
         }
+        console.log('👤 Enabling guest mode');
+        this.state.update({
+            isGuestMode: true,
+            isAuthenticated: false
+        });
         
-        // Populate all feeds with mock data
-        if (this.feedManager) {
-            // Force populate user feed with guest content
-            this.feedManager.populateGuestUserFeed();
-            
-            // Also populate business feeds
-            this.feedManager.populateRestaurantFeedWithData(mockData.getRestaurants());
-            this.feedManager.populateActivityFeedWithData(mockData.getActivities());
+        // Hide auth screens
+        this.hideAuthScreens();
+        
+        // Show guest banner
+        if (this.navigationManager) {
+            this.navigationManager.toggleGuestBanner(true);
+        } else {
+            const guestBanner = document.getElementById('guestBanner');
+            if (guestBanner) {
+                guestBanner.style.display = 'block';
+            }
         }
         
-        // Show guest content in messaging tab (limited preview)
-        this.populateGuestMessaging();
-        
-        console.log('✅ Guest mode feeds populated');
-    } catch (error) {
-        console.error('❌ Error populating guest feeds:', error);
+        // Notify other managers
+        this.notifyGuestMode();
     }
-}
-
-// 🔥 NEW: Add this method to AuthManager  
-populateGuestMessaging() {
-    try {
-        const mockData = window.classifiedApp?.mockData;
-        if (!mockData) return;
-        
-        // Show limited matches preview
-        const matchesContainer = document.getElementById('matchesScroll');
-        if (matchesContainer) {
-            const users = mockData.getUsers().slice(0, 3);
-            matchesContainer.innerHTML = users.map(user => `
-                <div class="match-avatar" style="background-image: url('${user.image}'); filter: blur(2px);" 
-                     onclick="window.CLASSIFIED.showGuestModeRestriction('messaging')">
-                </div>
-            `).join('');
+    
+    /**
+     * Create user profile in Firestore
+     */
+    async createUserProfile(uid, profileData) {
+        try {
+            await setDoc(doc(this.db, 'users', uid), profileData);
+            console.log('✅ User profile created in Firestore');
+        } catch (error) {
+            console.error('❌ Error creating user profile:', error);
+            throw error;
         }
-        
-        // Show limited chat list preview
-        const chatList = document.getElementById('chatList');
-        if (chatList) {
-            const chats = mockData.getChats();
-            chatList.innerHTML = chats.map(chat => `
-                <div class="chat-item" onclick="window.CLASSIFIED.showGuestModeRestriction('messaging')">
-                    <div class="chat-avatar" style="background-image: url('${chat.avatar}'); filter: blur(2px);"></div>
-                    <div class="chat-info">
-                        <div class="chat-name" style="filter: blur(1px);">${chat.name}</div>
-                        <div class="chat-message" style="filter: blur(2px);">${chat.message}</div>
-                    </div>
-                    <div class="chat-time">${chat.time}</div>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-                                background: rgba(0,0,0,0.8); color: white; padding: 4px 8px; 
-                                border-radius: 10px; font-size: 12px; pointer-events: none;">
-                        🔒 Sign up to chat
-                    </div>
-                </div>
-            `).join('');
-        }
-    } catch (error) {
-        console.error('Error populating guest messaging:', error);
     }
-}
+    
     /**
      * Load user profile from Firestore
      */

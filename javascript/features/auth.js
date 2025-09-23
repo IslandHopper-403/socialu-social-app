@@ -378,47 +378,38 @@ export class AuthManager {
     /**
      * Enable guest mode
      */
-    enableGuestMode() {
-        // ADD THIS CHECK AT THE TOP
-        if (this.state.get('isAuthenticated')) {
-            console.warn('⚠️ Cannot enable guest mode while authenticated.');
-            return;
-        }
-        console.log('👤 Enabling guest mode');
-        this.state.update({
-            isGuestMode: true,
-            isAuthenticated: false
-        });
-        
-        // Hide auth screens
-        this.hideAuthScreens();
-        
-        // Show guest banner
-        if (this.navigationManager) {
-            this.navigationManager.toggleGuestBanner(true);
-        } else {
-            const guestBanner = document.getElementById('guestBanner');
-            if (guestBanner) {
-                guestBanner.style.display = 'block';
-            }
-        }
-        
-        // Notify other managers
-        this.notifyGuestMode();
+enableGuestMode() {
+    // ADD THIS CHECK AT THE TOP
+    if (this.state.get('isAuthenticated')) {
+        console.warn('⚠️ Cannot enable guest mode while authenticated.');
+        return;
     }
     
-    /**
-     * Create user profile in Firestore
-     */
-    async createUserProfile(uid, profileData) {
-        try {
-            await setDoc(doc(this.db, 'users', uid), profileData);
-            console.log('✅ User profile created in Firestore');
-        } catch (error) {
-            console.error('❌ Error creating user profile:', error);
-            throw error;
+    console.log('👤 Enabling guest mode');
+    this.state.update({
+        isGuestMode: true,
+        isAuthenticated: false
+    });
+    
+    // Hide auth screens
+    this.hideAuthScreens();
+    
+    // Show guest banner
+    if (this.navigationManager) {
+        this.navigationManager.toggleGuestBanner(true);
+    } else {
+        const guestBanner = document.getElementById('guestBanner');
+        if (guestBanner) {
+            guestBanner.style.display = 'block';
         }
     }
+    
+    // 🔥 NEW: Immediately populate feeds with mock data
+    this.populateGuestModeFeeds();
+    
+    // Notify other managers
+    this.notifyGuestMode();
+}
     
     /**
      * Load user profile from Firestore

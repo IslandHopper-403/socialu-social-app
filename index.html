@@ -936,37 +936,146 @@
     <!-- Note: Firebase is loaded as ES6 modules via CDN in firebase.js -->
     <script type="module" src="javascript/main.js"></script>
 <script>
-// Ultra-conservative initialization - minimal auto-guest mode
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🎯 DOM ready, waiting for app initialization...');
-    
-    // Wait much longer and be more careful about auto-guest mode
-    setTimeout(() => {
-        if (window.CLASSIFIED && window.classifiedApp) {
-            const isAuthenticated = window.classifiedApp.state.get('isAuthenticated');
-            const isGuestMode = window.classifiedApp.state.get('isGuestMode');
-            
-            console.log('🔍 Checking auth state after 5s:', { isAuthenticated, isGuestMode });
-            
-            // Only enable guest mode if absolutely no auth state
-            if (!isAuthenticated && !isGuestMode) {
-                console.log('🚀 No auth detected after 5s, enabling guest mode...');
-                
-                // Extra safety check - make sure we're not in the middle of login
-                if (!window.classifiedApp.managers.auth._isProcessingLogin) {
-                    window.CLASSIFIED.enableGuestMode();
-                } else {
-                    console.log('🔒 Login in progress, skipping guest mode');
-                }
-            } else {
-                console.log('✅ Auth state already determined, no action needed');
-            }
-        } else {
-            console.log('❌ App not ready after 5s');
-        }
-    }, 5000); // Wait 5 full seconds
-});
+// Enhanced guest mode and search functions
+window.CLASSIFIED = window.CLASSIFIED || {};
 
+// Handle messaging tab click with guest mode check
+window.CLASSIFIED.handleMessagingTabClick = function() {
+    if (window.classifiedApp.state.get('isGuestMode')) {
+        window.CLASSIFIED.showGuestModeRestriction('messaging');
+        return false;
+    }
+    window.CLASSIFIED.switchSocialTab('messaging');
+};
+
+// Search functions
+window.CLASSIFIED.searchRestaurants = function(searchTerm) {
+    if (!searchTerm.trim()) {
+        window.CLASSIFIED.populateRestaurantFeed();
+        return;
+    }
+    
+    console.log('🔍 Searching restaurants for:', searchTerm);
+    const allRestaurants = window.classifiedApp.mockData.getRestaurants();
+    const filtered = allRestaurants.filter(restaurant => 
+        restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        restaurant.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        restaurant.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    window.classifiedApp.managers.feed.populateRestaurantFeedWithData(filtered);
+    
+    const feedHeader = document.querySelector('#restaurantScreen .feed-header h3');
+    if (feedHeader) {
+        feedHeader.textContent = filtered.length > 0 ? 
+            `FOUND ${filtered.length} RESULT${filtered.length === 1 ? '' : 'S'}` : 
+            'NO RESULTS FOUND';
+    }
+};
+
+window.CLASSIFIED.searchActivities = function(searchTerm) {
+    if (!searchTerm.trim()) {
+        window.CLASSIFIED.populateActivityFeed();
+        return;
+    }
+    
+    console.log('🔍 Searching activities for:', searchTerm);
+    const allActivities = window.classifiedApp.mockData.getActivities();
+    const filtered = allActivities.filter(activity => 
+        activity.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        activity.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        activity.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    window.classifiedApp.managers.feed.populateActivityFeedWithData(filtered);
+    
+    const feedHeader = document.querySelector('#activityScreen .feed-header h3');
+    if (feedHeader) {
+        feedHeader.textContent = filtered.length > 0 ? 
+            `FOUND ${filtered.length} RESULT${filtered.length === 1 ? '' : 'S'}` : 
+            'NO RESULTS FOUND';
+    }
+};
+
+// Filter modal functions
+window.CLASSIFIED.showRestaurantFilters = function() {
+    if (window.classifiedApp.state.get('isGuestMode')) {
+        window.CLASSIFIED.showGuestModeRestriction('filter');
+        return;
+    }
+    
+    const filterOptions = ['All Restaurants', 'Vietnamese Cuisine', 'International Food', 'Budget Friendly ($)', 'Mid-range ($$)', 'Fine Dining ($$$)', 'Open Now', 'Live Music'];
+    
+    const filterModal = document.createElement('div');
+    filterModal.style.cssText = `position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 999; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease;`;
+    
+    filterModal.innerHTML = `
+        <div style="background: #2a2a2a; border-radius: 20px; padding: 30px; max-width: 300px; margin: 20px;">
+            <h3 style="color: #00D4FF; margin-bottom: 20px; text-align: center;">Filter Restaurants</h3>
+            <div style="max-height: 400px; overflow-y: auto;">
+                ${filterOptions.map(option => `
+                    <div style="padding: 12px; margin: 8px 0; background: rgba(255,255,255,0.1); border-radius: 10px; cursor: pointer; transition: all 0.3s ease;"
+                         onmouseover="this.style.background='rgba(0,212,255,0.2)'"
+                         onmouseout="this.style.background='rgba(255,255,255,0.1)'"
+                         onclick="CLASSIFIED.applyRestaurantFilter('${option}'); this.parentElement.parentElement.parentElement.remove();">
+                        ${option}
+                    </div>
+                `).join('')}
+            </div>
+            <button onclick="this.parentElement.parentElement.remove();" style="width: 100%; padding: 12px; margin-top: 20px; background: rgba(255,255,255,0.1); border: none; border-radius: 10px; color: white; cursor: pointer;">Cancel</button>
+        </div>
+    `;
+    
+    document.body.appendChild(filterModal);
+};
+
+window.CLASSIFIED.showActivityFilters = function() {
+    if (window.classifiedApp.state.get('isGuestMode')) {
+        window.CLASSIFIED.showGuestModeRestriction('filter');
+        return;
+    }
+    
+    const filterOptions = ['All Activities', 'Adventure Sports', 'Cultural Tours', 'Food Experiences', 'Water Activities', 'Budget Friendly ($)', 'Premium ($$$)', 'Half Day', 'Full Day'];
+    
+    const filterModal = document.createElement('div');
+    filterModal.style.cssText = `position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 999; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease;`;
+    
+    filterModal.innerHTML = `
+        <div style="background: #2a2a2a; border-radius: 20px; padding: 30px; max-width: 300px; margin: 20px;">
+            <h3 style="color: #00D4FF; margin-bottom: 20px; text-align: center;">Filter Activities</h3>
+            <div style="max-height: 400px; overflow-y: auto;">
+                ${filterOptions.map(option => `
+                    <div style="padding: 12px; margin: 8px 0; background: rgba(255,255,255,0.1); border-radius: 10px; cursor: pointer; transition: all 0.3s ease;"
+                         onmouseover="this.style.background='rgba(0,212,255,0.2)'"
+                         onmouseout="this.style.background='rgba(255,255,255,0.1)'"
+                         onclick="CLASSIFIED.applyActivityFilter('${option}'); this.parentElement.parentElement.parentElement.remove();">
+                        ${option}
+                    </div>
+                `).join('')}
+            </div>
+            <button onclick="this.parentElement.parentElement.remove();" style="width: 100%; padding: 12px; margin-top: 20px; background: rgba(255,255,255,0.1); border: none; border-radius: 10px; color: white; cursor: pointer;">Cancel</button>
+        </div>
+    `;
+    
+    document.body.appendChild(filterModal);
+};
+
+// Enhanced navigation handling
+window.CLASSIFIED.handleNavClick = function(screen) {
+    if (screen === 'restaurant' || screen === 'activity') {
+        window.CLASSIFIED.showScreen(screen);
+        return;
+    }
+    
+    if (screen === 'social') {
+        window.CLASSIFIED.showScreen(screen);
+        if (window.classifiedApp.state.get('isGuestMode')) {
+            setTimeout(() => {
+                window.CLASSIFIED.switchSocialTab('userFeed');
+            }, 100);
+        }
+    }
+};
 </script>
     
 </body>

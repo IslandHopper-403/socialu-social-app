@@ -1,4 +1,4 @@
-// javascript/features/feed.js - CORRECTED VERSION
+// javascript/features/feed.js
 
 import {
     collection,
@@ -12,7 +12,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 /**
- * Feed Manager - CORRECTED VERSION
+ * Feed Manager
  * Handles all feed displays - restaurants, activities, and user feeds
  */
 export class FeedManager {
@@ -75,13 +75,6 @@ export class FeedManager {
             tab.addEventListener('click', (e) => {
                 const tabType = tab.dataset.tab;
                 this.switchSocialTab(tabType);
-                // Hide notification dot when user opens messaging
-              if (tabType === 'messaging') {
-                const messagingManager = window.classifiedApp?.managers?.messaging;
-                if (messagingManager) {
-                    messagingManager.clearNotificationsForMessagingTab();
-                }
-            }
             });
         });
         
@@ -180,15 +173,16 @@ export class FeedManager {
             collection(this.db, 'businesses'),
             where('type', '==', 'restaurant'),
             where('status', '==', 'active'),
+            orderBy('updatedAt', 'desc'),
             limit(20)
         );
         
         const snapshot = await getDocs(q);
         
-        snapshot.forEach(docSnapshot => {
-            const business = docSnapshot.data();
+        snapshot.forEach(doc => {
+            const business = doc.data();
             restaurants.push({
-                id: docSnapshot.id,
+                id: doc.id,
                 name: business.name,
                 type: business.type,
                 image: business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop',
@@ -283,15 +277,16 @@ export class FeedManager {
             collection(this.db, 'businesses'),
             where('type', '==', 'activity'),
             where('status', '==', 'active'),
+            orderBy('updatedAt', 'desc'),
             limit(20)
         );
         
         const snapshot = await getDocs(q);
         
-        snapshot.forEach(docSnapshot => {
-            const business = docSnapshot.data();
+        snapshot.forEach(doc => {
+            const business = doc.data();
             activities.push({
-                id: docSnapshot.id,
+                id: doc.id,
                 name: business.name,
                 type: business.type,
                 image: business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop',
@@ -343,7 +338,7 @@ export class FeedManager {
     }
     
     /**
-     * FIXED: Populate user feed - Remove problematic orderBy
+     * Populate user feed
      */
     async populateUserFeed() {
         if (!this.state.get('isAuthenticated')) return;
@@ -352,120 +347,67 @@ export class FeedManager {
         container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
         
         try {
-            console.log('👥 Attempting to fetch users from Firebase...');
             const users = await this.fetchUsersFromFirebase();
             
             if (users.length > 0) {
-                console.log(`✅ Found ${users.length} users in Firebase`);
                 this.populateUserFeedWithData(users, container);
             } else {
-                console.log('ℹ️ No users found in Firebase, showing demo users with encouraging message');
                 // Show demo users with encouraging message
                 this.populateDemoUserFeed(container);
             }
             
         } catch (error) {
             console.error('❌ Error loading users:', error);
-            console.log('📝 Error details:', error.message);
             this.showUserFeedError(container);
         }
     }
     
     /**
-     * FIXED: Fetch users from Firebase - Remove problematic orderBy
+     * Fetch users from Firebase
      */
     async fetchUsersFromFirebase() {
         const users = [];
         const currentUserId = this.state.get('currentUser')?.uid;
         
-        if (!currentUserId) {
-            console.log('❌ No current user ID found');
-            return users;
-        }
+        if (!currentUserId) return users;
         
-        console.log('🔍 Querying users collection...');
+        // Create query that excludes current user
+        const q = query(
+            collection(this.db, 'users'),
+            orderBy('updatedAt', 'desc'),
+            limit(20)
+        );
         
-        try {
-            // FIXED: Simple query without orderBy to avoid index issues
-            const q = query(
-                collection(this.db, 'users'),
-                limit(20)
-            );
+        const snapshot = await getDocs(q);
+        
+        snapshot.forEach(doc => {
+            const userData = doc.data();
+            // Skip current user and incomplete profiles
+            if (doc.id === currentUserId || 
+                !userData.name || 
+                !userData.bio || 
+                !userData.interests?.length) {
+                return;
+            }
             
-            const snapshot = await getDocs(q);
-            console.log(`📊 Query returned ${snapshot.size} documents`);
-            
-            snapshot.forEach(docSnapshot => {
-                const userData = docSnapshot.data();
-                console.log(`👤 Processing user: ${docSnapshot.id}`, userData);
-                
-                // Skip current user and incomplete profiles
-                if (docSnapshot.id === currentUserId) {
-                    console.log('⏭️ Skipping current user');
-                    return;
-                }
-                
-                if (!userData.name || !userData.bio) {
-                    console.log('⏭️ Skipping incomplete profile:', docSnapshot.id);
-                    return;
-                }
-                
-                users.push({
-                    id: docSnapshot.id,
-                    uid: docSnapshot.id,
-                    name: userData.name,
-                    age: userData.age || this.calculateAge(userData.birthday) || 25,
-                    image: userData.photos?.[0] || userData.photo || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop',
-                    interests: userData.interests || ['Travel', 'Adventure'],
-                    bio: userData.bio || 'Exploring Hoi An!',
-                    isOnline: userData.isOnline || false,
-                    distance: userData.distance || `${Math.floor(Math.random() * 5) + 1} km`,
-                    matchPercentage: userData.matchPercentage || Math.floor(Math.random() * 30) + 70,
-                    category: userData.category || this.determineCategoryFromCareer(userData.career),
-                    career: userData.career || 'Traveler',
-                    lookingFor: userData.lookingFor || 'Friends'
-                });
-                
-                console.log(`✅ Added user to feed: ${userData.name}`);
+            users.push({
+                id: doc.id,
+                uid: doc.id,
+                name: userData.name,
+                age: userData.age || 25,
+                image: userData.photos?.[0] || userData.photo || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop',
+                interests: userData.interests || ['Travel', 'Adventure'],
+                bio: userData.bio || 'Exploring Hoi An!',
+                isOnline: userData.isOnline || false,
+                distance: userData.distance || `${Math.floor(Math.random() * 5) + 1} km`,
+                matchPercentage: userData.matchPercentage || Math.floor(Math.random() * 30) + 70,
+                category: userData.category || 'all',
+                career: userData.career,
+                lookingFor: userData.lookingFor
             });
-            
-            console.log(`📊 Final user count for feed: ${users.length}`);
-            return users;
-            
-        } catch (error) {
-            console.error('❌ Error in fetchUsersFromFirebase:', error);
-            console.error('🔍 Error code:', error.code);
-            console.error('📝 Error message:', error.message);
-            throw error;
-        }
-    }
-    
-    /**
-     * Helper: Calculate age from birthday
-     */
-    calculateAge(birthday) {
-        if (!birthday) return null;
+        });
         
-        const today = new Date();
-        const birthDate = new Date(birthday);
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-        
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
-        }
-        
-        return age > 0 ? age : null;
-    }
-    
-    /**
-     * Helper: Determine category from career
-     */
-    determineCategoryFromCareer(career) {
-        if (!career) return 'all';
-        
-        const nomadCareers = ['Digital Nomad', 'Freelancer', 'Remote Worker', 'Developer', 'Designer'];
-        return nomadCareers.includes(career) ? 'nomads' : 'all';
+        return users;
     }
     
     /**
@@ -508,11 +450,8 @@ export class FeedManager {
             <div style="text-align: center; padding: 40px; opacity: 0.9;">
                 <div style="font-size: 48px; margin-bottom: 20px;">🚀</div>
                 <div style="font-size: 20px; margin-bottom: 15px; color: #00D4FF;">You're among the first!</div>
-                <div style="font-size: 16px; margin-bottom: 10px;">Complete your profile to start appearing in other users' feeds! Invite friends to grow the community.</div>
-                <button onclick="CLASSIFIED.openProfileEditor()" style="margin: 10px; padding: 12px 24px; background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; border-radius: 25px; color: white; font-weight: 600; cursor: pointer;">
-                    Complete Profile ✨
-                </button>
-                <button onclick="CLASSIFIED.shareApp()" style="margin: 10px; padding: 12px 24px; background: linear-gradient(135deg, #FFD700, #FF6B6B); border: none; border-radius: 25px; color: white; font-weight: 600; cursor: pointer;">
+                <div style="font-size: 16px; margin-bottom: 10px;">These are demo profiles. Complete your profile and invite friends to start real connections!</div>
+                <button onclick="CLASSIFIED.shareApp()" style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; border-radius: 25px; color: white; font-weight: 600; cursor: pointer;">
                     Share CLASSIFIED 🚀
                 </button>
             </div>
@@ -629,55 +568,59 @@ export class FeedManager {
     /**
      * Create user feed item
      */
-    createUserFeedItem(user, index) {
-        const feedItem = document.createElement('div');
-        feedItem.className = 'user-feed-item';
-        feedItem.style.animationDelay = `${index * 0.1}s`;
-        feedItem.style.cursor = 'pointer';
-        
-        // Ensure user has an ID properly set
-        const userId = user.uid || user.id || `demo_${user.name.toLowerCase().replace(/\s/g, '_')}`;
-        
-        // Create a properly formatted user object
-        const userWithId = {
-            ...user,
-            uid: userId,
-            id: userId
-        };
-        
-        // Make entire card clickable
-        feedItem.addEventListener('click', (e) => {
-            if (!e.target.closest('.user-actions')) {
-                window.CLASSIFIED.openUserProfile(userWithId);
-            }
-        });
-        
-        feedItem.innerHTML = `
-            <div class="user-status-badges">
-                ${user.isOnline ? '<div class="status-badge status-online">🟢 Online</div>' : ''}
-                <div class="status-badge status-distance">📍 ${user.distance}</div>
-                <div class="status-badge status-match">🔥 ${user.matchPercentage}% Match</div>
+    // In feed.js, find the createUserFeedItem method and ensure it starts like this:
+
+// In feed.js, update the createUserFeedItem method:
+
+createUserFeedItem(user, index) {
+    const feedItem = document.createElement('div');
+    feedItem.className = 'user-feed-item';
+    feedItem.style.animationDelay = `${index * 0.1}s`;
+    feedItem.style.cursor = 'pointer';
+    
+    // Ensure user has an ID properly set
+    const userId = user.uid || user.id || `demo_${user.name.toLowerCase().replace(/\s/g, '_')}`;
+    
+    // Create a properly formatted user object
+    const userWithId = {
+        ...user,
+        uid: userId,
+        id: userId
+    };
+    
+    // Make entire card clickable
+    feedItem.addEventListener('click', (e) => {
+        if (!e.target.closest('.user-actions')) {
+            window.CLASSIFIED.openUserProfile(userWithId);
+        }
+    });
+    
+    feedItem.innerHTML = `
+        <div class="user-status-badges">
+            ${user.isOnline ? '<div class="status-badge status-online">🟢 Online</div>' : ''}
+            <div class="status-badge status-distance">📍 ${user.distance}</div>
+            <div class="status-badge status-match">🔥 ${user.matchPercentage}% Match</div>
+        </div>
+        <div class="user-image" style="background-image: url('${user.image}')">
+            <div class="user-image-overlay">
+                <div class="user-name">${user.name}, ${user.age}</div>
             </div>
-            <div class="user-image" style="background-image: url('${user.image}')">
-                <div class="user-image-overlay">
-                    <div class="user-name">${user.name}, ${user.age}</div>
-                </div>
+        </div>
+        <div class="user-info">
+            <div class="user-bio">${user.bio}</div>
+            <div class="user-interests">
+                ${user.interests.map(interest => `<span class="interest-tag">${interest}</span>`).join('')}
             </div>
-            <div class="user-info">
-                <div class="user-bio">${user.bio}</div>
-                <div class="user-interests">
-                    ${user.interests.map(interest => `<span class="interest-tag">${interest}</span>`).join('')}
-                </div>
-                <div class="user-actions">
-                    <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${userId}')">✕ Pass</button>
-                    <button class="action-btn chat-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${userId}')">💬 Chat</button>
-                    <button class="action-btn super-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('superlike', '${userId}')">⭐ Super</button>
-                </div>
+            <div class="user-actions">
+                <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${userId}')">✕ Pass</button>
+                <button class="action-btn chat-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${userId}')">💬 Chat</button>
+                <button class="action-btn super-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('superlike', '${userId}')">⭐ Super</button>
             </div>
-        `;
-        
-        return feedItem;
-    }
+        </div>
+    `;
+    
+    return feedItem;
+}
     
     /**
      * Add business signup banner
@@ -703,7 +646,7 @@ export class FeedManager {
     }
     
     /**
-     * FIXED: Add admin notice for pending businesses
+     * Add admin notice for pending businesses
      */
     async addAdminNotice(container) {
         try {
@@ -774,9 +717,9 @@ export class FeedManager {
     formatPriceRange(priceRange) {
         const priceMap = {
             'budget': '$ - Budget Friendly',
-            'moderate': '$ - Moderate',
-            'expensive': '$$ - Expensive'
+            'moderate': '$$ - Moderate',
+            'expensive': '$$$ - Expensive'
         };
-        return priceMap[priceRange] || '$ - Moderate';
+        return priceMap[priceRange] || '$$ - Moderate';
     }
 }

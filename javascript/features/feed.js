@@ -136,10 +136,6 @@ export class FeedManager {
                 container.appendChild(feedItem);
             });
         }
-         // ADD THIS: Load demo chats for guest mode
-    if (window.classifiedApp?.managers?.messaging) {
-        window.classifiedApp.managers.messaging.loadChats();
-    }
     }
     
     /**

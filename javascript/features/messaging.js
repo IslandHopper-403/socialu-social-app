@@ -117,6 +117,7 @@ export class MessagingManager {
             }
         } else if (this.state.get('isGuestMode')) { // ADD THIS BLOCK
             console.log('📝 Guest mode active, showing demo chats');
+            this.showDemoOnlineUsers(); // ADD THIS LINE
             this.showDemoChats();
         }
     }
@@ -124,6 +125,27 @@ export class MessagingManager {
     /**
      * Display mock chats for guest mode
      */
+    showDemoOnlineUsers() {
+        // Make sure you have the mock data
+        if (!this.mockData && window.classifiedApp && window.classifiedApp.mockData) {
+            this.mockData = window.classifiedApp.mockData;
+        }
+    
+        const onlineUsers = this.mockData ? this.mockData.getOnlineUsers() : [];
+        const onlineUsersContainer = document.getElementById('onlineUsersContainer');
+    
+        if (onlineUsersContainer && onlineUsers.length > 0) {
+            onlineUsersContainer.innerHTML = onlineUsers.map(user => `
+                <div class="online-user" onclick="CLASSIFIED.openChatWithUser('${user.name}')">
+                    <div class="online-user-avatar" style="background-image: url('${user.avatar}')"></div>
+                    <div class="online-user-name">${user.name}</div>
+                </div>
+            `).join('');
+        } else if (onlineUsersContainer) {
+            onlineUsersContainer.innerHTML = '<p>No online users available.</p>';
+        }
+    }
+    
     showDemoChats() {
         const chats = this.mockData ? this.mockData.getChats() : [];
         if (chats.length > 0) {

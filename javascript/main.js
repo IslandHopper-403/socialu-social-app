@@ -164,7 +164,7 @@ loadDemoContent() {
             // ADD THIS LINE for Maps Feature
             map: new MapManager(firebaseServices, this.state, this.mockData),
             // ADD THIS LINE for Favorites Carousel Feature
-            this.managers.favoritesCarousel = new FavoritesCarouselManager(firebaseServices, this.state);
+            favoritesCarousel: new FavoritesCarouselManager(firebaseServices, this.state);
 
         };
     }

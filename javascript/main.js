@@ -77,7 +77,10 @@ class ClassifiedApp {
         this.firebaseConfig = new FirebaseConfig();
         this.state = new AppState();
         this.mockData = new MockData();
-        
+
+         // ADD THIS: Ensure mockData is fully initialized
+        console.log('🔍 MockData initialized:', !!this.mockData, 'Users:', this.mockData?.getUsers()?.length);
+            
         // Manager instances will be created after Firebase init
         this.managers = {};
         

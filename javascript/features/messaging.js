@@ -165,7 +165,7 @@ export class MessagingManager {
      */
     setupRealtimeListeners() {
         const currentUser = this.state.get('currentUser');
-        if (!currentUser) return;
+       
         
         console.log('👂 Setting up real-time listeners for user:', currentUser.uid);
         

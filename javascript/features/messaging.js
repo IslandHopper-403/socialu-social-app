@@ -132,7 +132,7 @@ export class MessagingManager {
         }
     
         const onlineUsers = this.mockData ? this.mockData.getOnlineUsers() : [];
-        const onlineUsersContainer = document.getElementById('onlineUsersContainer');
+        const onlineUsersContainer = document.getElementById('matchesScroll');
     
         if (onlineUsersContainer && onlineUsers.length > 0) {
             onlineUsersContainer.innerHTML = onlineUsers.map(user => `

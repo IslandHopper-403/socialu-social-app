@@ -137,7 +137,7 @@ export class MessagingManager {
         if (onlineUsersContainer && onlineUsers.length > 0) {
             onlineUsersContainer.innerHTML = onlineUsers.map(user => `
                 <div class="online-user" onclick="CLASSIFIED.openChatWithUser('${user.name}')">
-                    <div class="online-user-avatar" style="background-image: url('${user.image}')"></div>
+                    <div class="match-avatar" style="background-image: url('${user.image}')"></div>
                     <div class="online-user-name">${user.name}</div>
                 </div>
             `).join('');

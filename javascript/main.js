@@ -46,7 +46,6 @@ import { PhotoUploadManager } from './features/photoUpload.js';
 import { AdminManager } from './features/admin.js';
 import { ReferralManager } from './features/referral.js';
 import { MapManager } from './features/map.js';
-import { FavoritesCarouselManager } from './features/favoritesCarousel.js';
 
 
 
@@ -162,10 +161,8 @@ loadDemoContent() {
             referral: new ReferralManager(firebaseServices, this.state),
             photoUpload: new PhotoUploadManager(firebaseServices, this.state),
             navigation: new NavigationManager(firebaseServices, this.state),
-            // ADD THIS LINE for Map Feature
+            // ADD THIS LINE
             map: new MapManager(firebaseServices, this.state, this.mockData),
-            //ADD THIS LINE for Favorites Carousel
-            this.managers.favoritesCarousel = new FavoritesCarouselManager(firebaseServices, this.state);
         };
     }
     
@@ -440,13 +437,6 @@ loadDemoContent() {
         Object.defineProperty(window.CLASSIFIED, 'isAdminUser', {
             value: () => this.managers.auth ? this.managers.auth.isAdminUser() : false
         });
-
-         // Favorites methods
-        addToFavorites: (businessId) => this.managers.favoritesCarousel.addToFavorites(businessId),
-        removeFavorite: (businessId) => this.managers.favoritesCarousel.removeFavorite(businessId),
-        toggleFavorite: (businessId) => this.managers.favoritesCarousel.toggleFavorite(businessId),
-        isFavorited: (businessId) => this.managers.favoritesCarousel.isFavorited(businessId),
-         
     }
     
     /**

@@ -75,35 +75,29 @@ export class AuthManager {
         // Check referral codes, etc.
         this.checkReferralCode();
     }
-    
     setupAuthListener() {
-        let isInitialCheck = true;
+    let isInitialCheck = true;
+    
+    this.authUnsubscribe = onAuthStateChanged(this.auth, async (user) => {
+        console.log('🔐 Auth state changed:', user ? user.email : 'No user');
         
-        this.authUnsubscribe = onAuthStateChanged(this.auth, async (user) => {
-            console.log('🔐 Auth state changed:', user ? user.email : 'No user');
-            
-            try {
-                if (user) {
-                    await this.handleUserLogin(user);
-                } else {
-                    // Only show login/guest options after the very first check
-                    if (isInitialCheck) {
-                        this.showAuthOptions();
-                    } else {
-                        this.handleUserLogout();
-                    }
-                }
-            } finally {
-                // Clear loading state only after the first check is complete
-                if (isInitialCheck) {
-                    isInitialCheck = false;
-                    this.state.set('authLoading', false);
-                    this.hideAuthLoading();
-                }
+        try {
+            if (user) {
+                await this.handleUserLogin(user);
+            } else {
+                this.handleUserLogout();
             }
-        });
-    }
-            
+        } finally {
+            // Clear loading state only after the first check is complete
+            if (isInitialCheck) {
+                isInitialCheck = false;
+                this.state.set('authLoading', false);
+                this.hideAuthLoading();
+            }
+        }
+    });
+}
+    
     /**
      * Handle user login
      */

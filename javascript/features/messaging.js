@@ -506,6 +506,9 @@ export class MessagingManager {
             // Store current chat context
             this.currentChatPartner = { name, avatar, userId };
             this.state.set('currentChatUser', this.currentChatPartner);
+            document.dispatchEvent(new CustomEvent('chatOpened', { 
+                detail: { chatId: chatId, partnerId: userId }
+            }));
             
             // Generate chat ID (alphabetically sorted user IDs)
             const chatId = this.generateChatId(currentUser.uid, userId);
@@ -564,6 +567,8 @@ export class MessagingManager {
      */
     closeChat() {
         console.log('🔙 Closing chat');
+         // ADD THIS LINE HERE:
+        document.dispatchEvent(new CustomEvent('chatClosed'));
         this.navigationManager.closeOverlay('individualChat');
         
         // Clean up listener

@@ -559,12 +559,12 @@ export class AuthManager {
         if (this.feedManager) {
             this.feedManager.showDemoData();
         }
-         // ADD THIS: Notify messaging manager to show demo data
+        
+        // ADD THIS: Notify messaging manager to show demo data on its screen
         if (this.messagingManager) {
-            this.messagingManager.showDemoOnlineUsers();
-            this.messagingManager.showDemoChats();
+            this.messagingManager.onSocialScreenShown();
         }
-    }
+    }    
     
     /**
      * Check if current user is admin

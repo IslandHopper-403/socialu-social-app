@@ -372,34 +372,27 @@ export class AuthManager {
     /**
      * Enable guest mode
      */
-    enableGuestMode() {
-        // ADD THIS CHECK AT THE TOP
-        if (this.state.get('isAuthenticated')) {
-            console.warn('⚠️ Cannot enable guest mode while authenticated.');
-            return;
-        }
-        console.log('👤 Enabling guest mode');
-        this.state.update({
-            isGuestMode: true,
-            isAuthenticated: false
-        });
-        
-        // Hide auth screens
-        this.hideAuthScreens();
-        
-        // Show guest banner
-        if (this.navigationManager) {
-            this.navigationManager.toggleGuestBanner(true);
-        } else {
-            const guestBanner = document.getElementById('guestBanner');
-            if (guestBanner) {
-                guestBanner.style.display = 'block';
-            }
-        }
-        
-        // Notify other managers
-        this.notifyGuestMode();
+ enableGuestMode() {
+    if (this.state.get('isAuthenticated')) {
+        console.warn('⚠️ Cannot enable guest mode while authenticated.');
+        return;
     }
+    
+    console.log('👤 Enabling guest mode');
+    this.state.update({
+        isGuestMode: true,
+        isAuthenticated: false
+    });
+    
+    // Hide auth screens
+    this.hideAuthScreens();
+    
+    // Show guest notification banner
+    this.showGuestBanner();
+    
+    // Notify other managers to show demo data
+    this.notifyGuestMode();
+}
     
     /**
      * Create user profile in Firestore

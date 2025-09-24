@@ -274,42 +274,56 @@ export class MessagingManager {
      * Load chat list
      */
     async loadChats() {
-        const currentUser = this.state.get('currentUser');
-        if (!currentUser) return;
+    const currentUser = this.state.get('currentUser');
+    const isGuestMode = this.state.get('isGuestMode');
+    const chatList = document.getElementById('chatList');
+    if (!chatList) return;
+    
+    // Handle guest mode - show demo chats
+    if (isGuestMode || !currentUser) {
+        console.log('👤 Loading demo chats for guest mode');
+        const chats = this.mockData ? this.mockData.getChats() : [];
         
-        try {
-            console.log('💬 Loading chats for user:', currentUser.uid);
-            
-            const chatList = document.getElementById('chatList');
-            if (!chatList) return;
-            
-            // Try to load real chats from Firebase first
-            await this.loadRealChats(currentUser.uid);
-            
-            // Always show demo chats for testing
-            const chats = this.mockData ? this.mockData.getChats() : [];
-            
-            // Only show demo chats if no real chats exist
-            const existingChats = chatList.querySelectorAll('.chat-item');
-            if (existingChats.length === 0) {
-                console.log('📝 No real chats found, showing demo chats');
-                chatList.innerHTML = chats.map(chat => `
-                    <div class="chat-item" onclick="CLASSIFIED.openChat('${chat.name}', '${chat.avatar}', '${chat.userId}')">
-                        <div class="chat-avatar" style="background-image: url('${chat.avatar}')"></div>
-                        <div class="chat-info">
-                            <div class="chat-name">${chat.name}</div>
-                            <div class="chat-message">${chat.message}</div>
-                        </div>
-                        <div class="chat-time">${chat.time}</div>
-                    </div>
-                `).join('');
-            }
-            
-        } catch (error) {
-            console.error('❌ Error loading chats:', error);
-        }
+        chatList.innerHTML = chats.map(chat => `
+            <div class="chat-item" onclick="CLASSIFIED.handleGuestChatClick('${chat.name}')">
+                <div class="chat-avatar" style="background-image: url('${chat.avatar}')"></div>
+                <div class="chat-info">
+                    <div class="chat-name">${chat.name}</div>
+                    <div class="chat-message">${chat.message}</div>
+                </div>
+                <div class="chat-time">${chat.time}</div>
+            </div>
+        `).join('');
+        return;
     }
     
+    try {
+        console.log('💬 Loading chats for user:', currentUser.uid);
+        
+        // Try to load real chats from Firebase first
+        await this.loadRealChats(currentUser.uid);
+        
+        // Show demo chats if no real chats exist
+        const existingChats = chatList.querySelectorAll('.chat-item');
+        if (existingChats.length === 0) {
+            console.log('📝 No real chats found, showing demo chats');
+            const chats = this.mockData ? this.mockData.getChats() : [];
+            chatList.innerHTML = chats.map(chat => `
+                <div class="chat-item" onclick="CLASSIFIED.openChat('${chat.name}', '${chat.avatar}', '${chat.userId}')">
+                    <div class="chat-avatar" style="background-image: url('${chat.avatar}')"></div>
+                    <div class="chat-info">
+                        <div class="chat-name">${chat.name}</div>
+                        <div class="chat-message">${chat.message}</div>
+                    </div>
+                    <div class="chat-time">${chat.time}</div>
+                </div>
+            `).join('');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error loading chats:', error);
+    }
+}
     /**
      * Load real chats from Firebase
      */

@@ -78,7 +78,6 @@ export class MessagingManager {
         this.showDemoOnlineUsers();
         this.showDemoChats();
     }
-   }
     
     /**
      * Set up notification sound

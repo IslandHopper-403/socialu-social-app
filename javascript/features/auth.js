@@ -486,7 +486,24 @@ export class AuthManager {
     showBusinessAuth() {
         this.showAuthScreen('businessAuth');
     }
-    //Insert ADD THESE NEW METHODS here
+
+    // ADD THESE NEW METHODS
+    showAuthLoading() {
+    // This uses your existing loading overlay to show the initial app load state.
+    document.getElementById('loadingOverlay')?.classList.add('show');
+    }
+    
+    hideAuthLoading() {
+    document.getElementById('loadingOverlay')?.classList.remove('show');
+    }
+    
+    showAuthScreen(type) {
+    const screens = {
+    login: 'loginScreen',
+    register: 'registerScreen',
+    businessAuth: 'businessAuthScreen'
+    };
+
         
         // Hide all auth screens
         Object.values(screens).forEach(screenId => {

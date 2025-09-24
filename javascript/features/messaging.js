@@ -98,16 +98,15 @@ export class MessagingManager {
     /**
      * Initialize messaging system
      */
-       async init() {
+    async init() {
         console.log('💬 Initializing messaging manager...');
-        
         // Set up event listeners
         this.setupEventListeners();
-        
+
         // Initialize notification system
         await this.initializeNotifications();
-        
-        // Load initial data if authenticated
+
+        // Load initial data if authenticated or in guest mode
         if (this.state.get('isAuthenticated')) {
             try {
                 await this.loadMatches();
@@ -116,9 +115,48 @@ export class MessagingManager {
             } catch (error) {
                 console.error('Error initializing messaging:', error);
             }
+        } else if (this.state.get('isGuestMode')) { // ADD THIS BLOCK
+            console.log('📝 Guest mode active, showing demo chats');
+            this.showDemoChats();
         }
     }
+
+    /**
+     * Display mock chats for guest mode
+     */
+    showDemoChats() {
+        const chats = this.mockData ? this.mockData.getChats() : [];
+        if (chats.length > 0) {
+            this.populateChatList(chats);
+        } else {
+            console.warn('❌ Mock chat data is not available.');
+            // Optional: Display a message to the user
+            this.showEmptyChatState('No demo chats available.');
+        }
+    }
+
+    /**
+     * Populate the chat list with provided data
+     */
+    populateChatList(chats) {
+        const chatListContainer = document.getElementById('chatList');
+        if (!chatListContainer) return;
+
+        chatListContainer.innerHTML = chats.map(chat => `
+            <div class="chat-item" onclick="CLASSIFIED.openChat('${chat.name}', '${chat.avatar}', '${chat.userId}')">
+                <div class="chat-avatar" style="background-image: url('${chat.avatar}')"></div>
+                <div class="chat-details">
+                    <div class="chat-name">${chat.name}</div>
+                    <div class="chat-last-message">${chat.message}</div>
+                </div>
+                <div class="chat-meta">
+                    <div class="chat-time">${chat.time}</div>
+                </div>
+            </div>
+        `).join('');
+    }
     
+
     /**
      * Request notification permission
      */

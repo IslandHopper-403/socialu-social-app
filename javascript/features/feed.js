@@ -126,8 +126,6 @@ export class FeedManager {
         this.populateRestaurantFeedWithData(this.mockData.getRestaurants());
         this.populateActivityFeedWithData(this.mockData.getActivities());
         this.populateGuestUserFeed();
-
-        this.loadGuestChats();
          
         // Show full user feed with "Sign up to connect" overlays
         const users = this.mockData.getUsers();
@@ -780,26 +778,5 @@ export class FeedManager {
             'expensive': '$$ - Expensive'
         };
         return priceMap[priceRange] || '$ - Moderate';
-    }
-      /**
-     * Load guest chats
-     */
-    loadGuestChats() {
-        const chatList = document.getElementById('chatList');
-        if (!chatList || !this.mockData) return;
-        
-        const chats = this.mockData.getChats();
-        console.log('💬 Loading guest chats:', chats);
-        
-        chatList.innerHTML = chats.map(chat => `
-            <div class="chat-item" onclick="alert('🔒 Sign up to chat with ${chat.name}!'); CLASSIFIED.showRegister();">
-                <div class="chat-avatar" style="background-image: url('${chat.avatar}')"></div>
-                <div class="chat-info">
-                    <div class="chat-name">${chat.name}</div>
-                    <div class="chat-message">${chat.message}</div>
-                </div>
-                <div class="chat-time">${chat.time}</div>
-            </div>
-        `).join('');
     }
 }

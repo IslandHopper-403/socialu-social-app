@@ -68,7 +68,15 @@ export class MessagingManager {
     });
        // Add this line to track seen matches across sessions
        this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
-}
+
+    /**
+     * Handle display of messaging content for guest mode
+     */
+    onSocialScreenShown() {
+        console.log('💬 Guest mode: Loading messaging demo data...');
+        this.showDemoOnlineUsers();
+        this.showDemoChats();
+    }
     
     /**
      * Set up notification sound

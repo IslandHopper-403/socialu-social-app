@@ -68,16 +68,7 @@ export class MessagingManager {
     });
        // Add this line to track seen matches across sessions
        this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
-
-
-    /**
-     * Handle display of messaging content for guest mode
-     */
-    onSocialScreenShown() {
-        console.log('💬 Guest mode: Loading messaging demo data...');
-        this.showDemoOnlineUsers();
-        this.showDemoChats();
-    }
+}
     
     /**
      * Set up notification sound
@@ -131,7 +122,7 @@ export class MessagingManager {
         }
     }
 
-     /**
+    /**
      * Display mock chats for guest mode
      */
     showDemoOnlineUsers() {
@@ -139,14 +130,14 @@ export class MessagingManager {
         if (!this.mockData && window.classifiedApp && window.classifiedApp.mockData) {
             this.mockData = window.classifiedApp.mockData;
         }
-        
+    
         const onlineUsers = this.mockData ? this.mockData.getOnlineUsers() : [];
         const onlineUsersContainer = document.getElementById('matchesScroll');
-        
+    
         if (onlineUsersContainer && onlineUsers.length > 0) {
             onlineUsersContainer.innerHTML = onlineUsers.map(user => `
-                <div class="online-user" data-user-name="${user.name}" onclick="CLASSIFIED.openChatWithUser(this.getAttribute('data-user-name'))">
-                    <div class="online-user-avatar" style="background-image: url('${user.image}')"></div>
+                <div class="online-user" onclick="CLASSIFIED.openChatWithUser('${user.name}')">
+                    <div class="online-user-avatar" style="background-image: url('${user.avatar}')"></div>
                     <div class="online-user-name">${user.name}</div>
                 </div>
             `).join('');

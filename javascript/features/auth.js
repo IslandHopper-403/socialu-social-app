@@ -559,6 +559,10 @@ export class AuthManager {
         if (this.feedManager) {
             this.feedManager.showDemoData();
         }
+         // ADD THIS: Notify messaging manager to show demo data
+        if (this.messagingManager) {
+            this.messagingManager.showDemoChats();
+        }
     }
     
     /**

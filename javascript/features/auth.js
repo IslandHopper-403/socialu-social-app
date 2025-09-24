@@ -561,6 +561,7 @@ export class AuthManager {
         }
          // ADD THIS: Notify messaging manager to show demo data
         if (this.messagingManager) {
+            this.messagingManager.showDemoOnlineUsers();
             this.messagingManager.showDemoChats();
         }
     }

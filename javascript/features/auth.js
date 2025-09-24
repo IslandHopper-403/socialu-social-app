@@ -1,6 +1,5 @@
 // javascript/features/auth.js
 
-
 import { 
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
@@ -10,7 +9,6 @@ import {
     updateProfile
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 
-
 import {
     doc,
     setDoc,
@@ -18,7 +16,6 @@ import {
     serverTimestamp,
     updateDoc
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
-
 
 /**
  * Authentication Manager
@@ -55,48 +52,29 @@ export class AuthManager {
         this.navigationManager = managers.navigation;
     }
     
-    // PASTE THIS IN ITS PLACE
+    /**
+     * Initialize authentication system
+     */
     async init() {
         console.log('🔐 Initializing authentication...');
-        
-        // Set a loading state immediately
-        this.state.update({
-            authLoading: true,
-            isAuthenticated: false,
-            isGuestMode: false
-        });
-        
-        // Show a loading indicator to the user
-        this.showAuthLoading();
-        
-        // Set up the auth listener with a proper initial check
         this.setupAuthListener();
-        
-        // Check referral codes, etc.
         this.checkReferralCode();
     }
-    setupAuthListener() {
-    let isInitialCheck = true;
     
-    this.authUnsubscribe = onAuthStateChanged(this.auth, async (user) => {
-        console.log('🔐 Auth state changed:', user ? user.email : 'No user');
-        
-        try {
+    /**
+     * Set up Firebase auth state listener
+     */
+    setupAuthListener() {
+        this.authUnsubscribe = onAuthStateChanged(this.auth, async (user) => {
+            console.log('🔐 Auth state changed:', user ? user.email : 'No user');
+            
             if (user) {
                 await this.handleUserLogin(user);
             } else {
                 this.handleUserLogout();
             }
-        } finally {
-            // Clear loading state only after the first check is complete
-            if (isInitialCheck) {
-                isInitialCheck = false;
-                this.state.set('authLoading', false);
-                this.hideAuthLoading();
-            }
-        }
-    });
-}
+        });
+    }
     
     /**
      * Handle user login
@@ -372,27 +350,29 @@ export class AuthManager {
     /**
      * Enable guest mode
      */
- enableGuestMode() {
-    if (this.state.get('isAuthenticated')) {
-        console.warn('⚠️ Cannot enable guest mode while authenticated.');
-        return;
+    enableGuestMode() {
+        console.log('👤 Enabling guest mode');
+        this.state.update({
+            isGuestMode: true,
+            isAuthenticated: false
+        });
+        
+        // Hide auth screens
+        this.hideAuthScreens();
+        
+        // Show guest banner
+        if (this.navigationManager) {
+            this.navigationManager.toggleGuestBanner(true);
+        } else {
+            const guestBanner = document.getElementById('guestBanner');
+            if (guestBanner) {
+                guestBanner.style.display = 'block';
+            }
+        }
+        
+        // Notify other managers
+        this.notifyGuestMode();
     }
-    
-    console.log('👤 Enabling guest mode');
-    this.state.update({
-        isGuestMode: true,
-        isAuthenticated: false
-    });
-    
-    // Hide auth screens
-    this.hideAuthScreens();
-    
-    // Show guest notification banner
-    this.showGuestBanner();
-    
-    // Notify other managers to show demo data
-    this.notifyGuestMode();
-}
     
     /**
      * Create user profile in Firestore
@@ -479,24 +459,13 @@ export class AuthManager {
     showBusinessAuth() {
         this.showAuthScreen('businessAuth');
     }
-
-    // ADD THESE NEW METHODS
-    showAuthLoading() {
-    // This uses your existing loading overlay to show the initial app load state.
-    document.getElementById('loadingOverlay')?.classList.add('show');
-    }
-    
-    hideAuthLoading() {
-    document.getElementById('loadingOverlay')?.classList.remove('show');
-    }
     
     showAuthScreen(type) {
-    const screens = {
-    login: 'loginScreen',
-    register: 'registerScreen',
-    businessAuth: 'businessAuthScreen'
-    };
-
+        const screens = {
+            login: 'loginScreen',
+            register: 'registerScreen',
+            businessAuth: 'businessAuthScreen'
+        };
         
         // Hide all auth screens
         Object.values(screens).forEach(screenId => {

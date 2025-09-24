@@ -289,26 +289,26 @@ export class MessagingManager {
             // Always show demo chats for testing
             const chats = this.mockData ? this.mockData.getChats() : [];
             
-            // Only show demo chats if no real chats exist
-            const existingChats = chatList.querySelectorAll('.chat-item');
-            if (existingChats.length === 0) {
-                console.log('📝 No real chats found, showing demo chats');
-                chatList.innerHTML = chats.map(chat => `
-                    <div class="chat-item" onclick="CLASSIFIED.openChat('${chat.name}', '${chat.avatar}', '${chat.userId}')">
-                        <div class="chat-avatar" style="background-image: url('${chat.avatar}')"></div>
-                        <div class="chat-info">
-                            <div class="chat-name">${chat.name}</div>
-                            <div class="chat-message">${chat.message}</div>
-                        </div>
-                        <div class="chat-time">${chat.time}</div>
+         // Show demo chats for guests OR if no real chats exist  
+        const existingChats = chatList.querySelectorAll('.chat-item');
+        if (existingChats.length === 0 || !currentUser) {
+            console.log('📝 No real chats found or guest mode, showing demo chats');
+            const demoChats = this.mockData ? this.mockData.getChats() : [];
+            chatList.innerHTML = demoChats.map(chat => `
+                <div class="chat-item" onclick="CLASSIFIED.openChat('${chat.name}', '${chat.avatar}', '${chat.userId}')">
+                    <div class="chat-avatar" style="background-image: url('${chat.avatar}')"></div>
+                    <div class="chat-info">
+                        <div class="chat-name">${chat.name}</div>
+                        <div class="chat-message">${chat.message}</div>
                     </div>
-                `).join('');
-            }
-            
+                    <div class="chat-time">${chat.time}</div>
+                </div>
+            `).join('');
+        }
+        
         } catch (error) {
             console.error('❌ Error loading chats:', error);
         }
-    }
     
     /**
      * Load real chats from Firebase

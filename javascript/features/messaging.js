@@ -2259,5 +2259,5 @@ addPromotionToUI(promoData) {
     `;
     
     messagesContainer.appendChild(promoElement);
-    messagesContainer.scrollTop = messages
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }

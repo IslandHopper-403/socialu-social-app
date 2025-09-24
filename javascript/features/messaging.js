@@ -122,7 +122,7 @@ export class MessagingManager {
         }
     }
 
-    /**
+     /**
      * Display mock chats for guest mode
      */
     showDemoOnlineUsers() {
@@ -130,14 +130,14 @@ export class MessagingManager {
         if (!this.mockData && window.classifiedApp && window.classifiedApp.mockData) {
             this.mockData = window.classifiedApp.mockData;
         }
-    
+        
         const onlineUsers = this.mockData ? this.mockData.getOnlineUsers() : [];
         const onlineUsersContainer = document.getElementById('matchesScroll');
-    
+        
         if (onlineUsersContainer && onlineUsers.length > 0) {
             onlineUsersContainer.innerHTML = onlineUsers.map(user => `
-                <div class="online-user" onclick="CLASSIFIED.openChatWithUser('${user.name}')">
-                    <div class="online-user-avatar" style="background-image: url('${user.avatar}')"></div>
+                <div class="online-user" data-user-name="${user.name}" onclick="CLASSIFIED.openChatWithUser(this.getAttribute('data-user-name'))">
+                    <div class="online-user-avatar" style="background-image: url('${user.image}')"></div>
                     <div class="online-user-name">${user.name}</div>
                 </div>
             `).join('');

@@ -36,6 +36,12 @@ export class FeedManager {
     setManagers(managers) {
         this.uiComponents = managers.ui;
         this.adminManager = managers.admin;
+
+        // ADD THIS: Get mockData from global app instance if not available
+    if (!this.mockData && window.classifiedApp && window.classifiedApp.mockData) {
+        this.mockData = window.classifiedApp.mockData;
+        console.log('✅ MockData retrieved from global app instance');
+        }    
     }
     
     /**

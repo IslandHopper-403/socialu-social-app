@@ -506,9 +506,6 @@ export class MessagingManager {
             // Store current chat context
             this.currentChatPartner = { name, avatar, userId };
             this.state.set('currentChatUser', this.currentChatPartner);
-            document.dispatchEvent(new CustomEvent('chatOpened', { 
-                detail: { chatId: chatId, partnerId: userId }
-            }));
             
             // Generate chat ID (alphabetically sorted user IDs)
             const chatId = this.generateChatId(currentUser.uid, userId);
@@ -568,9 +565,6 @@ export class MessagingManager {
     closeChat() {
         console.log('🔙 Closing chat');
         this.navigationManager.closeOverlay('individualChat');
-
-         // ADD THIS LINE HERE:
-         document.dispatchEvent(new CustomEvent('chatClosed'));
         
         // Clean up listener
         if (this.currentChatId && this.chatListeners.has(this.currentChatId)) {
@@ -2171,100 +2165,4 @@ cleanup() {
             console.log('💬 Hiding message notification dot');
         }
     }
-
-    /**
- * Send promotion message in chat
- */
-async sendPromotionMessage(promoData) {
-    const messageInput = document.getElementById('messageInput');
-    const currentUser = this.state.get('currentUser');
-    
-    if (!currentUser || !this.currentChatId || !this.currentChatPartner) {
-        throw new Error('Chat context not available');
-    }
-    
-    try {
-        console.log('📤 Sending promotion message:', promoData.businessName);
-        
-        // Create message document with promotion data
-        const messageData = {
-            text: `Check out this special from ${promoData.businessName}!`,
-            type: 'promotion',
-            promotion: promoData,
-            senderId: currentUser.uid,
-            senderName: currentUser.displayName || 'Anonymous',
-            timestamp: serverTimestamp(),
-            read: false
-        };
-        
-        // Add promotion UI to chat immediately
-        this.addPromotionToUI(promoData);
-        
-        // Add to messages subcollection
-        await addDoc(collection(this.db, 'chats', this.currentChatId, 'messages'), messageData);
-        
-        // Update chat document
-        await updateDoc(doc(this.db, 'chats', this.currentChatId), {
-            lastMessage: `📍 Shared ${promoData.businessName}`,
-            lastMessageTime: serverTimestamp(),
-            lastMessageSender: currentUser.uid
-        });
-        
-        console.log('✅ Promotion sent successfully');
-        
-    } catch (error) {
-        console.error('❌ Error sending promotion:', error);
-        throw error;
-    }
-}
-
-/**
- * Add promotion to chat UI
- */
-addPromotionToUI(promoData) {
-    const messagesContainer = document.getElementById('chatMessages');
-    if (!messagesContainer) return;
-    
-    const promoElement = document.createElement('div');
-    promoElement.className = 'message sent';
-    promoElement.innerHTML = `
-        <div class="promo-message-card" style="
-            background: linear-gradient(135deg, #FF6B6B, #FF8C42);
-            border-radius: 15px;
-            padding: 15px;
-            margin: 10px 0;
-            max-width: 250px;
-            cursor: pointer;
-        " onclick="CLASSIFIED.openBusinessProfile('${promoData.businessId}', 'restaurant')">
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <div style="width: 50px; height: 50px; border-radius: 8px; 
-                            background-image: url('${promoData.businessImage}');
-                            background-size: cover; background-position: center;"></div>
-                <div style="flex: 1;">
-                    <div style="font-weight: 700; font-size: 14px; margin-bottom: 2px;">
-                        ${promoData.businessName}
-                    </div>
-                    <div style="font-size: 12px; opacity: 0.9;">
-                        ${promoData.businessType}
-                    </div>
-                </div>
-            </div>
-            <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px;">
-                <div class="promo-title" style="font-weight: 700; margin-bottom: 5px;">
-                    🎉 ${promoData.promotionTitle}
-                </div>
-                <div class="promo-details" style="font-size: 12px; opacity: 0.9;">
-                    ${promoData.promotionDetails}
-                </div>
-            </div>
-            <div style="margin-top: 10px; font-size: 11px; opacity: 0.8;">
-                📍 ${promoData.businessAddress || 'Tap to view location'}
-            </div>
-        </div>
-        <div class="message-time">${this.formatMessageTime(new Date())}</div>
-    `;
-    
-    messagesContainer.appendChild(promoElement);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    
 }

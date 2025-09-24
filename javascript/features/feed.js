@@ -119,6 +119,9 @@ export class FeedManager {
         this.populateRestaurantFeedWithData(this.mockData.getRestaurants());
         this.populateActivityFeedWithData(this.mockData.getActivities());
         this.populateGuestUserFeed();
+
+          // ADD THIS LINE:
+          this.loadGuestChats();
          
         // Show full user feed with "Sign up to connect" overlays
         const users = this.mockData.getUsers();

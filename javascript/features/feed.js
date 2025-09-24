@@ -558,6 +558,12 @@ export class FeedManager {
                         <h3>${business.name}</h3>
                         <p>${business.type}</p>
                     </div>
+                    <button class="favorite-btn" 
+                        onclick="event.stopPropagation(); CLASSIFIED.toggleFavorite('${business.id}')"
+                        style="background: none; border: none; font-size: 24px; cursor: pointer; 
+                               transition: transform 0.2s ease; position: absolute; right: 15px; top: 15px;">
+                        🤍
+                    </button>
                 </div>
                 <div class="business-image" style="background-image: url('${business.image}')"></div>
                 <div class="business-content">

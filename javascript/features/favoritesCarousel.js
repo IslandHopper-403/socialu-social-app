@@ -552,7 +552,7 @@ export class FavoritesCarouselManager {
         if (this.favorites.length === 0) {
             scrollContainer.innerHTML = `
                 <div class="empty-favorites">
-                    <div class="empty-favorites-icon">💝</div>
+                    <div class="empty-favorites-icon">❤️</div>
                     <div>No favorites yet!</div>
                     <div style="font-size: 12px; margin-top: 5px;">
                         Tap the heart on any business to save it here

@@ -90,11 +90,11 @@ export class FavoritesCarouselManager {
                 <div class="carousel-container">
                     <div class="carousel-header">
                         <span class="carousel-title">Send a Special</span>
-                        <button class="carousel-toggle" id="carouselToggle">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path d="M15 18l-6-6 6-6" stroke-width="2" stroke-linecap="round"/>
-                            </svg>
-                        </button>
+                       <button class="carousel-toggle" id="carouselToggle">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M9 18l6-6-6-6" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
                     </div>
                     <div class="carousel-content" id="carouselContent">
                         <div class="carousel-scroll" id="carouselScroll">
@@ -209,23 +209,28 @@ export class FavoritesCarouselManager {
                 }
                 
                 .carousel-toggle {
-                    background: none;
-                    border: none;
-                    color: rgba(255, 255, 255, 0.7);
-                    cursor: pointer;
-                    padding: 4px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: transform 0.3s ease;
-                }
-                
+                background: none;
+                border: none;
+                color: rgba(255, 255, 255, 0.7);
+                cursor: pointer;
+                padding: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: transform 0.3s ease;
+            }
+            
                 .carousel-toggle:hover {
                     color: #00D4FF;
                 }
                 
+                /* FIXED: Correct arrow direction logic */
+                .favorites-carousel.minimized .carousel-toggle {
+                    transform: rotate(0deg); /* > arrow pointing right when minimized */
+                }
+                
                 .favorites-carousel.expanded .carousel-toggle {
-                    transform: rotate(180deg);
+                    transform: rotate(180deg); /* < arrow pointing left when expanded */
                 }
                 
                 .carousel-content {

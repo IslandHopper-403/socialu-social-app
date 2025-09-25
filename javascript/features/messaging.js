@@ -506,13 +506,14 @@ export class MessagingManager {
             // Store current chat context
             this.currentChatPartner = { name, avatar, userId };
             this.state.set('currentChatUser', this.currentChatPartner);
-            document.dispatchEvent(new CustomEvent('chatOpened', { 
-                detail: { chatId: chatId, partnerId: userId }
-            }));
-            
+
             // Generate chat ID (alphabetically sorted user IDs)
             const chatId = this.generateChatId(currentUser.uid, userId);
             this.currentChatId = chatId;
+            
+            document.dispatchEvent(new CustomEvent('chatOpened', { 
+                detail: { chatId: chatId, partnerId: userId }
+            }));
 
             // Mark this chat as seen
             this.unreadMessages.delete(chatId);

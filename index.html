@@ -664,8 +664,16 @@
                 </div>
             </div>
                 
+                <!-- In index.html, find the Business Profile View Overlay section and update the promo section: -->
+
                 <div class="profile-section">
-                    <div class="current-promo">
+                    <div class="current-promo" style="position: relative;">
+                        <button class="favorite-btn" id="businessProfileFavoriteBtn"
+                                onclick="event.stopPropagation(); CLASSIFIED.toggleFavorite(getCurrentBusinessId())"
+                                style="background: none; border: none; font-size: 24px; cursor: pointer; 
+                                       transition: transform 0.2s ease; position: absolute; right: 15px; top: 15px; z-index: 10;">
+                             🤍
+                        </button>
                         <div class="promo-badge">🔥 SPECIAL OFFER</div>
                         <div class="promo-title" id="profilePromoTitle">Loading...</div>
                         <div class="promo-details" id="profilePromoDetails">Loading...</div>

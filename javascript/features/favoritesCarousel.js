@@ -104,7 +104,16 @@ extractBusinessIdFromCard(cardElement) {
         
         // Initially hide carousel until needed
         this.hideCarousel();
+    
     }
+
+       /**
+     * Handle user login - load their favorites
+     */
+        async onUserLogin(user) {
+        console.log('🎠 User logged in, loading favorites...');
+        await this.loadUserFavorites();
+        }
     
     /**
      * Create the carousel DOM element
@@ -803,10 +812,15 @@ extractBusinessIdFromCard(cardElement) {
      * Handle chat opened event
      */
     onChatOpened() {
-        if (this.favorites.length > 0) {
-            this.showCarousel();
-        }
+    // Ensure arrays are initialized
+    if (!this.businessFavorites) this.businessFavorites = [];
+    if (!this.offerFavorites) this.offerFavorites = [];
+    
+    const totalFavorites = this.businessFavorites.length + this.offerFavorites.length;
+    if (totalFavorites > 0) {
+        this.showCarousel();
     }
+}
     
     /**
      * Handle chat closed event

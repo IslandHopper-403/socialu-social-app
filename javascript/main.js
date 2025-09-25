@@ -689,3 +689,8 @@ if (document.readyState === 'loading') {
     // DOM already loaded
     window.classifiedApp = new ClassifiedApp();
 }
+
+// ADD THIS HERE - after the app initialization:
+window.getCurrentBusinessId = function() {
+    return window.currentBusinessProfileId || null;
+};

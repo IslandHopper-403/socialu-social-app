@@ -2263,6 +2263,7 @@ addPromotionToUI(promoData) {
         <div class="message-time">${this.formatMessageTime(new Date())}</div>
     `;
     
-    messagesContainer.appendChild(promoElement);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        messagesContainer.appendChild(promoElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
 }

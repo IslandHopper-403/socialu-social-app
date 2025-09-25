@@ -164,7 +164,7 @@ loadDemoContent() {
             // ADD THIS LINE for Maps Feature
             map: new MapManager(firebaseServices, this.state, this.mockData),
             // ADD THIS LINE for Favorites Carousel Feature
-            favoritesCarousel: new FavoritesCarouselManager(firebaseServices, this.state);
+            favoritesCarousel: new FavoritesCarouselManager(firebaseServices, this.state),
 
         };
     }
@@ -433,7 +433,14 @@ loadDemoContent() {
             // Feed refresh methods
             populateUserFeed: () => this.managers.feed.populateUserFeed(),
             populateRestaurantFeed: () => this.managers.feed.populateRestaurantFeed(),
-            populateActivityFeed: () => this.managers.feed.populateActivityFeed(),
+            populateActivityFeed: () => this.managers.feed.populateActivityFeed(),// Favorites methods
+            
+            addToFavorites: (businessId) => this.managers.favoritesCarousel.addToFavorites(businessId),
+            removeFavorite: (businessId) => this.managers.favoritesCarousel.removeFavorite(businessId),
+            toggleFavorite: (businessId) => this.managers.favoritesCarousel.toggleFavorite(businessId),
+            isFavorited: (businessId) => this.managers.favoritesCarousel.isFavorited(businessId),
+            toggleFavoritesCarousel: () => this.managers.favoritesCarousel?.toggleCarousel(),
+
         };
         
         // Also expose some properties for compatibility
@@ -441,12 +448,6 @@ loadDemoContent() {
             value: () => this.managers.auth ? this.managers.auth.isAdminUser() : false
         });
         
-        // Favorites methods
-        addToFavorites: (businessId) => this.managers.favoritesCarousel.addToFavorites(businessId),
-        removeFavorite: (businessId) => this.managers.favoritesCarousel.removeFavorite(businessId),
-        toggleFavorite: (businessId) => this.managers.favoritesCarousel.toggleFavorite(businessId),
-        isFavorited: (businessId) => this.managers.favoritesCarousel.isFavorited(businessId),
-
     }
     
     /**

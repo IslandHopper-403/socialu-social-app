@@ -125,7 +125,7 @@ export class FavoritesCarouselManager {
                     position: fixed;
                     left: 0;
                     top: 200px;
-                    z-index: 150;
+                    z-index: 250;
                     display: flex;
                     align-items: center;
                     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);

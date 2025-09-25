@@ -549,33 +549,39 @@ export class FeedManager {
     /**
      * Create business card HTML
      */
-    createBusinessCard(business, type) {
-        return `
-            <div class="business-card" onclick="CLASSIFIED.openBusinessProfile('${business.id}', '${type}')">
-                <div class="business-header">
-                    <div class="business-logo" style="background-image: url('${business.logo}')"></div>
-                    <div class="business-info">
-                        <h3>${business.name}</h3>
-                        <p>${business.type}</p>
-                    </div>
-                    <button class="favorite-btn" 
-                            onclick="event.stopPropagation(); CLASSIFIED.toggleFavorite('${business.id}')"
-                            style="background: none; border: none; font-size: 24px; cursor: pointer; 
-                                transition: transform 0.2s ease; position: absolute; right: 15px; top: 15px;">
-                         🤍
-                    </button>
-                </div>
-                <div class="business-image" style="background-image: url('${business.image}')"></div>
-                <div class="business-content">
-                    <div class="business-description">${business.description.substring(0, 100)}...</div>
-                    <div class="business-promo">
-                        <div class="promo-title">${business.promo}</div>
-                        <div class="promo-details">${business.details}</div>
-                    </div>
+  // Update the createBusinessCard method:
+createBusinessCard(business, type) {
+    // Check if favorited (you may need to access the favorites manager)
+    const isFavorited = window.classifiedApp?.managers?.favoritesCarousel?.isFavorited(business.id) || false;
+    const heartIcon = isFavorited ? '❤️' : '🤍';
+    
+    return `
+        <div class="business-card" onclick="CLASSIFIED.openBusinessProfile('${business.id}', '${type}')">
+            <div class="business-header">
+                <div class="business-logo" style="background-image: url('${business.logo}')"></div>
+                <div class="business-info">
+                    <h3>${business.name}</h3>
+                    <p>${business.type}</p>
                 </div>
             </div>
-        `;
-    }
+            <div class="business-image" style="background-image: url('${business.image}')"></div>
+            <div class="business-content">
+                <div class="business-description">${business.description.substring(0, 100)}...</div>
+                
+                <div class="business-promo" style="position: relative;">
+                    <button class="favorite-btn" 
+                            onclick="event.stopPropagation(); CLASSIFIED.toggleFavorite('${business.id}')"
+                            style="background: none; border: none; font-size: 20px; cursor: pointer; 
+                                transition: transform 0.2s ease; position: absolute; right: 10px; top: 10px; z-index: 10;">
+                         ${heartIcon}
+                    </button>
+                    <div class="promo-title">${business.promo}</div>
+                    <div class="promo-details">${business.details}</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
     
     /**
      * Create user feed item

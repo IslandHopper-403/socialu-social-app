@@ -44,7 +44,7 @@ export class FavoritesCarouselManager {
         // Touch/drag tracking
         this.dragStartY = 0;
         this.elementStartY = 0;
-    }
+    
 
         /**
  * Extract business ID from card element

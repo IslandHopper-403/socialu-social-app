@@ -549,11 +549,7 @@ export class FeedManager {
    /**
      * Create business card HTML
      */
-        createBusinessCard(business, type) {
-        // Check if business is favorited
-        const isFavorited = window.classifiedApp?.managers?.favoritesCarousel?.isBusinessFavorited(business.id) || false;
-        const heartIcon = isFavorited ? '❤️' : '🤍';
-        
+    createBusinessCard(business, type) {
         return `
             <div class="business-card" onclick="CLASSIFIED.openBusinessProfile('${business.id}', '${type}')">
                 <div class="business-header">
@@ -562,12 +558,11 @@ export class FeedManager {
                         <h3>${business.name}</h3>
                         <p>${business.type}</p>
                     </div>
-                    <button class="business-favorite-btn" 
-                            onclick="event.stopPropagation(); CLASSIFIED.toggleBusinessFavorite('${business.id}')"
+                    <button class="favorite-btn" 
+                            onclick="event.stopPropagation(); CLASSIFIED.toggleFavorite('${business.id}')"
                             style="background: none; border: none; font-size: 24px; cursor: pointer; 
-                                transition: transform 0.2s ease; position: absolute; right: 15px; top: 15px;"
-                            title="Save this business">
-                         ${heartIcon}
+                                transition: transform 0.2s ease; position: absolute; right: 15px; top: 15px;">
+                         ❤️
                     </button>
                 </div>
                 <div class="business-image" style="background-image: url('${business.image}')"></div>

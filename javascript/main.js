@@ -1,6 +1,7 @@
 // 🎯 CLASSIFIED v7.0 - Complete Business Management System
 // 
 // WORKING CONDITION - GOOD WORKING CONDITION - INCLUDES FEATURES CAROUSEL W. Business + Offer Favs
+// From this place forward start refactoring Users and Business for seperate UI/UX portals
 // BUSINESS WORKFLOW:
 // 1. Business signs up → gets instant account with temp password
 // 2. Business logs in → completes profile → status: pending_approval

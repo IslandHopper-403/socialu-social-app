@@ -201,7 +201,8 @@ export class BusinessManager {
         }
         return null;
     }
-    
+
+    /**
      * Update business profile UI (FIXED - Combined method)
      */
     updateBusinessProfileUI(business) {

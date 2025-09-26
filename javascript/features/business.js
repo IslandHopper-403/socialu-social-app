@@ -1,5 +1,6 @@
 // javascript/features/business.js
 
+
 import {
     doc,
     getDoc,
@@ -11,6 +12,7 @@ import {
     getDocs,
     serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
 
 /**
  * Business Manager
@@ -125,6 +127,10 @@ export class BusinessManager {
      */
     async openBusinessProfile(businessId, businessType) {
         console.log(`🏢 Opening ${businessType} profile: ${businessId}`);
+
+
+        // ADD THIS LINE HERE:
+        window.currentBusinessProfileId = businessId;
         
         try {
             this.navigationManager.showLoading();

@@ -2189,6 +2189,10 @@ cleanup() {
     // Hide notification dots
     this.hideNotificationDot();
 }
+
+    
+
+    
 /**
      * Show notification dot on messaging tab
      */
@@ -2211,7 +2215,6 @@ cleanup() {
             console.log('💬 Hiding message notification dot');
         }
     }
-
 
     /**
  * Send promotion message in chat
@@ -2258,7 +2261,6 @@ async sendPromotionMessage(promoData) {
         throw error;
     }
 }
-
 
 /**
  * Add promotion to chat UI
@@ -2308,5 +2310,94 @@ addPromotionToUI(promoData) {
     
         messagesContainer.appendChild(promoElement);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+        /**
+     * NEW: Open chat with business (reuses existing chat system)
+     */
+    async openBusinessChat(businessId, businessName, businessAvatar) {
+        const currentUser = this.state.get('currentUser');
+        
+        if (!currentUser) {
+            alert('Please sign in to message businesses');
+            return;
+        }
+        
+        // Generate chat ID
+        const chatId = `user_${currentUser.uid}_business_${businessId}`;
+        
+        // Open chat using existing openChat method
+        await this.openChat(businessName, businessAvatar, businessId);
+        
+        // Check if we need to send auto-response
+        await this.checkBusinessAutoResponse(chatId, businessId);
+    }
+    
+    /**
+     * NEW: Check business hours and send auto-response if closed
+     */
+    async checkBusinessAutoResponse(chatId, businessId) {
+        try {
+            // Get business data
+            const businessDoc = await getDoc(doc(this.db, 'businesses', businessId));
+            if (!businessDoc.exists()) return;
+            
+            const businessData = businessDoc.data();
+            
+            // Check if already sent auto-response
+            const chatDoc = await getDoc(doc(this.db, 'chats', chatId));
+            if (chatDoc.exists() && chatDoc.data().autoResponseSent) return;
+            
+            // Check if business is open
+            const isOpen = this.isBusinessOpen(businessData.hours);
+            
+            if (!isOpen) {
+                // Send auto-response
+                const message = `Thanks for your message! 🏪 ${businessData.name} is currently closed. We'll respond when we open at ${businessData.hours || 'our next business hours'}.`;
+                
+                await addDoc(collection(this.db, 'chats', chatId, 'messages'), {
+                    text: message,
+                    senderId: businessId,
+                    senderName: businessData.name,
+                    timestamp: serverTimestamp(),
+                    isAutoResponse: true
+                });
+                
+                // Mark auto-response sent
+                await updateDoc(doc(this.db, 'chats', chatId), {
+                    autoResponseSent: true,
+                    lastMessage: message,
+                    lastMessageTime: serverTimestamp()
+                });
+            }
+        } catch (error) {
+            console.error('Error checking auto-response:', error);
+        }
+    }
+    
+    /**
+     * NEW: Simple business hours check
+     */
+    isBusinessOpen(hoursString) {
+        if (!hoursString) return true; // Default to open if no hours
+        
+        const now = new Date();
+        const currentHour = now.getHours();
+        
+        // Parse "8:00 AM - 10:00 PM" format
+        const match = hoursString.match(/(\d{1,2}):?(\d{2})?\s*(AM|PM|am|pm)?\s*-\s*(\d{1,2}):?(\d{2})?\s*(AM|PM|am|pm)?/);
+        
+        if (!match) return true; // Can't parse, assume open
+        
+        // Convert to 24hr
+        let openHour = parseInt(match[1]);
+        let closeHour = parseInt(match[4]);
+        
+        if ((match[3] || '').toLowerCase() === 'pm' && openHour !== 12) openHour += 12;
+        if ((match[6] || '').toLowerCase() === 'pm' && closeHour !== 12) closeHour += 12;
+        if ((match[3] || '').toLowerCase() === 'am' && openHour === 12) openHour = 0;
+        if ((match[6] || '').toLowerCase() === 'am' && closeHour === 12) closeHour = 0;
+        
+        return currentHour >= openHour && currentHour < closeHour;
     }
 }

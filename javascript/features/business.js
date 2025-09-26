@@ -242,36 +242,29 @@ export class BusinessManager {
         document.getElementById('profileContact').textContent = 
             business.contact || business.phone || 'Contact for details';
         
-
-        /**
- * UPDATED: Add message button to business profile
- */
-updateBusinessProfileUI(business) {
-    // ... existing code for updating hero, description, etc. ...
-    
-    // NEW: Update action buttons to include Message
-    const actionButtons = document.querySelector('#businessProfile .action-buttons');
-    const currentUser = this.state.get('currentUser');
-    const isOwner = currentUser && currentUser.uid === business.id;
-    
-    if (actionButtons) {
-        if (isOwner) {
-            // Business owner sees Edit button
-            actionButtons.innerHTML = `
-                <button class="action-button secondary-btn" onclick="CLASSIFIED.shareBusinessProfile()">Share</button>
-                <button class="action-button primary-btn" onclick="CLASSIFIED.openBusinessProfileEditor()">Edit Profile</button>
-            `;
-        } else {
-            // Customers see Message button
-            actionButtons.innerHTML = `
-                <button class="action-button secondary-btn" onclick="CLASSIFIED.getDirections()">Get Directions</button>
-                <button class="action-button primary-btn" onclick="CLASSIFIED.messageBusinessProfile('${business.id}', '${business.name}', '${business.image || business.logo}')">
-                    💬 Message Business
-                </button>
-            `;
+        // NEW: Update action buttons to include Message
+        const actionButtons = document.querySelector('#businessProfile .action-buttons');
+        const currentUser = this.state.get('currentUser');
+        const isOwner = currentUser && currentUser.uid === business.id;
+        
+        if (actionButtons) {
+            if (isOwner) {
+                // Business owner sees Edit button
+                actionButtons.innerHTML = `
+                    <button class="action-button secondary-btn" onclick="CLASSIFIED.shareBusinessProfile()">Share</button>
+                    <button class="action-button primary-btn" onclick="CLASSIFIED.openBusinessProfileEditor()">Edit Profile</button>
+                `;
+            } else {
+                // Customers see Message button
+                actionButtons.innerHTML = `
+                    <button class="action-button secondary-btn" onclick="CLASSIFIED.getDirections()">Get Directions</button>
+                    <button class="action-button primary-btn" onclick="CLASSIFIED.messageBusinessProfile('${business.id}', '${business.name}', '${business.image || business.logo}')">
+                        💬 Message Business
+                    </button>
+                `;
+            }
         }
     }
-}
     
     /**
      * Close business profile

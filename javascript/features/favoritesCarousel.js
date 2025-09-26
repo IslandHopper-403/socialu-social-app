@@ -1,5 +1,6 @@
 // javascript/features/favoritesCarousel.js
 
+
 import {
     collection,
     doc,
@@ -15,6 +16,7 @@ import {
     arrayRemove,
     updateDoc
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
 
 /**
  * Favorites Carousel Manager
@@ -35,13 +37,49 @@ export class FavoritesCarouselManager {
         this.isMinimized = true;
         this.isDragging = false;
         this.currentPosition = { y: 200 }; // Default position from top
-        this.favorites = [];
+        
+         // UPDATED: Split favorites into two categories
+        this.businessFavorites = []; // For favorited businesses
+        this.offerFavorites = [];    // For favorited special offers
         this.carouselElement = null;
         
         // Touch/drag tracking
         this.dragStartY = 0;
         this.elementStartY = 0;
     }
+
+
+        /**
+ * Extract business ID from card element
+ */
+extractBusinessIdFromCard(cardElement) {
+    // Look for onclick attribute that contains openBusinessProfile call
+    const onclickAttr = cardElement.getAttribute('onclick');
+    if (onclickAttr) {
+        const match = onclickAttr.match(/openBusinessProfile\('([^']+)'/);
+        return match ? match[1] : null;
+    }
+    return null;
+}
+
+
+    /**
+     * Handle chat opened event
+     */
+        onChatOpened() {
+            // Check if we have favorites before checking length
+            const totalFavorites = (this.businessFavorites?.length || 0) + (this.offerFavorites?.length || 0);
+            if (totalFavorites > 0) {
+                this.showCarousel();
+            }
+        }
+        
+        /**
+         * Handle chat closed event  
+         */
+        onChatClosed() {
+            this.hideCarousel();
+        }
     
     /**
      * Set references to other managers
@@ -70,7 +108,17 @@ export class FavoritesCarouselManager {
         
         // Initially hide carousel until needed
         this.hideCarousel();
+    
     }
+
+
+       /**
+     * Handle user login - load their favorites
+     */
+        async onUserLogin(user) {
+        console.log('🎠 User logged in, loading favorites...');
+        await this.loadUserFavorites();
+        }
     
     /**
      * Create the carousel DOM element
@@ -492,22 +540,35 @@ export class FavoritesCarouselManager {
         if (!currentUser) return;
         
         try {
-            // Get user's favorites from Firestore
+            console.log('📚 Loading split favorites for user:', currentUser.uid);
+            
             const userDoc = await getDoc(doc(this.db, 'users', currentUser.uid));
             if (userDoc.exists()) {
                 const userData = userDoc.data();
-                const favoriteIds = userData.favorites || [];
                 
-                // Load favorite business details
-                this.favorites = [];
-                for (const businessId of favoriteIds) {
+                // Load business favorites
+                const businessFavoriteIds = userData.businessFavorites || [];
+                this.businessFavorites = [];
+                for (const businessId of businessFavoriteIds) {
                     const business = await this.loadBusinessData(businessId);
                     if (business) {
-                        this.favorites.push(business);
+                        this.businessFavorites.push(business);
                     }
                 }
                 
-                // Update UI
+                // Load offer favorites  
+                const offerFavoriteIds = userData.offerFavorites || [];
+                this.offerFavorites = [];
+                for (const offerId of offerFavoriteIds) {
+                    const offer = await this.loadOfferData(offerId);
+                    if (offer) {
+                        this.offerFavorites.push(offer);
+                    }
+                }
+                
+                console.log(`✅ Loaded ${this.businessFavorites.length} business favorites, ${this.offerFavorites.length} offer favorites`);
+                
+                // Update UI to show both types
                 this.renderFavorites();
             }
         } catch (error) {
@@ -549,22 +610,48 @@ export class FavoritesCarouselManager {
         const scrollContainer = document.getElementById('carouselScroll');
         if (!scrollContainer) return;
         
-        if (this.favorites.length === 0) {
+        const totalFavorites = this.businessFavorites.length + this.offerFavorites.length;
+        
+        if (totalFavorites === 0) {
             scrollContainer.innerHTML = `
                 <div class="empty-favorites">
-                    <div class="empty-favorites-icon">❤️</div>
+                    <div class="empty-favorites-icon">💝</div>
                     <div>No favorites yet!</div>
                     <div style="font-size: 12px; margin-top: 5px;">
-                        Tap the heart on any business to save it here
+                        Save businesses and special offers to send them in chats
                     </div>
                 </div>
             `;
             return;
         }
         
-        scrollContainer.innerHTML = this.favorites.map(business => `
-            <div class="favorite-card" data-business-id="${business.id}">
-                <div class="remove-favorite" onclick="event.stopPropagation(); window.CLASSIFIED.removeFavorite('${business.id}')">×</div>
+        let favoritesHTML = '';
+        
+        // Add business favorites
+        if (this.businessFavorites.length > 0) {
+            favoritesHTML += '<div style="color: #00D4FF; font-size: 12px; font-weight: 600; margin-bottom: 8px;">💼 Favorite Businesses</div>';
+            favoritesHTML += this.businessFavorites.map(business => this.createBusinessFavoriteCard(business)).join('');
+        }
+        
+        // Add offer favorites  
+        if (this.offerFavorites.length > 0) {
+            favoritesHTML += '<div style="color: #FF6B6B; font-size: 12px; font-weight: 600; margin: 15px 0 8px 0;">🎉 Favorite Offers</div>';
+            favoritesHTML += this.offerFavorites.map(offer => this.createOfferFavoriteCard(offer)).join('');
+        }
+        
+        scrollContainer.innerHTML = favoritesHTML;
+        
+        // Add click handlers
+        this.setupFavoriteCardClickHandlers();
+    }
+    
+    /**
+     * Create business favorite card for carousel
+     */
+    createBusinessFavoriteCard(business) {
+        return `
+            <div class="favorite-card" data-business-id="${business.id}" data-type="business">
+                <div class="remove-favorite" onclick="event.stopPropagation(); window.CLASSIFIED.removeBusinessFavorite('${business.id}')">×</div>
                 <div class="favorite-card-header">
                     <div class="favorite-card-image" style="background-image: url('${business.image || business.logo}')"></div>
                     <div class="favorite-card-info">
@@ -572,20 +659,50 @@ export class FavoritesCarouselManager {
                         <div class="favorite-card-type">${business.type}</div>
                     </div>
                 </div>
-                ${business.promo || business.promoTitle ? `
-                    <div class="favorite-card-promo">
-                        <div class="favorite-card-promo-title">${business.promo || business.promoTitle}</div>
-                        <div class="favorite-card-promo-details">${business.details || business.promoDetails || ''}</div>
-                    </div>
-                ` : ''}
+                <div class="favorite-card-category" style="font-size: 10px; color: #00D4FF; margin-top: 5px;">💼 Business</div>
             </div>
-        `).join('');
+        `;
+    }
+    
+    /**
+     * Create offer favorite card for carousel
+     */
+    createOfferFavoriteCard(offer) {
+        return `
+            <div class="favorite-card" data-offer-id="${offer.id}" data-type="offer">
+                <div class="remove-favorite" onclick="event.stopPropagation(); window.CLASSIFIED.removeOfferFavorite('${offer.id}')">×</div>
+                <div class="favorite-card-header">
+                    <div class="favorite-card-image" style="background-image: url('${offer.businessImage}')"></div>
+                    <div class="favorite-card-info">
+                        <div class="favorite-card-name">${offer.businessName}</div>
+                        <div class="favorite-card-type" style="font-size: 11px;">${offer.offerTitle}</div>
+                    </div>
+                </div>
+                <div class="favorite-card-promo" style="margin-top: 8px;">
+                    <div class="favorite-card-promo-details" style="font-size: 11px;">${offer.offerDetails}</div>
+                </div>
+                <div class="favorite-card-category" style="font-size: 10px; color: #FF6B6B; margin-top: 5px;">🎉 Special Offer</div>
+            </div>
+        `;
+    }
+    
+    /**
+     * Set up click handlers for favorite cards
+     */
+    setupFavoriteCardClickHandlers() {
+        const favoriteCards = document.querySelectorAll('.favorite-card');
         
-        // Add click handlers
-        scrollContainer.querySelectorAll('.favorite-card').forEach(card => {
+        favoriteCards.forEach(card => {
             card.addEventListener('click', () => {
                 const businessId = card.dataset.businessId;
-                this.sendBusinessPromotion(businessId);
+                const offerId = card.dataset.offerId;
+                const type = card.dataset.type;
+                
+                if (type === 'business' && businessId) {
+                    this.sendBusinessPromotion(businessId);
+                } else if (type === 'offer' && offerId) {
+                    this.sendOfferPromotion(offerId);
+                }
             });
         });
     }
@@ -700,10 +817,15 @@ export class FavoritesCarouselManager {
      * Handle chat opened event
      */
     onChatOpened() {
-        if (this.favorites.length > 0) {
-            this.showCarousel();
-        }
+    // Ensure arrays are initialized
+    if (!this.businessFavorites) this.businessFavorites = [];
+    if (!this.offerFavorites) this.offerFavorites = [];
+    
+    const totalFavorites = this.businessFavorites.length + this.offerFavorites.length;
+    if (totalFavorites > 0) {
+        this.showCarousel();
     }
+}
     
     /**
      * Handle chat closed event
@@ -745,14 +867,242 @@ export class FavoritesCarouselManager {
         return this.favorites.some(f => f.id === businessId);
     }
     
-    /**
-     * Toggle favorite status
-     */
-    async toggleFavorite(businessId) {
-        if (this.isFavorited(businessId)) {
-            await this.removeFavorite(businessId);
+ /**
+ * Toggle business favorite (for business cards)
+ */
+async toggleBusinessFavorite(businessId) {
+    const isCurrentlyFavorited = this.isBusinessFavorited(businessId);
+    
+    try {
+        if (isCurrentlyFavorited) {
+            await this.removeBusinessFavorite(businessId);
         } else {
-            await this.addToFavorites(businessId);
+            await this.addBusinessToFavorites(businessId);
+        }
+        
+        // Update business card UI
+        this.updateBusinessCardFavoriteState(businessId, !isCurrentlyFavorited);
+        
+    } catch (error) {
+        console.error('Error toggling business favorite:', error);
+        // Revert UI on error
+        this.updateBusinessCardFavoriteState(businessId, isCurrentlyFavorited);
+    }
+}
+
+
+/**
+ * Toggle offer favorite (for special offers in profile overlay)
+ */
+async toggleOfferFavorite(businessId, offerData) {
+    const offerId = `${businessId}_offer`;
+    const isCurrentlyFavorited = this.isOfferFavorited(offerId);
+    
+    try {
+        if (isCurrentlyFavorited) {
+            await this.removeOfferFavorite(offerId);
+        } else {
+            await this.addOfferToFavorites(offerId, businessId, offerData);
+        }
+        
+        // Update offer button UI
+        this.updateOfferFavoriteState(offerId, !isCurrentlyFavorited);
+        
+    } catch (error) {
+        console.error('Error toggling offer favorite:', error);
+        // Revert UI on error
+        this.updateOfferFavoriteState(offerId, isCurrentlyFavorited);
+    }
+}
+
+
+/**
+ * Add business to favorites
+ */
+async addBusinessToFavorites(businessId) {
+    const currentUser = this.state.get('currentUser');
+    if (!currentUser) {
+        alert('Please sign in to save business favorites');
+        return;
+    }
+    
+    try {
+        await updateDoc(doc(this.db, 'users', currentUser.uid), {
+            businessFavorites: arrayUnion(businessId),
+            updatedAt: serverTimestamp()
+        });
+        
+        const business = await this.loadBusinessData(businessId);
+        if (business && !this.businessFavorites.find(f => f.id === businessId)) {
+            this.businessFavorites.push(business);
+            this.renderFavorites();
+        }
+        
+        this.showNotification('Business saved! 💼');
+        
+        // Show carousel if in chat
+        if (this.state.get('isChatOpen')) {
+            this.showCarousel();
+        }
+        
+    } catch (error) {
+        console.error('Error adding business to favorites:', error);
+        alert('Failed to save business');
+    }
+}
+
+
+/**
+ * Add offer to favorites
+ */
+async addOfferToFavorites(offerId, businessId, offerData) {
+    const currentUser = this.state.get('currentUser');
+    if (!currentUser) {
+        alert('Please sign in to save offer favorites');
+        return;
+    }
+    
+    try {
+        // Create offer favorite document with userId included
+        const offerFavorite = {
+            id: offerId,
+            businessId: businessId,
+            businessName: offerData.businessName,
+            offerTitle: offerData.offerTitle,
+            offerDetails: offerData.offerDetails,
+            businessImage: offerData.businessImage,
+            userId: currentUser.uid,  // This line was missing - causes permission errors
+            savedAt: serverTimestamp()
+        };
+        
+        await setDoc(doc(this.db, 'userOfferFavorites', `${currentUser.uid}_${offerId}`), offerFavorite);
+        
+        await updateDoc(doc(this.db, 'users', currentUser.uid), {
+            offerFavorites: arrayUnion(offerId),
+            updatedAt: serverTimestamp()
+        });
+        
+        this.offerFavorites.push(offerFavorite);
+        this.renderFavorites();
+        this.showNotification('Special offer saved! 🎉');
+        
+    } catch (error) {
+        console.error('Error adding offer to favorites:', error);
+        alert('Failed to save offer');
+    }
+}
+
+
+/**
+ * Remove business favorite
+ */
+async removeBusinessFavorite(businessId) {
+    const currentUser = this.state.get('currentUser');
+    if (!currentUser) return;
+    
+    try {
+        await updateDoc(doc(this.db, 'users', currentUser.uid), {
+            businessFavorites: arrayRemove(businessId),
+            updatedAt: serverTimestamp()
+        });
+        
+        this.businessFavorites = this.businessFavorites.filter(f => f.id !== businessId);
+        this.renderFavorites();
+        this.showNotification('Business removed from favorites');
+        
+    } catch (error) {
+        console.error('Error removing business favorite:', error);
+    }
+}
+
+
+/**
+ * Remove offer favorite
+ */
+async removeOfferFavorite(offerId) {
+    const currentUser = this.state.get('currentUser');
+    if (!currentUser) return;
+    
+    try {
+        await deleteDoc(doc(this.db, 'userOfferFavorites', `${currentUser.uid}_${offerId}`));
+        
+        await updateDoc(doc(this.db, 'users', currentUser.uid), {
+            offerFavorites: arrayRemove(offerId),
+            updatedAt: serverTimestamp()
+        });
+        
+        this.offerFavorites = this.offerFavorites.filter(f => f.id !== offerId);
+        this.renderFavorites();
+        this.showNotification('Special offer removed from favorites');
+        
+    } catch (error) {
+        console.error('Error removing offer favorite:', error);
+    }
+}
+
+
+/**
+ * Check if business is favorited
+ */
+isBusinessFavorited(businessId) {
+    return this.businessFavorites.some(f => f.id === businessId);
+}
+
+
+/**
+ * Check if offer is favorited
+ */
+isOfferFavorited(offerId) {
+    return this.offerFavorites.some(f => f.id === offerId);
+}
+
+
+/**
+ * Update business card favorite state
+ */
+updateBusinessCardFavoriteState(businessId, isFavorited) {
+    const businessCards = document.querySelectorAll('.business-card');
+    
+    businessCards.forEach(card => {
+        const cardBusinessId = this.extractBusinessIdFromCard(card);
+        
+        if (cardBusinessId === businessId) {
+            const heartBtn = card.querySelector('.business-favorite-btn');
+            if (heartBtn) {
+                heartBtn.innerHTML = isFavorited ? '❤️' : '🤍';
+            }
+        }
+    });
+}
+
+
+/**
+ * Update offer favorite state in profile overlay
+ */
+updateOfferFavoriteState(offerId, isFavorited) {
+    const offerBtn = document.getElementById('offerFavoriteBtn');
+    if (offerBtn) {
+        offerBtn.innerHTML = isFavorited ? '❤️' : '🤍';
+    }
+}
+
+
+    /**
+     * Load offer data
+     */
+    async loadOfferData(offerId) {
+        try {
+            const currentUser = this.state.get('currentUser');
+            const offerDoc = await getDoc(doc(this.db, 'userOfferFavorites', `${currentUser.uid}_${offerId}`));
+            
+            if (offerDoc.exists()) {
+                return { id: offerDoc.id, ...offerDoc.data() };
+            }
+            
+            return null;
+        } catch (error) {
+            console.error('Error loading offer data:', error);
+            return null;
         }
     }
 }

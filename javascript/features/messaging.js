@@ -97,19 +97,20 @@ export class MessagingManager {
         }
     }
     
-       /**
-     * Initialize messaging system - FIXED
+    /**
+     * Initialize messaging system
      */
     async init() {
         console.log('💬 Initializing messaging manager...');
-        
         // Set up event listeners
         this.setupEventListeners();
-        
+
+
         // Initialize notification system
         await this.initializeNotifications();
-        
-        // Load initial data with error handling
+
+
+        // Load initial data if authenticated or in guest mode
         if (this.state.get('isAuthenticated')) {
             try {
                 await this.loadMatches();
@@ -117,17 +118,15 @@ export class MessagingManager {
                 this.setupRealtimeListeners();
             } catch (error) {
                 console.error('Error initializing messaging:', error);
-                // Show demo data as fallback
-                this.showDemoOnlineUsers();
-                this.showDemoChats();
             }
-        } else if (this.state.get('isGuestMode')) {
+        } else if (this.state.get('isGuestMode')) { // ADD THIS BLOCK
             console.log('📝 Guest mode active, showing demo chats');
-            this.showDemoOnlineUsers();
+            this.showDemoOnlineUsers(); // ADD THIS LINE
             this.showDemoChats();
         }
     }
- 
+
+
     /**
      * Display mock chats for guest mode
      */
@@ -378,9 +377,9 @@ export class MessagingManager {
             console.error('❌ Error loading chats:', error);
         }
     }
-  
-   /**
-     * Load real chats from Firebase - FIXED with error handling
+    
+    /**
+     * Load real chats from Firebase
      */
     async loadRealChats(userId) {
         try {
@@ -398,47 +397,49 @@ export class MessagingManager {
             
             const realChats = [];
             
-            for (const chatDoc of snapshot.docs) {
-                const chatData = chatDoc.data();
-                const partnerId = chatData.participants.find(id => id !== userId);
-                
-                if (partnerId) {
-                    try {
-                        // Get partner info
-                        const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
-                        if (partnerDoc.exists()) {
-                            const partnerData = partnerDoc.data();
-                            
-                            // Check unread status
-                            const seenTime = localStorage.getItem(`seen_${chatDoc.id}_${userId}`);
-                            const messageTime = chatData.lastMessageTime?.toMillis?.() || 0;
-                            
-                            const hasUnread = chatData.lastMessageSender && 
-                                             chatData.lastMessageSender !== userId &&
-                                             (!seenTime || messageTime > parseInt(seenTime));
-                            
-                            realChats.push({
-                                id: chatDoc.id,
-                                partnerId: partnerId,
-                                partnerName: partnerData.name,
-                                partnerAvatar: partnerData.photos?.[0] || partnerData.photo || 'https://via.placeholder.com/100',
-                                lastMessage: chatData.lastMessage || 'No messages yet',
-                                lastMessageTime: chatData.lastMessageTime,
-                                lastMessageSender: chatData.lastMessageSender,
-                                isNew: !chatData.lastMessage,
-                                hasUnread: hasUnread
-                            });
-                            
-                            if (hasUnread && !this.unreadMessages.has(chatDoc.id)) {
-                                this.unreadMessages.set(chatDoc.id, 1);
-                            }
+                        for (const chatDoc of snapshot.docs) {
+            const chatData = chatDoc.data();
+            const partnerId = chatData.participants.find(id => id !== userId);
+            
+            if (partnerId) {
+                try {
+                    // Get partner info
+                    const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
+                    if (partnerDoc.exists()) {
+                        const partnerData = partnerDoc.data();
+                        
+                     // Check unread status
+                    const seenTime = localStorage.getItem(`seen_${chatDoc.id}_${userId}`);
+                    const messageTime = chatData.lastMessageTime?.toMillis?.() || 0;
+                    
+                    // It's unread if: message is from other user AND we haven't seen it yet
+                    const hasUnread = chatData.lastMessageSender && 
+                                     chatData.lastMessageSender !== userId &&
+                                     (!seenTime || messageTime > parseInt(seenTime));
+                        
+                        realChats.push({
+                            id: chatDoc.id,
+                            partnerId: partnerId,
+                            partnerName: partnerData.name,
+                            partnerAvatar: partnerData.photos?.[0] || partnerData.photo || 'https://via.placeholder.com/100',
+                            lastMessage: chatData.lastMessage || 'No messages yet',
+                            lastMessageTime: chatData.lastMessageTime,
+                            lastMessageSender: chatData.lastMessageSender,
+                            isNew: !chatData.lastMessage,
+                            hasUnread: hasUnread
+                        });
+                        
+                        // Initialize unread count if needed
+                        if (hasUnread && !this.unreadMessages.has(chatDoc.id)) {
+                            this.unreadMessages.set(chatDoc.id, 1);
                         }
-                    } catch (error) {
-                        console.error('Error getting partner data:', error);
                     }
+                } catch (error) {
+                    console.error('Error getting partner data:', error);
                 }
             }
-            
+        }
+                    
             // If we have real chats, update the UI
             if (realChats.length > 0) {
                 console.log(`✅ Updating UI with ${realChats.length} real chats`);
@@ -446,13 +447,7 @@ export class MessagingManager {
             }
             
         } catch (error) {
-            if (error.code === 'permission-denied') {
-                console.warn('⚠️ Chat permissions denied. Update Firestore rules to enable messaging.');
-            } else {
-                console.error('❌ Error loading real chats:', error);
-            }
-            // Return empty array instead of throwing
-            return [];
+            console.error('❌ Error loading real chats:', error);
         }
     }
     
@@ -1510,10 +1505,11 @@ async initializeNotifications() {
     this.setupNotificationCleanup();
 }
 
+
 /**
- * NEW: Load unread message counts - FIXED with error handling
+ * NEW: Load unread message counts from storage
  */
-async loadUnreadCounts() {
+ async loadUnreadCounts() {
     const currentUser = this.state.get('currentUser');
     if (!currentUser) return;
     
@@ -1538,6 +1534,8 @@ async loadUnreadCounts() {
                 chatData.lastMessageSender !== currentUser.uid &&
                 chatData.lastMessageTime) {
                 
+                // For now, assume it's unread if it's from the other user
+                // In production, you'd track read status properly
                 this.unreadMessages.set(chatId, 1);
                 totalUnread++;
             }
@@ -1550,16 +1548,10 @@ async loadUnreadCounts() {
         }
         
     } catch (error) {
-        // Check if it's a permission error
-        if (error.code === 'permission-denied') {
-            console.warn('⚠️ Chat permissions not configured. Please update Firestore rules.');
-            console.warn('Copy the security rules from the guide to Firebase Console > Firestore > Rules');
-        } else {
-            console.error('Error loading unread counts:', error);
-        }
-        // Don't throw - continue with app functionality
+        console.error('Error loading unread counts:', error);
     }
 }
+
 
 /**
  * ENHANCED: Show notification dot with count
@@ -2197,10 +2189,6 @@ cleanup() {
     // Hide notification dots
     this.hideNotificationDot();
 }
-
-    
-
-    
 /**
      * Show notification dot on messaging tab
      */
@@ -2223,6 +2211,7 @@ cleanup() {
             console.log('💬 Hiding message notification dot');
         }
     }
+
 
     /**
  * Send promotion message in chat
@@ -2269,6 +2258,7 @@ async sendPromotionMessage(promoData) {
         throw error;
     }
 }
+
 
 /**
  * Add promotion to chat UI
@@ -2318,107 +2308,5 @@ addPromotionToUI(promoData) {
     
         messagesContainer.appendChild(promoElement);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-
-        /**
-     * NEW: Open chat with business (reuses existing chat system)
-     */
-    async openBusinessChat(businessId, businessName, businessAvatar) {
-        const currentUser = this.state.get('currentUser');
-        
-        if (!currentUser) {
-            alert('Please sign in to message businesses');
-            return;
-        }
-        
-        // FIXED: Generate proper chat ID (alphabetically sorted)
-        const chatId = this.generateChatId(currentUser.uid, businessId);
-        
-        // Store business context before opening chat
-        this.currentChatPartner = { 
-            name: businessName, 
-            avatar: businessAvatar, 
-            userId: businessId,
-            isBusiness: true  // Add this flag
-        };
-        
-        // Open chat using existing openChat method
-        await this.openChat(businessName, businessAvatar, businessId);
-        
-        // Check if we need to send auto-response
-        await this.checkBusinessAutoResponse(chatId, businessId);
-    }
-    
-    /**
-     * NEW: Check business hours and send auto-response if closed
-     */
-    async checkBusinessAutoResponse(chatId, businessId) {
-        try {
-            // Get business data
-            const businessDoc = await getDoc(doc(this.db, 'businesses', businessId));
-            if (!businessDoc.exists()) return;
-            
-            const businessData = businessDoc.data();
-            
-            // Check if already sent auto-response
-            const chatDoc = await getDoc(doc(this.db, 'chats', chatId));
-            if (chatDoc.exists() && chatDoc.data().autoResponseSent) return;
-            
-            // Check if business is open
-            const isOpen = this.isBusinessOpen(businessData.hours);
-            
-            if (!isOpen) {
-                // Send auto-response
-                const message = `Thanks for your message! 🏪 ${businessData.name} is currently closed. We'll respond when we open at ${businessData.hours || 'our next business hours'}.`;
-                
-                // FIXED: Properly send the auto-response message
-                await addDoc(collection(this.db, 'chats', chatId, 'messages'), {
-                    text: message,
-                    senderId: businessId,
-                    senderName: businessData.name,
-                    timestamp: serverTimestamp(),
-                    isAutoResponse: true,
-                    read: false
-                });
-                
-                // Update chat document
-                await updateDoc(doc(this.db, 'chats', chatId), {
-                    autoResponseSent: true,
-                    lastMessage: message,
-                    lastMessageTime: serverTimestamp(),
-                    lastMessageSender: businessId
-                });
-                
-                console.log('🤖 Auto-response sent from business');
-            }
-        } catch (error) {
-            console.error('Error checking auto-response:', error);
-        }
-    }
-    
-    /**
-     * NEW: Simple business hours check
-     */
-    isBusinessOpen(hoursString) {
-        if (!hoursString) return true; // Default to open if no hours
-        
-        const now = new Date();
-        const currentHour = now.getHours();
-        
-        // Parse "8:00 AM - 10:00 PM" format
-        const match = hoursString.match(/(\d{1,2}):?(\d{2})?\s*(AM|PM|am|pm)?\s*-\s*(\d{1,2}):?(\d{2})?\s*(AM|PM|am|pm)?/);
-        
-        if (!match) return true; // Can't parse, assume open
-        
-        // Convert to 24hr
-        let openHour = parseInt(match[1]);
-        let closeHour = parseInt(match[4]);
-        
-        if ((match[3] || '').toLowerCase() === 'pm' && openHour !== 12) openHour += 12;
-        if ((match[6] || '').toLowerCase() === 'pm' && closeHour !== 12) closeHour += 12;
-        if ((match[3] || '').toLowerCase() === 'am' && openHour === 12) openHour = 0;
-        if ((match[6] || '').toLowerCase() === 'am' && closeHour === 12) closeHour = 0;
-        
-        return currentHour >= openHour && currentHour < closeHour;
     }
 }

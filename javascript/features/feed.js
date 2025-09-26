@@ -565,6 +565,7 @@ export class FeedManager {
                     <h3>${business.name}</h3>
                     <p>${business.type}</p>
                 </div>
+                const currentUser = this.state.get('currentUser');
                 ${currentUser ? `
                     <button class="quick-message-btn" 
                             onclick="event.stopPropagation(); CLASSIFIED.messageBusinessProfile('${business.id}', '${business.name}', '${business.image}')"

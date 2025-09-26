@@ -202,8 +202,7 @@ export class BusinessManager {
         return null;
     }
     
-    /**
-     * Update business profile UI
+     * Update business profile UI (FIXED - Combined method)
      */
     updateBusinessProfileUI(business) {
         // Update header
@@ -242,7 +241,7 @@ export class BusinessManager {
         document.getElementById('profileContact').textContent = 
             business.contact || business.phone || 'Contact for details';
         
-        // NEW: Update action buttons to include Message
+        // Update action buttons with messaging capability
         const actionButtons = document.querySelector('#businessProfile .action-buttons');
         const currentUser = this.state.get('currentUser');
         const isOwner = currentUser && currentUser.uid === business.id;

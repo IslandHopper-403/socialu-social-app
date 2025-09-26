@@ -44,38 +44,12 @@ export class FavoritesCarouselManager {
         // Touch/drag tracking
         this.dragStartY = 0;
         this.elementStartY = 0;
-    
 
-        /**
- * Extract business ID from card element
- */
-extractBusinessIdFromCard(cardElement) {
-    // Look for onclick attribute that contains openBusinessProfile call
-    const onclickAttr = cardElement.getAttribute('onclick');
-    if (onclickAttr) {
-        const match = onclickAttr.match(/openBusinessProfile\('([^']+)'/);
-        return match ? match[1] : null;
+         // Notification system
+        this.notificationSound = null;
+        this.audioContext = null;
+        this.setupNotificationSound();
     }
-    return null;
-}
-
-    /**
-     * Handle chat opened event
-     */
-        onChatOpened() {
-            // Check if we have favorites before checking length
-            const totalFavorites = (this.businessFavorites?.length || 0) + (this.offerFavorites?.length || 0);
-            if (totalFavorites > 0) {
-                this.showCarousel();
-            }
-        }
-        
-        /**
-         * Handle chat closed event  
-         */
-        onChatClosed() {
-            this.hideCarousel();
-        }
     
     /**
      * Set references to other managers
@@ -104,16 +78,7 @@ extractBusinessIdFromCard(cardElement) {
         
         // Initially hide carousel until needed
         this.hideCarousel();
-    
     }
-
-       /**
-     * Handle user login - load their favorites
-     */
-        async onUserLogin(user) {
-        console.log('🎠 User logged in, loading favorites...');
-        await this.loadUserFavorites();
-        }
     
     /**
      * Create the carousel DOM element
@@ -742,10 +707,22 @@ extractBusinessIdFromCard(cardElement) {
         }
     }
     
+    /**
+     * Remove business from favorites
+     */
+    async removeFavorite(businessId) {
+        const currentUser = this.state.get('currentUser');
+        if (!currentUser) return;
+        
+        try {
+            // Update user's favorites in Firestore
+            await updateDoc(doc(this.db, 'users', currentUser.uid), {
+                favorites: arrayRemove(businessId),
+                updatedAt: serverTimestamp()
+            });
             
             // Remove from local array
-            this.businessFavorites = this.businessFavorites.filter(f => f.id !== businessId);
-            this.offerFavorites = this.offerFavorites.filter(f => f.id !== businessId); // Also filter offers just in case
+            this.favorites = this.favorites.filter(f => f.id !== businessId);
             this.renderFavorites();
             
             this.showNotification('Removed from favorites');
@@ -765,7 +742,7 @@ extractBusinessIdFromCard(cardElement) {
             return;
         }
         
-        const business = this.businessFavorites.find(f => f.id === businessId);
+        const business = this.favorites.find(f => f.id === businessId);
         if (!business) return;
         
         try {
@@ -795,62 +772,15 @@ extractBusinessIdFromCard(cardElement) {
             alert('Failed to send promotion');
         }
     }
-
-    // In favoritesCarousel.js, add this new method after sendBusinessPromotion
-
-/**
- * Send offer promotion in current chat
- */
-async sendOfferPromotion(offerId) {
-    const currentChatId = this.messagingManager?.currentChatId;
-    if (!currentChatId) {
-        alert('Please open a chat first');
-        return;
-    }
-
-    const offer = this.offerFavorites.find(f => f.id === offerId);
-    if (!offer) return;
-
-    try {
-        // Create promotion message from the offer object
-        const promoMessage = {
-            type: 'promotion',
-            businessId: offer.businessId,
-            businessName: offer.businessName,
-            businessImage: offer.businessImage,
-            businessType: 'Special Offer', // Or derive this if available
-            promotionTitle: offer.offerTitle,
-            promotionDetails: offer.offerDetails,
-            businessAddress: 'Tap to view location', // Offers don't store address directly
-            timestamp: serverTimestamp()
-        };
-
-        // Send using messaging manager
-        await this.messagingManager.sendPromotionMessage(promoMessage);
-        
-        // Minimize carousel after sending
-        this.minimizeCarousel();
-        
-        this.showNotification('Special offer sent! 🎉');
-    } catch (error) {
-        console.error('Error sending offer promotion:', error);
-        alert('Failed to send offer promotion');
-    }
-}
     
     /**
      * Handle chat opened event
      */
     onChatOpened() {
-    // Ensure arrays are initialized
-    if (!this.businessFavorites) this.businessFavorites = [];
-    if (!this.offerFavorites) this.offerFavorites = [];
-    
-    const totalFavorites = this.businessFavorites.length + this.offerFavorites.length;
-    if (totalFavorites > 0) {
-        this.showCarousel();
+        if (this.favorites.length > 0) {
+            this.showCarousel();
+        }
     }
-}
     
     /**
      * Handle chat closed event
@@ -985,7 +915,7 @@ async addOfferToFavorites(offerId, businessId, offerData) {
     }
     
     try {
-        // Create offer favorite document with userId included
+        // Create offer favorite document
         const offerFavorite = {
             id: offerId,
             businessId: businessId,
@@ -993,7 +923,6 @@ async addOfferToFavorites(offerId, businessId, offerData) {
             offerTitle: offerData.offerTitle,
             offerDetails: offerData.offerDetails,
             businessImage: offerData.businessImage,
-            userId: currentUser.uid,  // This line was missing - causes permission errors
             savedAt: serverTimestamp()
         };
         

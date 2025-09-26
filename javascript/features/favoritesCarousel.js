@@ -689,7 +689,7 @@ extractBusinessIdFromCard(cardElement) {
     /**
      * Set up click handlers for favorite cards
      */
-    setupFavoriteCardClickHandlers() {
+       setupFavoriteCardClickHandlers() {
         const favoriteCards = document.querySelectorAll('.favorite-card');
         
         favoriteCards.forEach(card => {
@@ -698,10 +698,16 @@ extractBusinessIdFromCard(cardElement) {
                 const offerId = card.dataset.offerId;
                 const type = card.dataset.type;
                 
+                console.log('Favorite card clicked:', { businessId, offerId, type });
+                
                 if (type === 'business' && businessId) {
                     this.sendBusinessPromotion(businessId);
                 } else if (type === 'offer' && offerId) {
-                    this.sendOfferPromotion(offerId);
+                    // For offers, we need to pass the businessId from the offer
+                    const offer = this.offerFavorites.find(o => o.id === offerId);
+                    if (offer) {
+                        this.sendOfferPromotion(offer.businessId || offerId);
+                    }
                 }
             });
         });
@@ -782,11 +788,44 @@ extractBusinessIdFromCard(cardElement) {
             return;
         }
         
-        const business = this.favorites.find(f => f.id === businessId);
-        if (!business) return;
+        // Initialize arrays if needed
+        if (!this.businessFavorites) this.businessFavorites = [];
+        if (!this.offerFavorites) this.offerFavorites = [];
+        
+        // Look in both business and offer favorites
+        let business = this.businessFavorites.find(f => f.id === businessId);
+        
+        if (!business) {
+            // Check offer favorites
+            const offer = this.offerFavorites.find(f => 
+                f.businessId === businessId || f.id === businessId
+            );
+            
+            if (offer) {
+                // Convert offer to business-like structure
+                business = {
+                    id: offer.businessId || businessId,
+                    name: offer.businessName,
+                    image: offer.businessImage,
+                    type: 'Special Offer',
+                    promo: offer.offerTitle || offer.promotionTitle,
+                    details: offer.offerDetails || offer.promotionDetails,
+                    address: offer.businessAddress || 'Hoi An, Vietnam',
+                    location: offer.businessAddress || 'Hoi An, Vietnam'
+                };
+            }
+        }
+        
+        if (!business) {
+            console.error('Business not found in favorites:', businessId);
+            console.log('Available business favorites:', this.businessFavorites);
+            console.log('Available offer favorites:', this.offerFavorites);
+            alert('Please add this business to favorites first');
+            return;
+        }
         
         try {
-            // Create promotion message
+            // Rest of your existing code...
             const promoMessage = {
                 type: 'promotion',
                 businessId: business.id,
@@ -799,19 +838,30 @@ extractBusinessIdFromCard(cardElement) {
                 timestamp: serverTimestamp()
             };
             
-            // Send using messaging manager
             await this.messagingManager.sendPromotionMessage(promoMessage);
-            
-            // Minimize carousel after sending
             this.minimizeCarousel();
-            
             this.showNotification('Promotion sent! 🎉');
             
         } catch (error) {
             console.error('Error sending promotion:', error);
-            alert('Failed to send promotion');
+            alert('Failed to send promotion: ' + error.message);
         }
     }
+    
+/**
+ * Send offer promotion helper method
+ */
+    async sendOfferPromotion(offerId) {
+    const offer = this.offerFavorites.find(o => o.id === offerId);
+    if (offer) {
+        // Use the businessId from the offer
+        await this.sendBusinessPromotion(offer.businessId || offerId);
+    } else {
+        console.error('Offer not found:', offerId);
+        alert('Offer not found. Please refresh and try again.');
+    }
+}
+
     
     /**
      * Handle chat opened event
@@ -955,42 +1005,52 @@ async addBusinessToFavorites(businessId) {
 /**
  * Add offer to favorites
  */
-async addOfferToFavorites(offerId, businessId, offerData) {
-    const currentUser = this.state.get('currentUser');
-    if (!currentUser) {
-        alert('Please sign in to save offer favorites');
-        return;
+    async addOfferToFavorites(offerId, businessId, offerData) {
+        const currentUser = this.state.get('currentUser');
+        if (!currentUser) {
+            alert('Please sign in to save offer favorites');
+            return;
+        }
+        
+        try {
+            // Ensure userId is included in the data
+            const offerFavorite = {
+                id: offerId,
+                businessId: businessId,
+                businessName: offerData.businessName,
+                offerTitle: offerData.offerTitle,
+                offerDetails: offerData.offerDetails,
+                businessImage: offerData.businessImage,
+                userId: currentUser.uid,  // This is critical!
+                savedAt: serverTimestamp()
+            };
+            
+            // Document ID must match the pattern
+            const docId = `${currentUser.uid}_${offerId}`;
+            
+            await setDoc(doc(this.db, 'userOfferFavorites', docId), offerFavorite);
+            
+            await updateDoc(doc(this.db, 'users', currentUser.uid), {
+                offerFavorites: arrayUnion(offerId),
+                updatedAt: serverTimestamp()
+            });
+            
+            this.offerFavorites.push(offerFavorite);
+            this.renderFavorites();
+            this.showNotification('Special offer saved! 🎉');
+            
+        } catch (error) {
+            console.error('Error adding offer to favorites:', error);
+            console.error('Error details:', error.code, error.message);
+            
+            // More specific error messages
+            if (error.code === 'permission-denied') {
+                alert('Permission denied. Please try logging out and back in.');
+            } else {
+                alert('Failed to save offer: ' + error.message);
+            }
+        }
     }
-    
-    try {
-        // Create offer favorite document with userId included
-        const offerFavorite = {
-            id: offerId,
-            businessId: businessId,
-            businessName: offerData.businessName,
-            offerTitle: offerData.offerTitle,
-            offerDetails: offerData.offerDetails,
-            businessImage: offerData.businessImage,
-            userId: currentUser.uid,  // This line was missing - causes permission errors
-            savedAt: serverTimestamp()
-        };
-        
-        await setDoc(doc(this.db, 'userOfferFavorites', `${currentUser.uid}_${offerId}`), offerFavorite);
-        
-        await updateDoc(doc(this.db, 'users', currentUser.uid), {
-            offerFavorites: arrayUnion(offerId),
-            updatedAt: serverTimestamp()
-        });
-        
-        this.offerFavorites.push(offerFavorite);
-        this.renderFavorites();
-        this.showNotification('Special offer saved! 🎉');
-        
-    } catch (error) {
-        console.error('Error adding offer to favorites:', error);
-        alert('Failed to save offer');
-    }
-}
 
 
 /**

@@ -548,18 +548,13 @@ export class FeedManager {
             container.appendChild(feedItem);
         });
     }
-  
-    /**
-     * Create business card HTML - FIXED VERSION
+    
+   /**
+     * Create business card HTML
      */
-    createBusinessCard(business, type) {
-        // FIXED: Safely check authentication state
-        const currentUser = this.state.get('currentUser');
-        const isAuthenticated = this.state.get('isAuthenticated');
-        
-        // Check if business is favorited (only if user is authenticated)
-        const isFavorited = isAuthenticated && 
-            window.classifiedApp?.managers?.favoritesCarousel?.isBusinessFavorited(business.id) || false;
+        createBusinessCard(business, type) {
+        // Check if business is favorited
+        const isFavorited = window.classifiedApp?.managers?.favoritesCarousel?.isBusinessFavorited(business.id) || false;
         const heartIcon = isFavorited ? '❤️' : '🤍';
         
         return `
@@ -570,25 +565,14 @@ export class FeedManager {
                         <h3>${business.name}</h3>
                         <p>${business.type}</p>
                     </div>
-                    ${isAuthenticated && currentUser ? `
-                        <button class="quick-message-btn" 
-                                onclick="event.stopPropagation(); CLASSIFIED.messageBusinessProfile('${business.id}', '${business.name}', '${business.image}')"
-                                style="position: absolute; right: 15px; top: 15px; background: rgba(0,212,255,0.2); 
-                                       border: 1px solid rgba(0,212,255,0.3); border-radius: 50%; width: 40px; height: 40px;
-                                       display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                            💬
-                        </button>
-                    ` : ''}
-                </div>
-                ${isAuthenticated ? `
                     <button class="business-favorite-btn" 
                             onclick="event.stopPropagation(); CLASSIFIED.toggleBusinessFavorite('${business.id}')"
                             style="background: none; border: none; font-size: 24px; cursor: pointer; 
-                                   transition: transform 0.2s ease; position: absolute; right: 15px; top: 15px;"
+                                transition: transform 0.2s ease; position: absolute; right: 15px; top: 15px;"
                             title="Save this business">
                          ${heartIcon}
                     </button>
-                ` : ''}
+                </div>
                 <div class="business-image" style="background-image: url('${business.image}')"></div>
                 <div class="business-content">
                     <div class="business-description">${business.description.substring(0, 100)}...</div>

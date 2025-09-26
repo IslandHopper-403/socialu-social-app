@@ -97,20 +97,19 @@ export class MessagingManager {
         }
     }
     
-    /**
-     * Initialize messaging system
+       /**
+     * Initialize messaging system - FIXED
      */
     async init() {
         console.log('💬 Initializing messaging manager...');
+        
         // Set up event listeners
         this.setupEventListeners();
-
-
+        
         // Initialize notification system
         await this.initializeNotifications();
-
-
-        // Load initial data if authenticated or in guest mode
+        
+        // Load initial data with error handling
         if (this.state.get('isAuthenticated')) {
             try {
                 await this.loadMatches();
@@ -118,15 +117,17 @@ export class MessagingManager {
                 this.setupRealtimeListeners();
             } catch (error) {
                 console.error('Error initializing messaging:', error);
+                // Show demo data as fallback
+                this.showDemoOnlineUsers();
+                this.showDemoChats();
             }
-        } else if (this.state.get('isGuestMode')) { // ADD THIS BLOCK
+        } else if (this.state.get('isGuestMode')) {
             console.log('📝 Guest mode active, showing demo chats');
-            this.showDemoOnlineUsers(); // ADD THIS LINE
+            this.showDemoOnlineUsers();
             this.showDemoChats();
         }
     }
-
-
+ 
     /**
      * Display mock chats for guest mode
      */
@@ -377,9 +378,9 @@ export class MessagingManager {
             console.error('❌ Error loading chats:', error);
         }
     }
-    
-    /**
-     * Load real chats from Firebase
+  
+   /**
+     * Load real chats from Firebase - FIXED with error handling
      */
     async loadRealChats(userId) {
         try {
@@ -397,49 +398,47 @@ export class MessagingManager {
             
             const realChats = [];
             
-                        for (const chatDoc of snapshot.docs) {
-            const chatData = chatDoc.data();
-            const partnerId = chatData.participants.find(id => id !== userId);
-            
-            if (partnerId) {
-                try {
-                    // Get partner info
-                    const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
-                    if (partnerDoc.exists()) {
-                        const partnerData = partnerDoc.data();
-                        
-                     // Check unread status
-                    const seenTime = localStorage.getItem(`seen_${chatDoc.id}_${userId}`);
-                    const messageTime = chatData.lastMessageTime?.toMillis?.() || 0;
-                    
-                    // It's unread if: message is from other user AND we haven't seen it yet
-                    const hasUnread = chatData.lastMessageSender && 
-                                     chatData.lastMessageSender !== userId &&
-                                     (!seenTime || messageTime > parseInt(seenTime));
-                        
-                        realChats.push({
-                            id: chatDoc.id,
-                            partnerId: partnerId,
-                            partnerName: partnerData.name,
-                            partnerAvatar: partnerData.photos?.[0] || partnerData.photo || 'https://via.placeholder.com/100',
-                            lastMessage: chatData.lastMessage || 'No messages yet',
-                            lastMessageTime: chatData.lastMessageTime,
-                            lastMessageSender: chatData.lastMessageSender,
-                            isNew: !chatData.lastMessage,
-                            hasUnread: hasUnread
-                        });
-                        
-                        // Initialize unread count if needed
-                        if (hasUnread && !this.unreadMessages.has(chatDoc.id)) {
-                            this.unreadMessages.set(chatDoc.id, 1);
+            for (const chatDoc of snapshot.docs) {
+                const chatData = chatDoc.data();
+                const partnerId = chatData.participants.find(id => id !== userId);
+                
+                if (partnerId) {
+                    try {
+                        // Get partner info
+                        const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
+                        if (partnerDoc.exists()) {
+                            const partnerData = partnerDoc.data();
+                            
+                            // Check unread status
+                            const seenTime = localStorage.getItem(`seen_${chatDoc.id}_${userId}`);
+                            const messageTime = chatData.lastMessageTime?.toMillis?.() || 0;
+                            
+                            const hasUnread = chatData.lastMessageSender && 
+                                             chatData.lastMessageSender !== userId &&
+                                             (!seenTime || messageTime > parseInt(seenTime));
+                            
+                            realChats.push({
+                                id: chatDoc.id,
+                                partnerId: partnerId,
+                                partnerName: partnerData.name,
+                                partnerAvatar: partnerData.photos?.[0] || partnerData.photo || 'https://via.placeholder.com/100',
+                                lastMessage: chatData.lastMessage || 'No messages yet',
+                                lastMessageTime: chatData.lastMessageTime,
+                                lastMessageSender: chatData.lastMessageSender,
+                                isNew: !chatData.lastMessage,
+                                hasUnread: hasUnread
+                            });
+                            
+                            if (hasUnread && !this.unreadMessages.has(chatDoc.id)) {
+                                this.unreadMessages.set(chatDoc.id, 1);
+                            }
                         }
+                    } catch (error) {
+                        console.error('Error getting partner data:', error);
                     }
-                } catch (error) {
-                    console.error('Error getting partner data:', error);
                 }
             }
-        }
-                    
+            
             // If we have real chats, update the UI
             if (realChats.length > 0) {
                 console.log(`✅ Updating UI with ${realChats.length} real chats`);
@@ -447,7 +446,13 @@ export class MessagingManager {
             }
             
         } catch (error) {
-            console.error('❌ Error loading real chats:', error);
+            if (error.code === 'permission-denied') {
+                console.warn('⚠️ Chat permissions denied. Update Firestore rules to enable messaging.');
+            } else {
+                console.error('❌ Error loading real chats:', error);
+            }
+            // Return empty array instead of throwing
+            return [];
         }
     }
     
@@ -1505,11 +1510,10 @@ async initializeNotifications() {
     this.setupNotificationCleanup();
 }
 
-
 /**
- * NEW: Load unread message counts from storage
+ * NEW: Load unread message counts - FIXED with error handling
  */
- async loadUnreadCounts() {
+async loadUnreadCounts() {
     const currentUser = this.state.get('currentUser');
     if (!currentUser) return;
     
@@ -1534,8 +1538,6 @@ async initializeNotifications() {
                 chatData.lastMessageSender !== currentUser.uid &&
                 chatData.lastMessageTime) {
                 
-                // For now, assume it's unread if it's from the other user
-                // In production, you'd track read status properly
                 this.unreadMessages.set(chatId, 1);
                 totalUnread++;
             }
@@ -1548,10 +1550,16 @@ async initializeNotifications() {
         }
         
     } catch (error) {
-        console.error('Error loading unread counts:', error);
+        // Check if it's a permission error
+        if (error.code === 'permission-denied') {
+            console.warn('⚠️ Chat permissions not configured. Please update Firestore rules.');
+            console.warn('Copy the security rules from the guide to Firebase Console > Firestore > Rules');
+        } else {
+            console.error('Error loading unread counts:', error);
+        }
+        // Don't throw - continue with app functionality
     }
 }
-
 
 /**
  * ENHANCED: Show notification dot with count

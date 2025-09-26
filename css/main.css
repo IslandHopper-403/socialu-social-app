@@ -2089,3 +2089,15 @@ input:disabled + .toggle-slider {
     animation: slideDown 0.3s ease !important;
 }
 
+/* Auto-response message styling */
+.message:has([data-is-auto="true"]) .message-bubble,
+.message.received .message-bubble:contains("currently closed") {
+    background: rgba(255, 215, 0, 0.15);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    font-style: italic;
+}
+
+.quick-message-btn:hover {
+    background: rgba(0, 212, 255, 0.3) !important;
+    transform: scale(1.1);
+}

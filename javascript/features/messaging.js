@@ -2323,8 +2323,16 @@ addPromotionToUI(promoData) {
             return;
         }
         
-        // Generate chat ID
-        const chatId = `user_${currentUser.uid}_business_${businessId}`;
+        // FIXED: Generate proper chat ID (alphabetically sorted)
+        const chatId = this.generateChatId(currentUser.uid, businessId);
+        
+        // Store business context before opening chat
+        this.currentChatPartner = { 
+            name: businessName, 
+            avatar: businessAvatar, 
+            userId: businessId,
+            isBusiness: true  // Add this flag
+        };
         
         // Open chat using existing openChat method
         await this.openChat(businessName, businessAvatar, businessId);
@@ -2355,20 +2363,25 @@ addPromotionToUI(promoData) {
                 // Send auto-response
                 const message = `Thanks for your message! 🏪 ${businessData.name} is currently closed. We'll respond when we open at ${businessData.hours || 'our next business hours'}.`;
                 
+                // FIXED: Properly send the auto-response message
                 await addDoc(collection(this.db, 'chats', chatId, 'messages'), {
                     text: message,
                     senderId: businessId,
                     senderName: businessData.name,
                     timestamp: serverTimestamp(),
-                    isAutoResponse: true
+                    isAutoResponse: true,
+                    read: false
                 });
                 
-                // Mark auto-response sent
+                // Update chat document
                 await updateDoc(doc(this.db, 'chats', chatId), {
                     autoResponseSent: true,
                     lastMessage: message,
-                    lastMessageTime: serverTimestamp()
+                    lastMessageTime: serverTimestamp(),
+                    lastMessageSender: businessId
                 });
+                
+                console.log('🤖 Auto-response sent from business');
             }
         } catch (error) {
             console.error('Error checking auto-response:', error);

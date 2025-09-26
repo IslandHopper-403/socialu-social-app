@@ -125,9 +125,6 @@ export class BusinessManager {
      */
     async openBusinessProfile(businessId, businessType) {
         console.log(`🏢 Opening ${businessType} profile: ${businessId}`);
-
-        // ADD THIS LINE HERE:
-        window.currentBusinessProfileId = businessId;
         
         try {
             this.navigationManager.showLoading();

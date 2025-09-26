@@ -1,5 +1,6 @@
 // javascript/features/messaging.js - COMPLETE VERSION
 
+
 import {
     collection,
     doc,
@@ -20,6 +21,7 @@ import {
     increment,
     deleteDoc
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
 
 /**
  * Messaging Manager - COMPLETE VERSION
@@ -103,8 +105,10 @@ export class MessagingManager {
         // Set up event listeners
         this.setupEventListeners();
 
+
         // Initialize notification system
         await this.initializeNotifications();
+
 
         // Load initial data if authenticated or in guest mode
         if (this.state.get('isAuthenticated')) {
@@ -121,6 +125,7 @@ export class MessagingManager {
             this.showDemoChats();
         }
     }
+
 
     /**
      * Display mock chats for guest mode
@@ -157,12 +162,14 @@ export class MessagingManager {
         }
     }
 
+
     /**
      * Populate the chat list with provided data
      */
     populateChatList(chats) {
         const chatListContainer = document.getElementById('chatList');
         if (!chatListContainer) return;
+
 
         chatListContainer.innerHTML = chats.map(chat => `
             <div class="chat-item" onclick="CLASSIFIED.openChat('${chat.name}', '${chat.avatar}', '${chat.userId}')">
@@ -178,6 +185,7 @@ export class MessagingManager {
         `).join('');
     }
     
+
 
     /**
      * Request notification permission
@@ -507,6 +515,7 @@ export class MessagingManager {
             this.currentChatPartner = { name, avatar, userId };
             this.state.set('currentChatUser', this.currentChatPartner);
 
+
             // Generate chat ID (alphabetically sorted user IDs)
             const chatId = this.generateChatId(currentUser.uid, userId);
             this.currentChatId = chatId;
@@ -514,6 +523,7 @@ export class MessagingManager {
             document.dispatchEvent(new CustomEvent('chatOpened', { 
                 detail: { chatId: chatId, partnerId: userId }
             }));
+
 
             // Mark this chat as seen
             this.unreadMessages.delete(chatId);
@@ -825,6 +835,7 @@ listenToChatMessages(chatId) {
                 }
             });
 
+
               // Update UI
             this.displayMessages(messages, currentUser.uid);
             
@@ -931,6 +942,7 @@ listenForMatches(userId) {
                 console.error('Error loading unread state:', error);
             }
         }
+
 
         /**
          * Save unread state to localStorage
@@ -1041,6 +1053,7 @@ listenForNewMessages(userId) {
         console.error('Error setting up global message listener:', error);
     }
 }
+
 
     /**
      * Show in-app notification
@@ -1272,6 +1285,7 @@ async createMatch(userId1, userId2) {
     }
 }
 
+
 /**
  * NEW: Send match notifications to both users
  */
@@ -1332,6 +1346,7 @@ async sendMatchNotifications(userId1, userId2, matchId) {
     }
 }
 
+
 /**
  * NEW: Check if two users have mutual likes (for match detection)
  */
@@ -1349,6 +1364,7 @@ async checkMutualLikes(userId1, userId2) {
         return false;
     }
 }
+
 
 /**
  * ENHANCED: Better match detection when processing likes
@@ -1386,6 +1402,7 @@ async processLikeAction(fromUserId, toUserId, type = 'like') {
         throw error;
     }
 }
+
 
 /**
  * NEW: Trigger match popup
@@ -1468,6 +1485,7 @@ async triggerMatchPopup(currentUserId, matchedUserId) {
         return this.formatMessageTime(date);
     }
 
+
     /**
  * NEW: Initialize notification system properly
  */
@@ -1486,6 +1504,7 @@ async initializeNotifications() {
     // Set up periodic cleanup
     this.setupNotificationCleanup();
 }
+
 
 /**
  * NEW: Load unread message counts from storage
@@ -1532,6 +1551,7 @@ async initializeNotifications() {
         console.error('Error loading unread counts:', error);
     }
 }
+
 
 /**
  * ENHANCED: Show notification dot with count
@@ -1587,6 +1607,7 @@ hideNotificationDot() {
     console.log('💬 Hiding message notification');
 }
 
+
     /**
  * Clear all notifications when messaging tab is opened
  */
@@ -1600,6 +1621,7 @@ clearNotificationsForMessagingTab() {
     
     console.log('💬 Cleared messaging tab notifications');
 }
+
 
 /**
  * FIXED: Enhanced in-app notification system
@@ -1664,6 +1686,7 @@ showInAppNotification(messageData, chatId) {
     });
 }
 
+
 /**
  * NEW: Get chat partner information
  */
@@ -1707,6 +1730,7 @@ async getChatPartnerInfo(chatId) {
     return { name: 'Someone', avatar: '' };
 }
 
+
 /**
  * NEW: Open chat from notification
  */
@@ -1723,6 +1747,7 @@ async openChatFromNotification(chatId, partnerInfo) {
     // Open the specific chat
     await this.openChat(partnerInfo.name, partnerInfo.avatar, partnerInfo.id);
 }
+
 
 /**
  * NEW: Unread message tracking
@@ -1761,7 +1786,9 @@ updateUnreadCount(chatId, increment) {
     // Save to localStorage
     this.saveUnreadStateToStorage();
 
+
 }
+
 
     /**
  * Update total unread count from all chats
@@ -1804,6 +1831,7 @@ async markChatAsRead(chatId) {
     this.updateNotificationState();
 }
 
+
 /**
  * NEW: Mark current chat as read when app becomes visible
  */
@@ -1812,6 +1840,7 @@ markCurrentChatAsRead() {
         this.markChatAsRead(this.currentChatId);
     }
 }
+
 
 /**
  * NEW: Update chat list with unread indicators
@@ -1850,6 +1879,7 @@ updateChatListUnreadIndicators() {
     });
 }
 
+
 /**
  * NEW: Batch notification updates
  */
@@ -1874,6 +1904,7 @@ updateNotificationState() {
     // Update chat list
     this.updateChatListUnreadIndicators();
 }
+
 
 /**
  * NEW: Update favicon with unread count
@@ -1912,6 +1943,7 @@ updateFaviconWithCount(count) {
     }
 }
 
+
 /**
  * NEW: Reset favicon to default
  */
@@ -1925,6 +1957,7 @@ resetFavicon() {
         console.log('Could not reset favicon:', error);
     }
 }
+
 
 /**
  * NEW: Set up notification cleanup (remove old notifications)
@@ -1943,6 +1976,7 @@ setupNotificationCleanup() {
         });
     }, 10000); // Check every 10 seconds
 }
+
 
 /**
  * ENHANCED: Better notification sound setup
@@ -1967,6 +2001,7 @@ setupNotificationSound() {
         this.notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUYrTp66hVFApGn+DyvmEaAzqM0+/ReigGHXM=');
     }
 }
+
 
 /**
  * NEW: Generate pleasant notification tone
@@ -2003,6 +2038,7 @@ generateNotificationTone() {
     return buffer;
 }
 
+
 /**
  * ENHANCED: Smart notification timing
  */
@@ -2032,6 +2068,7 @@ shouldShowNotification(messageData, chatId) {
     
     return true;
 }
+
 
 /**
  * FIXED: Enhanced browser notification
@@ -2064,6 +2101,7 @@ async showBrowserNotification(messageData) {
     }
 }
 
+
 /**
  * FIXED: Enhanced notification sound
  */
@@ -2080,6 +2118,7 @@ playNotificationSound() {
         console.log('Error playing notification sound:', error);
     }
 }
+
 
     /**
      * Cleanup on destroy
@@ -2161,6 +2200,7 @@ cleanup() {
         }
     }
 
+
     /**
      * Hide notification dot
      */
@@ -2171,6 +2211,7 @@ cleanup() {
             console.log('💬 Hiding message notification dot');
         }
     }
+
 
     /**
  * Send promotion message in chat
@@ -2217,6 +2258,7 @@ async sendPromotionMessage(promoData) {
         throw error;
     }
 }
+
 
 /**
  * Add promotion to chat UI

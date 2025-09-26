@@ -20,19 +20,27 @@
 // 4. Referral system for growth
 
 
+
+
 // 🎯 CLASSIFIED v7.0 - Complete Business Management System
 // 
 // IMPORTANT: This app requires proper Firestore Security Rules!
 // Add these rules in Firebase Console > Firestore > Rules:
 
 
+
+
 // javascript/main.js
+
+
 
 
 // Import core modules
 import { FirebaseConfig } from './config/firebase.js';
 import { AppState } from './core/state.js';
 import { MockData } from './data/mockData.js';
+
+
 
 
 // Import feature modules
@@ -50,8 +58,14 @@ import { FavoritesCarouselManager } from './features/favoritesCarousel.js';
 
 
 
+
+
+
+
 // Import UI modules
 import { NavigationManager } from './ui/navigation.js';
+
+
 
 
 // Import Firestore functions for main app
@@ -60,6 +74,11 @@ import {
     setDoc,
     serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+
+
+
+
 
 
 
@@ -76,6 +95,7 @@ class ClassifiedApp {
         this.firebaseConfig = new FirebaseConfig();
         this.state = new AppState();
         this.mockData = new MockData();
+
 
          // ADD THIS: Ensure mockData is fully initialized
         console.log('🔍 MockData initialized:', !!this.mockData, 'Users:', this.mockData?.getUsers()?.length);
@@ -119,6 +139,7 @@ class ClassifiedApp {
             // Step 6: Check for existing auth state
             // Commented out this.setupInitialAuthState();
 
+
             // OPTIONAL: Load demo content immediately for better UX
             // This is non-blocking and just populates the feeds with preview content
             this.loadDemoContent();
@@ -130,6 +151,7 @@ class ClassifiedApp {
             this.handleInitError(error);
         }
     }
+
 
     // Optional: Add this new method if you want to keep the demo data preview
 loadDemoContent() {
@@ -164,6 +186,7 @@ loadDemoContent() {
             map: new MapManager(firebaseServices, this.state, this.mockData),
             // ADD THIS LINE for Favorites Carousel Feature
             favoritesCarousel: new FavoritesCarouselManager(firebaseServices, this.state),
+
 
         };
     }
@@ -393,6 +416,8 @@ loadDemoContent() {
             },
 
 
+
+
             filterUsers: (filter) => this.managers.feed.filterUsers(filter),
             
             // Business interactions
@@ -434,11 +459,40 @@ loadDemoContent() {
             populateRestaurantFeed: () => this.managers.feed.populateRestaurantFeed(),
             populateActivityFeed: () => this.managers.feed.populateActivityFeed(),// Favorites methods
             
-            addToFavorites: (businessId) => this.managers.favoritesCarousel.addToFavorites(businessId),
-            removeFavorite: (businessId) => this.managers.favoritesCarousel.removeFavorite(businessId),
-            toggleFavorite: (businessId) => this.managers.favoritesCarousel.toggleFavorite(businessId),
-            isFavorited: (businessId) => this.managers.favoritesCarousel.isFavorited(businessId),
+           // Business Favorites (for business cards)
+            toggleBusinessFavorite: async (businessId) => {
+                try {
+                    await this.managers.favoritesCarousel.toggleBusinessFavorite(businessId);
+                } catch (error) {
+                    console.error('Error toggling business favorite:', error);
+                }
+            },
+            addBusinessToFavorites: (businessId) => this.managers.favoritesCarousel.addBusinessToFavorites(businessId),
+            removeBusinessFavorite: (businessId) => this.managers.favoritesCarousel.removeBusinessFavorite(businessId),
+            isBusinessFavorited: (businessId) => this.managers.favoritesCarousel?.isBusinessFavorited(businessId) || false,
+            
+            // Offer Favorites (for special offers)
+            toggleOfferFavorite: async (businessId) => {
+                try {
+                    // Get current offer data from the profile overlay
+                    const offerData = {
+                        businessName: document.getElementById('profileName')?.textContent || 'Business',
+                        offerTitle: document.getElementById('profilePromoTitle')?.textContent || 'Special Offer',
+                        offerDetails: document.getElementById('profilePromoDetails')?.textContent || 'Limited time offer',
+                        businessImage: document.getElementById('profileHero')?.style.backgroundImage?.match(/url\("(.+)"\)/)?.[1] || ''
+                    };
+                    
+                    await this.managers.favoritesCarousel.toggleOfferFavorite(businessId, offerData);
+                } catch (error) {
+                    console.error('Error toggling offer favorite:', error);
+                }
+            },
+            removeOfferFavorite: (offerId) => this.managers.favoritesCarousel.removeOfferFavorite(offerId),
+            isOfferFavorited: (offerId) => this.managers.favoritesCarousel?.isOfferFavorited(offerId) || false,
+            
+            // Keep existing carousel toggle
             toggleFavoritesCarousel: () => this.managers.favoritesCarousel?.toggleCarousel(),
+
 
         };
         
@@ -564,10 +618,14 @@ loadDemoContent() {
 🌟 Welcome to CLASSIFIED!
 
 
+
+
 🔍 Discover: Find the best restaurants and activities
 👥 Connect: Meet travelers and locals
 💬 Chat: Connect with matches
 🏪 Business: Promote your business
+
+
 
 
 Need help? Contact: support@classified.com
@@ -651,6 +709,8 @@ Need help? Contact: support@classified.com
 }
 
 
+
+
 // Initialize the app when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', async () => {
@@ -661,3 +721,9 @@ if (document.readyState === 'loading') {
     // DOM already loaded
     window.classifiedApp = new ClassifiedApp();
 }
+
+
+// ADD THIS HERE - after the app initialization:
+window.getCurrentBusinessId = function() {
+    return window.currentBusinessProfileId || null;
+};

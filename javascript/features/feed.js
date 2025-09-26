@@ -557,14 +557,24 @@ export class FeedManager {
         const isFavorited = window.classifiedApp?.managers?.favoritesCarousel?.isBusinessFavorited(business.id) || false;
         const heartIcon = isFavorited ? '❤️' : '🤍';
         
-        return `
-            <div class="business-card" onclick="CLASSIFIED.openBusinessProfile('${business.id}', '${type}')">
-                <div class="business-header">
-                    <div class="business-logo" style="background-image: url('${business.logo}')"></div>
-                    <div class="business-info">
-                        <h3>${business.name}</h3>
-                        <p>${business.type}</p>
-                    </div>
+      return `
+        <div class="business-card" onclick="CLASSIFIED.openBusinessProfile('${business.id}', '${type}')">
+            <div class="business-header">
+                <div class="business-logo" style="background-image: url('${business.logo}')"></div>
+                <div class="business-info">
+                    <h3>${business.name}</h3>
+                    <p>${business.type}</p>
+                </div>
+                ${currentUser ? `
+                    <button class="quick-message-btn" 
+                            onclick="event.stopPropagation(); CLASSIFIED.messageBusinessProfile('${business.id}', '${business.name}', '${business.image}')"
+                            style="position: absolute; right: 15px; top: 15px; background: rgba(0,212,255,0.2); 
+                                   border: 1px solid rgba(0,212,255,0.3); border-radius: 50%; width: 40px; height: 40px;
+                                   display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                        💬
+                    </button>
+                ` : ''}
+            </div>                    
                     <button class="business-favorite-btn" 
                             onclick="event.stopPropagation(); CLASSIFIED.toggleBusinessFavorite('${business.id}')"
                             style="background: none; border: none; font-size: 24px; cursor: pointer; 

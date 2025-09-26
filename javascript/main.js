@@ -434,38 +434,10 @@ loadDemoContent() {
             populateRestaurantFeed: () => this.managers.feed.populateRestaurantFeed(),
             populateActivityFeed: () => this.managers.feed.populateActivityFeed(),// Favorites methods
             
-           // Business Favorites (for business cards)
-            toggleBusinessFavorite: async (businessId) => {
-                try {
-                    await this.managers.favoritesCarousel.toggleBusinessFavorite(businessId);
-                } catch (error) {
-                    console.error('Error toggling business favorite:', error);
-                }
-            },
-            addBusinessToFavorites: (businessId) => this.managers.favoritesCarousel.addBusinessToFavorites(businessId),
-            removeBusinessFavorite: (businessId) => this.managers.favoritesCarousel.removeBusinessFavorite(businessId),
-            isBusinessFavorited: (businessId) => this.managers.favoritesCarousel?.isBusinessFavorited(businessId) || false,
-            
-            // Offer Favorites (for special offers)
-            toggleOfferFavorite: async (businessId) => {
-                try {
-                    // Get current offer data from the profile overlay
-                    const offerData = {
-                        businessName: document.getElementById('profileName')?.textContent || 'Business',
-                        offerTitle: document.getElementById('profilePromoTitle')?.textContent || 'Special Offer',
-                        offerDetails: document.getElementById('profilePromoDetails')?.textContent || 'Limited time offer',
-                        businessImage: document.getElementById('profileHero')?.style.backgroundImage?.match(/url\("(.+)"\)/)?.[1] || ''
-                    };
-                    
-                    await this.managers.favoritesCarousel.toggleOfferFavorite(businessId, offerData);
-                } catch (error) {
-                    console.error('Error toggling offer favorite:', error);
-                }
-            },
-            removeOfferFavorite: (offerId) => this.managers.favoritesCarousel.removeOfferFavorite(offerId),
-            isOfferFavorited: (offerId) => this.managers.favoritesCarousel?.isOfferFavorited(offerId) || false,
-            
-            // Keep existing carousel toggle
+            addToFavorites: (businessId) => this.managers.favoritesCarousel.addToFavorites(businessId),
+            removeFavorite: (businessId) => this.managers.favoritesCarousel.removeFavorite(businessId),
+            toggleFavorite: (businessId) => this.managers.favoritesCarousel.toggleFavorite(businessId),
+            isFavorited: (businessId) => this.managers.favoritesCarousel.isFavorited(businessId),
             toggleFavoritesCarousel: () => this.managers.favoritesCarousel?.toggleCarousel(),
 
         };
@@ -689,8 +661,3 @@ if (document.readyState === 'loading') {
     // DOM already loaded
     window.classifiedApp = new ClassifiedApp();
 }
-
-// ADD THIS HERE - after the app initialization:
-window.getCurrentBusinessId = function() {
-    return window.currentBusinessProfileId || null;
-};

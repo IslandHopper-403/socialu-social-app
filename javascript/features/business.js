@@ -201,9 +201,9 @@ export class BusinessManager {
         }
         return null;
     }
-
+    
     /**
-     * Update business profile UI (FIXED - Combined method)
+     * Update business profile UI
      */
     updateBusinessProfileUI(business) {
         // Update header
@@ -241,29 +241,6 @@ export class BusinessManager {
             business.price || business.priceRange || '$$ - Moderate';
         document.getElementById('profileContact').textContent = 
             business.contact || business.phone || 'Contact for details';
-        
-        // Update action buttons with messaging capability
-        const actionButtons = document.querySelector('#businessProfile .action-buttons');
-        const currentUser = this.state.get('currentUser');
-        const isOwner = currentUser && currentUser.uid === business.id;
-        
-        if (actionButtons) {
-            if (isOwner) {
-                // Business owner sees Edit button
-                actionButtons.innerHTML = `
-                    <button class="action-button secondary-btn" onclick="CLASSIFIED.shareBusinessProfile()">Share</button>
-                    <button class="action-button primary-btn" onclick="CLASSIFIED.openBusinessProfileEditor()">Edit Profile</button>
-                `;
-            } else {
-                // Customers see Message button
-                actionButtons.innerHTML = `
-                    <button class="action-button secondary-btn" onclick="CLASSIFIED.getDirections()">Get Directions</button>
-                    <button class="action-button primary-btn" onclick="CLASSIFIED.messageBusinessProfile('${business.id}', '${business.name}', '${business.image || business.logo}')">
-                        💬 Message Business
-                    </button>
-                `;
-            }
-        }
     }
     
     /**

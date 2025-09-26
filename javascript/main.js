@@ -415,9 +415,6 @@ loadDemoContent() {
                 console.log('🌟 Super like notification sent to user:', userId);
             },
 
-
-
-
             filterUsers: (filter) => this.managers.feed.filterUsers(filter),
             
             // Business interactions
@@ -444,6 +441,17 @@ loadDemoContent() {
             
             // Other methods
             shareApp: () => this.shareApp(),
+            
+            // NEW: Message business from profile
+            messageBusinessProfile: (businessId, businessName, businessAvatar) => {
+                if (!window.classifiedApp?.managers?.messaging) return;
+                window.classifiedApp.managers.messaging.openBusinessChat(
+                    businessId, 
+                    businessName, 
+                    businessAvatar
+                );
+            },
+            
             shareMyProfile: () => this.managers.profile.shareMyProfile(),
             showReferralCode: () => this.managers.referral.showReferralCode(),
             
@@ -578,6 +586,7 @@ loadDemoContent() {
                 this.closeSettings();
                 this.managers.profile.openProfileEditor();
             };
+            
         }
     }
     

@@ -45,6 +45,10 @@ export class FavoritesCarouselManager {
         this.dragStartY = 0;
         this.elementStartY = 0;
 
+         // Notification system
+        this.notificationSound = null;
+        this.audioContext = null;
+        this.setupNotificationSound();
     }
     
     /**

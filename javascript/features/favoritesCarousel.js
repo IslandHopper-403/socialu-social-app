@@ -1180,5 +1180,3 @@ updateOfferFavoriteState(offerId, isFavorited) {
             return null;
         }
     }
-
-}

@@ -747,22 +747,10 @@ extractBusinessIdFromCard(cardElement) {
         }
     }
     
-    /**
-     * Remove business from favorites
-     */
-    async removeFavorite(businessId) {
-        const currentUser = this.state.get('currentUser');
-        if (!currentUser) return;
-        
-        try {
-            // Update user's favorites in Firestore
-            await updateDoc(doc(this.db, 'users', currentUser.uid), {
-                favorites: arrayRemove(businessId),
-                updatedAt: serverTimestamp()
-            });
             
             // Remove from local array
-            this.favorites = this.favorites.filter(f => f.id !== businessId);
+            this.businessFavorites = this.businessFavorites.filter(f => f.id !== businessId);
+            this.offerFavorites = this.offerFavorites.filter(f => f.id !== businessId); // Also filter offers just in case
             this.renderFavorites();
             
             this.showNotification('Removed from favorites');
@@ -782,7 +770,7 @@ extractBusinessIdFromCard(cardElement) {
             return;
         }
         
-        const business = this.favorites.find(f => f.id === businessId);
+        const business = this.businessFavorites.find(f => f.id === businessId);
         if (!business) return;
         
         try {
@@ -812,6 +800,53 @@ extractBusinessIdFromCard(cardElement) {
             alert('Failed to send promotion');
         }
     }
+
+
+    // In favoritesCarousel.js, add this new method after sendBusinessPromotion
+
+
+/**
+ * Send offer promotion in current chat
+ */
+async sendOfferPromotion(offerId) {
+    const currentChatId = this.messagingManager?.currentChatId;
+    if (!currentChatId) {
+        alert('Please open a chat first');
+        return;
+    }
+
+
+    const offer = this.offerFavorites.find(f => f.id === offerId);
+    if (!offer) return;
+
+
+    try {
+        // Create promotion message from the offer object
+        const promoMessage = {
+            type: 'promotion',
+            businessId: offer.businessId,
+            businessName: offer.businessName,
+            businessImage: offer.businessImage,
+            businessType: 'Special Offer', // Or derive this if available
+            promotionTitle: offer.offerTitle,
+            promotionDetails: offer.offerDetails,
+            businessAddress: 'Tap to view location', // Offers don't store address directly
+            timestamp: serverTimestamp()
+        };
+
+
+        // Send using messaging manager
+        await this.messagingManager.sendPromotionMessage(promoMessage);
+        
+        // Minimize carousel after sending
+        this.minimizeCarousel();
+        
+        this.showNotification('Special offer sent! 🎉');
+    } catch (error) {
+        console.error('Error sending offer promotion:', error);
+        alert('Failed to send offer promotion');
+    }
+}
     
     /**
      * Handle chat opened event

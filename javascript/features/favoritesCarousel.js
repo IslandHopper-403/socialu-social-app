@@ -689,7 +689,7 @@ extractBusinessIdFromCard(cardElement) {
     /**
      * Set up click handlers for favorite cards
      */
-       setupFavoriteCardClickHandlers() {
+    setupFavoriteCardClickHandlers() {
         const favoriteCards = document.querySelectorAll('.favorite-card');
         
         favoriteCards.forEach(card => {
@@ -703,11 +703,8 @@ extractBusinessIdFromCard(cardElement) {
                 if (type === 'business' && businessId) {
                     this.sendBusinessPromotion(businessId);
                 } else if (type === 'offer' && offerId) {
-                    // For offers, we need to pass the businessId from the offer
-                    const offer = this.offerFavorites.find(o => o.id === offerId);
-                    if (offer) {
-                        this.sendOfferPromotion(offer.businessId || offerId);
-                    }
+                    // For offers, send the offerId to sendOfferPromotion
+                    this.sendOfferPromotion(offerId);
                 }
             });
         });
@@ -848,20 +845,35 @@ extractBusinessIdFromCard(cardElement) {
         }
     }
     
-/**
- * Send offer promotion helper method
- */
+    /**
+     * Send offer promotion helper method
+     */
     async sendOfferPromotion(offerId) {
-    const offer = this.offerFavorites.find(o => o.id === offerId);
-    if (offer) {
-        // Use the businessId from the offer
-        await this.sendBusinessPromotion(offer.businessId || offerId);
-    } else {
-        console.error('Offer not found:', offerId);
-        alert('Offer not found. Please refresh and try again.');
+        this.debugFavorites();
+        // Fix: look for the actual offerId, not extract businessId
+        const offer = this.offerFavorites.find(o => o.id === offerId);
+        
+        if (offer) {
+            // Pass the offer's businessId to sendBusinessPromotion
+            await this.sendBusinessPromotion(offer.businessId);
+        } else {
+            console.error('Offer not found in favorites:', offerId);
+            console.log('Available offers:', this.offerFavorites);
+            alert('Offer not found. Please refresh and try again.');
+        }
     }
-}
 
+     /**
+     * Debug Method
+     */
+
+    // Add the debug method here
+    debugFavorites() {
+        console.log('=== FAVORITES DEBUG ===');
+        console.log('Business Favorites:', this.businessFavorites);
+        console.log('Offer Favorites:', this.offerFavorites);
+        console.log('=======================');
+    }
     
     /**
      * Handle chat opened event
@@ -1150,13 +1162,16 @@ updateOfferFavoriteState(offerId, isFavorited) {
     /**
      * Load offer data
      */
-    async loadOfferData(offerId) {
+     async loadOfferData(offerId) {
         try {
             const currentUser = this.state.get('currentUser');
-            const offerDoc = await getDoc(doc(this.db, 'userOfferFavorites', `${currentUser.uid}_${offerId}`));
+            if (!currentUser) return null;
+            
+            const docId = `${currentUser.uid}_${offerId}`;
+            const offerDoc = await getDoc(doc(this.db, 'userOfferFavorites', docId));
             
             if (offerDoc.exists()) {
-                return { id: offerDoc.id, ...offerDoc.data() };
+                return { id: offerId, ...offerDoc.data() };
             }
             
             return null;
@@ -1165,4 +1180,3 @@ updateOfferFavoriteState(offerId, isFavorited) {
             return null;
         }
     }
-}

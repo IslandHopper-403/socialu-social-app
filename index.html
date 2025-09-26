@@ -27,6 +27,7 @@
             🚀 Join CLASSIFIED to connect with travelers and discover hidden gems! Tap to sign up
         </div> -->
 
+
         <!-- Main Screens Container -->
         <div class="main-screens">
             <!-- Restaurant Feed Screen -->
@@ -666,19 +667,21 @@
                 
                 <!-- In index.html, find the Business Profile View Overlay section and update the promo section: -->
 
-                <div class="profile-section">
-                    <div class="current-promo" style="position: relative;">
-                        <button class="favorite-btn" id="businessProfileFavoriteBtn"
-                                onclick="event.stopPropagation(); CLASSIFIED.toggleFavorite(getCurrentBusinessId())"
-                                style="background: none; border: none; font-size: 24px; cursor: pointer; 
-                                       transition: transform 0.2s ease; position: absolute; right: 15px; top: 15px; z-index: 10;">
-                             ⭐️
-                        </button>
-                        <div class="promo-badge">🔥 SPECIAL OFFER</div>
-                        <div class="promo-title" id="profilePromoTitle">Loading...</div>
-                        <div class="promo-details" id="profilePromoDetails">Loading...</div>
-                    </div>
+
+                            <div class="profile-section">
+                <div class="current-promo" style="position: relative;">
+                    <button class="offer-favorite-btn" id="offerFavoriteBtn"
+                            onclick="event.stopPropagation(); CLASSIFIED.toggleOfferFavorite(getCurrentBusinessId())"
+                            style="background: none; border: none; font-size: 24px; cursor: pointer; 
+                                   transition: transform 0.2s ease; position: absolute; right: 15px; top: 15px; z-index: 10;"
+                            title="Save this special offer">
+                         🤍
+                    </button>
+                    <div class="promo-badge">🔥 SPECIAL OFFER</div>
+                    <div class="promo-title" id="profilePromoTitle">Loading...</div>
+                    <div class="promo-details" id="profilePromoDetails">Loading...</div>
                 </div>
+            </div>
                 <div class="profile-section">
                     <div class="section-title">About</div>
                     <div class="profile-description" id="profileDescription">
@@ -745,6 +748,7 @@
                     </div>
                 </div>
  <!-- Menu added in -->
+
 
                 <div class="profile-section">
                     <div class="section-title">Popular With</div>
@@ -948,6 +952,8 @@
     <!-- Load JavaScript modules -->
     <!-- Note: Firebase is loaded as ES6 modules via CDN in firebase.js -->
     <script type="module" src="javascript/main.js"></script>
+
+
 
 
 <script>

@@ -44,8 +44,38 @@ export class FavoritesCarouselManager {
         // Touch/drag tracking
         this.dragStartY = 0;
         this.elementStartY = 0;
-
     }
+
+        /**
+ * Extract business ID from card element
+ */
+extractBusinessIdFromCard(cardElement) {
+    // Look for onclick attribute that contains openBusinessProfile call
+    const onclickAttr = cardElement.getAttribute('onclick');
+    if (onclickAttr) {
+        const match = onclickAttr.match(/openBusinessProfile\('([^']+)'/);
+        return match ? match[1] : null;
+    }
+    return null;
+}
+
+    /**
+     * Handle chat opened event
+     */
+        onChatOpened() {
+            // Check if we have favorites before checking length
+            const totalFavorites = (this.businessFavorites?.length || 0) + (this.offerFavorites?.length || 0);
+            if (totalFavorites > 0) {
+                this.showCarousel();
+            }
+        }
+        
+        /**
+         * Handle chat closed event  
+         */
+        onChatClosed() {
+            this.hideCarousel();
+        }
     
     /**
      * Set references to other managers
@@ -911,7 +941,7 @@ async addOfferToFavorites(offerId, businessId, offerData) {
     }
     
     try {
-        // Create offer favorite document
+        // Create offer favorite document with userId included
         const offerFavorite = {
             id: offerId,
             businessId: businessId,
@@ -919,6 +949,7 @@ async addOfferToFavorites(offerId, businessId, offerData) {
             offerTitle: offerData.offerTitle,
             offerDetails: offerData.offerDetails,
             businessImage: offerData.businessImage,
+            userId: currentUser.uid,  // This line was missing - causes permission errors
             savedAt: serverTimestamp()
         };
         

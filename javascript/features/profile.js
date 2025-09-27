@@ -244,31 +244,35 @@ export class ProfileManager {
         }
     }
     
-    /**
-     * Gather user profile data from form
+       /**
+     * Gather and sanitize user profile data
      */
     gatherUserProfileData() {
         const profile = { ...this.state.get('userProfile') };
         
-        // Basic info
-        profile.bio = document.getElementById('profileBio').value;
-        profile.birthday = document.getElementById('profileBirthday').value;
-        profile.height = document.getElementById('profileHeight').value;
-        profile.name = this.state.get('currentUser').displayName || profile.name;
+        // Gather raw data
+        const rawData = {
+            ...profile,
+            bio: document.getElementById('profileBio').value,
+            birthday: document.getElementById('profileBirthday').value,
+            height: document.getElementById('profileHeight').value,
+            name: this.state.get('currentUser').displayName || profile.name
+        };
         
-        // Calculate age from birthday
-        if (profile.birthday) {
+        // Calculate age
+        if (rawData.birthday) {
             const today = new Date();
-            const birthDate = new Date(profile.birthday);
+            const birthDate = new Date(rawData.birthday);
             let age = today.getFullYear() - birthDate.getFullYear();
             const monthDiff = today.getMonth() - birthDate.getMonth();
             if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
                 age--;
             }
-            profile.age = age;
+            rawData.age = age;
         }
         
-        return profile;
+        // Sanitize all text fields
+        return sanitizeProfile(rawData);
     }
     
     /**

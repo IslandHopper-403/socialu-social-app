@@ -470,14 +470,15 @@ export class MessagingManager {
                     if (partnerDoc.exists()) {
                         const partnerData = partnerDoc.data();
                         
-                     // Check unread status
-                    const seenTime = localStorage.getItem(`seen_${chatDoc.id}_${userId}`);
-                    const messageTime = chatData.lastMessageTime?.toMillis?.() || 0;
-                    
-                    // It's unread if: message is from other user AND we haven't seen it yet
-                    const hasUnread = chatData.lastMessageSender && 
-                                     chatData.lastMessageSender !== userId &&
-                                     (!seenTime || messageTime > parseInt(seenTime));
+                 // Check unread status - use lastAppActive as the cutoff
+                const seenTime = localStorage.getItem(`seen_${chatDoc.id}_${userId}`);
+                const messageTime = chatData.lastMessageTime?.toMillis?.() || 0;
+                
+                // It's unread if: message is from other user AND newer than last app active AND not seen
+                const hasUnread = chatData.lastMessageSender && 
+                     chatData.lastMessageSender !== userId &&
+                     messageTime > this.lastAppActive &&
+                     (!seenTime || messageTime > parseInt(seenTime));
                         
                         realChats.push({
                             id: chatDoc.id,

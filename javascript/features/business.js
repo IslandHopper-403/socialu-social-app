@@ -1,5 +1,6 @@
 // javascript/features/business.js
 
+import { sanitizeText, escapeHtml } from '../utils/security.js';
 
 import {
     doc,
@@ -216,8 +217,8 @@ export class BusinessManager {
         }
         
         // Update basic info
-        document.getElementById('profileName').textContent = business.name || 'Business Name';
-        document.getElementById('profileType').textContent = business.type || 'Business Type';
+       document.getElementById('profileName').textContent = sanitizeText(business.name || 'Business Name');
+       document.getElementById('profileDescription').textContent = sanitizeText(business.description || '...');
         
         // Update promotion
         if (business.promo) {

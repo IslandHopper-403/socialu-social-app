@@ -642,20 +642,22 @@ export class MessagingManager {
      * Close chat
      */
         closeChat() {
-        console.log('🔙 Closing chat');
-        document.dispatchEvent(new CustomEvent('chatClosed'));
-        this.navigationManager.closeOverlay('individualChat');
-        
-        // Enhanced cleanup - unregister chat listener
-        if (this.currentChatId) {
-            this.unregisterListener(`chat_${this.currentChatId}`);
+            console.log('🔙 Closing chat');
+            
+            // Mark current chat as read before closing
+            if (this.currentChatId) {
+                this.markChatAsRead(this.currentChatId);
+                this.unregisterListener(`chat_${this.currentChatId}`);
+            }
+            
+            document.dispatchEvent(new CustomEvent('chatClosed'));
+            this.navigationManager.closeOverlay('individualChat');
+            
+            // Clear chat context
+            this.currentChatId = null;
+            this.currentChatPartner = null;
+            this.state.set('currentChatUser', null);
         }
-
-      // Clear chat context
-        this.currentChatId = null;
-        this.currentChatPartner = null;
-        this.state.set('currentChatUser', null);
-    }
     
       /**
      * Send message with proper sanitization

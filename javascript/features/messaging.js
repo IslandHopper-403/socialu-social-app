@@ -624,17 +624,14 @@ export class MessagingManager {
     /**
      * Close chat
      */
-    closeChat() {
+        closeChat() {
         console.log('🔙 Closing chat');
-         // ADD THIS LINE HERE:
         document.dispatchEvent(new CustomEvent('chatClosed'));
         this.navigationManager.closeOverlay('individualChat');
         
-        // Clean up listener
-        if (this.currentChatId && this.chatListeners.has(this.currentChatId)) {
-            const unsubscribe = this.chatListeners.get(this.currentChatId);
-            unsubscribe();
-            this.chatListeners.delete(this.currentChatId);
+        // CHANGED: Use new tracking system
+        if (this.currentChatId) {
+            this.unregisterListener(`chat_${this.currentChatId}`);
         }
         
         this.currentChatId = null;

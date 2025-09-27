@@ -45,13 +45,8 @@ import { ReferralManager } from './features/referral.js';
 import { MapManager } from './features/map.js';
 import { FavoritesCarouselManager } from './features/favoritesCarousel.js';
 
-// TEMPORARY TEST - DELETE AFTER CHECKING
-import { sanitizeUrl } from './utils/security.js';
-
-
 // Import UI modules
 import { NavigationManager } from './ui/navigation.js';
-
 
 // Import Firestore functions for main app
 import {
@@ -68,13 +63,6 @@ import {
 class ClassifiedApp {
     constructor() {
         console.log('🚀 Initializing CLASSIFIED v7.0 Modular Architecture...');
-
-         // TEMPORARY URL SANITIZATION TEST - DELETE AFTER
-    console.log('🧪 URL Sanitization Tests:');
-    console.log('Malicious JS:', sanitizeUrl('javascript:alert("XSS")'));
-    console.log('Malicious data:', sanitizeUrl('data:text/html,<script>alert("XSS")</script>'));
-    console.log('Safe URL:', sanitizeUrl('https://example.com'));
-    // END TEST
         
         // Core services
         this.firebaseConfig = new FirebaseConfig();

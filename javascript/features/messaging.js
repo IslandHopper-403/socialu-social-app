@@ -2241,6 +2241,11 @@ playNotificationSound() {
  */
     cleanup() {
         console.log('🧹 Cleaning up messaging listeners and resources');
+        
+        localStorage.setItem('lastAppActive', Date.now().toString());
+        this.saveUnreadStateToStorage();
+        this.saveSeenMatches();
+        
         console.log(`📊 Active listeners before cleanup: ${this.activeListeners.size}`);
         
         // 1. Remove ALL tracked listeners

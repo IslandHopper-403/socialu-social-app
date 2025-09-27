@@ -43,6 +43,7 @@ export class MessagingManager {
     this.mockData = null;
     
     // Real-time listeners
+    this.activeListeners = new Map(); // Track ALL listeners with metadata
     this.chatListeners = new Map();
     this.matchListener = null;
     this.notificationListener = null;
@@ -74,6 +75,10 @@ export class MessagingManager {
     });
        // Add this line to track seen matches across sessions
        this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
+
+       window.addEventListener('beforeunload', () => {
+        this.cleanup();
+    });
 }
     
     /**
@@ -87,6 +92,42 @@ export class MessagingManager {
             console.log('Could not create notification sound:', error);
         }
     }
+
+        /**
+         * Register a listener with tracking
+         */
+        registerListener(id, unsubscribe, type = 'generic') {
+            if (this.activeListeners.has(id)) {
+                console.warn(`⚠️ Replacing existing listener: ${id}`);
+                const existing = this.activeListeners.get(id);
+                existing.unsubscribe();
+            }
+            
+            this.activeListeners.set(id, {
+                unsubscribe,
+                type,
+                createdAt: Date.now()
+            });
+            
+            console.log(`📌 Registered listener: ${id} (${type})`);
+        }
+        
+        /**
+         * Unregister a specific listener
+         */
+        unregisterListener(id) {
+            const listener = this.activeListeners.get(id);
+            if (listener) {
+                try {
+                    listener.unsubscribe();
+                    this.activeListeners.delete(id);
+                    console.log(`🗑️ Unregistered listener: ${id}`);
+                } catch (error) {
+                    console.error(`Error unregistering listener ${id}:`, error);
+                }
+            }
+        }
+
     
     /**
      * Set references to other managers

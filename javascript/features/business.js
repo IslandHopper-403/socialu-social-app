@@ -206,42 +206,42 @@ export class BusinessManager {
     /**
      * Update business profile UI
      */
-    updateBusinessProfileUI(business) {
-        // Update header
-        document.getElementById('profileHeaderTitle').textContent = business.type || 'Business';
+      updateBusinessProfileUI(business) {
+        // Update header - SAFE
+        document.getElementById('profileHeaderTitle').textContent = sanitizeText(business.type || 'Business');
         
-        // Update hero
+        // Update hero - SAFE (CSS background)
         const heroElement = document.getElementById('profileHero');
         if (heroElement && business.image) {
-            heroElement.style.backgroundImage = `url('${business.image}')`;
+            heroElement.style.backgroundImage = `url('${escapeHtml(business.image)}')`;
         }
         
-        // Update basic info
-       document.getElementById('profileName').textContent = sanitizeText(business.name || 'Business Name');
-       document.getElementById('profileDescription').textContent = sanitizeText(business.description || '...');
+        // Update basic info - SAFE
+        document.getElementById('profileName').textContent = sanitizeText(business.name || 'Business Name');
+        document.getElementById('profileType').textContent = sanitizeText(business.type || 'Business Type');
         
-        // Update promotion
+        // Update promotion - SAFE
         if (business.promo) {
-            document.getElementById('profilePromoTitle').textContent = business.promo;
-            document.getElementById('profilePromoDetails').textContent = business.details || '';
+            document.getElementById('profilePromoTitle').textContent = sanitizeText(business.promo);
+            document.getElementById('profilePromoDetails').textContent = sanitizeText(business.details || '');
         } else if (business.promoTitle) {
-            document.getElementById('profilePromoTitle').textContent = business.promoTitle;
-            document.getElementById('profilePromoDetails').textContent = business.promoDetails || '';
+            document.getElementById('profilePromoTitle').textContent = sanitizeText(business.promoTitle);
+            document.getElementById('profilePromoDetails').textContent = sanitizeText(business.promoDetails || '');
         }
         
-        // Update description
+        // Update description - SAFE
         document.getElementById('profileDescription').textContent = 
-            business.description || 'A great place to visit in Hoi An';
+            sanitizeText(business.description || 'A great place to visit in Hoi An');
         
-        // Update details
+        // Update details - SAFE
         document.getElementById('profileLocation').textContent = 
-            business.location || business.address || 'Hoi An';
+            sanitizeText(business.location || business.address || 'Hoi An');
         document.getElementById('profileHours').textContent = 
-            business.hours || 'Check for current hours';
+            sanitizeText(business.hours || 'Check for current hours');
         document.getElementById('profilePrice').textContent = 
-            business.price || business.priceRange || '$$ - Moderate';
+            sanitizeText(business.price || business.priceRange || '$$ - Moderate');
         document.getElementById('profileContact').textContent = 
-            business.contact || business.phone || 'Contact for details';
+            sanitizeText(business.contact || business.phone || 'Contact for details');
     }
     
     /**

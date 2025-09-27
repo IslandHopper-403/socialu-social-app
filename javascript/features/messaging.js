@@ -71,15 +71,6 @@ export class MessagingManager {
     if (storedLastActive) {
         this.lastAppActive = parseInt(storedLastActive, 10);
     }
-    
-    // Track app visibility changes
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            localStorage.setItem('lastAppActive', Date.now().toString());
-        } else {
-            this.lastAppActive = parseInt(localStorage.getItem('lastAppActive') || Date.now().toString(), 10);
-        }
-    });
        
     // Notification system
     this.notificationSound = null;
@@ -89,7 +80,13 @@ export class MessagingManager {
     // ADDED: Track app visibility for smart notifications
     document.addEventListener('visibilitychange', () => {
         this.isAppVisible = !document.hidden;
-        if (this.isAppVisible) {
+        
+        if (document.hidden) {
+            // App going to background - save timestamp
+            localStorage.setItem('lastAppActive', Date.now().toString());
+        } else {
+            // App coming to foreground - update timestamp
+            this.lastAppActive = parseInt(localStorage.getItem('lastAppActive') || Date.now().toString(), 10);
             this.markCurrentChatAsRead();
         }
     });

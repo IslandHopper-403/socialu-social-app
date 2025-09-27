@@ -707,8 +707,12 @@ Need help? Contact: support@classified.com
     
 }
 
-
-
+        // Register cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (window.classifiedApp) {
+                window.classifiedApp.destroy();
+            }
+        });
 
 // Initialize the app when DOM is ready
 if (document.readyState === 'loading') {

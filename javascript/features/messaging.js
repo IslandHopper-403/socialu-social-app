@@ -3,6 +3,8 @@
 import { sanitizeMessage, sanitizeText, escapeHtml 
 } from '../utils/security.js';
 
+import { handleSecurityError } from '../utils/security.js';
+
 import {
     collection,
     doc,

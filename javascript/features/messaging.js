@@ -450,7 +450,10 @@ export class MessagingManager {
                 this.updateChatList(realChats);
             }
             
-        } catch (error) {
+              } catch (error) {
+            if (error.code?.includes('permission')) {
+                handleSecurityError(error);
+            }
             console.error('❌ Error loading real chats:', error);
         }
     }
@@ -1031,7 +1034,10 @@ listenForMatches(userId) {
             // Update total notification count
             this.updateTotalUnreadCount();
             
-        }, (error) => {
+             }, (error) => {
+            if (error.code?.includes('permission')) {
+                handleSecurityError(error);
+            }
             console.error('Error in chat updates listener:', error);
         });
         
@@ -1072,9 +1078,12 @@ listenForNewMessages(userId) {
                     }
                 }
             });
-        }, (error) => {
-            console.error('Error in global message listener:', error);
-        });
+           }, (error) => {
+        if (error.code?.includes('permission')) {
+            handleSecurityError(error);
+        }
+        console.error('Error in global message listener:', error);
+    });
         
         console.log('👂 Set up global message notifications for user:', userId);
     } catch (error) {

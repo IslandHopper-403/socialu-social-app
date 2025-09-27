@@ -1084,46 +1084,47 @@ export class MessagingManager {
     /**
      * Listen for new messages globally (for notifications)
      */
-    
-listenForNewMessages(userId) {
-    try {
-        const chatsRef = collection(this.db, 'chats');
-        const q = query(
-            chatsRef,
-            where('participants', 'array-contains', userId)
-        );
+    listenForNewMessages(userId) {
+        // ADDED: Remove existing listener first
+        this.unregisterListener('messages_global');
         
-        this.notificationListener = onSnapshot(q, (snapshot) => {
-            snapshot.docChanges().forEach(change => {
-                if (change.type === 'modified') {
-                    const chatData = change.doc.data();
-                    const chatId = change.doc.id; // IMPORTANT: Get the chat ID
-                    
-                    // Check if there's a new message not from current user
-                    if (chatData.lastMessageSender && chatData.lastMessageSender !== userId) {
-                        // Don't show notification if this chat is currently open
-                        if (this.currentChatId !== chatId) {
-                            // Pass both chatData AND chatId
-                            this.showInAppNotification(chatData, chatId);
-                            
-                            // Update notification dot
-                            this.updateUnreadCount(chatId, 1);
+        try {
+            const chatsRef = collection(this.db, 'chats');
+            const q = query(
+                chatsRef,
+                where('participants', 'array-contains', userId)
+            );
+            
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'modified') {
+                        const chatData = change.doc.data();
+                        const chatId = change.doc.id;
+                        
+                        if (chatData.lastMessageSender && chatData.lastMessageSender !== userId) {
+                            if (this.currentChatId !== chatId) {
+                                this.showInAppNotification(chatData, chatId);
+                                this.updateUnreadCount(chatId, 1);
+                            }
                         }
                     }
+                });
+            }, (error) => {
+                if (error.code?.includes('permission')) {
+                    handleSecurityError(error);
                 }
+                console.error('Error in global message listener:', error);
+                this.unregisterListener('messages_global'); // ADDED: Cleanup on error
             });
-           }, (error) => {
-        if (error.code?.includes('permission')) {
-            handleSecurityError(error);
+            
+            // ADDED: Register with tracking
+            this.registerListener('messages_global', unsubscribe, 'message');
+            console.log('👂 Set up global message notifications for user:', userId);
+            
+        } catch (error) {
+            console.error('Error setting up global message listener:', error);
         }
-        console.error('Error in global message listener:', error);
-    });
-        
-        console.log('👂 Set up global message notifications for user:', userId);
-    } catch (error) {
-        console.error('Error setting up global message listener:', error);
     }
-}
 
 
     /**

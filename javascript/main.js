@@ -679,33 +679,33 @@ Need help? Contact: support@classified.com
         `;
         document.body.appendChild(errorMessage);
     }
-        /**
-             * Clean up app resources on page unload
-             */
-            destroy() {
-                console.log('🧹 Destroying app and cleaning up resources');
-                
-                // Clean up all managers
-                Object.values(this.managers).forEach(manager => {
-                    if (manager && typeof manager.cleanup === 'function') {
-                        manager.cleanup();
-                    }
-                });
-                
-                // Clear listeners
-                this.listeners.forEach(unsubscribe => {
-                    try {
-                        unsubscribe();
-                    } catch (error) {
-                        console.error('Error cleaning up app listener:', error);
-                    }
-                });
-                this.listeners = [];
-                
-                console.log('✅ App cleanup complete');
-            }
     
-}
+        /**
+         * Clean up app resources on page unload
+         */
+        destroy() {
+            console.log('🧹 Destroying app and cleaning up resources');
+            
+            // Clean up all managers
+            Object.values(this.managers).forEach(manager => {
+                if (manager && typeof manager.cleanup === 'function') {
+                    manager.cleanup();
+                }
+            });
+            
+            // Clear listeners
+            this.listeners.forEach(unsubscribe => {
+                try {
+                    unsubscribe();
+                } catch (error) {
+                    console.error('Error cleaning up app listener:', error);
+                }
+            });
+            this.listeners = [];
+            
+            console.log('✅ App cleanup complete');
+        }
+    }
 
         // Register cleanup on page unload
         window.addEventListener('beforeunload', () => {

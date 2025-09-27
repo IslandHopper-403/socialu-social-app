@@ -2,6 +2,7 @@
 // 
 // WORKING CONDITION - GOOD WORKING CONDITION - INCLUDES FEATURES CAROUSEL W. Business + Offer Favs - TESTING 3,21 (Delete me)
 // From this place forward start refactoring Users and Business for seperate UI/UX portals
+
 // BUSINESS WORKFLOW:
 // 1. Business signs up → gets instant account with temp password
 // 2. Business logs in → completes profile → status: pending_approval
@@ -20,27 +21,17 @@
 // 3. Complete profile → appears in user feed
 // 4. Referral system for growth
 
-
-
-
 // 🎯 CLASSIFIED v7.0 - Complete Business Management System
 // 
 // IMPORTANT: This app requires proper Firestore Security Rules!
 // Add these rules in Firebase Console > Firestore > Rules:
 
-
-
-
 // javascript/main.js
-
 
 // Import core modules
 import { FirebaseConfig } from './config/firebase.js';
 import { AppState } from './core/state.js';
 import { MockData } from './data/mockData.js';
-
-
-
 
 // Import feature modules
 import { AuthManager } from './features/auth.js';
@@ -54,17 +45,12 @@ import { ReferralManager } from './features/referral.js';
 import { MapManager } from './features/map.js';
 import { FavoritesCarouselManager } from './features/favoritesCarousel.js';
 
-
-
-
-
-
+// TEMPORARY TEST - DELETE AFTER CHECKING
+import { sanitizeUrl } from './utils/security.js';
 
 
 // Import UI modules
 import { NavigationManager } from './ui/navigation.js';
-
-
 
 
 // Import Firestore functions for main app
@@ -76,19 +62,19 @@ import {
 
 
 
-
-
-
-
-
-
-
 /**
  * Main application class that orchestrates all modules
  */
 class ClassifiedApp {
     constructor() {
         console.log('🚀 Initializing CLASSIFIED v7.0 Modular Architecture...');
+
+         // TEMPORARY URL SANITIZATION TEST - DELETE AFTER
+    console.log('🧪 URL Sanitization Tests:');
+    console.log('Malicious JS:', sanitizeUrl('javascript:alert("XSS")'));
+    console.log('Malicious data:', sanitizeUrl('data:text/html,<script>alert("XSS")</script>'));
+    console.log('Safe URL:', sanitizeUrl('https://example.com'));
+    // END TEST
         
         // Core services
         this.firebaseConfig = new FirebaseConfig();
@@ -726,11 +712,3 @@ if (document.readyState === 'loading') {
 window.getCurrentBusinessId = function() {
     return window.currentBusinessProfileId || null;
 };
-
-// At the very end of main.js, add for testing:
-import { sanitizeUrl } from './utils/security.js';
-
-console.log('🧪 URL Sanitization Tests:');
-console.log('Malicious JS:', sanitizeUrl('javascript:alert("XSS")')); // Should: null
-console.log('Malicious data:', sanitizeUrl('data:text/html,<script>alert("XSS")</script>')); // Should: null  
-console.log('Safe URL:', sanitizeUrl('https://example.com')); // Should: https://example.com

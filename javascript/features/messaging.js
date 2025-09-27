@@ -1,5 +1,7 @@
 // javascript/features/messaging.js - COMPLETE VERSION
 
+import { sanitizeMessage, sanitizeText, escapeHtml 
+} from '../utils/security.js';
 
 import {
     collection,

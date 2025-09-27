@@ -1890,3 +1890,29 @@ input:disabled + .toggle-slider {
     background: rgba(0, 212, 255, 0.3) !important;
     transform: scale(1.1);
 }
+
+
+/* ===== security-error-toast ===== */
+
+.security-error-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 107, 107, 0.95);
+  color: white;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(255, 107, 107, 0.3);
+  z-index: 10000;
+  animation: slideInRight 0.3s ease;
+}
+
+.error-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.error-icon {
+  font-size: 24px;
+}

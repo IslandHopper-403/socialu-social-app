@@ -34,8 +34,6 @@
 // javascript/main.js
 
 
-
-
 // Import core modules
 import { FirebaseConfig } from './config/firebase.js';
 import { AppState } from './core/state.js';
@@ -728,3 +726,11 @@ if (document.readyState === 'loading') {
 window.getCurrentBusinessId = function() {
     return window.currentBusinessProfileId || null;
 };
+
+// At the very end of main.js, add for testing:
+import { sanitizeUrl } from './utils/security.js';
+
+console.log('🧪 URL Sanitization Tests:');
+console.log('Malicious JS:', sanitizeUrl('javascript:alert("XSS")')); // Should: null
+console.log('Malicious data:', sanitizeUrl('data:text/html,<script>alert("XSS")</script>')); // Should: null  
+console.log('Safe URL:', sanitizeUrl('https://example.com')); // Should: https://example.com

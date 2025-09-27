@@ -704,7 +704,6 @@ Need help? Contact: support@classified.com
                 
                 console.log('✅ App cleanup complete');
             }
-        }
     
 }
 

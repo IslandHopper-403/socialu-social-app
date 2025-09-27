@@ -1,4 +1,4 @@
-// javascript/features/messaging.js - COMPLETE VERSION .
+// javascript/features/messaging.js - COMPLETE VERSION
 
 import { sanitizeMessage, sanitizeText, escapeHtml 
 } from '../utils/security.js';
@@ -919,66 +919,70 @@ export class MessagingManager {
    /**
  * Listen for new matches (FIXED to prevent showing old matches)
  */
-listenForMatches(userId) {
-    try {
-        const matchesRef = collection(this.db, 'matches');
-        const q = query(
-            matchesRef,
-            where('users', 'array-contains', userId)
-        );
+    listenForMatches(userId) {
+        // ADDED: Remove existing listener first
+        this.unregisterListener('matches_global');
         
-        // Track initial load to prevent showing old matches
-        let isInitialLoad = true;
-        
-        this.matchListener = onSnapshot(q, (snapshot) => {
-            // On initial load, just mark existing matches as seen
-            if (isInitialLoad) {
-                isInitialLoad = false;
-                console.log(`👂 Found ${snapshot.size} existing matches, not showing popups`);
-                
-                // Store existing match IDs to prevent future popups
-                snapshot.forEach(doc => {
-                    const matchId = doc.id;
-                    this.seenMatches = this.seenMatches || new Set();
-                    this.seenMatches.add(matchId);
-                });
-                return;
-            }
+        try {
+            const matchesRef = collection(this.db, 'matches');
+            const q = query(
+                matchesRef,
+                where('users', 'array-contains', userId)
+            );
             
-            // After initial load, only process truly new matches
-            snapshot.docChanges().forEach(change => {
-                if (change.type === 'added') {
-                    const matchId = change.doc.id;
-                    const matchData = change.doc.data();
+            let isInitialLoad = true;
+            
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                if (isInitialLoad) {
+                    isInitialLoad = false;
+                    console.log(`👂 Found ${snapshot.size} existing matches, not showing popups`);
                     
-                    // Check if we've already seen this match
-                    this.seenMatches = this.seenMatches || new Set();
-                    if (!this.seenMatches.has(matchId)) {
+                    snapshot.forEach(doc => {
+                        const matchId = doc.id;
+                        this.seenMatches = this.seenMatches || new Set();
                         this.seenMatches.add(matchId);
+                    });
+                    return;
+                }
+                
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        const matchId = change.doc.id;
+                        const matchData = change.doc.data();
                         
-                        // Only show popup for matches created in the last 30 seconds
-                        const matchTime = matchData.timestamp?.toDate?.() || new Date();
-                        const now = new Date();
-                        const timeDiff = now - matchTime;
-                        
-                        if (timeDiff < 30000) { // 30 seconds
-                            console.log('🎉 New match detected!', matchId);
-                            this.handleNewMatch(matchData);
-                        } else {
-                            console.log('⏭️ Skipping old match popup:', matchId);
+                        this.seenMatches = this.seenMatches || new Set();
+                        if (!this.seenMatches.has(matchId)) {
+                            this.seenMatches.add(matchId);
+                            
+                            const matchTime = matchData.timestamp?.toDate?.() || new Date();
+                            const now = new Date();
+                            const timeDiff = now - matchTime;
+                            
+                            if (timeDiff < 30000) {
+                                console.log('🎉 New match detected!', matchId);
+                                this.handleNewMatch(matchData);
+                            } else {
+                                console.log('⏭️ Skipping old match popup:', matchId);
+                            }
                         }
                     }
-                }
+                });
+                
+                this.saveSeenMatches(); // ADDED: Save after processing
+                
+            }, (error) => {
+                console.error('Error in match listener:', error);
+                this.unregisterListener('matches_global'); // ADDED: Cleanup on error
             });
-        }, (error) => {
-            console.error('Error in match listener:', error);
-        });
-        
-        console.log('👂 Set up match listener for user:', userId);
-    } catch (error) {
-        console.error('Error setting up match listener:', error);
+            
+            // ADDED: Register with tracking
+            this.registerListener('matches_global', unsubscribe, 'match');
+            console.log('👂 Set up match listener for user:', userId);
+            
+        } catch (error) {
+            console.error('Error setting up match listener:', error);
+        }
     }
-}
     
     // Add this method to save seen matches to localStorage:
     saveSeenMatches() {

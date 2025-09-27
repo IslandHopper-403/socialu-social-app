@@ -1048,55 +1048,79 @@ export class MessagingManager {
     /**
      * Listen for chat updates
      */
-   listenForChatUpdates(userId) {
-    // ADDED: Remove existing listener first
-    this.unregisterListener('chat_updates_global');
-    
-    try {
-        const chatsRef = collection(this.db, 'chats');
-        const q = query(
-            chatsRef,
-            where('participants', 'array-contains', userId)
-        );
+       listenForChatUpdates(userId) {
+        this.unregisterListener('chat_updates_global');
         
-        const unsubscribe = onSnapshot(q, async (snapshot) => {
-            console.log('🔄 Chat updates detected');
+        try {
+            const chatsRef = collection(this.db, 'chats');
+            const q = query(
+                chatsRef,
+                where('participants', 'array-contains', userId)
+            );
             
-            for (const change of snapshot.docChanges()) {
-                if (change.type === 'modified') {
-                    const chatData = change.doc.data();
-                    const chatId = change.doc.id;
-                    
-                    if (chatData.lastMessageSender && 
-                        chatData.lastMessageSender !== userId &&
-                        this.currentChatId !== chatId) {
+            let isInitialLoad = true;
+            
+            const unsubscribe = onSnapshot(q, async (snapshot) => {
+                if (isInitialLoad) {
+                    snapshot.forEach(doc => {
+                        const chatData = doc.data();
+                        const chatId = doc.id;
                         
-                        const currentUnread = this.unreadMessages.get(chatId) || 0;
-                        this.unreadMessages.set(chatId, currentUnread + 1);
-                    }
+                        if (chatData.lastMessageSender && 
+                            chatData.lastMessageSender !== userId &&
+                            chatData.lastMessageTime) {
+                            
+                            const messageTime = chatData.lastMessageTime.toMillis();
+                            
+                            if (messageTime > this.lastAppActive) {
+                                const currentUnread = this.unreadMessages.get(chatId) || 0;
+                                this.unreadMessages.set(chatId, Math.max(currentUnread, 1));
+                            }
+                        }
+                    });
+                    
+                    isInitialLoad = false;
                     this.saveUnreadStateToStorage();
+                    this.updateTotalUnreadCount();
+                    await this.loadChats();
+                    return;
                 }
-            }
+                
+                for (const change of snapshot.docChanges()) {
+                    if (change.type === 'modified') {
+                        const chatData = change.doc.data();
+                        const chatId = change.doc.id;
+                        
+                        if (chatData.lastMessageSender && 
+                            chatData.lastMessageSender !== userId &&
+                            this.currentChatId !== chatId &&
+                            chatData.lastMessageTime) {
+                            
+                            const messageTime = chatData.lastMessageTime.toMillis();
+                            
+                            if (messageTime > this.lastAppActive) {
+                                const currentUnread = this.unreadMessages.get(chatId) || 0;
+                                this.unreadMessages.set(chatId, currentUnread + 1);
+                            }
+                        }
+                        this.saveUnreadStateToStorage();
+                    }
+                }
+                
+                await this.loadChats();
+                this.updateTotalUnreadCount();
+                
+            }, (error) => {
+                console.error('Error in chat updates listener:', error);
+                this.unregisterListener('chat_updates_global');
+            });
             
-            await this.loadChats();
-            this.updateTotalUnreadCount();
+            this.registerListener('chat_updates_global', unsubscribe, 'chat_update');
             
-        }, (error) => {
-             if (error.code?.includes('permission')) {
-                console.error('Permission error:', error);
-            }
-            console.error('Error in chat updates listener:', error);
-            this.unregisterListener('chat_updates_global'); // ADDED: Cleanup on error
-        });
-        
-        // ADDED: Register with tracking
-        this.registerListener('chat_updates_global', unsubscribe, 'chat_update');
-        console.log('👂 Set up chat updates listener for user:', userId);
-        
-    } catch (error) {
-        console.error('Error setting up chat updates listener:', error);
+        } catch (error) {
+            console.error('Error setting up chat updates listener:', error);
+        }
     }
-}
     
     /**
      * Listen for new messages globally (for notifications)

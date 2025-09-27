@@ -596,14 +596,14 @@ export class MessagingManager {
         this.state.set('currentChatUser', null);
     }
     
-    /**
-     * Send message with proper error handling
+      /**
+     * Send message with proper sanitization
      */
     async sendMessage() {
         const messageInput = document.getElementById('messageInput');
-        const message = messageInput.value.trim();
+        const rawMessage = messageInput.value.trim();
         
-        if (!message) return;
+        if (!rawMessage) return;
         
         const currentUser = this.state.get('currentUser');
         if (!currentUser || !this.currentChatId || !this.currentChatPartner) {
@@ -612,35 +612,32 @@ export class MessagingManager {
         }
         
         try {
-            console.log('📤 Sending message:', message);
+            console.log('📤 Sending message (sanitized)');
             
-            // Clear input immediately for better UX
+            // Clear input immediately
             messageInput.value = '';
             
-            // Add message to UI immediately (optimistic update)
-            this.addMessageToUI({
-                text: message,
-                senderId: currentUser.uid,
-                senderName: currentUser.displayName || 'You',
-                timestamp: new Date(),
-                read: false
-            }, true);
-            
-            // Create message document
-            const messageData = {
-                text: message,
+            // Sanitize message data
+            const messageData = sanitizeMessage({
+                text: rawMessage,
                 senderId: currentUser.uid,
                 senderName: currentUser.displayName || 'Anonymous',
-                timestamp: serverTimestamp(),
+                timestamp: new Date(),
                 read: false
-            };
+            });
             
-            // Add to messages subcollection
-            await addDoc(collection(this.db, 'chats', this.currentChatId, 'messages'), messageData);
+            // Add message to UI immediately (optimistic update)
+            this.addMessageToUI(messageData, true);
+            
+            // Save to Firestore with server timestamp
+            await addDoc(collection(this.db, 'chats', this.currentChatId, 'messages'), {
+                ...messageData,
+                timestamp: serverTimestamp()
+            });
             
             // Update chat document
             await updateDoc(doc(this.db, 'chats', this.currentChatId), {
-                lastMessage: message,
+                lastMessage: messageData.text,
                 lastMessageTime: serverTimestamp(),
                 lastMessageSender: currentUser.uid
             });
@@ -650,7 +647,7 @@ export class MessagingManager {
             // Send notification to other user
             this.sendNotificationToUser(this.currentChatPartner.userId, {
                 title: `New message from ${currentUser.displayName || 'Someone'}`,
-                body: message,
+                body: messageData.text,
                 data: {
                     type: 'message',
                     chatId: this.currentChatId,
@@ -661,9 +658,9 @@ export class MessagingManager {
         } catch (error) {
             console.error('❌ Error sending message:', error);
             alert('Failed to send message. Please try again.');
-            messageInput.value = message; // Restore message on error
+            messageInput.value = rawMessage; // Restore message on error
             
-            // Remove optimistic message from UI
+            // Remove optimistic message
             const messagesContainer = document.getElementById('chatMessages');
             const lastMessage = messagesContainer?.lastElementChild;
             if (lastMessage?.classList.contains('optimistic')) {

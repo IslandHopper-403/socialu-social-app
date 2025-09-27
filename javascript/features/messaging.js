@@ -1032,6 +1032,9 @@ export class MessagingManager {
      * Listen for chat updates
      */
    listenForChatUpdates(userId) {
+    // ADDED: Remove existing listener first
+    this.unregisterListener('chat_updates_global');
+    
     try {
         const chatsRef = collection(this.db, 'chats');
         const q = query(
@@ -1039,43 +1042,40 @@ export class MessagingManager {
             where('participants', 'array-contains', userId)
         );
         
-        onSnapshot(q, async (snapshot) => {
+        const unsubscribe = onSnapshot(q, async (snapshot) => {
             console.log('🔄 Chat updates detected');
             
-            // Track unread messages for each chat
             for (const change of snapshot.docChanges()) {
                 if (change.type === 'modified') {
                     const chatData = change.doc.data();
                     const chatId = change.doc.id;
                     
-                    // Check if there's a new message not from current user
                     if (chatData.lastMessageSender && 
                         chatData.lastMessageSender !== userId &&
                         this.currentChatId !== chatId) {
                         
-                        // Increment unread count for this chat
                         const currentUnread = this.unreadMessages.get(chatId) || 0;
                         this.unreadMessages.set(chatId, currentUnread + 1);
                     }
-                    // Save the updated state
-                    this.saveUnreadStateToStorage();  // <-- ADD THIS LINE HERE
+                    this.saveUnreadStateToStorage();
                 }
             }
             
-            // Reload chat list with updated unread counts
             await this.loadChats();
-            
-            // Update total notification count
             this.updateTotalUnreadCount();
             
-             }, (error) => {
-            if (error.code?.includes('permission')) {
-                handleSecurityError(error);
+        }, (error) => {
+             if (error.code?.includes('permission')) {
+                console.error('Permission error:', error);
             }
             console.error('Error in chat updates listener:', error);
+            this.unregisterListener('chat_updates_global'); // ADDED: Cleanup on error
         });
         
+        // ADDED: Register with tracking
+        this.registerListener('chat_updates_global', unsubscribe, 'chat_update');
         console.log('👂 Set up chat updates listener for user:', userId);
+        
     } catch (error) {
         console.error('Error setting up chat updates listener:', error);
     }

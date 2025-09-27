@@ -551,40 +551,94 @@ export class FeedManager {
         });
     }
     
-   /**
-     * Create business card HTML
+ 
+     /**
+     * Create business card HTML - SECURED
      */
-        createBusinessCard(business, type) {
+    createBusinessCard(business, type) {
         // Check if business is favorited
         const isFavorited = window.classifiedApp?.managers?.favoritesCarousel?.isBusinessFavorited(business.id) || false;
         const heartIcon = isFavorited ? '❤️' : '🤍';
         
-        return `
-            <div class="business-card" onclick="CLASSIFIED.openBusinessProfile('${business.id}', '${type}')">
-                <div class="business-header">
-                    <div class="business-logo" style="background-image: url('${business.logo}')"></div>
-                    <div class="business-info">
-                        <h3>${business.name}</h3>
-                        <p>${business.type}</p>
-                    </div>
-                    <button class="business-favorite-btn" 
-                            onclick="event.stopPropagation(); CLASSIFIED.toggleBusinessFavorite('${business.id}')"
-                            style="background: none; border: none; font-size: 24px; cursor: pointer; 
-                                transition: transform 0.2s ease; position: absolute; right: 15px; top: 15px;"
-                            title="Save this business">
-                         ${heartIcon}
-                    </button>
-                </div>
-                <div class="business-image" style="background-image: url('${business.image}')"></div>
-                <div class="business-content">
-                    <div class="business-description">${business.description.substring(0, 100)}...</div>
-                    <div class="business-promo">
-                        <div class="promo-title">${business.promo}</div>
-                        <div class="promo-details">${business.details}</div>
-                    </div>
-                </div>
-            </div>
+        // Create card container safely
+        const card = document.createElement('div');
+        card.className = 'business-card';
+        card.onclick = () => window.CLASSIFIED.openBusinessProfile(business.id, type);
+        
+        // Create header
+        const header = document.createElement('div');
+        header.className = 'business-header';
+        
+        const logo = document.createElement('div');
+        logo.className = 'business-logo';
+        logo.style.backgroundImage = `url('${escapeHtml(business.logo)}')`;
+        
+        const info = document.createElement('div');
+        info.className = 'business-info';
+        
+        const name = document.createElement('h3');
+        name.textContent = business.name; // Safe
+        
+        const typeEl = document.createElement('p');
+        typeEl.textContent = business.type; // Safe
+        
+        info.appendChild(name);
+        info.appendChild(typeEl);
+        
+        // Favorite button
+        const favBtn = document.createElement('button');
+        favBtn.className = 'business-favorite-btn';
+        favBtn.textContent = heartIcon;
+        favBtn.onclick = (e) => {
+            e.stopPropagation();
+            window.CLASSIFIED.toggleBusinessFavorite(business.id);
+        };
+        favBtn.style.cssText = `
+            background: none; border: none; font-size: 24px; cursor: pointer; 
+            transition: transform 0.2s ease; position: absolute; right: 15px; top: 15px;
         `;
+        favBtn.title = 'Save this business';
+        
+        header.appendChild(logo);
+        header.appendChild(info);
+        header.appendChild(favBtn);
+        
+        // Create image
+        const image = document.createElement('div');
+        image.className = 'business-image';
+        image.style.backgroundImage = `url('${escapeHtml(business.image)}')`;
+        
+        // Create content
+        const content = document.createElement('div');
+        content.className = 'business-content';
+        
+        const desc = document.createElement('div');
+        desc.className = 'business-description';
+        desc.textContent = business.description.substring(0, 100) + '...'; // Safe
+        
+        const promo = document.createElement('div');
+        promo.className = 'business-promo';
+        
+        const promoTitle = document.createElement('div');
+        promoTitle.className = 'promo-title';
+        promoTitle.textContent = business.promo; // Safe
+        
+        const promoDetails = document.createElement('div');
+        promoDetails.className = 'promo-details';
+        promoDetails.textContent = business.details; // Safe
+        
+        promo.appendChild(promoTitle);
+        promo.appendChild(promoDetails);
+        
+        content.appendChild(desc);
+        content.appendChild(promo);
+        
+        // Assemble card
+        card.appendChild(header);
+        card.appendChild(image);
+        card.appendChild(content);
+        
+        return card.outerHTML;
     }
     
     /**

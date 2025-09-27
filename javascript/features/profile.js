@@ -1,5 +1,9 @@
 // javascript/features/profile.js
 
+import { 
+    sanitizeProfile, sanitizeText 
+} from '../utils/security.js';
+
 import {
     doc,
     setDoc,

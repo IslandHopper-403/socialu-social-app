@@ -1,6 +1,8 @@
 // javascript/features/feed.js
 
 
+import { sanitizeText, escapeHtml, createSafeElement } from '../utils/security.js';
+
 import {
     collection,
     query,

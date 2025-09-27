@@ -874,55 +874,59 @@ export class MessagingManager {
  * FIXED: Enhanced real-time message listener with proper notifications
  */
     listenToChatMessages(chatId) {
-        // CHANGED: Use new tracking system
         this.unregisterListener(`chat_${chatId}`);
         
         const currentUser = this.state.get('currentUser');
         const messagesRef = collection(this.db, 'chats', chatId, 'messages');
         const q = query(messagesRef, orderBy('timestamp', 'asc'));
         
+        let isInitialLoad = true;
+        
         try {
             const unsubscribe = onSnapshot(q, (snapshot) => {
                 const messages = [];
-                let newMessageCount = 0;
                 
                 snapshot.forEach(messageDoc => {
                     messages.push({ id: messageDoc.id, ...messageDoc.data() });
                 });
                 
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === 'added') {
-                        const message = change.doc.data();
-                        
-                        if (message.senderId !== currentUser.uid) {
-                            newMessageCount++;
-                            this.playNotificationSound();
+                if (!isInitialLoad) {
+                    snapshot.docChanges().forEach(change => {
+                        if (change.type === 'added') {
+                            const message = change.doc.data();
                             
-                            if (!this.isAppVisible) {
-                                this.showBrowserNotification(message);
-                            }
-                            
-                            if (this.currentChatId !== chatId) {
-                                this.updateUnreadCount(chatId, 1);
-                            } else if (!this.isAppVisible) {
-                                this.updateUnreadCount(chatId, 1);
+                            if (message.senderId !== currentUser.uid) {
+                                const messageTime = message.timestamp?.toMillis?.() || Date.now();
+                                
+                                if (messageTime > this.lastAppActive) {
+                                    this.playNotificationSound();
+                                    
+                                    if (!this.isAppVisible || this.currentChatId !== chatId) {
+                                        this.showBrowserNotification(message);
+                                        this.updateUnreadCount(chatId, 1);
+                                    }
+                                }
                             }
                         }
-                    }
-                });
-    
+                    });
+                }
+                
                 this.displayMessages(messages, currentUser.uid);
                 
-                if (this.currentChatId === chatId && this.isAppVisible && newMessageCount > 0) {
+                if (this.currentChatId === chatId && this.isAppVisible && !isInitialLoad) {
                     this.markChatAsRead(chatId);
+                }
+                
+                if (isInitialLoad) {
+                    isInitialLoad = false;
+                    this.initialLoadComplete.add(chatId);
                 }
                 
             }, (error) => {
                 console.error('❌ Error in chat listener:', error);
-                this.unregisterListener(`chat_${chatId}`); // ADDED: Cleanup on error
+                this.unregisterListener(`chat_${chatId}`);
             });
             
-            // ADDED: Register with tracking
             this.registerListener(`chat_${chatId}`, unsubscribe, 'chat');
             console.log('👂 Set up real-time listener for chat:', chatId);
             

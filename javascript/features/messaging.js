@@ -60,7 +60,27 @@ export class MessagingManager {
     this.lastNotificationTimes = new Map(); // chatId -> timestamp
     this.notificationQueue = [];
     this.isAppVisible = !document.hidden;
+
+    // ADDED: Timestamp tracking for notifications
+    this.lastAppActive = Date.now();
+    this.notificationTimestamps = new Map();
+    this.initialLoadComplete = new Set();
     
+    // Load last active timestamp from storage
+    const storedLastActive = localStorage.getItem('lastAppActive');
+    if (storedLastActive) {
+        this.lastAppActive = parseInt(storedLastActive, 10);
+    }
+    
+    // Track app visibility changes
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            localStorage.setItem('lastAppActive', Date.now().toString());
+        } else {
+            this.lastAppActive = parseInt(localStorage.getItem('lastAppActive') || Date.now().toString(), 10);
+        }
+    });
+       
     // Notification system
     this.notificationSound = null;
     this.audioContext = null;

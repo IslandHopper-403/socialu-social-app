@@ -1086,7 +1086,10 @@ export class MessagingManager {
                             
                             if (messageTime > this.lastAppActive) {
                                 const currentUnread = this.unreadMessages.get(chatId) || 0;
-                                this.unreadMessages.set(chatId, Math.max(currentUnread, 1));
+                                // Only set unread if we don't already have it marked as read
+                                if (!this.unreadMessages.has(chatId) || this.unreadMessages.get(chatId) > 0) {
+                                    this.unreadMessages.set(chatId, 1);
+                                }
                             }
                         }
                     });

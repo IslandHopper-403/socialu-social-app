@@ -177,3 +177,31 @@ export function containsXSS(content) {
     
     return xssPatterns.some(pattern => pattern.test(content));
 }
+
+// ... existing sanitize functions ...
+
+/**
+ * Handle Firebase security errors gracefully
+ */
+export function handleSecurityError(error) {
+  const errorMessages = {
+    'permission-denied': 'Access denied. Please check your permissions.',
+    'resource-exhausted': 'Too many requests. Please wait before trying again.',
+    'unauthenticated': 'Please sign in to continue.',
+    'invalid-argument': 'Invalid data provided. Please check your input.'
+  };
+  
+  const message = errorMessages[error.code] || 'An error occurred. Please try again.';
+  
+  // Show error toast
+  const toast = document.getElementById('securityErrorToast');
+  const messageEl = toast.querySelector('.error-message');
+  messageEl.textContent = message;
+  toast.style.display = 'block';
+  
+  setTimeout(() => {
+    toast.style.display = 'none';
+  }, 5000);
+  
+  console.error('Security error:', error.code, error.message);
+}

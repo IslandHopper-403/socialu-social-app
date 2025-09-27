@@ -858,74 +858,63 @@ export class MessagingManager {
    /**
  * FIXED: Enhanced real-time message listener with proper notifications
  */
-listenToChatMessages(chatId) {
-    // Remove existing listener if any
-    if (this.chatListeners.has(chatId)) {
-        const unsubscribe = this.chatListeners.get(chatId);
-        unsubscribe();
-    }
-    
-    const currentUser = this.state.get('currentUser');
-    const messagesRef = collection(this.db, 'chats', chatId, 'messages');
-    const q = query(messagesRef, orderBy('timestamp', 'asc'));
-    
-   try {
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const messages = [];
-            let newMessageCount = 0;
-            
-            snapshot.forEach(messageDoc => {
-                messages.push({ id: messageDoc.id, ...messageDoc.data() });
-            });
-            
-            // Check for new messages from other users
-            snapshot.docChanges().forEach(change => {
-                if (change.type === 'added') {
-                    const message = change.doc.data();
-                    
-                    // Only count messages from other users
-                    if (message.senderId !== currentUser.uid) {
-                        newMessageCount++;
+    listenToChatMessages(chatId) {
+        // CHANGED: Use new tracking system
+        this.unregisterListener(`chat_${chatId}`);
+        
+        const currentUser = this.state.get('currentUser');
+        const messagesRef = collection(this.db, 'chats', chatId, 'messages');
+        const q = query(messagesRef, orderBy('timestamp', 'asc'));
+        
+        try {
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const messages = [];
+                let newMessageCount = 0;
+                
+                snapshot.forEach(messageDoc => {
+                    messages.push({ id: messageDoc.id, ...messageDoc.data() });
+                });
+                
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        const message = change.doc.data();
                         
-                        // Play notification sound
-                        this.playNotificationSound();
-                        
-                        // Show browser notification if app not visible
-                        if (!this.isAppVisible) {
-                            this.showBrowserNotification(message);
-                        }
-                        
-                        // Always update notification dot for messages in other chats
-                        if (this.currentChatId !== chatId) {
-                            // Increment unread count
-                            this.updateUnreadCount(chatId, 1);
-                        } else if (!this.isAppVisible) {
-                            // Also show dot if current chat is open but app not visible
-                            this.updateUnreadCount(chatId, 1);
+                        if (message.senderId !== currentUser.uid) {
+                            newMessageCount++;
+                            this.playNotificationSound();
+                            
+                            if (!this.isAppVisible) {
+                                this.showBrowserNotification(message);
+                            }
+                            
+                            if (this.currentChatId !== chatId) {
+                                this.updateUnreadCount(chatId, 1);
+                            } else if (!this.isAppVisible) {
+                                this.updateUnreadCount(chatId, 1);
+                            }
                         }
                     }
+                });
+    
+                this.displayMessages(messages, currentUser.uid);
+                
+                if (this.currentChatId === chatId && this.isAppVisible && newMessageCount > 0) {
+                    this.markChatAsRead(chatId);
                 }
+                
+            }, (error) => {
+                console.error('❌ Error in chat listener:', error);
+                this.unregisterListener(`chat_${chatId}`); // ADDED: Cleanup on error
             });
-
-
-              // Update UI
-            this.displayMessages(messages, currentUser.uid);
             
-            // Mark as read if chat is open and visible
-            if (this.currentChatId === chatId && this.isAppVisible && newMessageCount > 0) {
-                this.markChatAsRead(chatId);
-            }
+            // ADDED: Register with tracking
+            this.registerListener(`chat_${chatId}`, unsubscribe, 'chat');
+            console.log('👂 Set up real-time listener for chat:', chatId);
             
-        }, (error) => {
-            console.error('❌ Error in chat listener:', error);
-        });
-        
-        this.chatListeners.set(chatId, unsubscribe);
-        console.log('👂 Set up real-time listener for chat:', chatId);
-    } catch (error) {
-        console.error('Error setting up chat listener:', error);
+        } catch (error) {
+            console.error('Error setting up chat listener:', error);
+        }
     }
-}
     
    /**
  * Listen for new matches (FIXED to prevent showing old matches)

@@ -670,7 +670,7 @@ export class MessagingManager {
     }
     
     /**
-     * Add message to UI (for optimistic updates)
+     * Add message to UI with sanitization
      */
     addMessageToUI(messageData, isOptimistic = false) {
         const messagesContainer = document.getElementById('chatMessages');
@@ -682,10 +682,20 @@ export class MessagingManager {
         
         const messageElement = document.createElement('div');
         messageElement.className = `message ${isSent ? 'sent' : 'received'}${isOptimistic ? ' optimistic' : ''}`;
-        messageElement.innerHTML = `
-            <div class="message-bubble">${this.escapeHtml(messageData.text)}</div>
-            ${timeStr ? `<div class="message-time">${timeStr}</div>` : ''}
-        `;
+        
+        // Create message bubble safely
+        const messageBubble = document.createElement('div');
+        messageBubble.className = 'message-bubble';
+        messageBubble.textContent = messageData.text; // Safe - uses textContent
+        
+        messageElement.appendChild(messageBubble);
+        
+        if (timeStr) {
+            const timeElement = document.createElement('div');
+            timeElement.className = 'message-time';
+            timeElement.textContent = timeStr;
+            messageElement.appendChild(timeElement);
+        }
         
         messagesContainer.appendChild(messageElement);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;

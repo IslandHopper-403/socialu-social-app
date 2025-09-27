@@ -760,33 +760,50 @@ export class MessagingManager {
     }
     
     /**
-     * Display messages in chat
+     * Display messages with sanitization
      */
     displayMessages(messages, currentUserId) {
         const messagesContainer = document.getElementById('chatMessages');
         if (!messagesContainer) return;
         
         if (messages.length === 0) {
-            messagesContainer.innerHTML = `
-                <div style="text-align: center; padding: 40px; opacity: 0.7;">
-                    <div style="font-size: 48px; margin-bottom: 10px;">💬</div>
-                    <div>No messages yet. Say hello!</div>
-                </div>
+            const emptyDiv = document.createElement('div');
+            emptyDiv.style.cssText = 'text-align: center; padding: 40px; opacity: 0.7;';
+            emptyDiv.innerHTML = `
+                <div style="font-size: 48px; margin-bottom: 10px;">💬</div>
+                <div>No messages yet. Say hello!</div>
             `;
+            messagesContainer.appendChild(emptyDiv);
             return;
         }
         
-        messagesContainer.innerHTML = messages.map(msg => {
-            const isSent = msg.senderId === currentUserId;
+        // Clear container
+        messagesContainer.innerHTML = '';
+        
+        // Add each message safely
+        messages.forEach(msg => {
+            const sanitizedMsg = sanitizeMessage(msg);
+            const isSent = sanitizedMsg.senderId === currentUserId;
             const timeStr = msg.timestamp ? this.formatMessageTime(msg.timestamp.toDate()) : '';
             
-            return `
-                <div class="message ${isSent ? 'sent' : 'received'}">
-                    <div class="message-bubble">${this.escapeHtml(msg.text)}</div>
-                    ${timeStr ? `<div class="message-time">${timeStr}</div>` : ''}
-                </div>
-            `;
-        }).join('');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${isSent ? 'sent' : 'received'}`;
+            
+            const messageBubble = document.createElement('div');
+            messageBubble.className = 'message-bubble';
+            messageBubble.textContent = sanitizedMsg.text; // Safe
+            
+            messageElement.appendChild(messageBubble);
+            
+            if (timeStr) {
+                const timeElement = document.createElement('div');
+                timeElement.className = 'message-time';
+                timeElement.textContent = timeStr;
+                messageElement.appendChild(timeElement);
+            }
+            
+            messagesContainer.appendChild(messageElement);
+        });
         
         // Scroll to bottom
         messagesContainer.scrollTop = messagesContainer.scrollHeight;

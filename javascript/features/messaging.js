@@ -629,11 +629,12 @@ export class MessagingManager {
         document.dispatchEvent(new CustomEvent('chatClosed'));
         this.navigationManager.closeOverlay('individualChat');
         
-        // CHANGED: Use new tracking system
+        // Enhanced cleanup - unregister chat listener
         if (this.currentChatId) {
             this.unregisterListener(`chat_${this.currentChatId}`);
         }
-        
+
+      // Clear chat context
         this.currentChatId = null;
         this.currentChatPartner = null;
         this.state.set('currentChatUser', null);

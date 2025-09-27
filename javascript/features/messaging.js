@@ -590,12 +590,21 @@ export class MessagingManager {
             }));
 
 
-            // Mark this chat as seen
-            this.unreadMessages.delete(chatId);
+            // Mark this chat as seen IMMEDIATELY
+            this.unreadMessages.set(chatId, 0);
             localStorage.setItem(`seen_${chatId}_${currentUser.uid}`, Date.now().toString());
             this.saveUnreadStateToStorage();
             this.updateTotalUnreadCount();
-            // setTimeout(() => this.loadChats(), 100); COMMENT OUT TO TEST - CRASHING
+            this.updateChatListUnreadIndicators();
+            
+            // Also remove the red dot from the specific chat item
+            const chatItems = document.querySelectorAll('.chat-item');
+            chatItems.forEach(item => {
+                if (item.dataset.chatId === chatId) {
+                    const indicator = item.querySelector('.chat-unread-count, .chat-unread-dot');
+                    if (indicator) indicator.remove();
+                }
+            });
             
             console.log('💬 Chat ID:', chatId);
             

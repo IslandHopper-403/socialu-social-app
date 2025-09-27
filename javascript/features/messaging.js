@@ -2261,6 +2261,32 @@ playNotificationSound() {
         console.log('✅ Messaging cleanup complete');
         console.log(`📊 Active listeners after cleanup: ${this.activeListeners.size}`);
     }
+
+
+        /**
+     * Diagnostic method to check active listeners
+     * Call this in console: window.classifiedApp.managers.messaging.diagnosticListeners()
+     */
+    diagnosticListeners() {
+        console.log('🔍 LISTENER DIAGNOSTIC REPORT');
+        console.log('================================');
+        console.log(`Total active listeners: ${this.activeListeners.size}`);
+        
+        const byType = {};
+        this.activeListeners.forEach((listener, id) => {
+            byType[listener.type] = (byType[listener.type] || 0) + 1;
+            const age = ((Date.now() - listener.createdAt) / 1000).toFixed(1);
+            console.log(`  ${id} (${listener.type}) - ${age}s old`);
+        });
+        
+        console.log('\nBreakdown by type:');
+        Object.entries(byType).forEach(([type, count]) => {
+            console.log(`  ${type}: ${count}`);
+        });
+        
+        console.log('\nLegacy chat listeners:', this.chatListeners.size);
+        console.log('================================');
+    }
     
 /**
      * Show notification dot on messaging tab

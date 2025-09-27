@@ -2285,53 +2285,91 @@ async sendPromotionMessage(promoData) {
     }
 }
 
-
-/**
- * Add promotion to chat UI
- */
-addPromotionToUI(promoData) {
-    const messagesContainer = document.getElementById('chatMessages');
-    if (!messagesContainer) return;
-    
-    const promoElement = document.createElement('div');
-    promoElement.className = 'message sent';
-    promoElement.innerHTML = `
-        <div class="promo-message-card" style="
+    /**
+     * Add promotion to chat UI - SECURED
+     */
+    addPromotionToUI(promoData) {
+        const messagesContainer = document.getElementById('chatMessages');
+        if (!messagesContainer) return;
+        
+        const promoElement = document.createElement('div');
+        promoElement.className = 'message sent';
+        
+        // Create promo card safely
+        const promoCard = document.createElement('div');
+        promoCard.className = 'promo-message-card';
+        promoCard.style.cssText = `
             background: linear-gradient(135deg, #FF6B6B, #FF8C42);
             border-radius: 15px;
             padding: 15px;
             margin: 10px 0;
             max-width: 250px;
             cursor: pointer;
-        " onclick="CLASSIFIED.openBusinessProfile('${promoData.businessId}', 'restaurant')">
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <div style="width: 50px; height: 50px; border-radius: 8px; 
-                            background-image: url('${promoData.businessImage}');
-                            background-size: cover; background-position: center;"></div>
-                <div style="flex: 1;">
-                    <div style="font-weight: 700; font-size: 14px; margin-bottom: 2px;">
-                        ${promoData.businessName}
-                    </div>
-                    <div style="font-size: 12px; opacity: 0.9;">
-                        ${promoData.businessType}
-                    </div>
-                </div>
-            </div>
-            <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px;">
-                <div class="promo-title" style="font-weight: 700; margin-bottom: 5px;">
-                    🎉 ${promoData.promotionTitle}
-                </div>
-                <div class="promo-details" style="font-size: 12px; opacity: 0.9;">
-                    ${promoData.promotionDetails}
-                </div>
-            </div>
-            <div style="margin-top: 10px; font-size: 11px; opacity: 0.8;">
-                📍 ${promoData.businessAddress || 'Tap to view location'}
-            </div>
-        </div>
-        <div class="message-time">${this.formatMessageTime(new Date())}</div>
-    `;
-    
+        `;
+        promoCard.onclick = () => window.CLASSIFIED.openBusinessProfile(promoData.businessId, 'restaurant');
+        
+        // Business header with image
+        const headerDiv = document.createElement('div');
+        headerDiv.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px;';
+        
+        const imageDiv = document.createElement('div');
+        imageDiv.style.cssText = `
+            width: 50px; height: 50px; border-radius: 8px; 
+            background-image: url('${escapeHtml(promoData.businessImage)}');
+            background-size: cover; background-position: center;
+        `;
+        
+        const infoDiv = document.createElement('div');
+        infoDiv.style.cssText = 'flex: 1;';
+        
+        const nameDiv = document.createElement('div');
+        nameDiv.style.cssText = 'font-weight: 700; font-size: 14px; margin-bottom: 2px;';
+        nameDiv.textContent = promoData.businessName;
+        
+        const typeDiv = document.createElement('div');
+        typeDiv.style.cssText = 'font-size: 12px; opacity: 0.9;';
+        typeDiv.textContent = promoData.businessType;
+        
+        infoDiv.appendChild(nameDiv);
+        infoDiv.appendChild(typeDiv);
+        headerDiv.appendChild(imageDiv);
+        headerDiv.appendChild(infoDiv);
+        
+        // Promo content
+        const contentDiv = document.createElement('div');
+        contentDiv.style.cssText = 'background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px;';
+        
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'promo-title';
+        titleDiv.style.cssText = 'font-weight: 700; margin-bottom: 5px;';
+        titleDiv.textContent = `🎉 ${promoData.promotionTitle}`;
+        
+        const detailsDiv = document.createElement('div');
+        detailsDiv.className = 'promo-details';
+        detailsDiv.style.cssText = 'font-size: 12px; opacity: 0.9;';
+        detailsDiv.textContent = promoData.promotionDetails;
+        
+        contentDiv.appendChild(titleDiv);
+        contentDiv.appendChild(detailsDiv);
+        
+        // Address
+        const addressDiv = document.createElement('div');
+        addressDiv.style.cssText = 'margin-top: 10px; font-size: 11px; opacity: 0.8;';
+        addressDiv.textContent = `📍 ${promoData.businessAddress || 'Tap to view location'}`;
+        
+        // Assemble
+        promoCard.appendChild(headerDiv);
+        promoCard.appendChild(contentDiv);
+        promoCard.appendChild(addressDiv);
+        
+        // Add time
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'message-time';
+        timeDiv.textContent = this.formatMessageTime(new Date());
+        
+        promoElement.appendChild(promoCard);
+        promoElement.appendChild(timeDiv);
+        
         messagesContainer.appendChild(promoElement);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }

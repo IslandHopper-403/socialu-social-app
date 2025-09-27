@@ -939,69 +939,67 @@ export class MessagingManager {
  * Listen for new matches (FIXED to prevent showing old matches)
  */
     listenForMatches(userId) {
-        // ADDED: Remove existing listener first
-        this.unregisterListener('matches_global');
+    this.unregisterListener('matches_global');
+    
+    try {
+        const matchesRef = collection(this.db, 'matches');
+        const q = query(
+            matchesRef,
+            where('users', 'array-contains', userId)
+        );
         
-        try {
-            const matchesRef = collection(this.db, 'matches');
-            const q = query(
-                matchesRef,
-                where('users', 'array-contains', userId)
-            );
-            
-            let isInitialLoad = true;
-            
-            const unsubscribe = onSnapshot(q, (snapshot) => {
-                if (isInitialLoad) {
-                    isInitialLoad = false;
-                    console.log(`👂 Found ${snapshot.size} existing matches, not showing popups`);
-                    
-                    snapshot.forEach(doc => {
-                        const matchId = doc.id;
-                        this.seenMatches = this.seenMatches || new Set();
-                        this.seenMatches.add(matchId);
-                    });
-                    return;
-                }
-                
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === 'added') {
-                        const matchId = change.doc.id;
-                        const matchData = change.doc.data();
-                        
-                        this.seenMatches = this.seenMatches || new Set();
-                        if (!this.seenMatches.has(matchId)) {
-                            this.seenMatches.add(matchId);
-                            
-                            const matchTime = matchData.timestamp?.toDate?.() || new Date();
-                            const now = new Date();
-                            const timeDiff = now - matchTime;
-                            
-                            if (timeDiff < 30000) {
-                                console.log('🎉 New match detected!', matchId);
-                                this.handleNewMatch(matchData);
-                            } else {
-                                console.log('⏭️ Skipping old match popup:', matchId);
-                            }
-                        }
-                    }
+        let isInitialLoad = true;
+        const loadTime = Date.now();
+        
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            if (isInitialLoad) {
+                snapshot.forEach(doc => {
+                    const matchId = doc.id;
+                    this.seenMatches = this.seenMatches || new Set();
+                    this.seenMatches.add(matchId);
                 });
                 
-                this.saveSeenMatches(); // ADDED: Save after processing
-                
-            }, (error) => {
-                console.error('Error in match listener:', error);
-                this.unregisterListener('matches_global'); // ADDED: Cleanup on error
+                isInitialLoad = false;
+                this.saveSeenMatches();
+                console.log(`👂 Found ${snapshot.size} existing matches, marked as seen`);
+                return;
+            }
+            
+            snapshot.docChanges().forEach(change => {
+                if (change.type === 'added') {
+                    const matchId = change.doc.id;
+                    const matchData = change.doc.data();
+                    
+                    this.seenMatches = this.seenMatches || new Set();
+                    
+                    if (!this.seenMatches.has(matchId)) {
+                        const matchTime = matchData.timestamp?.toDate?.() || new Date();
+                        const timeDiff = Date.now() - matchTime.getTime();
+                        
+                        if (matchTime.getTime() > loadTime && timeDiff < 30000) {
+                            console.log('🎉 New match detected!', matchId);
+                            this.seenMatches.add(matchId);
+                            this.saveSeenMatches();
+                            this.handleNewMatch(matchData);
+                        } else {
+                            this.seenMatches.add(matchId);
+                            this.saveSeenMatches();
+                        }
+                    }
+                }
             });
             
-            // ADDED: Register with tracking
-            this.registerListener('matches_global', unsubscribe, 'match');
-            console.log('👂 Set up match listener for user:', userId);
-            
-        } catch (error) {
-            console.error('Error setting up match listener:', error);
-        }
+        }, (error) => {
+            console.error('Error in match listener:', error);
+            this.unregisterListener('matches_global');
+        });
+        
+        this.registerListener('matches_global', unsubscribe, 'match');
+        
+    } catch (error) {
+        console.error('Error setting up match listener:', error);
     }
+}
     
     // Add this method to save seen matches to localStorage:
     saveSeenMatches() {

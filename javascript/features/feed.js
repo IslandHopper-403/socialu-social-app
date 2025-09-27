@@ -590,62 +590,64 @@ export class FeedManager {
     /**
      * Create user feed item
      */
-    // In feed.js, find the createUserFeedItem method and ensure it starts like this:
-
-
-// In feed.js, update the createUserFeedItem method:
-
-
-createUserFeedItem(user, index) {
-    const feedItem = document.createElement('div');
-    feedItem.className = 'user-feed-item';
-    feedItem.style.animationDelay = `${index * 0.1}s`;
-    feedItem.style.cursor = 'pointer';
-    
-    // Ensure user has an ID properly set
-    const userId = user.uid || user.id || `demo_${user.name.toLowerCase().replace(/\s/g, '_')}`;
-    
-    // Create a properly formatted user object
-    const userWithId = {
-        ...user,
-        uid: userId,
-        id: userId
-    };
-    
-    // Make entire card clickable
-    feedItem.addEventListener('click', (e) => {
-        if (!e.target.closest('.user-actions')) {
-            window.CLASSIFIED.openUserProfile(userWithId);
-        }
-    });
-    
-    feedItem.innerHTML = `
-        <div class="user-status-badges">
-            ${user.isOnline ? '<div class="status-badge status-online">🟢 Online</div>' : ''}
-            <div class="status-badge status-distance">📍 ${user.distance}</div>
-            <div class="status-badge status-match">🔥 ${user.matchPercentage}% Match</div>
-        </div>
-        <div class="user-image" style="background-image: url('${user.image}')">
-            <div class="user-image-overlay">
-                <div class="user-name">${user.name}, ${user.age}</div>
+      createUserFeedItem(user, index) {
+        const feedItem = document.createElement('div');
+        feedItem.className = 'user-feed-item';
+        feedItem.style.animationDelay = `${index * 0.1}s`;
+        feedItem.style.cursor = 'pointer';
+        
+        // Sanitize user data
+        const safeName = sanitizeText(user.name || 'User');
+        const safeBio = sanitizeText(user.bio || 'No bio');
+        const safeAge = parseInt(user.age) || 25;
+        
+        const userId = user.uid || user.id || `demo_${safeName.toLowerCase().replace(/\s/g, '_')}`;
+        
+        const userWithId = {
+            ...user,
+            uid: userId,
+            id: userId,
+            name: safeName,
+            bio: safeBio,
+            age: safeAge
+        };
+        
+        feedItem.addEventListener('click', (e) => {
+            if (!e.target.closest('.user-actions')) {
+                window.CLASSIFIED.openUserProfile(userWithId);
+            }
+        });
+        
+        // Build HTML safely - only using sanitized data
+        feedItem.innerHTML = `
+            <div class="user-status-badges">
+                ${user.isOnline ? '<div class="status-badge status-online">🟢 Online</div>' : ''}
+                <div class="status-badge status-distance">📍 ${escapeHtml(user.distance)}</div>
+                <div class="status-badge status-match">🔥 ${parseInt(user.matchPercentage) || 75}% Match</div>
             </div>
-        </div>
-        <div class="user-info">
-            <div class="user-bio">${user.bio}</div>
-            <div class="user-interests">
-                ${user.interests.map(interest => `<span class="interest-tag">${interest}</span>`).join('')}
+            <div class="user-image" style="background-image: url('${escapeHtml(user.image)}')">
+                <div class="user-image-overlay">
+                    <div class="user-name">${escapeHtml(safeName)}, ${safeAge}</div>
+                </div>
             </div>
-            <div class="user-actions">
-                <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${userId}')">✕ Pass</button>
-                <button class="action-btn chat-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${userId}')">💬 Chat</button>
-                <button class="action-btn super-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('superlike', '${userId}')">⭐ Super</button>
+            <div class="user-info">
+                <div class="user-bio">${escapeHtml(safeBio)}</div>
+                <div class="user-interests">
+                    ${(user.interests || []).map(interest => 
+                        `<span class="interest-tag">${escapeHtml(sanitizeText(interest))}</span>`
+                    ).join('')}
+                </div>
+                <div class="user-actions">
+                    <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${userId}')">✕ Pass</button>
+                    <button class="action-btn chat-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${userId}')">💬 Chat</button>
+                    <button class="action-btn super-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('superlike', '${userId}')">⭐ Super</button>
+                </div>
             </div>
-        </div>
-    `;
-    
-    return feedItem;
-}
-    
+        `;
+        
+        return feedItem;
+    }
+
     /**
      * Add business signup banner
      */

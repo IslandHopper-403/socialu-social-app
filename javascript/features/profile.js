@@ -186,11 +186,11 @@ export class ProfileManager {
     /**
      * Save user profile
      */
-        async saveUserProfile() {
-            const user = this.state.get('currentUser');
-            if (!user) {
-                alert('Please log in first');
-                return;
+      async saveUserProfile() {
+        const user = this.state.get('currentUser');
+        if (!user) {
+            alert('Please log in first');
+            return;
         }
         
         try {

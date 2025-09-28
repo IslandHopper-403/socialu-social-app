@@ -153,11 +153,22 @@ export class BusinessManager {
                 businessData = this.getBusinessFromMockData(businessId, businessType);
             }
             
-            if (!businessData) {
+        if (!businessData) {
             console.error('Business not found for ID:', businessId);
             console.log('Attempted Firebase lookup:', businessId);
-            console.log('Available mock restaurants:', this.mockData?.getRestaurants?.().map(r => r.id));
-            console.log('Available mock activities:', this.mockData?.getActivities?.().map(a => a.id));
+            
+            const restaurants = this.mockData?.getRestaurants?.() || [];
+            const activities = this.mockData?.getActivities?.() || [];
+            console.log('Available restaurant IDs:', restaurants.map(r => ({ id: r.id, name: r.name })));
+            console.log('Available activity IDs:', activities.map(a => ({ id: a.id, name: a.name })));
+            console.log('Looking for ID:', businessId);
+            
+            // Try to find the business
+            const foundRestaurant = restaurants.find(r => r.id === businessId);
+            const foundActivity = activities.find(a => a.id === businessId);
+            console.log('Found in restaurants?', foundRestaurant);
+            console.log('Found in activities?', foundActivity);
+            
             alert(`Business not found (ID: ${businessId})`);
             this.navigationManager.hideLoading();
             return;

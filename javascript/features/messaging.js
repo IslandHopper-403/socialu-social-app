@@ -66,17 +66,19 @@ export class MessagingManager {
     this.notificationTimestamps = new Map();
     this.initialLoadComplete = new Set();
 
-    this.sessionStartTime = Date.now(); // NEW: Cutoff for this session
+    // FIXED: Track when messages were last seen per chat
+    this.lastSeenTimestamps = new Map(); // chatId -> timestamp
+    this.loadLastSeenTimestamps();
     
-    // Load last active timestamp from storage
-    const storedLastActive = localStorage.getItem('lastAppActive');
-    if (storedLastActive) {
-        this.lastAppActive = parseInt(storedLastActive, 10);
-    } else {
-        // First time user - set to now to avoid showing all historical messages
-        this.lastAppActive = Date.now();
-        localStorage.setItem('lastAppActive', this.lastAppActive.toString());
-    }
+    // FIXED: Remove sessionStartTime - it's causing false notifications
+    // this.sessionStartTime = Date.now(); // DELETED
+    
+    // FIXED: Better last active tracking
+    this.lastAppActive = parseInt(localStorage.getItem('lastAppActive') || Date.now().toString(), 10);
+    
+    // FIXED: Track initial loads to prevent notifications
+    this.initialLoadComplete = new Set();
+    this.firstLoadTimestamp = Date.now(); // When THIS session started
        
     // Notification system
     this.notificationSound = null;

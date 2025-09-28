@@ -1946,7 +1946,7 @@ updateNotificationState() {
         
         // 5. Clear notification state
         this.unreadMessages.clear();
-        this.lastSeenMessages.clear();
+        if (this.lastSeenMessages) this.lastSeenMessages.clear();
         this.lastNotificationTimes.clear();
         this.notificationQueue = [];
         

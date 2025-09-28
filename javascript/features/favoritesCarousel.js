@@ -1,7 +1,5 @@
 // javascript/features/favoritesCarousel.js
 
-// javascript/features/favoritesCarousel.js
-
 import { sanitizeText, escapeHtml } from '../utils/security.js';
 
 import {
@@ -74,6 +72,11 @@ extractBusinessIdFromCard(cardElement) {
     setManagers(managers) {
         this.messagingManager = managers.messaging;
         this.navigationManager = managers.navigation;
+        
+        // Listen for auth state changes to load favorites
+        if (managers.auth) {
+            this.authManager = managers.auth;
+        }
     }
     
     /**
@@ -106,6 +109,17 @@ extractBusinessIdFromCard(cardElement) {
         console.log('🎠 User logged in, loading favorites...');
         await this.loadUserFavorites();
         }
+
+        /**
+     * Reload favorites when auth state changes
+     */
+    async reloadFavorites() {
+        const currentUser = this.state.get('currentUser');
+        if (currentUser) {
+            console.log('🔄 Reloading favorites for user:', currentUser.uid);
+            await this.loadUserFavorites();
+        }
+    }
     
     /**
      * Create the carousel DOM element

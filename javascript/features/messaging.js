@@ -53,18 +53,10 @@ export class MessagingManager {
     this.currentChatId = null;
     this.currentChatPartner = null;
     
-    // ADDED: Notification state tracking
-    this.unreadMessages = new Map(); // chatId -> count
-    this.loadUnreadStateFromStorage(); // ADD THIS LINE
-    this.lastSeenMessages = new Map(); // chatId -> timestamp
-    this.lastNotificationTimes = new Map(); // chatId -> timestamp
-    this.notificationQueue = [];
+   // Keep unread messages for UI display only
+    this.unreadMessages = new Map();
+    this.loadUnreadStateFromStorage();
     this.isAppVisible = !document.hidden;
-
-    // ADDED: Timestamp tracking for notifications
-    this.lastAppActive = Date.now();
-    this.notificationTimestamps = new Map();
-    this.initialLoadComplete = new Set();
 
     // FIXED: Track when messages were last seen per chat
     this.lastSeenTimestamps = new Map(); // chatId -> timestamp
@@ -80,11 +72,6 @@ export class MessagingManager {
     this.initialLoadComplete = new Set();
     this.firstLoadTimestamp = Date.now(); // When THIS session started
        
-    // Notification system
-    this.notificationSound = null;
-    this.audioContext = null;
-    this.setupNotificationSound();
-    
     // ADDED: Track app visibility for smart notifications
     document.addEventListener('visibilitychange', () => {
         this.isAppVisible = !document.hidden;
@@ -135,19 +122,6 @@ export class MessagingManager {
             localStorage.setItem('lastSeenTimestamps', JSON.stringify(toSave));
         } catch (error) {
             console.error('Error saving last seen timestamps:', error);
-        }
-    }
-
-    /**
-     * Set up notification sound
-     */
-    setupNotificationSound() {
-
-        try {
-            // Create notification sound
-            this.notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUYrTp66hVFApGn+DyvmEaAzqM0+/ReigGHXNfY');
-        } catch (error) {
-            console.log('Could not create notification sound:', error);
         }
     }
 
@@ -203,15 +177,11 @@ export class MessagingManager {
     /**
      * Initialize messaging system
      */
-    async init() {
+
+async init() {
         console.log('💬 Initializing messaging manager...');
         // Set up event listeners
         this.setupEventListeners();
-
-
-        // Initialize notification system
-        await this.initializeNotifications();
-
 
         // Load initial data if authenticated or in guest mode
         if (this.state.get('isAuthenticated')) {
@@ -952,15 +922,14 @@ export class MessagingManager {
                             if (change.type === 'added') {
                                 const message = change.doc.data();
                                 
-                                if (message.senderId !== currentUser.uid) {
-                                    const messageTime = message.timestamp?.toMillis?.() || Date.now();
-                                    
-                                    // FIXED: Only notify for truly new messages
-                                    if (messageTime > lastSeen && messageTime > this.firstLoadTimestamp) {
-                                        this.playNotificationSound();
+                             if (message.senderId !== currentUser.uid) {
+                                    // Delegate to notification manager
+                                    const notificationManager = window.classifiedApp?.managers?.notifications;
+                                    if (notificationManager && notificationManager.shouldShowNotification(message, chatId)) {
+                                        const partnerInfo = await this.getChatPartnerInfo(chatId);
+                                        notificationManager.showNotification(message, chatId, partnerInfo);
                                         
-                                        if (!this.isAppVisible || this.currentChatId !== chatId) {
-                                            this.showBrowserNotification(message);
+                                        if (this.currentChatId !== chatId) {
                                             this.updateUnreadCount(chatId, 1);
                                         }
                                     }
@@ -1667,207 +1636,6 @@ async triggerMatchPopup(currentUserId, matchedUserId) {
     }
 
 
-    /**
- * NEW: Initialize notification system properly
- */
-async initializeNotifications() {
-    console.log('🔔 Initializing notification system...');
-    
-    // Request notification permission
-    await this.requestNotificationPermission();
-    
-    // Set up notification sound
-    this.setupNotificationSound();
-    
-    // Load unread message counts
-    await this.loadUnreadCounts();
-    
-    // Set up periodic cleanup
-    this.setupNotificationCleanup();
-}
-
-
-/**
- * NEW: Load unread message counts from storage
- */
- async loadUnreadCounts() {
-    const currentUser = this.state.get('currentUser');
-    if (!currentUser) return;
-    
-    console.log('📊 Loading unread message counts...');
-    
-    try {
-        // Get all chats for current user
-        const chatsQuery = query(
-            collection(this.db, 'chats'),
-            where('participants', 'array-contains', currentUser.uid)
-        );
-        
-        const chatsSnapshot = await getDocs(chatsQuery);
-        let totalUnread = 0;
-        
-        for (const chatDoc of chatsSnapshot.docs) {
-            const chatId = chatDoc.id;
-            const chatData = chatDoc.data();
-            
-            // Quick check: if last message is from other user and recent
-            if (chatData.lastMessageSender && 
-                chatData.lastMessageSender !== currentUser.uid &&
-                chatData.lastMessageTime) {
-                
-                // For now, assume it's unread if it's from the other user
-                // In production, you'd track read status properly
-                this.unreadMessages.set(chatId, 1);
-                totalUnread++;
-            }
-        }
-        
-        // Update notification display
-        if (totalUnread > 0) {
-            console.log(`📌 Found ${totalUnread} unread messages`);
-            this.showNotificationDot(totalUnread);
-        }
-        
-    } catch (error) {
-        console.error('Error loading unread counts:', error);
-    }
-}
-
-
-/**
- * ENHANCED: Show notification dot with count
- */
-showNotificationDot(count = null) {
-    const notificationDot = document.getElementById('messageNotificationDot');
-    const countBadge = document.getElementById('unreadCountBadge');
-    const socialTab = document.querySelector('.social-tab[data-tab="messaging"]');
-    
-    // Ensure the tab is positioned relatively
-    if (socialTab) {
-        socialTab.style.position = 'relative';
-    }
-    
-    if (count && count > 0) {
-        // Show count badge instead of dot for specific counts
-        if (notificationDot) {
-            notificationDot.style.display = 'none';
-        }
-        if (countBadge) {
-            countBadge.style.display = 'flex';
-            countBadge.textContent = count > 99 ? '99+' : count.toString();
-            countBadge.style.position = 'absolute';
-            countBadge.style.top = '4px';
-            countBadge.style.right = '4px';
-        }
-    } else {
-        // Show just the dot
-        if (notificationDot) {
-            notificationDot.style.display = 'block';
-            notificationDot.style.position = 'absolute';
-            notificationDot.style.top = '8px';
-            notificationDot.style.right = '8px';
-        }
-        if (countBadge) {
-            countBadge.style.display = 'none';
-        }
-    }
-    
-    console.log('💬 Showing message notification', count ? `(${count})` : '(dot)');
-}
-    
-/**
- * ENHANCED: Hide notification dot
- */
-hideNotificationDot() {
-    const notificationDot = document.getElementById('messageNotificationDot');
-    const countBadge = document.getElementById('unreadCountBadge');
-    
-    if (notificationDot) notificationDot.style.display = 'none';
-    if (countBadge) countBadge.style.display = 'none';
-    
-    console.log('💬 Hiding message notification');
-}
-
-
-    /**
- * Clear all notifications when messaging tab is opened
- */
-clearNotificationsForMessagingTab() {
-    // Only clear the main tab notification, not individual chat unreads
-    const notificationDot = document.getElementById('messageNotificationDot');
-    const countBadge = document.getElementById('unreadCountBadge');
-    
-    if (notificationDot) notificationDot.style.display = 'none';
-    if (countBadge) countBadge.style.display = 'none';
-    
-    console.log('💬 Cleared messaging tab notifications');
-}
-
-
-/**
- * FIXED: Enhanced in-app notification system
- */
-showInAppNotification(messageData, chatId) {
-    // Don't show if already showing notification for this chat
-    if (document.querySelector(`.chat-notification[data-chat-id="${chatId}"]`)) {
-        return;
-    }
-    
-    // Get partner info for notification
-    this.getChatPartnerInfo(chatId).then(partnerInfo => {
-        const notification = document.createElement('div');
-        notification.className = 'chat-notification';
-        notification.setAttribute('data-chat-id', chatId);
-        notification.setAttribute('data-created', Date.now().toString());
-        notification.innerHTML = `
-            <div style="position: fixed; top: 20px; right: 20px; 
-                        background: rgba(0,212,255,0.95); color: white; 
-                        padding: 16px 20px; border-radius: 12px; 
-                        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-                        max-width: 300px; z-index: 1000;
-                        animation: slideInRight 0.3s ease; cursor: pointer;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 40px; height: 40px; border-radius: 50%; 
-                                background-image: url('${partnerInfo.avatar}');
-                                background-size: cover; background-position: center;
-                                flex-shrink: 0;"></div>
-                    <div style="flex: 1; min-width: 0;">
-                        <div style="font-weight: 600; margin-bottom: 2px;">
-                            ${partnerInfo.name}
-                        </div>
-                        <div style="font-size: 14px; opacity: 0.9; 
-                                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            ${messageData.text}
-                        </div>
-                    </div>
-                </div>
-                <div style="position: absolute; top: 8px; right: 8px; 
-                            width: 20px; height: 20px; cursor: pointer;
-                            display: flex; align-items: center; justify-content: center;"
-                     onclick="event.stopPropagation(); this.parentElement.parentElement.remove();">
-                    ×
-                </div>
-            </div>
-        `;
-        
-        // Click to open chat
-        notification.onclick = () => {
-            this.openChatFromNotification(chatId, partnerInfo);
-            notification.remove();
-        };
-        
-        document.body.appendChild(notification);
-        
-        // Auto-remove after 5 seconds
-        setTimeout(() => {
-            if (notification.parentElement) {
-                notification.remove();
-            }
-        }, 5000);
-    });
-}
-
-
 /**
  * NEW: Get chat partner information
  */
@@ -2088,221 +1856,6 @@ updateNotificationState() {
     this.updateChatListUnreadIndicators();
 }
 
-
-/**
- * NEW: Update favicon with unread count
- */
-updateFaviconWithCount(count) {
-    try {
-        const canvas = document.createElement('canvas');
-        canvas.width = 32;
-        canvas.height = 32;
-        const ctx = canvas.getContext('2d');
-        
-        // Draw red circle
-        ctx.fillStyle = '#FF4444';
-        ctx.beginPath();
-        ctx.arc(16, 16, 16, 0, 2 * Math.PI);
-        ctx.fill();
-        
-        // Draw count text
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 20px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(count > 9 ? '9+' : count.toString(), 16, 16);
-        
-        // Update favicon
-        let favicon = document.querySelector('link[rel="icon"]');
-        if (!favicon) {
-            favicon = document.createElement('link');
-            favicon.rel = 'icon';
-            document.head.appendChild(favicon);
-        }
-        favicon.href = canvas.toDataURL();
-        
-    } catch (error) {
-        console.log('Could not update favicon:', error);
-    }
-}
-
-
-/**
- * NEW: Reset favicon to default
- */
-resetFavicon() {
-    try {
-        let favicon = document.querySelector('link[rel="icon"]');
-        if (favicon) {
-            favicon.href = '/favicon.ico'; // Update with your default favicon path
-        }
-    } catch (error) {
-        console.log('Could not reset favicon:', error);
-    }
-}
-
-
-/**
- * NEW: Set up notification cleanup (remove old notifications)
- */
-setupNotificationCleanup() {
-    setInterval(() => {
-        // Clean up old in-app notifications
-        const notifications = document.querySelectorAll('.chat-notification');
-        const now = Date.now();
-        
-        notifications.forEach(notification => {
-            const created = parseInt(notification.dataset.created) || now;
-            if (now - created > 30000) { // 30 seconds
-                notification.remove();
-            }
-        });
-    }, 10000); // Check every 10 seconds
-}
-
-
-/**
- * ENHANCED: Better notification sound setup
- */
-setupNotificationSound() {
-    try {
-        // Create a more pleasant notification sound
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        
-        // Store for later use
-        this.audioContext = audioContext;
-        
-        // Create notification sound blob
-        const notificationSoundData = this.generateNotificationTone();
-        const blob = new Blob([notificationSoundData], { type: 'audio/wav' });
-        this.notificationSound = new Audio(URL.createObjectURL(blob));
-        this.notificationSound.volume = 0.3; // Gentle volume
-        
-    } catch (error) {
-        console.log('Could not create advanced notification sound, using fallback:', error);
-        // Fallback to simple beep
-        this.notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUYrTp66hVFApGn+DyvmEaAzqM0+/ReigGHXM=');
-    }
-}
-
-
-/**
- * NEW: Generate pleasant notification tone
- */
-generateNotificationTone() {
-    // Generate a pleasant two-tone notification sound
-    const sampleRate = 44100;
-    const duration = 0.3;
-    const samples = sampleRate * duration;
-    const buffer = new ArrayBuffer(samples * 2);
-    const view = new DataView(buffer);
-    
-    for (let i = 0; i < samples; i++) {
-        const t = i / sampleRate;
-        const frequency1 = 800; // First tone
-        const frequency2 = 600; // Second tone
-        
-        let sample = 0;
-        if (t < 0.15) {
-            sample = Math.sin(2 * Math.PI * frequency1 * t) * 0.3;
-        } else {
-            sample = Math.sin(2 * Math.PI * frequency2 * t) * 0.3;
-        }
-        
-        // Apply envelope to avoid clicks
-        const envelope = Math.sin(Math.PI * t / duration);
-        sample *= envelope;
-        
-        // Convert to 16-bit PCM
-        const intSample = Math.max(-1, Math.min(1, sample)) * 0x7FFF;
-        view.setInt16(i * 2, intSample, true);
-    }
-    
-    return buffer;
-}
-
-
-/**
- * ENHANCED: Smart notification timing
- */
-shouldShowNotification(messageData, chatId) {
-    const currentUser = this.state.get('currentUser');
-    
-    // Don't notify for own messages
-    if (messageData.senderId === currentUser?.uid) {
-        return false;
-    }
-    
-    // Don't notify if chat is currently open and app is visible
-    if (this.currentChatId === chatId && this.isAppVisible) {
-        return false;
-    }
-    
-    // Check if we recently showed a notification for this chat
-    const lastNotificationTime = this.lastNotificationTimes?.get(chatId) || 0;
-    const now = Date.now();
-    
-    if (now - lastNotificationTime < 5000) { // 5 second cooldown
-        return false;
-    }
-    
-    this.lastNotificationTimes = this.lastNotificationTimes || new Map();
-    this.lastNotificationTimes.set(chatId, now);
-    
-    return true;
-}
-
-
-/**
- * FIXED: Enhanced browser notification
- */
-async showBrowserNotification(messageData) {
-    if (Notification.permission !== 'granted') return;
-    
-    try {
-        const partnerInfo = await this.getChatPartnerInfo(this.currentChatId);
-        
-        const notification = new Notification(`New message from ${partnerInfo.name}`, {
-            body: messageData.text,
-            icon: partnerInfo.avatar || '/favicon.ico',
-            tag: 'chat-message', // Replaces previous notifications
-            requireInteraction: false,
-            silent: false
-        });
-        
-        notification.onclick = () => {
-            window.focus();
-            this.openChatFromNotification(this.currentChatId, partnerInfo);
-            notification.close();
-        };
-        
-        // Auto-close after 5 seconds
-        setTimeout(() => notification.close(), 5000);
-        
-    } catch (error) {
-        console.error('Error showing browser notification:', error);
-    }
-}
-
-
-/**
- * FIXED: Enhanced notification sound
- */
-playNotificationSound() {
-    try {
-        if (this.notificationSound) {
-            // Reset and play
-            this.notificationSound.currentTime = 0;
-            this.notificationSound.play().catch(e => {
-                console.log('Could not play notification sound:', e);
-            });
-        }
-    } catch (error) {
-        console.log('Error playing notification sound:', error);
-    }
-}
-
-
     /**
      * Cleanup on destroy
      */
@@ -2312,7 +1865,6 @@ playNotificationSound() {
     cleanup() {
         console.log('🧹 Cleaning up messaging listeners and resources');
         
-        localStorage.setItem('lastAppActive', Date.now().toString());
         this.saveUnreadStateToStorage();
         this.saveSeenMatches();
         

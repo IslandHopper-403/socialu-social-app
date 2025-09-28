@@ -62,8 +62,8 @@ export class MessagingManager {
     this.lastSeenTimestamps = new Map(); // chatId -> timestamp
     this.loadLastSeenTimestamps(); 
     
-    // FIXED: Remove sessionStartTime - it's causing false notifications
-    // this.sessionStartTime = Date.now(); // DELETED
+    // FIXED: Track seen matches across sessions
+    this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
     
     // FIXED: Better last active tracking
     this.lastAppActive = parseInt(localStorage.getItem('lastAppActive') || Date.now().toString(), 10);
@@ -976,73 +976,98 @@ async init() {
         }
     }
     
-   /**
- * Listen for new matches (FIXED to prevent showing old matches)
- */
+        /**
+     * Listen for new matches (FIXED to prevent showing old matches)
+     */
     listenForMatches(userId) {
-    this.unregisterListener('matches_global');
-    
-    try {
-        const matchesRef = collection(this.db, 'matches');
-        const q = query(
-            matchesRef,
-            where('users', 'array-contains', userId)
-        );
+        this.unregisterListener('matches_global');
         
-        let isInitialLoad = true;
-        const loadTime = Date.now();
-        
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            if (isInitialLoad) {
-                snapshot.forEach(doc => {
-                    const matchId = doc.id;
-                    this.seenMatches = this.seenMatches || new Set();
-                    this.seenMatches.add(matchId);
-                });
-                
-                isInitialLoad = false;
-                this.saveSeenMatches();
-                console.log(`👂 Found ${snapshot.size} existing matches, marked as seen`);
-                return;
+        try {
+            const matchesRef = collection(this.db, 'matches');
+            const q = query(
+                matchesRef,
+                where('users', 'array-contains', userId)
+            );
+            
+            // FIXED: Track initial load and session start time
+            let isInitialLoad = true;
+            const sessionStartTime = Date.now();
+            
+            // FIXED: Load seen matches from localStorage
+            if (!this.seenMatches) {
+                this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
             }
             
-            snapshot.docChanges().forEach(change => {
-                if (change.type === 'added') {
-                    const matchId = change.doc.id;
-                    const matchData = change.doc.data();
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                if (isInitialLoad) {
+                    // FIXED: On initial load, just mark all existing matches as seen
+                    snapshot.forEach(doc => {
+                        const matchId = doc.id;
+                        this.seenMatches.add(matchId);
+                    });
                     
-                    this.seenMatches = this.seenMatches || new Set();
-                    
-                    if (!this.seenMatches.has(matchId)) {
-                        const matchTime = matchData.timestamp?.toDate?.() || new Date();
-                        const timeDiff = Date.now() - matchTime.getTime();
-                        
-                        if (matchTime.getTime() > loadTime && timeDiff < 30000) {
-                            console.log('🎉 New match detected!', matchId);
-                            this.seenMatches.add(matchId);
-                            this.saveSeenMatches();
-                            this.handleNewMatch(matchData);
-                        } else {
-                            this.seenMatches.add(matchId);
-                            this.saveSeenMatches();
-                        }
-                    }
+                    // Save to localStorage
+                    this.saveSeenMatches();
+                    isInitialLoad = false;
+                    console.log(`👂 Initial load complete, marked ${snapshot.size} existing matches as seen`);
+                    return;
                 }
+                
+                // FIXED: Only process changes after initial load
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        const matchId = change.doc.id;
+                        const matchData = change.doc.data();
+                        
+                        // FIXED: Skip if already seen
+                        if (this.seenMatches.has(matchId)) {
+                            console.log('⏭️ Skipping already seen match:', matchId);
+                            return;
+                        }
+                        
+                        // FIXED: Check timestamp - only show if created after session start
+                        const matchTime = matchData.timestamp?.toDate?.() || new Date();
+                        const matchTimeMs = matchTime.getTime();
+                        
+                        if (matchTimeMs < sessionStartTime) {
+                            console.log('⏭️ Skipping old match from before session:', matchId);
+                            this.seenMatches.add(matchId);
+                            this.saveSeenMatches();
+                            return;
+                        }
+                        
+                        // FIXED: Additional check - only show if match is less than 30 seconds old
+                        const timeDiff = Date.now() - matchTimeMs;
+                        if (timeDiff > 30000) {
+                            console.log('⏭️ Skipping stale match (>30s old):', matchId);
+                            this.seenMatches.add(matchId);
+                            this.saveSeenMatches();
+                            return;
+                        }
+                        
+                        // This is a genuinely new, recent match!
+                        console.log('🎉 New match detected!', matchId);
+                        this.seenMatches.add(matchId);
+                        this.saveSeenMatches();
+                        this.handleNewMatch(matchData);
+                    }
+                });
+                
+            }, (error) => {
+                console.error('Error in match listener:', error);
+                this.unregisterListener('matches_global');
             });
             
-        }, (error) => {
-            console.error('Error in match listener:', error);
-            this.unregisterListener('matches_global');
-        });
-        
-        this.registerListener('matches_global', unsubscribe, 'match');
-        
-    } catch (error) {
-        console.error('Error setting up match listener:', error);
+            this.registerListener('matches_global', unsubscribe, 'match');
+            
+        } catch (error) {
+            console.error('Error setting up match listener:', error);
+        }
     }
-}
     
-    // Add this method to save seen matches to localStorage:
+    /**
+     * Save seen matches to localStorage
+     */
     saveSeenMatches() {
         if (this.seenMatches) {
             localStorage.setItem('seenMatches', JSON.stringify(Array.from(this.seenMatches)));

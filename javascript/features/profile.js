@@ -81,14 +81,18 @@ export class ProfileManager {
         });
         
         // Profile save buttons
+       // Profile save buttons - bind to the instance methods
         const saveUserBtn = document.querySelector('.save-profile-btn[onclick*="saveUserProfile"]');
         if (saveUserBtn) {
-            saveUserBtn.onclick = () => this.saveUserProfile();
+            // Keep the onclick but ensure it calls through CLASSIFIED
+            saveUserBtn.removeAttribute('onclick');
+            saveUserBtn.addEventListener('click', () => this.saveUserProfile());
         }
         
         const saveBusinessBtn = document.querySelector('.save-profile-btn[onclick*="saveBusinessProfile"]');
         if (saveBusinessBtn) {
-            saveBusinessBtn.onclick = () => this.saveBusinessProfile();
+            saveBusinessBtn.removeAttribute('onclick');
+            saveBusinessBtn.addEventListener('click', () => this.saveBusinessProfile());
         }
     }
     

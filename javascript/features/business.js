@@ -24,6 +24,9 @@ export class BusinessManager {
         this.auth = firebaseServices.auth;
         this.db = firebaseServices.db;
         this.state = appState;
+
+        // Get mock data if available
+        this.mockData = null;
         
         // References to other managers (set later)
         this.navigationManager = null;
@@ -46,6 +49,12 @@ export class BusinessManager {
         this.navigationManager = managers.navigation;
         this.profileManager = managers.profile;
         this.authManager = managers.auth;
+        
+        // Get mock data reference from the main app
+        if (window.classifiedApp && window.classifiedApp.mockData) {
+            this.mockData = window.classifiedApp.mockData;
+            console.log('✅ MockData loaded in BusinessManager');
+        }
     }
     
     /**

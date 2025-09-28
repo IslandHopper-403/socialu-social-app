@@ -41,6 +41,7 @@ export class FavoritesCarouselManager {
          // UPDATED: Split favorites into two categories
         this.businessFavorites = []; // For favorited businesses
         this.offerFavorites = [];    // For favorited special offers
+        this.ensureArraysInitialized();
         this.carouselElement = null;
         
         // Touch/drag tracking
@@ -538,7 +539,9 @@ extractBusinessIdFromCard(cardElement) {
     async loadUserFavorites() {
         const currentUser = this.state.get('currentUser');
         if (!currentUser) return;
-        
+
+        this.ensureArraysInitialized();
+
         try {
             console.log('📚 Loading split favorites for user:', currentUser.uid);
             
@@ -788,9 +791,6 @@ extractBusinessIdFromCard(cardElement) {
         // Initialize arrays if needed
         if (!this.businessFavorites) this.businessFavorites = [];
         if (!this.offerFavorites) this.offerFavorites = [];
-        
-        // Look in both business and offer favorites
-        let business = this.businessFavorites.find(f => f.id === businessId);
         
         if (!business) {
             // Check offer favorites

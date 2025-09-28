@@ -878,6 +878,13 @@ async init() {
                 // Create styled promo card
                 const promoCard = document.createElement('div');
                 promoCard.className = 'promo-message-card';
+
+                // Choose color based on card type
+                const isBusinessCard = promo.cardType === 'business' || (!promo.offerTitle && !promo.promotionTitle.includes('Special'));
+                const gradient = isBusinessCard 
+                    ? 'linear-gradient(135deg, #4A9EFF, #0066CC)'  // Blue for business
+                    : 'linear-gradient(135deg, #FF6B6B, #FF8C42)'; // Salmon for offers
+                
                 promoCard.style.cssText = `
                     background: linear-gradient(135deg, #FF6B6B, #FF8C42);
                     border-radius: 15px;

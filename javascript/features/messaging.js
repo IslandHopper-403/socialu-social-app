@@ -68,7 +68,7 @@ export class MessagingManager {
 
     // FIXED: Track when messages were last seen per chat
     this.lastSeenTimestamps = new Map(); // chatId -> timestamp
-    this.loadLastSeenTimestamps();
+    // this.loadLastSeenTimestamps(); // TEMPORARILY COMMENT THIS LINE
     
     // FIXED: Remove sessionStartTime - it's causing false notifications
     // this.sessionStartTime = Date.now(); // DELETED
@@ -105,11 +105,44 @@ export class MessagingManager {
         this.cleanup();
     });
 }
-    
+
+/**
+     * Load last seen timestamps from localStorage
+     */
+    loadLastSeenTimestamps() {
+        try {
+            const saved = localStorage.getItem('lastSeenTimestamps');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                Object.entries(parsed).forEach(([chatId, timestamp]) => {
+                    this.lastSeenTimestamps.set(chatId, timestamp);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading last seen timestamps:', error);
+        }
+    }
+
+    /**
+     * Save last seen timestamps to localStorage
+     */
+    saveLastSeenTimestamps() {
+        try {
+            const toSave = {};
+            this.lastSeenTimestamps.forEach((timestamp, chatId) => {
+                toSave[chatId] = timestamp;
+            });
+            localStorage.setItem('lastSeenTimestamps', JSON.stringify(toSave));
+        } catch (error) {
+            console.error('Error saving last seen timestamps:', error);
+        }
+    }
+
     /**
      * Set up notification sound
      */
     setupNotificationSound() {
+
         try {
             // Create notification sound
             this.notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUYrTp66hVFApGn+DyvmEaAzqM0+/ReigGHXNfY');

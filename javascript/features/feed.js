@@ -585,14 +585,12 @@ export class FeedManager {
         info.appendChild(name);
         info.appendChild(typeEl);
         
-        // Favorite button
+        // Favorite button - Store ID safely in data attribute
         const favBtn = document.createElement('button');
         favBtn.className = 'business-favorite-btn';
-        favBtn.textContent = heartIcon;
-        favBtn.onclick = (e) => {
-            e.stopPropagation();
-            window.CLASSIFIED.toggleBusinessFavorite(business.id);
-        };
+        favBtn.textContent = heartIcon; // ✅ Using textContent (safe)
+        favBtn.dataset.businessId = business.id; // ✅ Store ID in data attribute (safe)
+        favBtn.setAttribute('onclick', 'event.stopPropagation(); window.CLASSIFIED.toggleBusinessFavoriteFromEvent(this); return false;');
         favBtn.style.cssText = `
             background: none; border: none; font-size: 24px; cursor: pointer; 
             transition: transform 0.2s ease; position: absolute; right: 15px; top: 15px;

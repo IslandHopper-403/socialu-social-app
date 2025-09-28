@@ -2009,7 +2009,7 @@ updateNotificationState() {
     }
 
 
-    /**
+/**
  * Send promotion message in chat
  */
 async sendPromotionMessage(promoData) {
@@ -2020,14 +2020,25 @@ async sendPromotionMessage(promoData) {
         throw new Error('Chat context not available');
     }
     
+    // Validate and ensure no undefined fields
+    const sanitizedPromo = {
+        businessId: promoData.businessId || '',
+        businessName: promoData.businessName || 'Business',
+        businessImage: promoData.businessImage || 'https://via.placeholder.com/400',
+        businessType: promoData.businessType || 'Business',
+        promotionTitle: promoData.promotionTitle || 'Special Offer',
+        promotionDetails: promoData.promotionDetails || 'Contact for details',
+        businessAddress: promoData.businessAddress || 'Hoi An, Vietnam'
+    };
+    
     try {
-        console.log('📤 Sending promotion message:', promoData.businessName);
+        console.log('📤 Sending promotion message:', sanitizedPromo);
         
-        // Create message document with promotion data
+        // Create message document with sanitized promotion data
         const messageData = {
-            text: `Check out this special from ${promoData.businessName}!`,
+            text: `Check out this special from ${sanitizedPromo.businessName}!`,
             type: 'promotion',
-            promotion: promoData,
+            promotion: sanitizedPromo,
             senderId: currentUser.uid,
             senderName: currentUser.displayName || 'Anonymous',
             timestamp: serverTimestamp(),
@@ -2035,14 +2046,14 @@ async sendPromotionMessage(promoData) {
         };
         
         // Add promotion UI to chat immediately
-        this.addPromotionToUI(promoData);
+        this.addPromotionToUI(sanitizedPromo);
         
         // Add to messages subcollection
         await addDoc(collection(this.db, 'chats', this.currentChatId, 'messages'), messageData);
         
         // Update chat document
         await updateDoc(doc(this.db, 'chats', this.currentChatId), {
-            lastMessage: `📍 Shared ${promoData.businessName}`,
+            lastMessage: `📍 Shared ${sanitizedPromo.businessName}`,
             lastMessageTime: serverTimestamp(),
             lastMessageSender: currentUser.uid
         });

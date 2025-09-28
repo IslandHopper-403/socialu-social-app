@@ -922,16 +922,12 @@ async init() {
                             if (change.type === 'added') {
                                 const message = change.doc.data();
                                 
-                             if (message.senderId !== currentUser.uid) {
-                                    // Delegate to notification manager
+                                if (message.senderId !== currentUser.uid) {
+                                    // Get notification manager safely
                                     const notificationManager = window.classifiedApp?.managers?.notifications;
                                     if (notificationManager && notificationManager.shouldShowNotification(message, chatId)) {
-                                        const partnerInfo = await this.getChatPartnerInfo(chatId);
-                                        notificationManager.showNotification(message, chatId, partnerInfo);
-                                        
-                                        if (this.currentChatId !== chatId) {
-                                            this.updateUnreadCount(chatId, 1);
-                                        }
+                                        // Don't use async in forEach - handle separately
+                                        this.handleMessageNotification(message, chatId);
                                     }
                                 }
                             }
@@ -1156,6 +1152,26 @@ async init() {
             
         } catch (error) {
             console.error('Error setting up chat updates listener:', error);
+        }
+    }
+
+        /**
+     * Handle message notification properly
+     */
+    async handleMessageNotification(message, chatId) {
+        try {
+            const partnerInfo = await this.getChatPartnerInfo(chatId);
+            const notificationManager = window.classifiedApp?.managers?.notifications;
+            
+            if (notificationManager) {
+                notificationManager.showNotification(message, chatId, partnerInfo);
+                
+                if (this.currentChatId !== chatId) {
+                    notificationManager.updateUnreadCount(chatId, 1);
+                }
+            }
+        } catch (error) {
+            console.error('Error handling message notification:', error);
         }
     }
     
@@ -1959,26 +1975,23 @@ updateNotificationState() {
         console.log('================================');
     }
     
-/**
-     * Show notification dot on messaging tab
+    /**
+     * Show notification dot (delegates to NotificationManager)
      */
-    showNotificationDot() {
-        const notificationDot = document.getElementById('messageNotificationDot');
-        if (notificationDot) {
-            notificationDot.style.display = 'block';
-            console.log('💬 Showing message notification dot');
+    showNotificationDot(count = null) {
+        const notificationManager = window.classifiedApp?.managers?.notifications;
+        if (notificationManager) {
+            notificationManager.showNotificationDot(count);
         }
     }
-
-
+    
     /**
-     * Hide notification dot
+     * Hide notification dot (delegates to NotificationManager)
      */
     hideNotificationDot() {
-        const notificationDot = document.getElementById('messageNotificationDot');
-        if (notificationDot) {
-            notificationDot.style.display = 'none';
-            console.log('💬 Hiding message notification dot');
+        const notificationManager = window.classifiedApp?.managers?.notifications;
+        if (notificationManager) {
+            notificationManager.hideNotificationDot();
         }
     }
 

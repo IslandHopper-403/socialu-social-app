@@ -145,10 +145,14 @@ export class BusinessManager {
             }
             
             if (!businessData) {
-                alert('Business not found');
-                this.navigationManager.hideLoading();
-                return;
-            }
+            console.error('Business not found for ID:', businessId);
+            console.log('Attempted Firebase lookup:', businessId);
+            console.log('Available mock restaurants:', this.mockData?.getRestaurants?.().map(r => r.id));
+            console.log('Available mock activities:', this.mockData?.getActivities?.().map(a => a.id));
+            alert(`Business not found (ID: ${businessId})`);
+            this.navigationManager.hideLoading();
+            return;
+        }
             
             // Update state
             this.state.set('currentBusiness', businessData);

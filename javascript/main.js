@@ -166,6 +166,25 @@ loadDemoContent() {
 
 
         };
+
+            // Track app lifecycle for notification management
+            window.addEventListener('load', () => {
+                localStorage.setItem('appStartTime', Date.now().toString());
+            });
+    
+            window.addEventListener('beforeunload', () => {
+                localStorage.setItem('lastAppClose', Date.now().toString());
+            });
+    
+            // Clear old processed messages on startup (older than 24 hours)
+            setTimeout(() => {
+                const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+                const processed = JSON.parse(localStorage.getItem('processedMessages') || '[]');
+                const filtered = processed.filter(item => item.timestamp > oneDayAgo);
+                localStorage.setItem('processedMessages', JSON.stringify(filtered));
+            }, 1000);
+        }
+        
     }
     
     /**

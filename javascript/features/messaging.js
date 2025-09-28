@@ -956,6 +956,25 @@ async init() {
                 console.error('Error setting up chat listener:', error);
             }
         }
+    /**
+     * Handle message notification properly
+     */
+    async handleMessageNotification(message, chatId) {
+        try {
+            const partnerInfo = await this.getChatPartnerInfo(chatId);
+            const notificationManager = window.classifiedApp?.managers?.notifications;
+            
+            if (notificationManager) {
+                notificationManager.showNotification(message, chatId, partnerInfo);
+                
+                if (this.currentChatId !== chatId) {
+                    notificationManager.updateUnreadCount(chatId, 1);
+                }
+            }
+        } catch (error) {
+            console.error('Error handling message notification:', error);
+        }
+    }
     
    /**
  * Listen for new matches (FIXED to prevent showing old matches)
@@ -1152,26 +1171,6 @@ async init() {
             
         } catch (error) {
             console.error('Error setting up chat updates listener:', error);
-        }
-    }
-
-        /**
-     * Handle message notification properly
-     */
-    async handleMessageNotification(message, chatId) {
-        try {
-            const partnerInfo = await this.getChatPartnerInfo(chatId);
-            const notificationManager = window.classifiedApp?.managers?.notifications;
-            
-            if (notificationManager) {
-                notificationManager.showNotification(message, chatId, partnerInfo);
-                
-                if (this.currentChatId !== chatId) {
-                    notificationManager.updateUnreadCount(chatId, 1);
-                }
-            }
-        } catch (error) {
-            console.error('Error handling message notification:', error);
         }
     }
     

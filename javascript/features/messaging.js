@@ -874,6 +874,9 @@ async init() {
                 const isSent = msg.senderId === currentUserId;
                 const promoElement = document.createElement('div');
                 promoElement.className = `message ${isSent ? 'sent' : 'received'}`;
+
+                // Get promotion data FIRST
+                const promo = msg.promotion;
                 
                 // Create styled promo card
                 const promoCard = document.createElement('div');
@@ -895,8 +898,7 @@ async init() {
                     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
                     color: white;
                 `;
-                
-                const promo = msg.promotion;
+            
                 // Make entire card clickable
                 promoCard.style.cursor = 'pointer';
               promoCard.addEventListener('click', () => {

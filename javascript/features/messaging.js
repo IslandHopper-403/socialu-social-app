@@ -68,7 +68,7 @@ export class MessagingManager {
 
     // FIXED: Track when messages were last seen per chat
     this.lastSeenTimestamps = new Map(); // chatId -> timestamp
-    // this.loadLastSeenTimestamps(); // TEMPORARILY COMMENT THIS LINE
+    this.loadLastSeenTimestamps(); 
     
     // FIXED: Remove sessionStartTime - it's causing false notifications
     // this.sessionStartTime = Date.now(); // DELETED

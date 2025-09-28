@@ -916,7 +916,7 @@ export class MessagingManager {
                             if (message.senderId !== currentUser.uid) {
                                 const messageTime = message.timestamp?.toMillis?.() || Date.now();
                                 
-                                if (messageTime > this.lastAppActive) {
+                                if (messageTime > this.sessionStartTime) {
                                     this.playNotificationSound();
                                     
                                     if (!this.isAppVisible || this.currentChatId !== chatId) {

@@ -284,7 +284,7 @@ export class ProfileManager {
             bio: document.getElementById('profileBio').value,
             birthday: document.getElementById('profileBirthday').value,
             height: document.getElementById('profileHeight').value,
-            name: this.state.get('currentUser').displayName || profile.name
+            name: this.state.get('currentUser').displayName || profile.name,
             // Ensure all required fields are included
             career: profile.career || '',
             lookingFor: profile.lookingFor || '',

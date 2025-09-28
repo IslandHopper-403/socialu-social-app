@@ -891,7 +891,7 @@ export class MessagingManager {
    /**
  * FIXED: Enhanced real-time message listener with proper notifications
  */
-     listenToChatMessages(chatId) {
+    listenToChatMessages(chatId) {
         this.unregisterListener(`chat_${chatId}`);
         
         const currentUser = this.state.get('currentUser');
@@ -908,7 +908,6 @@ export class MessagingManager {
                     messages.push({ id: messageDoc.id, ...messageDoc.data() });
                 });
                 
-                // REPLACE THIS ENTIRE if (!isInitialLoad) BLOCK:
                 if (!isInitialLoad) {
                     snapshot.docChanges().forEach(change => {
                         if (change.type === 'added') {
@@ -917,12 +916,7 @@ export class MessagingManager {
                             if (message.senderId !== currentUser.uid) {
                                 const messageTime = message.timestamp?.toMillis?.() || Date.now();
                                 
-                                // ❌ OLD LOGIC (DELETE):
-                                // if (messageTime > this.lastAppActive) {
-                                
-                                // ✅ NEW LOGIC (ADD):
-                                // Only notify if message is from THIS SESSION (after app opened)
-                                if (messageTime > this.sessionStartTime) {
+                                if (messageTime > this.lastAppActive) {
                                     this.playNotificationSound();
                                     
                                     if (!this.isAppVisible || this.currentChatId !== chatId) {

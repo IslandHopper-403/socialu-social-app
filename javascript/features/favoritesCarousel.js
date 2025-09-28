@@ -926,6 +926,7 @@ extractBusinessIdFromCard(cardElement) {
                 promotionTitle: business.promo || business.promoTitle || 'Special Offer',
                 promotionDetails: business.details || business.promoDetails || 'Ask about our current promotions!',
                 businessAddress: business.address || business.location || 'Hoi An, Vietnam',
+                businessHours: business.hours || business.businessHours || 'Check for current hours',
                 timestamp: serverTimestamp()
             };
             

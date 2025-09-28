@@ -933,6 +933,7 @@ extractBusinessIdFromCard(cardElement) {
             // Ensure all fields have values, never undefined
             const promoMessage = {
                 type: 'promotion',
+                cardType: 'business', 
                 businessId: business.id || '',
                 businessName: business.name || 'Business',
                 businessImage: business.image || business.logo || business.photos?.[0] || 'https://via.placeholder.com/400',

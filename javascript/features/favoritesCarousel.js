@@ -1,5 +1,8 @@
 // javascript/features/favoritesCarousel.js
 
+// javascript/features/favoritesCarousel.js
+
+import { sanitizeText, escapeHtml } from '../utils/security.js';
 
 import {
     collection,

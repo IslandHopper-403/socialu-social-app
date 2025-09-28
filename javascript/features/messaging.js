@@ -924,69 +924,73 @@ export class MessagingManager {
     }
     
    /**
- * FIXED: Enhanced real-time message listener with proper notifications
- */
-    listenToChatMessages(chatId) {
-        this.unregisterListener(`chat_${chatId}`);
-        
-        const currentUser = this.state.get('currentUser');
-        const messagesRef = collection(this.db, 'chats', chatId, 'messages');
-        const q = query(messagesRef, orderBy('timestamp', 'asc'));
-        
-        let isInitialLoad = true;
-        
-        try {
-            const unsubscribe = onSnapshot(q, (snapshot) => {
-                const messages = [];
-                
-                snapshot.forEach(messageDoc => {
-                    messages.push({ id: messageDoc.id, ...messageDoc.data() });
-                });
-                
-                if (!isInitialLoad) {
-                    snapshot.docChanges().forEach(change => {
-                        if (change.type === 'added') {
-                            const message = change.doc.data();
-                            
-                            if (message.senderId !== currentUser.uid) {
-                                const messageTime = message.timestamp?.toMillis?.() || Date.now();
+
+     * FIXED: Enhanced real-time message listener with proper notifications
+     */
+        listenToChatMessages(chatId) {
+            this.unregisterListener(`chat_${chatId}`);
+            
+            const currentUser = this.state.get('currentUser');
+            const messagesRef = collection(this.db, 'chats', chatId, 'messages');
+            const q = query(messagesRef, orderBy('timestamp', 'asc'));
+            
+            // FIXED: Track if this is the first snapshot for THIS chat
+            let isInitialLoad = true;
+            const lastSeen = this.lastSeenTimestamps.get(chatId) || this.lastAppActive;
+            
+            try {
+                const unsubscribe = onSnapshot(q, (snapshot) => {
+                    const messages = [];
+                    
+                    snapshot.forEach(messageDoc => {
+                        messages.push({ id: messageDoc.id, ...messageDoc.data() });
+                    });
+                    
+                    // FIXED: Only process notifications after initial load
+                    if (!isInitialLoad) {
+                        snapshot.docChanges().forEach(change => {
+                            if (change.type === 'added') {
+                                const message = change.doc.data();
                                 
-                                if (messageTime > this.sessionStartTime) {
-                                    this.playNotificationSound();
+                                if (message.senderId !== currentUser.uid) {
+                                    const messageTime = message.timestamp?.toMillis?.() || Date.now();
                                     
-                                    if (!this.isAppVisible || this.currentChatId !== chatId) {
-                                        this.showBrowserNotification(message);
-                                        this.updateUnreadCount(chatId, 1);
+                                    // FIXED: Only notify for truly new messages
+                                    if (messageTime > lastSeen && messageTime > this.firstLoadTimestamp) {
+                                        this.playNotificationSound();
+                                        
+                                        if (!this.isAppVisible || this.currentChatId !== chatId) {
+                                            this.showBrowserNotification(message);
+                                            this.updateUnreadCount(chatId, 1);
+                                        }
                                     }
                                 }
                             }
-                        }
-                    });
-                }
-                
-                this.displayMessages(messages, currentUser.uid);
-                
-                if (this.currentChatId === chatId && this.isAppVisible && !isInitialLoad) {
-                    this.markChatAsRead(chatId);
-                }
-                
-                if (isInitialLoad) {
+                        });
+                    }
+                    
+                    this.displayMessages(messages, currentUser.uid);
+                    
+                    // FIXED: Update last seen for this chat
+                    if (this.currentChatId === chatId && this.isAppVisible) {
+                        this.lastSeenTimestamps.set(chatId, Date.now());
+                        this.saveLastSeenTimestamps();
+                    }
+                    
                     isInitialLoad = false;
-                    this.initialLoadComplete.add(chatId);
-                }
+                    
+                }, (error) => {
+                    console.error('❌ Error in chat listener:', error);
+                    this.unregisterListener(`chat_${chatId}`);
+                });
                 
-            }, (error) => {
-                console.error('❌ Error in chat listener:', error);
-                this.unregisterListener(`chat_${chatId}`);
-            });
-            
-            this.registerListener(`chat_${chatId}`, unsubscribe, 'chat');
-            console.log('👂 Set up real-time listener for chat:', chatId);
-            
-        } catch (error) {
-            console.error('Error setting up chat listener:', error);
+                this.registerListener(`chat_${chatId}`, unsubscribe, 'chat');
+                console.log('👂 Set up real-time listener for chat:', chatId);
+                
+            } catch (error) {
+                console.error('Error setting up chat listener:', error);
+            }
         }
-    }
     
    /**
  * Listen for new matches (FIXED to prevent showing old matches)

@@ -306,13 +306,13 @@
                 <button class="settings-btn" onclick="CLASSIFIED.viewMyProfile()">👤</button>
             </div>
             <div class="profile-editor">
-                <!-- Profile Photos Section -->
+               <!-- Profile Photos Section -->
                 <div class="profile-section">
-                    <div class="section-title">Profile Photos</div>
+                    <div class="section-title">Profile Photos <span style="color: #FF6B6B;">*</span> <span style="font-size: 12px; opacity: 0.7;">(at least 1)</span></div>
                     <div class="photo-upload-section" onclick="CLASSIFIED.triggerPhotoUpload()">
                         <div style="font-size: 48px; margin-bottom: 10px; opacity: 0.5;">📷</div>
                         <div style="font-weight: 600;">Add Your Best Photos</div>
-                        <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">Tap to add photos</div>
+                        <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">Tap to add photos (required)</div>
                     </div>
                     <div class="photo-grid" id="photoGrid">
                         <div class="photo-slot" onclick="CLASSIFIED.triggerPhotoUpload(0)">
@@ -332,10 +332,10 @@
                 
                 <!-- About Me Section -->
                 <div class="profile-section">
-                    <div class="section-title">About Me</div>
+                    <div class="section-title">About Me <span style="color: #FF6B6B;">*</span></div>
                     <div class="form-group">
-                        <label class="form-label">Bio</label>
-                        <textarea class="form-input form-textarea" id="profileBio" placeholder="Write about yourself or something you're up to..."></textarea>
+                        <label class="form-label">Bio <span style="font-size: 11px; opacity: 0.7;">(20-500 characters)</span></label>
+                        <textarea class="form-input form-textarea" id="profileBio" placeholder="Write about yourself or something you're up to... (minimum 20 characters)" maxlength="500"></textarea>
                     </div>
                 </div>
                 
@@ -344,7 +344,7 @@
                     <div class="section-title">Basic Info</div>
                     
                     <div class="form-group">
-                        <label class="form-label">Birthday</label>
+                        <label class="form-label">Birthday <span style="color: #FF6B6B;">*</span> <span style="font-size: 11px; opacity: 0.7;">(must be 18+)</span></label>
                         <input type="date" class="form-input" id="profileBirthday">
                     </div>
                     <div class="form-group">
@@ -369,7 +369,7 @@
                         <input type="text" class="form-input" id="profileHeight" placeholder="5'7&quot; or 170cm">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Career</label>
+                        <label class="form-label">Career <span style="color: #FF6B6B;">*</span></label>
                         <div class="choice-group">
                             <div class="choice-btn" data-choice="career" data-value="Student">Student</div>
                             <div class="choice-btn" data-choice="career" data-value="Digital Nomad">Digital Nomad</div>
@@ -385,7 +385,7 @@
                 
                 <!-- Interests Section -->
                 <div class="profile-section">
-                    <div class="section-title">What Am I Like</div>
+                    <div class="section-title">What Am I Like <span style="color: #FF6B6B;">*</span> <span style="font-size: 12px; opacity: 0.7;">(choose 3-8)</span></div>
                     <div class="interests-grid">
                         <div class="interest-btn" data-interest="Adventure">Adventure</div>
                         <div class="interest-btn" data-interest="Reading">Reading</div>
@@ -426,7 +426,7 @@
                 
                 <!-- Looking For Section -->
                 <div class="profile-section">
-                    <div class="section-title">What Am I Looking For</div>
+                    <div class="section-title">What Am I Looking For <span style="color: #FF6B6B;">*</span></div>
                     <div class="choice-group">
                         <div class="choice-btn" data-choice="lookingFor" data-value="Friends">Friends</div>
                         <div class="choice-btn" data-choice="lookingFor" data-value="Dating">Dating</div>

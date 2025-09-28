@@ -583,7 +583,13 @@ extractBusinessIdFromCard(cardElement) {
             // Try Firebase first
             const businessDoc = await getDoc(doc(this.db, 'businesses', businessId));
             if (businessDoc.exists()) {
-                return { id: businessDoc.id, ...businessDoc.data() };
+                const data = businessDoc.data();
+                // Ensure image field exists with fallback
+                return { 
+                    id: businessDoc.id, 
+                    ...data,
+                    image: data.image || data.photos?.[0] || data.logo || 'https://via.placeholder.com/400'
+                };
             }
             
             // Fallback to mock data
@@ -909,19 +915,21 @@ extractBusinessIdFromCard(cardElement) {
             return;
         }
         
-        try {
-            // Rest of your existing code...
-         const promoMessage = {
-            type: 'promotion',
-            businessId: business.id,
-            businessName: business.name,
-            businessImage: business.image || business.logo || '', // Ensure never undefined
-            businessType: business.type || 'Business',
-            promotionTitle: business.promo || business.promoTitle || 'Special Offer',
-            promotionDetails: business.details || business.promoDetails || 'Ask about our current promotions!',
-            businessAddress: business.address || business.location || 'Hoi An, Vietnam',
-            timestamp: serverTimestamp()
-        };
+     try {
+            // Ensure all fields have values, never undefined
+            const promoMessage = {
+                type: 'promotion',
+                businessId: business.id || '',
+                businessName: business.name || 'Business',
+                businessImage: business.image || business.logo || business.photos?.[0] || 'https://via.placeholder.com/400',
+                businessType: business.type || 'Business',
+                promotionTitle: business.promo || business.promoTitle || 'Special Offer',
+                promotionDetails: business.details || business.promoDetails || 'Ask about our current promotions!',
+                businessAddress: business.address || business.location || 'Hoi An, Vietnam',
+                timestamp: serverTimestamp()
+            };
+            
+            console.log('📤 Sending promotion with data:', promoMessage);
             
             await this.messagingManager.sendPromotionMessage(promoMessage);
             this.minimizeCarousel();

@@ -890,7 +890,16 @@ async init() {
                 `;
                 
                 const promo = msg.promotion;
-                promoCard.onclick = () => window.CLASSIFIED.openBusinessProfile(promo.businessId, promo.businessType || 'restaurant');
+                // Make entire card clickable
+                promoCard.style.cursor = 'pointer';
+                promoCard.addEventListener('click', () => {
+                    console.log('🔗 Opening business profile:', promo.businessId);
+                    if (promo.businessId) {
+                        window.CLASSIFIED.openBusinessProfile(promo.businessId, promo.businessType || 'restaurant');
+                    } else {
+                        console.error('No businessId found in promotion');
+                    }
+                });
                 
                 // Business name header
                 const nameDiv = document.createElement('div');
@@ -918,14 +927,28 @@ async init() {
                 
                 // Address
                 const addressDiv = document.createElement('div');
-                addressDiv.style.cssText = 'font-size: 11px; opacity: 0.8; color: white;';
+                addressDiv.style.cssText = 'font-size: 11px; opacity: 0.8; color: white; margin-bottom: 5px;';
                 addressDiv.textContent = `📍 ${promo.businessAddress || 'Tap to view location'}`;
                 
-                // Assemble card
-                promoCard.appendChild(nameDiv);
-                promoCard.appendChild(typeDiv);
-                promoCard.appendChild(contentDiv);
-                promoCard.appendChild(addressDiv);
+                // Business hours (if available)
+                if (promo.businessHours) {
+                    const hoursDiv = document.createElement('div');
+                    hoursDiv.style.cssText = 'font-size: 11px; opacity: 0.8; color: white;';
+                    hoursDiv.textContent = `🕐 ${promo.businessHours}`;
+                    
+                    // Assemble card with hours
+                    promoCard.appendChild(nameDiv);
+                    promoCard.appendChild(typeDiv);
+                    promoCard.appendChild(contentDiv);
+                    promoCard.appendChild(addressDiv);
+                    promoCard.appendChild(hoursDiv);
+                } else {
+                    // Assemble card without hours
+                    promoCard.appendChild(nameDiv);
+                    promoCard.appendChild(typeDiv);
+                    promoCard.appendChild(contentDiv);
+                    promoCard.appendChild(addressDiv);
+                }
                 
                 // Add time
                 if (msg.timestamp) {

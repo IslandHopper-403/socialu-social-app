@@ -889,7 +889,7 @@ async init() {
                     : 'linear-gradient(135deg, #FF6B6B, #FF8C42)'; // Salmon for offers
                 
                 promoCard.style.cssText = `
-                    background: linear-gradient(135deg, #FF6B6B, #FF8C42);
+                    background: ${gradient};
                     border-radius: 15px;
                     padding: 15px;
                     margin: 10px 0;

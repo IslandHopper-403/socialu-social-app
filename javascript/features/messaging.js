@@ -1232,19 +1232,18 @@ async init() {
                         const chatData = doc.data();
                         const chatId = doc.id;
                         
-                        if (chatData.lastMessageSender && 
-                            chatData.lastMessageSender !== userId &&
-                            chatData.lastMessageTime) {
-                            
-                            // ❌ OLD LOGIC (DELETE):
-                            // if (messageTime > this.lastAppActive) {
-                            
-                            // ✅ NEW LOGIC (ADD):
-                            // On initial load, only count as unread if:
-                            // 1. Message is from before last session ended AND
-                            // 2. We haven't marked it as seen
-                            const seenKey = `seen_${chatId}_${userId}`;
-                            const lastSeen = localStorage.getItem(seenKey);
+                   if (chatData.lastMessageSender && 
+                        chatData.lastMessageSender !== userId &&
+                        chatData.lastMessageTime) {
+                        
+                        // FIX: Add missing messageTime variable
+                        const messageTime = chatData.lastMessageTime.toMillis ? chatData.lastMessageTime.toMillis() : 0;
+                        
+                        // On initial load, only count as unread if:
+                        // 1. Message is from before last session ended AND
+                        // 2. We haven't marked it as seen
+                        const seenKey = `seen_${chatId}_${userId}`;
+                        const lastSeen = localStorage.getItem(seenKey);
                             
                             if (messageTime > this.lastAppActive) {
                                 const currentUnread = this.unreadMessages.get(chatId) || 0;

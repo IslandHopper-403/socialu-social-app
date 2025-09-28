@@ -638,7 +638,12 @@ export class FeedManager {
         card.appendChild(image);
         card.appendChild(content);
         
-        return card.outerHTML;
+        // Fix: Convert to HTML string but preserve onclick
+        const html = card.outerHTML;
+        // Add onclick directly to the HTML string
+        return html.replace('<div class="business-card"', 
+            `<div class="business-card" onclick="window.CLASSIFIED.openBusinessProfile('${business.id}', '${type}')"`);
+        
     }
     
     /**

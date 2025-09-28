@@ -65,11 +65,17 @@ export class MessagingManager {
     this.lastAppActive = Date.now();
     this.notificationTimestamps = new Map();
     this.initialLoadComplete = new Set();
+
+    this.sessionStartTime = Date.now(); // NEW: Cutoff for this session
     
     // Load last active timestamp from storage
     const storedLastActive = localStorage.getItem('lastAppActive');
     if (storedLastActive) {
         this.lastAppActive = parseInt(storedLastActive, 10);
+    } else {
+        // First time user - set to now to avoid showing all historical messages
+        this.lastAppActive = Date.now();
+        localStorage.setItem('lastAppActive', this.lastAppActive.toString());
     }
        
     // Notification system

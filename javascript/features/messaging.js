@@ -1651,34 +1651,58 @@ async sendMatchNotifications(userId1, userId2, matchId) {
 
 
 /**
- * NEW: Check if two users have mutual likes (for match detection)
+ * SECURED: Check if two users have mutual likes (for match detection)
  */
 async checkMutualLikes(userId1, userId2) {
     try {
-        // Check if user1 liked user2
-        const like1Doc = await getDoc(doc(this.db, 'likes', `${userId1}_${userId2}`));
+        // Validate inputs
+        if (!userId1 || !userId2) {
+            console.error('Invalid user IDs for mutual like check');
+            return false;
+        }
         
-        // Check if user2 liked user1
-        const like2Doc = await getDoc(doc(this.db, 'likes', `${userId2}_${userId1}`));
+        // Check both directions for likes
+        const [like1Doc, like2Doc] = await Promise.all([
+            getDoc(doc(this.db, 'likes', `${userId1}_${userId2}`)),
+            getDoc(doc(this.db, 'likes', `${userId2}_${userId1}`))
+        ]);
         
-        return like1Doc.exists() && like2Doc.exists();
+        const hasMutualLikes = like1Doc.exists() && like2Doc.exists();
+        
+        if (hasMutualLikes) {
+            console.log('💕 Mutual likes detected between', userId1, 'and', userId2);
+        }
+        
+        return hasMutualLikes;
     } catch (error) {
         console.error('Error checking mutual likes:', error);
         return false;
     }
 }
 
-
 /**
- * ENHANCED: Better match detection when processing likes
+ * ENHANCED: Process like action with proper match detection
  */
 async processLikeAction(fromUserId, toUserId, type = 'like') {
     try {
-        // Record the like
+        // Validate inputs
+        if (!fromUserId || !toUserId || fromUserId === toUserId) {
+            throw new Error('Invalid user IDs for like action');
+        }
+        
+        // Check if already liked (prevent duplicates)
         const likeId = `${fromUserId}_${toUserId}`;
+        const existingLike = await getDoc(doc(this.db, 'likes', likeId));
+        
+        if (existingLike.exists()) {
+            console.log('⚠️ Like already exists:', likeId);
+            return { isMatch: false, alreadyLiked: true };
+        }
+        
+        // Record the like with timestamp
         await setDoc(doc(this.db, 'likes', likeId), {
-            fromUserId,
-            toUserId,
+            fromUserId: fromUserId,
+            toUserId: toUserId,
             timestamp: serverTimestamp(),
             type: type // 'like' or 'superlike'
         });
@@ -1689,13 +1713,13 @@ async processLikeAction(fromUserId, toUserId, type = 'like') {
         const isMutual = await this.checkMutualLikes(fromUserId, toUserId);
         
         if (isMutual) {
-            // Create match
+            // Create match only if mutual
             const matchId = await this.createMatch(fromUserId, toUserId);
             
             // Trigger match popup for current user
-            this.triggerMatchPopup(fromUserId, toUserId);
+            await this.triggerMatchPopup(fromUserId, toUserId);
             
-            return { isMatch: true, matchId };
+            return { isMatch: true, matchId: matchId };
         }
         
         return { isMatch: false };
@@ -1706,43 +1730,59 @@ async processLikeAction(fromUserId, toUserId, type = 'like') {
     }
 }
 
-
 /**
- * NEW: Trigger match popup
+ * ENHANCED: Trigger match popup with timestamp validation
  */
 async triggerMatchPopup(currentUserId, matchedUserId) {
     try {
-        // Get matched user data
+        // Get matched user data with validation
         const matchedUserDoc = await getDoc(doc(this.db, 'users', matchedUserId));
         
-        if (matchedUserDoc.exists()) {
-            const userData = matchedUserDoc.data();
-            
-            // Store matched user data
-            this.state.set('lastMatchedUser', {
-                id: matchedUserId,
-                name: userData.name,
-                avatar: userData.photos?.[0] || userData.photo || 'https://via.placeholder.com/100'
-            });
-            
-            // Show match popup
-            const matchPopup = document.getElementById('matchPopup');
-            if (matchPopup) {
-                matchPopup.classList.add('show');
-                
-                // Update popup content
-                const popupText = matchPopup.querySelector('p');
-                if (popupText) {
-                    popupText.textContent = `You and ${userData.name} both liked each other`;
-                }
-                
-                // Auto-close after 10 seconds
-                setTimeout(() => {
-                    if (matchPopup.classList.contains('show')) {
-                        matchPopup.classList.remove('show');
-                    }
-                }, 10000);
+        if (!matchedUserDoc.exists()) {
+            console.error('Matched user not found:', matchedUserId);
+            return;
+        }
+        
+        const userData = matchedUserDoc.data();
+        
+        // Sanitize user data
+        const safeName = this.escapeHtml(userData.name || 'Someone');
+        const safeAvatar = userData.photos?.[0] || userData.photo || 'https://via.placeholder.com/100';
+        
+        // Store matched user data
+        this.state.set('lastMatchedUser', {
+            id: matchedUserId,
+            name: safeName,
+            avatar: safeAvatar
+        });
+        
+        // Show match popup
+        const matchPopup = document.getElementById('matchPopup');
+        if (matchPopup) {
+            // Prevent duplicate popups
+            if (matchPopup.classList.contains('show')) {
+                console.log('Match popup already showing');
+                return;
             }
+            
+            matchPopup.classList.add('show');
+            
+            // Update popup content safely
+            const popupText = matchPopup.querySelector('p');
+            if (popupText) {
+                popupText.textContent = `You and ${safeName} both liked each other`;
+            }
+            
+            // Auto-close after 10 seconds
+            setTimeout(() => {
+                if (matchPopup.classList.contains('show')) {
+                    matchPopup.classList.remove('show');
+                }
+            }, 10000);
+            
+            // Mark this match as seen
+            this.seenMatches.add(`${currentUserId}_${matchedUserId}`);
+            this.saveSeenMatches();
         }
         
     } catch (error) {

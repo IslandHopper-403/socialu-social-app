@@ -4,6 +4,8 @@ import {
     sanitizeProfile, sanitizeText 
 } from '../utils/security.js';
 
+import { profileValidator } from '../utils/validation.js';
+
 import {
     doc,
     setDoc,
@@ -184,18 +186,44 @@ export class ProfileManager {
     /**
      * Save user profile
      */
-    async saveUserProfile() {
-        const user = this.state.get('currentUser');
-        if (!user) {
-            alert('Please log in first');
-            return;
+        async saveUserProfile() {
+            const user = this.state.get('currentUser');
+            if (!user) {
+                alert('Please log in first');
+                return;
         }
         
         try {
-            this.navigationManager.showLoading();
+            // Clear previous errors
+            profileValidator.clearErrors();
             
             // Gather form data
-            const profileData = this.gatherUserProfileData();
+            const rawProfileData = this.gatherUserProfileData();
+            
+            // Add name from current user
+            rawProfileData.name = user.displayName || rawProfileData.name || '';
+            
+            // Validate profile
+            const validation = profileValidator.validateProfile(rawProfileData);
+            
+            if (!validation.isValid) {
+                // Show all validation errors
+                profileValidator.showAllErrors();
+                
+                // Scroll to first error
+                const firstError = document.querySelector('.field-error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                
+                console.log('❌ Validation failed:', validation.errors);
+                return;
+            }
+            
+            this.navigationManager.showLoading();
+            
+            // Use sanitized data from validator
+            const profileData = validation.sanitizedData;
             
             // Add system fields
             profileData.uid = user.uid;
@@ -252,11 +280,19 @@ export class ProfileManager {
         
         // Gather raw data
         const rawData = {
+        
+        // Gather raw data
+        const rawData = {
             ...profile,
             bio: document.getElementById('profileBio').value,
             birthday: document.getElementById('profileBirthday').value,
             height: document.getElementById('profileHeight').value,
             name: this.state.get('currentUser').displayName || profile.name
+            // Ensure all required fields are included
+            career: profile.career || '',
+            lookingFor: profile.lookingFor || '',
+            interests: profile.interests || [],
+            photos: profile.photos || []
         };
         
         // Calculate age
@@ -271,8 +307,8 @@ export class ProfileManager {
             rawData.age = age;
         }
         
-        // Sanitize all text fields
-        return sanitizeProfile(rawData);
+        // Return raw data - sanitization happens in validator
+        return rawData;
     }
     
     /**

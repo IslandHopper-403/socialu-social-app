@@ -50,6 +50,7 @@ export class AuthManager {
         this.messagingManager = managers.messaging;
         this.feedManager = managers.feed;
         this.navigationManager = managers.navigation;
+        this.favoritesCarousel = managers.favoritesCarousel;
     }
     
     /**
@@ -105,6 +106,11 @@ export class AuthManager {
         
         // Notify other managers
         this.notifyLogin(user);
+    
+         // Load favorites for logged in user
+        if (this.favoritesCarousel) {
+            this.favoritesCarousel.onUserLogin(user);
+        }
     }
     
     /**

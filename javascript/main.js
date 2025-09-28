@@ -466,7 +466,8 @@ loadDemoContent() {
                 toggleBusinessFavoriteFromEvent: function(element) {
                     const businessId = element.dataset.businessId;
                     if (businessId) {
-                        this.managers.favoritesCarousel.toggleBusinessFavorite(businessId);
+                        // Fix: Use window.classifiedApp instead of 'this'
+                        window.classifiedApp.managers.favoritesCarousel.toggleBusinessFavorite(businessId);
                     }
                 },
                 addBusinessToFavorites: (businessId) => this.managers.favoritesCarousel.addBusinessToFavorites(businessId),

@@ -280,9 +280,6 @@ export class ProfileManager {
         
         // Gather raw data
         const rawData = {
-        
-        // Gather raw data
-        const rawData = {
             ...profile,
             bio: document.getElementById('profileBio').value,
             birthday: document.getElementById('profileBirthday').value,

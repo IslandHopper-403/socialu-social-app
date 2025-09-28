@@ -185,7 +185,6 @@ loadDemoContent() {
             }, 1000);
         }
         
-    }
     
     /**
      * Set up cross-manager references

@@ -144,12 +144,16 @@ loadDemoContent() {
      * Create all manager instances
      */
     async createManagers(firebaseServices) {
+        // Import the new NotificationManager
+        const { NotificationManager } = await import('./features/notifications.js');
+        
         // Create manager instances
         this.managers = {
             auth: new AuthManager(firebaseServices, this.state),
             feed: new FeedManager(firebaseServices, this.state, this.mockData),
             profile: new ProfileManager(firebaseServices, this.state),
             messaging: new MessagingManager(firebaseServices, this.state),
+            notifications: new NotificationManager(firebaseServices, this.state),
             business: new BusinessManager(firebaseServices, this.state),
             admin: new AdminManager(firebaseServices, this.state),
             referral: new ReferralManager(firebaseServices, this.state),

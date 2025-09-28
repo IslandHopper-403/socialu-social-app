@@ -892,14 +892,19 @@ async init() {
                 const promo = msg.promotion;
                 // Make entire card clickable
                 promoCard.style.cursor = 'pointer';
-                promoCard.addEventListener('click', () => {
-                    console.log('🔗 Opening business profile:', promo.businessId);
-                    if (promo.businessId) {
-                        window.CLASSIFIED.openBusinessProfile(promo.businessId, promo.businessType || 'restaurant');
-                    } else {
-                        console.error('No businessId found in promotion');
-                    }
-                });
+              promoCard.addEventListener('click', () => {
+                console.log('🔗 Opening business profile:', promo);
+                const businessId = promo.businessId || promo.id;
+                const businessType = promo.businessType || promo.type || 'restaurant';
+                
+                if (businessId) {
+                    console.log('📍 Navigating to business:', businessId, businessType);
+                    window.CLASSIFIED.openBusinessProfile(businessId, businessType);
+                } else {
+                    console.error('No businessId found in promotion object:', promo);
+                    alert('Unable to open business profile. Please try again.');
+                }
+            });
                 
                 // Business name header
                 const nameDiv = document.createElement('div');

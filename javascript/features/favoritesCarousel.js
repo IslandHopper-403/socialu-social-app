@@ -790,6 +790,9 @@ extractBusinessIdFromCard(cardElement) {
         // Initialize arrays if needed
         if (!this.businessFavorites) this.businessFavorites = [];
         if (!this.offerFavorites) this.offerFavorites = [];
+
+        // Look for business in favorites
+        let business = this.businessFavorites.find(f => f.id === businessId);
         
         if (!business) {
             // Check offer favorites

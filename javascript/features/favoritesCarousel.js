@@ -46,6 +46,9 @@ export class FavoritesCarouselManager {
         // Touch/drag tracking
         this.dragStartY = 0;
         this.elementStartY = 0;
+
+        // Track event listeners for cleanup
+        this.cardListeners = new Map();
     }
 
 
@@ -531,6 +534,16 @@ extractBusinessIdFromCard(cardElement) {
         // Save position to localStorage
         localStorage.setItem('carouselPosition', JSON.stringify(this.currentPosition));
     }
+
+    /**
+     * Clean up existing card listeners
+     */
+    cleanupCardListeners() {
+        this.cardListeners.forEach((listener, element) => {
+            element.removeEventListener('click', listener);
+        });
+        this.cardListeners.clear();
+    }
     
     /**
      * Load user's favorite businesses
@@ -646,56 +659,142 @@ extractBusinessIdFromCard(cardElement) {
         // Add click handlers
         this.setupFavoriteCardClickHandlers();
     }
+   
+      /**
+         * Create business favorite card for carousel with safe event handling
+         */
+        createBusinessFavoriteCard(business) {
+            // Create card element
+            const card = document.createElement('div');
+            card.className = 'favorite-card';
+            card.dataset.businessId = business.id;
+            card.dataset.type = 'business';
+            
+            // Create remove button
+            const removeBtn = document.createElement('div');
+            removeBtn.className = 'remove-favorite';
+            removeBtn.textContent = '×';
+            removeBtn.onclick = (e) => {
+                e.stopPropagation();
+                window.CLASSIFIED.removeBusinessFavorite(business.id);
+            };
+            
+            // Create header
+            const header = document.createElement('div');
+            header.className = 'favorite-card-header';
+            
+            const image = document.createElement('div');
+            image.className = 'favorite-card-image';
+            image.style.backgroundImage = `url('${escapeHtml(business.image || business.logo)}')`;
+            
+            const info = document.createElement('div');
+            info.className = 'favorite-card-info';
+            
+            const name = document.createElement('div');
+            name.className = 'favorite-card-name';
+            name.textContent = business.name; // Safe: using textContent
+            
+            const type = document.createElement('div');
+            type.className = 'favorite-card-type';
+            type.textContent = business.type; // Safe: using textContent
+            
+            info.appendChild(name);
+            info.appendChild(type);
+            header.appendChild(image);
+            header.appendChild(info);
+            
+            const category = document.createElement('div');
+            category.className = 'favorite-card-category';
+            category.style.cssText = 'font-size: 10px; color: #00D4FF; margin-top: 5px;';
+            category.textContent = '💼 Business'; // Safe: using textContent
+            
+            card.appendChild(removeBtn);
+            card.appendChild(header);
+            card.appendChild(category);
+            
+            return card.outerHTML; // Convert to HTML string for batch rendering
+        }
     
-    /**
-     * Create business favorite card for carousel
-     */
-    createBusinessFavoriteCard(business) {
-        return `
-            <div class="favorite-card" data-business-id="${business.id}" data-type="business">
-                <div class="remove-favorite" onclick="event.stopPropagation(); window.CLASSIFIED.removeBusinessFavorite('${business.id}')">×</div>
-                <div class="favorite-card-header">
-                    <div class="favorite-card-image" style="background-image: url('${business.image || business.logo}')"></div>
-                    <div class="favorite-card-info">
-                        <div class="favorite-card-name">${business.name}</div>
-                        <div class="favorite-card-type">${business.type}</div>
-                    </div>
-                </div>
-                <div class="favorite-card-category" style="font-size: 10px; color: #00D4FF; margin-top: 5px;">💼 Business</div>
-            </div>
-        `;
-    }
-    
-    /**
-     * Create offer favorite card for carousel
+  /**
+     * Create offer favorite card for carousel with safe event handling  
      */
     createOfferFavoriteCard(offer) {
-        return `
-            <div class="favorite-card" data-offer-id="${offer.id}" data-type="offer">
-                <div class="remove-favorite" onclick="event.stopPropagation(); window.CLASSIFIED.removeOfferFavorite('${offer.id}')">×</div>
-                <div class="favorite-card-header">
-                    <div class="favorite-card-image" style="background-image: url('${offer.businessImage}')"></div>
-                    <div class="favorite-card-info">
-                        <div class="favorite-card-name">${offer.businessName}</div>
-                        <div class="favorite-card-type" style="font-size: 11px;">${offer.offerTitle}</div>
-                    </div>
-                </div>
-                <div class="favorite-card-promo" style="margin-top: 8px;">
-                    <div class="favorite-card-promo-details" style="font-size: 11px;">${offer.offerDetails}</div>
-                </div>
-                <div class="favorite-card-category" style="font-size: 10px; color: #FF6B6B; margin-top: 5px;">🎉 Special Offer</div>
-            </div>
-        `;
+        // Create card element
+        const card = document.createElement('div');
+        card.className = 'favorite-card';
+        card.dataset.offerId = offer.id;
+        card.dataset.type = 'offer';
+        
+        // Create remove button
+        const removeBtn = document.createElement('div');
+        removeBtn.className = 'remove-favorite';
+        removeBtn.textContent = '×';
+        removeBtn.onclick = (e) => {
+            e.stopPropagation();
+            window.CLASSIFIED.removeOfferFavorite(offer.id);
+        };
+        
+        // Create header
+        const header = document.createElement('div');
+        header.className = 'favorite-card-header';
+        
+        const image = document.createElement('div');
+        image.className = 'favorite-card-image';
+        image.style.backgroundImage = `url('${escapeHtml(offer.businessImage)}')`;
+        
+        const info = document.createElement('div');
+        info.className = 'favorite-card-info';
+        
+        const name = document.createElement('div');
+        name.className = 'favorite-card-name';
+        name.textContent = offer.businessName; // Safe: using textContent
+        
+        const type = document.createElement('div');
+        type.className = 'favorite-card-type';
+        type.style.fontSize = '11px';
+        type.textContent = offer.offerTitle; // Safe: using textContent
+        
+        info.appendChild(name);
+        info.appendChild(type);
+        header.appendChild(image);
+        header.appendChild(info);
+        
+        // Create promo section
+        const promo = document.createElement('div');
+        promo.className = 'favorite-card-promo';
+        promo.style.marginTop = '8px';
+        
+        const promoDetails = document.createElement('div');
+        promoDetails.className = 'favorite-card-promo-details';
+        promoDetails.style.fontSize = '11px';
+        promoDetails.textContent = offer.offerDetails; // Safe: using textContent
+        
+        promo.appendChild(promoDetails);
+        
+        const category = document.createElement('div');
+        category.className = 'favorite-card-category';
+        category.style.cssText = 'font-size: 10px; color: #FF6B6B; margin-top: 5px;';
+        category.textContent = '🎉 Special Offer'; // Safe: using textContent
+        
+        card.appendChild(removeBtn);
+        card.appendChild(header);
+        card.appendChild(promo);
+        card.appendChild(category);
+        
+        return card.outerHTML; // Convert to HTML string for batch rendering
     }
     
     /**
-     * Set up click handlers for favorite cards
+     * Set up click handlers for favorite cards with proper cleanup
      */
     setupFavoriteCardClickHandlers() {
+        // Clean up existing listeners first
+        this.cleanupCardListeners();
+        
         const favoriteCards = document.querySelectorAll('.favorite-card');
         
         favoriteCards.forEach(card => {
-            card.addEventListener('click', () => {
+            const clickHandler = () => {
                 const businessId = card.dataset.businessId;
                 const offerId = card.dataset.offerId;
                 const type = card.dataset.type;
@@ -705,10 +804,13 @@ extractBusinessIdFromCard(cardElement) {
                 if (type === 'business' && businessId) {
                     this.sendBusinessPromotion(businessId);
                 } else if (type === 'offer' && offerId) {
-                    // For offers, send the offerId to sendOfferPromotion
                     this.sendOfferPromotion(offerId);
                 }
-            });
+            };
+            
+            // Track the listener for cleanup
+            this.cardListeners.set(card, clickHandler);
+            card.addEventListener('click', clickHandler);
         });
     }
     
@@ -1193,4 +1295,19 @@ updateOfferFavoriteState(offerId, isFavorited) {
             this.offerFavorites = [];
         }
     }
+
+     /**
+     * Clean up all resources
+     */
+    cleanup() {
+        this.cleanupCardListeners();
+        // Clear data
+        this.businessFavorites = [];
+        this.offerFavorites = [];
+        // Hide carousel
+        if (this.carouselElement) {
+            this.carouselElement.style.display = 'none';
+        }
+    }
+    
 }

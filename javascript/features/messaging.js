@@ -2086,48 +2086,53 @@ async sendPromotionMessage(promoData) {
             margin: 10px 0;
             max-width: 250px;
             cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         `;
-        promoCard.onclick = () => window.CLASSIFIED.openBusinessProfile(promoData.businessId, 'restaurant');
+        promoCard.onclick = () => window.CLASSIFIED.openBusinessProfile(promoData.businessId, promoData.businessType || 'restaurant');
         
         // Business header with image
         const headerDiv = document.createElement('div');
         headerDiv.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px;';
         
-        const imageDiv = document.createElement('div');
-        imageDiv.style.cssText = `
-            width: 50px; height: 50px; border-radius: 8px; 
-            background-image: url('${escapeHtml(promoData.businessImage)}');
-            background-size: cover; background-position: center;
-        `;
+        // Only add image if it exists and is not placeholder
+        if (promoData.businessImage && !promoData.businessImage.includes('placeholder')) {
+            const imageDiv = document.createElement('div');
+            imageDiv.style.cssText = `
+                width: 50px; height: 50px; border-radius: 8px; 
+                background-image: url('${escapeHtml(promoData.businessImage)}');
+                background-size: cover; background-position: center;
+                flex-shrink: 0;
+            `;
+            headerDiv.appendChild(imageDiv);
+        }
         
         const infoDiv = document.createElement('div');
-        infoDiv.style.cssText = 'flex: 1;';
+        infoDiv.style.cssText = 'flex: 1; color: white;';
         
         const nameDiv = document.createElement('div');
-        nameDiv.style.cssText = 'font-weight: 700; font-size: 14px; margin-bottom: 2px;';
+        nameDiv.style.cssText = 'font-weight: 700; font-size: 16px; margin-bottom: 2px; color: white;';
         nameDiv.textContent = promoData.businessName;
         
         const typeDiv = document.createElement('div');
-        typeDiv.style.cssText = 'font-size: 12px; opacity: 0.9;';
+        typeDiv.style.cssText = 'font-size: 12px; opacity: 0.9; color: white;';
         typeDiv.textContent = promoData.businessType;
         
         infoDiv.appendChild(nameDiv);
         infoDiv.appendChild(typeDiv);
-        headerDiv.appendChild(imageDiv);
         headerDiv.appendChild(infoDiv);
         
         // Promo content
         const contentDiv = document.createElement('div');
-        contentDiv.style.cssText = 'background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px;';
+        contentDiv.style.cssText = 'background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; margin-bottom: 10px;';
         
         const titleDiv = document.createElement('div');
         titleDiv.className = 'promo-title';
-        titleDiv.style.cssText = 'font-weight: 700; margin-bottom: 5px;';
+        titleDiv.style.cssText = 'font-weight: 700; margin-bottom: 5px; color: white; font-size: 14px;';
         titleDiv.textContent = `🎉 ${promoData.promotionTitle}`;
         
         const detailsDiv = document.createElement('div');
         detailsDiv.className = 'promo-details';
-        detailsDiv.style.cssText = 'font-size: 12px; opacity: 0.9;';
+        detailsDiv.style.cssText = 'font-size: 12px; opacity: 0.9; color: white;';
         detailsDiv.textContent = promoData.promotionDetails;
         
         contentDiv.appendChild(titleDiv);
@@ -2135,7 +2140,7 @@ async sendPromotionMessage(promoData) {
         
         // Address
         const addressDiv = document.createElement('div');
-        addressDiv.style.cssText = 'margin-top: 10px; font-size: 11px; opacity: 0.8;';
+        addressDiv.style.cssText = 'margin-top: 5px; font-size: 11px; opacity: 0.8; color: white;';
         addressDiv.textContent = `📍 ${promoData.businessAddress || 'Tap to view location'}`;
         
         // Assemble

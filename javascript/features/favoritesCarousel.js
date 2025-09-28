@@ -930,6 +930,10 @@ extractBusinessIdFromCard(cardElement) {
         }
         
      try {
+
+         console.log('📦 Sending business promotion:', business);
+         console.log('Business ID being sent:', business.id);
+         
             // Ensure all fields have values, never undefined
             const promoMessage = {
                 type: 'promotion',

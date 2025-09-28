@@ -299,62 +299,69 @@ loadDemoContent() {
             openUserProfile: (user) => this.managers.profile.openUserProfile(user),
             closeUserProfile: () => this.managers.navigation.closeOverlay('userProfileView'),
       
-            // FIXED: Enhanced handleUserAction method
-            handleUserAction: (action, userId) => {
-                if (!userId || userId === 'undefined') {
+            // SECURED: Enhanced handleUserAction method with proper validation
+            handleUserAction: async (action, userId) => {
+                // Validate userId
+                if (!userId || userId === 'undefined' || userId === 'null') {
                     console.error('Invalid userId for action:', action);
                     return;
                 }
-                console.log(`User action: ${action} on user ${userId}`);
+                
+                // Sanitize userId to prevent injection
+                const safeUserId = userId.replace(/[^a-zA-Z0-9_-]/g, '');
+                console.log(`User action: ${action} on user ${safeUserId}`);
                 
                 const currentUser = this.state.get('currentUser');
                 
+                if (!currentUser) {
+                    alert('Please sign up to connect! 💖');
+                    this.managers.auth.showRegister();
+                    return;
+                }
+                
                 if (action === 'like') {
-                    if (currentUser) {
-                        // FIXED: Use messaging manager's processLikeAction method
-                        this.managers.messaging.processLikeAction(currentUser.uid, userId)
-                            .then(result => {
-                                if (result.isMatch) {
-                                    // It's a match! Show popup and switch to messaging
-                                    console.log('🎉 It\'s a match!');
-                                    // Switch to messaging tab
-                                    this.managers.feed.switchSocialTab('messaging');
-                                    // Popup is handled by triggerMatchPopup in messaging manager
-                                } else {
-                                    // Just a like, show confirmation
-                                     window.CLASSIFIED.showLikeConfirmation(); // <-- CHANGED
-                                }
-                            })
-                            .catch(err => {
-                                console.error('Error handling like:', err);
-                                window.CLASSIFIED.showLikeConfirmation(); // Fallback to positive UX
-                            });
-                    } else {
-                        alert(`Please sign up to connect! 💖`);
-                        this.managers.auth.showRegister();
+                    try {
+                        const result = await this.managers.messaging.processLikeAction(
+                            currentUser.uid, 
+                            safeUserId
+                        );
+                        
+                        if (result.alreadyLiked) {
+                            console.log('Already liked this user');
+                            return;
+                        }
+                        
+                        if (result.isMatch) {
+                            console.log('🎉 It\'s a match!');
+                            this.managers.feed.switchSocialTab('messaging');
+                        } else {
+                            window.CLASSIFIED.showLikeConfirmation();
+                        }
+                    } catch (err) {
+                        console.error('Error handling like:', err);
+                        window.CLASSIFIED.showLikeConfirmation();
                     }
                 } else if (action === 'pass') {
-                    window.CLASSIFIED.recordPass(currentUser?.uid, userId);     // <-- CHANGED
-                    window.CLASSIFIED.removeUserFromFeed(userId);              // <-- CHANGED
+                    window.CLASSIFIED.recordPass(currentUser?.uid, safeUserId);
+                    window.CLASSIFIED.removeUserFromFeed(safeUserId);
                 } else if (action === 'superlike') {
-                    if (currentUser) {
-                        this.managers.messaging.processLikeAction(currentUser.uid, userId, 'superlike')
-                            .then(result => {
-                                if (result.isMatch) {
-                                    console.log('🎉 Super like match!');
-                                    this.managers.feed.switchSocialTab('messaging');
-                                } else {
-                                    alert(`Super like sent! 🌟 They'll be notified!`);
-                                    window.CLASSIFIED.sendSuperLikeNotification(userId);  // <-- CHANGED
-                                }
-                            })
-                            .catch(err => {
-                                console.error('Error handling super like:', err);
-                                alert(`Super like sent! 🌟`);
-                            });
-                    } else {
-                        alert(`Sign up to send super likes! 🌟`);
-                        this.managers.auth.showRegister();
+                    try {
+                        const result = await this.managers.messaging.processLikeAction(
+                            currentUser.uid, 
+                            safeUserId, 
+                            'superlike'
+                        );
+                        
+                        if (result.isMatch) {
+                            console.log('🎉 Super like match!');
+                            this.managers.feed.switchSocialTab('messaging');
+                        } else {
+                            alert(`Super like sent! 🌟 They'll be notified!`);
+                            window.CLASSIFIED.sendSuperLikeNotification(safeUserId);
+                        }
+                    } catch (err) {
+                        console.error('Error handling super like:', err);
+                        alert(`Super like sent! 🌟`);
                     }
                 }
             },

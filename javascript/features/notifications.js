@@ -89,7 +89,7 @@ export class NotificationManager {
         }
     }
     
-    shouldShowNotification(message, chatId) {
+        shouldShowNotification(message, chatId) {
         const currentUser = this.state.get('currentUser');
         
         // Never notify for own messages
@@ -105,8 +105,12 @@ export class NotificationManager {
             return false;
         }
         
+        // FIX: Get message timestamp properly
+        const messageTime = message.timestamp?.toMillis?.() || 
+                           message.timestamp?.seconds ? (message.timestamp.seconds * 1000) : 
+                           Date.now();
+        
         // Create unique message ID
-        const messageTime = message.timestamp?.toMillis?.() || Date.now();
         const messageId = `${chatId}_${messageTime}_${message.senderId}`;
         
         // Check if already processed
@@ -114,21 +118,35 @@ export class NotificationManager {
             return false;
         }
         
-        // Check cooldown
-        const lastNotificationTime = this.lastNotificationTimes.get(chatId) || 0;
-        if (Date.now() - lastNotificationTime < 5000) { // 5 second cooldown
-            return false;
+        // FIX: Check against last app close time from localStorage
+        const lastAppClose = parseInt(localStorage.getItem('lastAppClose') || '0', 10);
+        const appStartTime = parseInt(localStorage.getItem('appStartTime') || Date.now().toString(), 10);
+        
+        // Only notify for messages that arrived while app was closed
+        const shouldNotify = messageTime > lastAppClose && messageTime < appStartTime;
+        
+        if (shouldNotify) {
+            // Check cooldown
+            const lastNotificationTime = this.lastNotificationTimes.get(chatId) || 0;
+            if (Date.now() - lastNotificationTime < 5000) { // 5 second cooldown
+                return false;
+            }
+            
+            // Mark as processed
+            this.processedMessages.add(messageId);
+            this.saveProcessedMessages();
+            this.lastNotificationTimes.set(chatId, Date.now());
+            
+            return true;
         }
         
-        // Mark as processed
+        // Always mark as processed to prevent future notifications
         this.processedMessages.add(messageId);
         this.saveProcessedMessages();
-        this.lastNotificationTimes.set(chatId, Date.now());
         
-        // Only show for messages created after this session started
-        return messageTime > this.sessionStartTime;
+        return false;
     }
-    
+        
     showNotification(message, chatId, partnerInfo) {
         // SECURITY: Sanitize all text before display
         const safeText = sanitizeText(message.text);

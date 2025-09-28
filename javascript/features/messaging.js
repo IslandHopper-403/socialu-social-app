@@ -71,6 +71,7 @@ export class MessagingManager {
     // FIXED: Track initial loads to prevent notifications
     this.initialLoadComplete = new Set();
     this.firstLoadTimestamp = Date.now(); // When THIS session started
+    this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
        
     // ADDED: Track app visibility for smart notifications
     document.addEventListener('visibilitychange', () => {
@@ -596,6 +597,7 @@ async init() {
             // Generate chat ID (alphabetically sorted user IDs)
             const chatId = this.generateChatId(currentUser.uid, userId);
             this.currentChatId = chatId;
+            this.markChatAsRead(chatId);
             
             document.dispatchEvent(new CustomEvent('chatOpened', { 
                 detail: { chatId: chatId, partnerId: userId }
@@ -1747,35 +1749,21 @@ updateUnreadCount(chatId, increment) {
     
     this.unreadMessages.set(chatId, newCount);
     
+    // FIXED: Save immediately after every update
+    this.saveUnreadStateToStorage();
+    
     // Calculate total unread
     const totalUnread = Array.from(this.unreadMessages.values()).reduce((sum, count) => sum + count, 0);
     
     // Always show notification if there are unread messages
     if (totalUnread > 0) {
         this.showNotificationDot(totalUnread);
-        
-        // Make sure the dot stays visible even when switching tabs
-        const checkAndShowDot = () => {
-            const dot = document.getElementById('messageNotificationDot');
-            const badge = document.getElementById('unreadCountBadge');
-            if (totalUnread > 0 && (!dot || dot.style.display === 'none') && (!badge || badge.style.display === 'none')) {
-                this.showNotificationDot(totalUnread);
-            }
-        };
-        
-        // Check periodically to ensure dot stays visible
-        setTimeout(checkAndShowDot, 100);
-        setTimeout(checkAndShowDot, 500);
     } else {
         this.hideNotificationDot();
     }
     
     // Update chat list UI with unread indicators
     this.updateChatListUnreadIndicators();
-    // Save to localStorage
-    this.saveUnreadStateToStorage();
-
-
 }
 
 
@@ -1807,21 +1795,22 @@ updateTotalUnreadCount() {
  */
 async markChatAsRead(chatId) {
     this.unreadMessages.set(chatId, 0);
-    this.saveUnreadStateToStorage(); // ADD THIS LINE
-    this.lastSeenMessages.set(chatId, Date.now());
-
+    
+    // FIXED: Save immediately
+    this.saveUnreadStateToStorage();
+    
+    // FIXED: Also save timestamp of when we last read this chat
+    localStorage.setItem(`lastRead_${chatId}`, Date.now().toString());
     localStorage.setItem(`seen_${chatId}_${this.state.get('currentUser').uid}`, Date.now().toString());
     
     // Update total unread count
     const totalUnread = Array.from(this.unreadMessages.values()).reduce((sum, count) => sum + count, 0);
     if (totalUnread === 0) {
         this.hideNotificationDot();
+    } else {
+        this.showNotificationDot(totalUnread);
     }
-    
-    // Update notification display
-    this.updateNotificationState();
 }
-
 
 /**
  * NEW: Mark current chat as read when app becomes visible

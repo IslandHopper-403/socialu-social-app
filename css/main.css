@@ -711,6 +711,25 @@ body {
     animation: slideUp 0.3s ease;
     overflow: hidden;
 }
+
+/* Specific z-index for each overlay type */
+#businessProfile.overlay-screen {
+    z-index: 250;
+}
+
+#userProfileView.overlay-screen,
+#myProfileView.overlay-screen {
+    z-index: 250;
+}
+
+#profileEditor.overlay-screen,
+#businessProfileEditor.overlay-screen {
+    z-index: 300;
+}
+
+#settingsOverlay.overlay-screen {
+    z-index: 350;
+}
 .overlay-screen.show {
     display: flex;
 }

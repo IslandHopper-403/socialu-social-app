@@ -865,30 +865,105 @@ async init() {
         
         // Clear container
         messagesContainer.innerHTML = '';
-        
+       
         // Add each message safely
         messages.forEach(msg => {
-            const sanitizedMsg = sanitizeMessage(msg);
-            const isSent = sanitizedMsg.senderId === currentUserId;
-            const timeStr = msg.timestamp ? this.formatMessageTime(msg.timestamp.toDate()) : '';
-            
-            const messageElement = document.createElement('div');
-            messageElement.className = `message ${isSent ? 'sent' : 'received'}`;
-            
-            const messageBubble = document.createElement('div');
-            messageBubble.className = 'message-bubble';
-            messageBubble.textContent = sanitizedMsg.text; // Safe
-            
-            messageElement.appendChild(messageBubble);
-            
-            if (timeStr) {
-                const timeElement = document.createElement('div');
-                timeElement.className = 'message-time';
-                timeElement.textContent = timeStr;
-                messageElement.appendChild(timeElement);
+            // Check if it's a promotion message
+            if (msg.type === 'promotion' && msg.promotion) {
+                // Create promotion card
+                const isSent = msg.senderId === currentUserId;
+                const promoElement = document.createElement('div');
+                promoElement.className = `message ${isSent ? 'sent' : 'received'}`;
+                
+                // Create styled promo card
+                const promoCard = document.createElement('div');
+                promoCard.className = 'promo-message-card';
+                promoCard.style.cssText = `
+                    background: linear-gradient(135deg, #FF6B6B, #FF8C42);
+                    border-radius: 15px;
+                    padding: 15px;
+                    margin: 10px 0;
+                    max-width: 250px;
+                    cursor: pointer;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    color: white;
+                `;
+                
+                const promo = msg.promotion;
+                promoCard.onclick = () => window.CLASSIFIED.openBusinessProfile(promo.businessId, promo.businessType || 'restaurant');
+                
+                // Business name header
+                const nameDiv = document.createElement('div');
+                nameDiv.style.cssText = 'font-weight: 700; font-size: 16px; margin-bottom: 8px; color: white;';
+                nameDiv.textContent = promo.businessName || 'Business';
+                
+                const typeDiv = document.createElement('div');
+                typeDiv.style.cssText = 'font-size: 12px; opacity: 0.9; margin-bottom: 10px; color: white;';
+                typeDiv.textContent = promo.businessType || 'restaurant';
+                
+                // Promo content box
+                const contentDiv = document.createElement('div');
+                contentDiv.style.cssText = 'background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; margin-bottom: 10px;';
+                
+                const titleDiv = document.createElement('div');
+                titleDiv.style.cssText = 'font-weight: 700; margin-bottom: 5px; color: white; font-size: 14px;';
+                titleDiv.textContent = `🎉 ${promo.promotionTitle || 'Special Offer'}`;
+                
+                const detailsDiv = document.createElement('div');
+                detailsDiv.style.cssText = 'font-size: 12px; opacity: 0.9; color: white;';
+                detailsDiv.textContent = promo.promotionDetails || 'Ask about our current promotions!';
+                
+                contentDiv.appendChild(titleDiv);
+                contentDiv.appendChild(detailsDiv);
+                
+                // Address
+                const addressDiv = document.createElement('div');
+                addressDiv.style.cssText = 'font-size: 11px; opacity: 0.8; color: white;';
+                addressDiv.textContent = `📍 ${promo.businessAddress || 'Tap to view location'}`;
+                
+                // Assemble card
+                promoCard.appendChild(nameDiv);
+                promoCard.appendChild(typeDiv);
+                promoCard.appendChild(contentDiv);
+                promoCard.appendChild(addressDiv);
+                
+                // Add time
+                if (msg.timestamp) {
+                    const timeDiv = document.createElement('div');
+                    timeDiv.className = 'message-time';
+                    timeDiv.textContent = this.formatMessageTime(msg.timestamp.toDate());
+                    promoElement.appendChild(promoCard);
+                    promoElement.appendChild(timeDiv);
+                } else {
+                    promoElement.appendChild(promoCard);
+                }
+                
+                messagesContainer.appendChild(promoElement);
+                
+            } else {
+                // Regular text message (keep existing code)
+                const sanitizedMsg = sanitizeMessage(msg);
+                const isSent = sanitizedMsg.senderId === currentUserId;
+                const timeStr = msg.timestamp ? this.formatMessageTime(msg.timestamp.toDate()) : '';
+                
+                const messageElement = document.createElement('div');
+                messageElement.className = `message ${isSent ? 'sent' : 'received'}`;
+                
+                const messageBubble = document.createElement('div');
+                messageBubble.className = 'message-bubble';
+                messageBubble.textContent = sanitizedMsg.text; // Safe
+                
+                messageElement.appendChild(messageBubble);
+                
+                if (timeStr) {
+                    const timeElement = document.createElement('div');
+                    timeElement.className = 'message-time';
+                    timeElement.textContent = timeStr;
+                    messageElement.appendChild(timeElement);
+                }
+                
+                messagesContainer.appendChild(messageElement);
             }
-            
-            messagesContainer.appendChild(messageElement);
         });
         
         // Scroll to bottom

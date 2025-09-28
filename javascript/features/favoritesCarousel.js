@@ -911,17 +911,17 @@ extractBusinessIdFromCard(cardElement) {
         
         try {
             // Rest of your existing code...
-            const promoMessage = {
-                type: 'promotion',
-                businessId: business.id,
-                businessName: business.name,
-                businessImage: business.image || business.logo,
-                businessType: business.type,
-                promotionTitle: business.promo || business.promoTitle || 'Special Offer',
-                promotionDetails: business.details || business.promoDetails || 'Ask about our current promotions!',
-                businessAddress: business.address || business.location,
-                timestamp: serverTimestamp()
-            };
+         const promoMessage = {
+            type: 'promotion',
+            businessId: business.id,
+            businessName: business.name,
+            businessImage: business.image || business.logo || '', // Ensure never undefined
+            businessType: business.type || 'Business',
+            promotionTitle: business.promo || business.promoTitle || 'Special Offer',
+            promotionDetails: business.details || business.promoDetails || 'Ask about our current promotions!',
+            businessAddress: business.address || business.location || 'Hoi An, Vietnam',
+            timestamp: serverTimestamp()
+        };
             
             await this.messagingManager.sendPromotionMessage(promoMessage);
             this.minimizeCarousel();

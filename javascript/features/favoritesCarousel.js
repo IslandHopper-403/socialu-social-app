@@ -64,25 +64,6 @@ extractBusinessIdFromCard(cardElement) {
     }
     return null;
 }
-
-
-    /**
-     * Handle chat opened event
-     */
-        onChatOpened() {
-            // Check if we have favorites before checking length
-            const totalFavorites = (this.businessFavorites?.length || 0) + (this.offerFavorites?.length || 0);
-            if (totalFavorites > 0) {
-                this.showCarousel();
-            }
-        }
-        
-        /**
-         * Handle chat closed event  
-         */
-        onChatClosed() {
-            this.hideCarousel();
-        }
     
     /**
      * Set references to other managers

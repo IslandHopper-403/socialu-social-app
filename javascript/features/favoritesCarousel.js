@@ -41,7 +41,6 @@ export class FavoritesCarouselManager {
          // UPDATED: Split favorites into two categories
         this.businessFavorites = []; // For favorited businesses
         this.offerFavorites = [];    // For favorited special offers
-        this.ensureArraysInitialized();
         this.carouselElement = null;
         
         // Touch/drag tracking
@@ -1178,6 +1177,17 @@ updateOfferFavoriteState(offerId, isFavorited) {
         } catch (error) {
             console.error('Error loading offer data:', error);
             return null;
+        }
+    }
+/**
+     * Ensure favorite arrays are always initialized
+     */
+    ensureArraysInitialized() {
+        if (!Array.isArray(this.businessFavorites)) {
+            this.businessFavorites = [];
+        }
+        if (!Array.isArray(this.offerFavorites)) {
+            this.offerFavorites = [];
         }
     }
 }

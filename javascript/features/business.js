@@ -213,16 +213,18 @@ export class BusinessManager {
     /**
      * Get business from mock data
      */
-    getBusinessFromMockData(businessId, businessType) {
+      getBusinessFromMockData(businessId, businessType) {
         // Access mock data through the app instance
         if (window.classifiedApp && window.classifiedApp.mockData) {
             const mockData = window.classifiedApp.mockData;
             
-            if (businessType === 'restaurant') {
-                return mockData.getRestaurantById(businessId);
-            } else if (businessType === 'activity') {
-                return mockData.getActivityById(businessId);
-            }
+            // Try to find in restaurants first
+            const restaurant = mockData.getRestaurantById(businessId);
+            if (restaurant) return restaurant;
+            
+            // Then try activities
+            const activity = mockData.getActivityById(businessId);
+            if (activity) return activity;
         }
         return null;
     }

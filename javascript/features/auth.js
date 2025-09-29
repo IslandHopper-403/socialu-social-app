@@ -178,12 +178,14 @@ export class AuthManager {
             throw new Error('Password must be at least 6 characters');
         }
         
+        let user = null;  // Define in outer scope
+        
         try {
             this.showLoading();
             
             // Create auth account
             const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
-            const user = userCredential.user;
+            user = userCredential.user;  // Assign to outer variable (remove const)
             
             // Update display name
             await updateProfile(user, { displayName: name });

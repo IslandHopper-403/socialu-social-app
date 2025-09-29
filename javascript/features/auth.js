@@ -166,7 +166,7 @@ export class AuthManager {
             throw new Error('Please fill in all fields');
         }
         
-        // ADD: Name validation - allow letters, spaces, hyphens, periods, apostrophes
+        // ADD: Name validation BEFORE anything else
         if (!/^[a-zA-Z\s\-'.]+$/.test(name)) {
             throw new Error('Name can only contain letters, spaces, hyphens, periods, and apostrophes');
         }
@@ -174,7 +174,7 @@ export class AuthManager {
         if (password !== confirmPassword) {
             throw new Error('Passwords do not match');
         }
-       
+        
         if (password.length < 6) {
             throw new Error('Password must be at least 6 characters');
         }

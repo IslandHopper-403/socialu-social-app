@@ -1,10 +1,7 @@
 // javascript/features/profile.js
 
-import { 
-    sanitizeProfile, sanitizeText 
-} from '../utils/security.js';
-
-import { profileValidator } from '../utils/validation.js';
+import { sanitizeText } from '../utils/security.js';
+import { profileValidator, sanitizeProfile } from '../utils/validation.js';
 
 import {
     doc,

@@ -2116,17 +2116,19 @@ updateNotificationState() {
                 console.error(`Error cleaning up listener ${id}:`, error);
             }
         });
-        this.activeListeners.clear();
+       if (this.activeListeners) this.activeListeners.clear();
         
         // 2. Legacy cleanup for backwards compatibility
-        this.chatListeners.forEach(unsubscribe => {
-            try {
-                unsubscribe();
-            } catch (error) {
-                console.error('Error unsubscribing from chat listener:', error);
-            }
-        });
-        this.chatListeners.clear();
+        if (this.chatListeners) {
+            this.chatListeners.forEach(unsubscribe => {
+                try {
+                    unsubscribe();
+                } catch (error) {
+                    console.error('Error unsubscribing from chat listener:', error);
+                }
+            });
+            this.chatListeners.clear();
+        }
         
         // 3. Clean up singleton listeners
         [this.matchListener, this.globalMessageListener, this.notificationListener].forEach(listener => {
@@ -2153,9 +2155,9 @@ updateNotificationState() {
         }
         
         // 5. Clear notification state
-        this.unreadMessages.clear();
+        if (this.unreadMessages) this.unreadMessages.clear();
         if (this.lastSeenMessages) this.lastSeenMessages.clear();
-        this.lastNotificationTimes.clear();
+        if (this.lastNotificationTimes) this.lastNotificationTimes.clear();
         this.notificationQueue = [];
         
         // 6. Remove notification elements

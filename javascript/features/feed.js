@@ -154,19 +154,17 @@ export class FeedManager {
             // Show loading
             feedContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
             
-          // For MVP: Mix real and mock data for better UX
+            // Try to fetch from Firebase first
             if (this.state.get('isAuthenticated') && this.db) {
-                const firebaseRestaurants = await this.fetchRestaurantsFromFirebase();
-                const mockRestaurants = this.mockData.getRestaurants();
+                const restaurants = await this.fetchRestaurantsFromFirebase();
                 
-                // Combine real data first, then fill with mock data
-                const combined = [...firebaseRestaurants, ...mockRestaurants];
-                
-                this.populateRestaurantFeedWithData(combined, storiesContainer, feedContainer);
-                return;
+                if (restaurants.length > 0) {
+                    this.populateRestaurantFeedWithData(restaurants, storiesContainer, feedContainer);
+                    return;
+                }
             }
             
-            // Non-authenticated users see only mock data
+            // Fallback to demo data
             this.populateRestaurantFeedWithData(this.mockData.getRestaurants(), storiesContainer, feedContainer);
             
         } catch (error) {
@@ -179,16 +177,16 @@ export class FeedManager {
     /**
      * Fetch restaurants from Firebase
      */
-      async fetchRestaurantsFromFirebase() {
-        const restaurants = [];
-        
-        // Remove status filter entirely for MVP - show all restaurants
-        const q = query(
-            collection(this.db, 'businesses'),
-            where('type', '==', 'restaurant'),
-            orderBy('updatedAt', 'desc'),
-            limit(20)
-        );
+       async fetchRestaurantsFromFirebase() {
+            const restaurants = [];
+            
+            const q = query(
+                collection(this.db, 'businesses'),
+                where('type', '==', 'restaurant'),
+                where('status', 'in', ['active', 'pending_approval']),  // Show both active and pending
+                orderBy('updatedAt', 'desc'),
+                limit(20)
+            );
             
         const snapshot = await getDocs(q);
         
@@ -261,19 +259,17 @@ export class FeedManager {
         try {
             feedContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
             
-           // For MVP: Mix real and mock data for better UX
+            // Try to fetch from Firebase first
             if (this.state.get('isAuthenticated') && this.db) {
-                const firebaseActivities = await this.fetchActivitiesFromFirebase();
-                const mockActivities = this.mockData.getActivities();
+                const activities = await this.fetchActivitiesFromFirebase();
                 
-                // Combine real data first, then fill with mock data
-                const combined = [...firebaseActivities, ...mockActivities];
-                
-                this.populateActivityFeedWithData(combined, storiesContainer, feedContainer);
-                return;
+                if (activities.length > 0) {
+                    this.populateActivityFeedWithData(activities, storiesContainer, feedContainer);
+                    return;
+                }
             }
             
-            // Non-authenticated users see only mock data
+            // Fallback to demo data
             this.populateActivityFeedWithData(this.mockData.getActivities(), storiesContainer, feedContainer);
             
         } catch (error) {
@@ -288,10 +284,10 @@ export class FeedManager {
     async fetchActivitiesFromFirebase() {
         const activities = [];
         
-        // Remove status filter for MVP - show all activities
         const q = query(
             collection(this.db, 'businesses'),
             where('type', '==', 'activity'),
+            where('status', '==', 'active'),
             orderBy('updatedAt', 'desc'),
             limit(20)
         );
@@ -436,30 +432,14 @@ export class FeedManager {
             container.appendChild(feedItem);
         });
         
-// Add activity indicator or invite card based on user count
+        // Add activity indicator
         const activityIndicator = document.createElement('div');
-        
-        if (users.length < 5) {
-            // Show invite card for early adopters
-            activityIndicator.innerHTML = `
-                <div style="text-align: center; padding: 30px; background: linear-gradient(135deg, #667eea, #764ba2); margin: 20px 0; border-radius: 15px; color: white;">
-                    <h3 style="margin-bottom: 10px;">🎉 You're early to the party!</h3>
-                    <p style="margin-bottom: 20px; opacity: 0.9;">Only ${users.length} travelers here so far - be a pioneer!</p>
-                    <button onclick="CLASSIFIED.shareApp()" style="background: white; color: #667eea; border: none; padding: 12px 30px; border-radius: 25px; font-weight: 600; cursor: pointer;">
-                        Invite Friends & Get Rewards
-                    </button>
-                </div>
-            `;
-        } else {
-            // Show regular activity indicator for active community
-            activityIndicator.innerHTML = `
-                <div style="text-align: center; padding: 20px; background: rgba(0,212,255,0.1); margin: 20px 0; border-radius: 15px;">
-                    <h3>🔥 ${users.length} travelers active in Hoi An</h3>
-                    <p>Join the community and start connecting!</p>
-                </div>
-            `;
-        }
-        
+        activityIndicator.innerHTML = `
+            <div style="text-align: center; padding: 20px; background: rgba(0,212,255,0.1); margin: 20px 0; border-radius: 15px;">
+                <h3>🔥 ${users.length} travelers active in Hoi An</h3>
+                <p>Join the community and start connecting!</p>
+            </div>
+        `;
         container.appendChild(activityIndicator);
     }
     

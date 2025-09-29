@@ -432,14 +432,30 @@ export class FeedManager {
             container.appendChild(feedItem);
         });
         
-        // Add activity indicator
+        // Add activity indicator or invite card based on user count
         const activityIndicator = document.createElement('div');
-        activityIndicator.innerHTML = `
-            <div style="text-align: center; padding: 20px; background: rgba(0,212,255,0.1); margin: 20px 0; border-radius: 15px;">
-                <h3>🔥 ${users.length} travelers active in Hoi An</h3>
-                <p>Join the community and start connecting!</p>
-            </div>
-        `;
+        
+        if (users.length < 5) {
+            // Show invite card for early adopters
+            activityIndicator.innerHTML = `
+                <div style="text-align: center; padding: 30px; background: linear-gradient(135deg, #667eea, #764ba2); margin: 20px 0; border-radius: 15px; color: white;">
+                    <h3 style="margin-bottom: 10px;">🎉 You're early to the party!</h3>
+                    <p style="margin-bottom: 20px; opacity: 0.9;">Only ${users.length} travelers here so far - be a pioneer!</p>
+                    <button onclick="CLASSIFIED.shareApp()" style="background: white; color: #667eea; border: none; padding: 12px 30px; border-radius: 25px; font-weight: 600; cursor: pointer;">
+                        Invite Friends & Get Rewards
+                    </button>
+                </div>
+            `;
+        } else {
+            // Show regular activity indicator for active community
+            activityIndicator.innerHTML = `
+                <div style="text-align: center; padding: 20px; background: rgba(0,212,255,0.1); margin: 20px 0; border-radius: 15px;">
+                    <h3>🔥 ${users.length} travelers active in Hoi An</h3>
+                    <p>Join the community and start connecting!</p>
+                </div>
+            `;
+        }
+        
         container.appendChild(activityIndicator);
     }
     

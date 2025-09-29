@@ -177,17 +177,17 @@ export class FeedManager {
     /**
      * Fetch restaurants from Firebase
      */
-    async fetchRestaurantsFromFirebase() {
-        const restaurants = [];
-        
-        const q = query(
-            collection(this.db, 'businesses'),
-            where('type', '==', 'restaurant'),
-            where('status', '==', 'active'),
-            orderBy('updatedAt', 'desc'),
-            limit(20)
-        );
-        
+       async fetchRestaurantsFromFirebase() {
+            const restaurants = [];
+            
+            const q = query(
+                collection(this.db, 'businesses'),
+                where('type', '==', 'restaurant'),
+                where('status', 'in', ['active', 'pending_approval']),  // Show both active and pending
+                orderBy('updatedAt', 'desc'),
+                limit(20)
+            );
+            
         const snapshot = await getDocs(q);
         
         snapshot.forEach(doc => {

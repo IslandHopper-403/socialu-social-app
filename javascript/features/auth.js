@@ -414,12 +414,14 @@ export class AuthManager {
     /**
      * Create user profile in Firestore
      */
-    async createUserProfile(uid, profileData) {
+   async createUserProfile(uid, profileData) {
         try {
+            console.log('📝 Attempting to create profile with data:', profileData);
             await setDoc(doc(this.db, 'users', uid), profileData);
             console.log('✅ User profile created in Firestore');
         } catch (error) {
             console.error('❌ Error creating user profile:', error);
+            console.error('Profile data that failed:', profileData);
             throw error;
         }
     }

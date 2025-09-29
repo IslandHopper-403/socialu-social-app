@@ -356,3 +356,10 @@ export class ProfileValidator {
  * Create singleton instance
  */
 export const profileValidator = new ProfileValidator();
+
+/**
+ * Export sanitizeProfile function for compatibility
+ */
+export function sanitizeProfile(profileData) {
+    return profileValidator.sanitizeProfileData(profileData);
+}

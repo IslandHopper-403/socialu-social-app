@@ -202,7 +202,11 @@ export class ProfileManager {
             const rawProfileData = this.gatherUserProfileData();
             
             // Add name from current user
-            rawProfileData.name = user.displayName || rawProfileData.name || '';
+            // FIXED: Use name from signup or existing profile
+            rawProfileData.name = user.displayName || 
+                                 profile.name ||  // Use existing saved name
+                                 rawProfileData.name || 
+                                 '';
             
             // Validate profile
             const validation = profileValidator.validateProfile(rawProfileData);

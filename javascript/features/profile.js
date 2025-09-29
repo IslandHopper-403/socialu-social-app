@@ -510,6 +510,9 @@ export class ProfileManager {
             const currentProfile = this.state.get('businessProfile');
             if (currentProfile && currentProfile.status) {
                 businessData.status = currentProfile.status;
+             } else {
+                // Fallback for new businesses - use pending_approval
+                businessData.status = 'pending_approval';
             }
             // Don't change status - only admin can promote from pending to active
             

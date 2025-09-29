@@ -186,7 +186,7 @@ extractBusinessIdFromCard(cardElement) {
                 }
                 
                 .favorites-carousel.minimized {
-                    transform: translateX(-240px);
+                    transform: translateX(-265px);
                 }
                 
                 .carousel-handle {

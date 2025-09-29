@@ -119,7 +119,7 @@ export class AuthManager {
         }
     }
     
-    /**
+   /**
      * Handle user logout
      */
    handleUserLogout() {
@@ -133,6 +133,23 @@ export class AuthManager {
         // Clean up messaging listeners
         if (this.messagingManager) {
             this.messagingManager.cleanup();
+        }
+        
+        // Clean up business dashboard resources
+        if (this.businessManager) {
+            this.businessManager.cleanup();
+        }
+        
+        // Reset UI to default state
+        const mainScreens = document.querySelector('.main-screens');
+        const bottomNav = document.querySelector('.bottom-nav');
+        const businessDashboard = document.getElementById('businessDashboard');
+        
+        if (mainScreens) mainScreens.style.display = 'block';
+        if (bottomNav) bottomNav.style.display = 'none';
+        if (businessDashboard) {
+            businessDashboard.classList.remove('show');
+            businessDashboard.style.display = 'none';
         }
         
         // Always show login screen after logout

@@ -1554,6 +1554,8 @@ input:disabled + .toggle-slider {
     display: none;
     flex-direction: column;
     animation: slideUp 0.3s ease;
+    overflow-y: auto;  /* ADD: Enable scrolling */
+    padding-bottom: 100px;  /* ADD: Extra space at bottom */
 }
 .auth-screen.show {
     display: flex;

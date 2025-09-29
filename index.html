@@ -824,6 +824,183 @@
                 <button class="match-btn" id="startChatBtn" onclick="CLASSIFIED.startChatFromMatch()">Start Chatting</button>
             </div>
         </div>
+
+      <!-- Business Dashboard Overlay -->
+    <div id="businessDashboard" class="overlay-screen">
+        <!-- Header -->
+        <div class="header">
+            <button class="back-btn" onclick="CLASSIFIED.closeBusinessDashboard()">←</button>
+            <div class="header-title">Business Dashboard</div>
+            <button class="settings-btn" onclick="CLASSIFIED.openBusinessSettings()">⚙️</button>
+        </div>
+        
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+            <!-- Business Header Info -->
+            <div class="business-header-section">
+                <div class="business-header-left">
+                    <div class="business-logo" id="businessLogo">🍜</div>
+                    <div class="business-header-info">
+                        <div class="greeting" id="businessGreeting"><!-- Dynamic: Good morning/afternoon/evening --></div>
+                        <!-- Security: Sanitized business name -->
+                        <div class="business-name" id="businessName" data-sanitized="true"><!-- Dynamic: Business Name --></div>
+                    </div>
+                </div>
+                <div class="notification-bell" onclick="CLASSIFIED.openBusinessNotifications()">
+                    🔔
+                    <div class="notification-dot" id="businessNotificationDot" style="display: none;"></div>
+                </div>
+            </div>
+            
+            <!-- Status Toggle Section -->
+            <div class="status-toggle">
+                <div class="status-info">
+                    <div class="status-title">Business Status</div>
+                    <!-- Security: Status message - use textContent only -->
+                    <div class="status-message" id="businessStatusMessage"><!-- Dynamic: Currently accepting orders / Temporarily closed --></div>
+                </div>
+                <div class="toggle-switch active" id="businessStatusToggle" onclick="CLASSIFIED.toggleBusinessStatus()" data-status="active"></div>
+            </div>
+            
+            <!-- Quick Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="businessViewsCount"><!-- Dynamic: View count --></div>
+                    <div class="stat-label">Views Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="businessMessagesCount"><!-- Dynamic: Message count --></div>
+                    <div class="stat-label">Messages</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="businessRatingValue"><!-- Dynamic: Rating --></div>
+                    <div class="stat-label">Rating</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="businessResponseRate"><!-- Dynamic: Response rate --></div>
+                    <div class="stat-label">Response</div>
+                </div>
+            </div>
+            
+            <!-- Messages Section -->
+            <div class="messages-section">
+                <div class="section-header">
+                    <div class="section-title">Recent Messages</div>
+                    <div class="view-all" onclick="CLASSIFIED.openBusinessMessages()">View All</div>
+                </div>
+                <!-- Security: Message list container for dynamic content -->
+                <div class="message-list" id="businessMessagesList">
+                    <!-- Messages will be dynamically inserted here -->
+                    <!-- Template for reference (will be created in JS):
+                    <div class="message-item unread" data-message-id="[messageId]" onclick="CLASSIFIED.openBusinessMessage('[sanitized-messageId]')">
+                        <div class="customer-avatar">👤</div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="customer-name">[textContent only]</span>
+                                <span class="message-time">[textContent only]</span>
+                            </div>
+                            <div class="message-preview">[textContent only]</div>
+                        </div>
+                    </div>
+                    -->
+                </div>
+                
+                <!-- Empty state (shown when no messages) -->
+                <div class="empty-state" id="businessMessagesEmpty" style="display: none;">
+                    <div style="text-align: center; padding: 30px; opacity: 0.7;">
+                        <div style="font-size: 48px; margin-bottom: 10px;">💬</div>
+                        <div>No messages yet</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions Grid -->
+            <div class="actions-grid">
+                <div class="action-card highlight" onclick="CLASSIFIED.openPromotions()" data-action="promotions">
+                    <span class="action-badge" id="promotionsBadge" style="display: none;"><!-- Dynamic: Active promo count --></span>
+                    <div class="action-icon">📢</div>
+                    <div class="action-title">Promotions</div>
+                    <div class="action-subtitle">Manage offers</div>
+                </div>
+                <div class="action-card" onclick="CLASSIFIED.openBusinessPhotos()" data-action="photos">
+                    <div class="action-icon">📸</div>
+                    <div class="action-title">Photos</div>
+                    <div class="action-subtitle">Update gallery</div>
+                </div>
+                <div class="action-card" onclick="CLASSIFIED.openBusinessAnalytics()" data-action="analytics">
+                    <div class="action-icon">📊</div>
+                    <div class="action-title">Analytics</div>
+                    <div class="action-subtitle">View insights</div>
+                </div>
+                <div class="action-card" onclick="CLASSIFIED.openBusinessReviews()" data-action="reviews">
+                    <div class="action-icon">⭐</div>
+                    <div class="action-title">Reviews</div>
+                    <div class="action-subtitle" id="reviewsCount"><!-- Dynamic: Review count --></div>
+                </div>
+            </div>
+            
+            <!-- Active Promotions Section -->
+            <div class="promotions-section">
+                <div class="section-header">
+                    <div class="section-title">Active Promotions</div>
+                    <div class="view-all" onclick="CLASSIFIED.createPromotion()">+ Create New</div>
+                </div>
+                <div class="promotions-list" id="businessPromotionsList">
+                    <!-- Promotions will be dynamically inserted here -->
+                    <!-- Template for reference:
+                    <div class="promotion-card" data-promo-id="[promoId]">
+                        <div class="promo-content">
+                            <div class="promo-title">[textContent only]</div>
+                            <div class="promo-details">[textContent only]</div>
+                            <div class="promo-stats">
+                                <span class="promo-views">👁 [views]</span>
+                                <span class="promo-clicks">👆 [clicks]</span>
+                            </div>
+                        </div>
+                        <button class="promo-edit-btn" onclick="CLASSIFIED.editPromotion('[sanitized-promoId]')">Edit</button>
+                    </div>
+                    -->
+                </div>
+                
+                <!-- Empty state for promotions -->
+                <div class="empty-state" id="businessPromotionsEmpty" style="display: none;">
+                    <div style="text-align: center; padding: 30px; opacity: 0.7;">
+                        <div style="font-size: 48px; margin-bottom: 10px;">🎯</div>
+                        <div>No active promotions</div>
+                        <button class="btn btn-primary" onclick="CLASSIFIED.createPromotion()" style="margin-top: 15px;">
+                            Create Your First Promotion
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Insights -->
+            <div class="insights-section">
+                <div class="section-header">
+                    <div class="section-title">Today's Performance</div>
+                </div>
+                <div class="insights-grid">
+                    <div class="insight-item">
+                        <div class="insight-label">Peak Hour</div>
+                        <div class="insight-value" id="peakHour"><!-- Dynamic: Peak hour --></div>
+                    </div>
+                    <div class="insight-item">
+                        <div class="insight-label">Conversion Rate</div>
+                        <div class="insight-value" id="conversionRate"><!-- Dynamic: Conversion % --></div>
+                    </div>
+                    <div class="insight-item">
+                        <div class="insight-label">New Followers</div>
+                        <div class="insight-value" id="newFollowers"><!-- Dynamic: Follower count --></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Floating Action Button for Quick Message -->
+        <button class="fab-button" onclick="CLASSIFIED.sendQuickBusinessMessage()" title="Send quick message to customers">
+            <span style="font-size: 24px;">💬</span>
+        </button>
+    </div>
         
         <!-- Loading Overlay -->
         <div id="loadingOverlay" class="loading-overlay">
@@ -967,9 +1144,6 @@
     <!-- Load JavaScript modules -->
     <!-- Note: Firebase is loaded as ES6 modules via CDN in firebase.js -->
     <script type="module" src="javascript/main.js"></script>
-
-
-
 
 <script>
 // Show login screen on app ready - no auto guest mode

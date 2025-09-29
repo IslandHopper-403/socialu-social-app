@@ -1550,7 +1550,7 @@ input:disabled + .toggle-slider {
     max-width: 430px;
     height: 100vh;
     background: linear-gradient(135deg, var(--bg-dark) 0%, #2d2d2d 100%);
-    z-index: 300;
+    z-index: 400;
     display: none;
     flex-direction: column;
     animation: slideUp 0.3s ease;

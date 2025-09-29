@@ -187,7 +187,7 @@ export class ProfileManager {
     /**
      * Save user profile
      */
-      async saveUserProfile() {
+     async saveUserProfile() {
         const user = this.state.get('currentUser');
         if (!user) {
             alert('Please log in first');
@@ -195,6 +195,26 @@ export class ProfileManager {
         }
         
         try {
+            // CHECK: Ensure profile document exists
+            const userDocRef = doc(this.db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            
+            if (!userDoc.exists()) {
+                console.log('📝 Creating initial profile document...');
+                // Create base profile first
+                await setDoc(userDocRef, {
+                    uid: user.uid,
+                    email: user.email,
+                    name: user.displayName || 'User',
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp(),
+                    photos: [],
+                    interests: [],
+                    businessFavorites: [],
+                    offerFavorites: []
+                });
+            }
+            
             // Clear previous errors
             profileValidator.clearErrors();
             
@@ -254,7 +274,7 @@ export class ProfileManager {
                 profileData.email = user.email;
             }
             
-            // Save to Firebase
+            // Save to Firebase - always use setDoc with merge for safety
             await setDoc(doc(this.db, 'users', user.uid), profileData, { merge: true });
             
             // Update local state

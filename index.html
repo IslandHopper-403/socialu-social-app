@@ -1001,6 +1001,133 @@
             <span style="font-size: 24px;">💬</span>
         </button>
     </div>
+
+
+        <!-- Business Analytics Overlay -->
+<div id="businessAnalytics" class="overlay-screen">
+    <div class="header">
+        <button class="back-btn" onclick="CLASSIFIED.backToDashboard()">←</button>
+        <div class="header-title">Analytics</div>
+        <button class="settings-btn" onclick="CLASSIFIED.exportAnalytics()">📤</button>
+    </div>
+    
+    <div class="analytics-content">
+        <!-- Time Range Selector -->
+        <div class="analytics-time-range">
+            <div class="time-range-selector">
+                <button class="time-btn active" onclick="CLASSIFIED.changeAnalyticsRange('today', this)">Today</button>
+                <button class="time-btn" onclick="CLASSIFIED.changeAnalyticsRange('week', this)">7 Days</button>
+                <button class="time-btn" onclick="CLASSIFIED.changeAnalyticsRange('month', this)">30 Days</button>
+                <button class="time-btn" onclick="CLASSIFIED.changeAnalyticsRange('quarter', this)">3 Months</button>
+            </div>
+        </div>
+        
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="card-label">Profile Views</div>
+                <div class="card-value" id="analyticsProfileViews"><!-- Dynamic: View count --></div>
+                <div class="card-change positive" id="analyticsViewsChange"><!-- Dynamic: Change % --></div>
+            </div>
+            
+            <div class="summary-card">
+                <div class="card-label">Messages</div>
+                <div class="card-value" id="analyticsMessages"><!-- Dynamic: Message count --></div>
+                <div class="card-change positive" id="analyticsMessagesChange"><!-- Dynamic: Change % --></div>
+            </div>
+            
+            <div class="summary-card">
+                <div class="card-label">Direction Requests</div>
+                <div class="card-value" id="analyticsDirections"><!-- Dynamic: Direction count --></div>
+                <div class="card-change positive" id="analyticsDirectionsChange"><!-- Dynamic: Change % --></div>
+            </div>
+            
+            <div class="summary-card">
+                <div class="card-label">Photo Views</div>
+                <div class="card-value" id="analyticsPhotoViews"><!-- Dynamic: Photo view count --></div>
+                <div class="card-change" id="analyticsPhotoChange"><!-- Dynamic: Change % --></div>
+            </div>
+        </div>
+        
+        <!-- Views Chart -->
+        <div class="chart-card">
+            <div class="chart-title">Daily Profile Views</div>
+            <div class="bar-chart" id="analyticsBarChart">
+                <!-- Chart will be dynamically generated -->
+                <!-- Template for reference:
+                <div class="bar-container">
+                    <div class="bar" style="height: [percentage]%;">
+                        <div class="bar-value">[value]</div>
+                    </div>
+                    <div class="bar-label">[day]</div>
+                </div>
+                -->
+            </div>
+        </div>
+        
+        <!-- Engagement Metrics -->
+        <div class="chart-card">
+            <div class="chart-title">Engagement Breakdown</div>
+            <div class="engagement-list">
+                <div class="engagement-item">
+                    <div class="engagement-label">👁️ Profile Views</div>
+                    <div class="engagement-value" id="engagementViews"><!-- Dynamic --></div>
+                </div>
+                <div class="engagement-item">
+                    <div class="engagement-label">📸 Photo Views</div>
+                    <div class="engagement-value" id="engagementPhotos"><!-- Dynamic --></div>
+                </div>
+                <div class="engagement-item">
+                    <div class="engagement-label">🗺️ Directions</div>
+                    <div class="engagement-value" id="engagementDirections"><!-- Dynamic --></div>
+                </div>
+                <div class="engagement-item">
+                    <div class="engagement-label">💬 Messages</div>
+                    <div class="engagement-value" id="engagementMessages"><!-- Dynamic --></div>
+                </div>
+                <div class="engagement-item">
+                    <div class="engagement-label">🎉 Promo Views</div>
+                    <div class="engagement-value" id="engagementPromos"><!-- Dynamic --></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Insights -->
+        <div class="insights-card">
+            <div class="insights-title">Smart Insights</div>
+            <div class="insights-list" id="analyticsInsights">
+                <!-- Insights will be dynamically generated -->
+                <!-- Template:
+                <div class="insight-item">💡 [Insight text]</div>
+                -->
+            </div>
+        </div>
+        
+        <!-- Top Performing Content -->
+        <div class="chart-card">
+            <div class="chart-title">Top Performing Photos</div>
+            <div class="photo-performance-grid" id="topPhotosGrid">
+                <!-- Photos will be dynamically loaded -->
+                <!-- Template:
+                <div class="perf-photo-item">
+                    <div class="perf-photo-image" style="background-image: url('[url]')"></div>
+                    <div class="perf-photo-stats">[views] views</div>
+                </div>
+                -->
+            </div>
+        </div>
+        
+        <!-- Export Options -->
+        <div class="analytics-footer">
+            <button class="btn btn-secondary" onclick="CLASSIFIED.scheduleAnalyticsReport()">
+                📅 Schedule Weekly Report
+            </button>
+            <button class="btn btn-primary" onclick="CLASSIFIED.exportAnalyticsData()">
+                📊 Export Full Data
+            </button>
+        </div>
+    </div>
+</div>
         
         <!-- Loading Overlay -->
         <div id="loadingOverlay" class="loading-overlay">

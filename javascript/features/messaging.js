@@ -297,19 +297,24 @@ export class MessagingManager {
         if (!chatListContainer) return;
 
 
-        chatListContainer.innerHTML = chats.map(chat => `
-            <div class="chat-item" onclick="CLASSIFIED.openChat('${chat.name}', '${chat.avatar}', '${chat.userId}')">
-                <div class="chat-avatar" style="background-image: url('${chat.avatar}')"></div>
-                <div class="chat-details">
-                    <div class="chat-name">${chat.name}</div>
-                    <div class="chat-last-message">${chat.message}</div>
+    chatListContainer.innerHTML = chats.map(chat => {
+            // Escape quotes for onclick attribute
+            const safeName = chat.name.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            const safeAvatar = chat.avatar.replace(/'/g, "\\'");
+            
+            return `
+                <div class="chat-item" onclick="CLASSIFIED.openChat('${safeName}', '${safeAvatar}', '${chat.userId}')">
+                    <div class="chat-avatar" style="background-image: url('${chat.avatar}')"></div>
+                    <div class="chat-details">
+                        <div class="chat-name">${sanitizeText(chat.name)}</div>
+                        <div class="chat-last-message">${sanitizeText(chat.message)}</div>
+                    </div>
+                    <div class="chat-meta">
+                        <div class="chat-time">${chat.time}</div>
+                    </div>
                 </div>
-                <div class="chat-meta">
-                    <div class="chat-time">${chat.time}</div>
-                </div>
-            </div>
-        `).join('');
-    }
+            `;
+        }).join('');
     
 
 

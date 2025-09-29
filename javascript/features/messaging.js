@@ -1093,31 +1093,39 @@ async init() {
         /**
      * Listen for new matches (FIXED to prevent showing old matches)
      */
-    listenForMatches(userId) {
-        this.unregisterListener('matches_global');
-        
-        try {
-            const matchesRef = collection(this.db, 'matches');
-            const q = query(
-                matchesRef,
-                where('users', 'array-contains', userId)
-            );
+       listenForMatches(userId) {
+            this.unregisterListener('matches_global');
             
-            // FIXED: Track initial load and session start time
-            let isInitialLoad = true;
-            const sessionStartTime = Date.now();
-            
-            // FIXED: Load seen matches from localStorage
-            if (!this.seenMatches) {
-                this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
-            }
+            try {
+                const matchesRef = collection(this.db, 'matches');
+                const q = query(
+                    matchesRef,
+                    where('users', 'array-contains', userId)
+                );
+                
+                // FIXED: Track initial load and session start time
+                let isInitialLoad = true;
+                const sessionStartTime = Date.now();
+                const thirtySecondsAgo = Date.now() - 30000; // 30 second window
+                
+                // FIXED: Load seen matches from localStorage
+                if (!this.seenMatches) {
+                    this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
+                }
             
             const unsubscribe = onSnapshot(q, (snapshot) => {
                 if (isInitialLoad) {
-                    // FIXED: On initial load, just mark all existing matches as seen
+                    // FIXED: On initial load, mark ALL matches as seen (no popups for old matches)
                     snapshot.forEach(doc => {
                         const matchId = doc.id;
+                        const matchData = doc.data();
+                        
+                        // Add to seen matches regardless of age
                         this.seenMatches.add(matchId);
+                        
+                        // Also store match timestamp for future validation
+                        const matchTime = matchData.timestamp?.toDate?.()?.getTime() || 0;
+                        localStorage.setItem(`match_time_${matchId}`, matchTime.toString());
                     });
                     
                     // Save to localStorage
@@ -1127,7 +1135,7 @@ async init() {
                     return;
                 }
                 
-                // FIXED: Only process changes after initial load
+          // FIXED: Only process changes after initial load
                 snapshot.docChanges().forEach(change => {
                     if (change.type === 'added') {
                         const matchId = change.doc.id;
@@ -1139,22 +1147,36 @@ async init() {
                             return;
                         }
                         
-                        // FIXED: Check timestamp - only show if created after session start
+                        // FIXED: Get match timestamp properly
                         const matchTime = matchData.timestamp?.toDate?.() || new Date();
                         const matchTimeMs = matchTime.getTime();
                         
+                        // FIXED: THREE validation checks for match popup
+                        
+                        // 1. Must be created AFTER this session started
                         if (matchTimeMs < sessionStartTime) {
                             console.log('⏭️ Skipping old match from before session:', matchId);
                             this.seenMatches.add(matchId);
+                            localStorage.setItem(`match_time_${matchId}`, matchTimeMs.toString());
                             this.saveSeenMatches();
                             return;
                         }
                         
-                        // FIXED: Additional check - only show if match is less than 30 seconds old
+                        // 2. Must be less than 30 seconds old
                         const timeDiff = Date.now() - matchTimeMs;
                         if (timeDiff > 30000) {
-                            console.log('⏭️ Skipping stale match (>30s old):', matchId);
+                            console.log('⏭️ Skipping stale match (>30s old):', matchId, `Age: ${Math.round(timeDiff/1000)}s`);
                             this.seenMatches.add(matchId);
+                            localStorage.setItem(`match_time_${matchId}`, matchTimeMs.toString());
+                            this.saveSeenMatches();
+                            return;
+                        }
+                        
+                        // 3. Must be created after the 30-second window started
+                        if (matchTimeMs < thirtySecondsAgo) {
+                            console.log('⏭️ Match outside 30s window:', matchId);
+                            this.seenMatches.add(matchId);
+                            localStorage.setItem(`match_time_${matchId}`, matchTimeMs.toString());
                             this.saveSeenMatches();
                             return;
                         }
@@ -1402,10 +1424,25 @@ async init() {
         /**
          * Handle new match
          */
-        async handleNewMatch(matchData) {
+           async handleNewMatch(matchData) {
             console.log('🎉 New match!', matchData);
             
             try {
+                // SECURITY: Validate match data structure
+                if (!matchData.users || !Array.isArray(matchData.users) || matchData.users.length !== 2) {
+                    console.error('Invalid match data structure');
+                    return;
+                }
+                
+                // FIXED: Double-check match age before showing popup
+                const matchTime = matchData.timestamp?.toDate?.() || new Date();
+                const matchAge = Date.now() - matchTime.getTime();
+                
+                if (matchAge > 30000) {
+                    console.log('⏭️ Match too old for popup, age:', Math.round(matchAge/1000), 'seconds');
+                    return;
+                }
+                
                 // Prevent duplicate match popups
                 const matchPopup = document.getElementById('matchPopup');
                 if (matchPopup && matchPopup.classList.contains('show')) {
@@ -1542,13 +1579,20 @@ async init() {
  */
 async createMatch(userId1, userId2) {
     try {
+        // SECURITY: Validate user IDs
+        if (!userId1 || !userId2 || userId1 === userId2) {
+            throw new Error('Invalid user IDs for match creation');
+        }
+        
         console.log('🎉 Creating match between', userId1, 'and', userId2);
         
+        // FIXED: Add creation timestamp for 30-second validation
         const matchData = {
             users: [userId1, userId2].sort(), // Sort for consistency
             timestamp: serverTimestamp(),
+            createdTimestamp: Date.now(), // Client timestamp for immediate validation
             status: 'active',
-            createdBy: 'system', // or userId1 if user-initiated
+            createdBy: 'system',
             chatCreated: false
         };
         
@@ -1655,9 +1699,18 @@ async sendMatchNotifications(userId1, userId2, matchId) {
  */
 async checkMutualLikes(userId1, userId2) {
     try {
-        // Validate inputs
-        if (!userId1 || !userId2) {
+        // SECURITY: Validate and sanitize user IDs
+        if (!userId1 || !userId2 || userId1 === userId2) {
             console.error('Invalid user IDs for mutual like check');
+            return false;
+        }
+        
+        // SECURITY: Ensure IDs are alphanumeric only
+        const safeUserId1 = userId1.replace(/[^a-zA-Z0-9_-]/g, '');
+        const safeUserId2 = userId2.replace(/[^a-zA-Z0-9_-]/g, '');
+        
+        if (safeUserId1 !== userId1 || safeUserId2 !== userId2) {
+            console.error('User IDs contain invalid characters');
             return false;
         }
         

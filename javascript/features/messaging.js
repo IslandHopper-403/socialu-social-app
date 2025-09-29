@@ -254,6 +254,199 @@ export class MessagingManager {
 
 
     /**
+     * Initialize messaging in business mode
+     */
+    initBusinessMode() {
+        console.log('💬 Initializing business messaging mode');
+        
+        // Set business mode flag
+        this.isBusinessMode = true;
+        
+        // Load business messages only
+        this.loadBusinessMessages();
+        
+        // Set up business-specific listeners
+        this.setupBusinessMessageListeners();
+    }
+    
+    /**
+     * Load business messages (customer inquiries)
+     */
+    async loadBusinessMessages() {
+        const user = this.state.get('currentUser');
+        if (!user) return;
+        
+        try {
+            // Query for chats where business is a participant
+            const chatsQuery = query(
+                collection(this.db, 'chats'),
+                where('participants', 'array-contains', user.uid)
+            );
+            
+            const snapshot = await getDocs(chatsQuery);
+            const messages = [];
+            
+            for (const doc of snapshot.docs) {
+                const chatData = doc.data();
+                const otherUserId = chatData.participants.find(id => id !== user.uid);
+                
+                // Get other user's data
+                const userDoc = await getDoc(doc(this.db, 'users', otherUserId));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    messages.push({
+                        chatId: doc.id,
+                        userId: otherUserId,
+                        userName: userData.name || 'Customer',
+                        lastMessage: chatData.lastMessage || 'New inquiry',
+                        timestamp: chatData.lastMessageTime,
+                        unread: chatData.unreadCount?.[user.uid] || 0
+                    });
+                }
+            }
+            
+            // Update business messages list
+            this.updateBusinessMessagesList(messages);
+            
+        } catch (error) {
+            console.error('Error loading business messages:', error);
+        }
+    }
+    
+    /**
+     * Set up business message listeners
+     */
+    setupBusinessMessageListeners() {
+        const user = this.state.get('currentUser');
+        if (!user) return;
+        
+        try {
+            // Listen for new messages in business chats
+            const chatsQuery = query(
+                collection(this.db, 'chats'),
+                where('participants', 'array-contains', user.uid)
+            );
+            
+            const unsubscribe = onSnapshot(chatsQuery, (snapshot) => {
+                console.log('📬 Business messages updated');
+                this.loadBusinessMessages();
+            });
+            
+            // SECURITY: Track listener for cleanup
+            this.registerListener(`business_messages_${user.uid}`, unsubscribe, 'business');
+            
+            // Store reference for cleanup
+            if (this.businessManager) {
+                this.businessManager.businessMessageListener = unsubscribe;
+            }
+            
+        } catch (error) {
+            console.error('Error setting up business message listeners:', error);
+        }
+    }
+    
+    /**
+     * Update business messages list in dashboard
+     */
+    updateBusinessMessagesList(messages) {
+        const container = document.getElementById('businessMessagesList');
+        const emptyState = document.getElementById('businessMessagesEmpty');
+        
+        if (!container) return;
+        
+        if (messages.length === 0) {
+            container.style.display = 'none';
+            if (emptyState) emptyState.style.display = 'block';
+            return;
+        }
+        
+        container.style.display = 'block';
+        if (emptyState) emptyState.style.display = 'none';
+        
+        // Clear and populate - SAFE
+        container.innerHTML = '';
+        
+        messages.forEach(msg => {
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message-item' + (msg.unread > 0 ? ' unread' : '');
+            messageEl.setAttribute('data-message-id', sanitizeText(msg.chatId));
+            
+            // Create elements safely
+            const avatarEl = document.createElement('div');
+            avatarEl.className = 'customer-avatar';
+            avatarEl.textContent = '👤';
+            
+            const contentEl = document.createElement('div');
+            contentEl.className = 'message-content';
+            
+            const headerEl = document.createElement('div');
+            headerEl.className = 'message-header';
+            
+            const nameEl = document.createElement('span');
+            nameEl.className = 'customer-name';
+            nameEl.textContent = sanitizeText(msg.userName);
+            
+            const timeEl = document.createElement('span');
+            timeEl.className = 'message-time';
+            timeEl.textContent = this.formatMessageTime(msg.timestamp);
+            
+            const previewEl = document.createElement('div');
+            previewEl.className = 'message-preview';
+            previewEl.textContent = sanitizeText(msg.lastMessage);
+            
+            // Assemble elements
+            headerEl.appendChild(nameEl);
+            headerEl.appendChild(timeEl);
+            contentEl.appendChild(headerEl);
+            contentEl.appendChild(previewEl);
+            
+            messageEl.appendChild(avatarEl);
+            messageEl.appendChild(contentEl);
+            
+            // Add click handler
+            messageEl.onclick = () => {
+                this.openBusinessChat(msg.userId, msg.userName, msg.chatId);
+            };
+            
+            container.appendChild(messageEl);
+        });
+        
+        // Update message count
+        const totalUnread = messages.reduce((sum, msg) => sum + msg.unread, 0);
+        const countEl = document.getElementById('businessMessagesCount');
+        if (countEl) {
+            countEl.textContent = totalUnread.toString();
+        }
+    }
+    
+    /**
+     * Open chat in business context
+     */
+    openBusinessChat(userId, userName, chatId) {
+        // SECURITY: Validate userId
+        if (!userId || typeof userId !== 'string') {
+            console.error('Invalid userId for business chat');
+            return;
+        }
+        
+        // SECURITY: Sanitize userId to prevent injection
+        const safeUserId = userId.replace(/[^a-zA-Z0-9_-]/g, '');
+        
+        console.log('💬 Opening business chat with:', userName);
+        
+        // Set business chat context
+        this.currentChatContext = 'business';
+        
+        // Open chat with business-specific UI (use safe ID)
+        this.openChat(userName, '👤', safeUserId);
+        
+        // Hide favorites button in business chat
+        const favBtn = document.querySelector('#individualChat .chat-input button');
+        if (favBtn) favBtn.style.display = 'none';
+    }
+
+
+    /**
      * Display mock chats for guest mode
      */
     showDemoOnlineUsers() {

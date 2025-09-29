@@ -1,8 +1,6 @@
 // javascript/features/messaging.js - COMPLETE VERSION
 
-import { sanitizeMessage, sanitizeText, escapeHtml 
-} from '../utils/security.js';
-
+import { sanitizeMessage, sanitizeText, escapeHtml, sanitizeHtml } from '../utils/security.js';
 import { handleSecurityError } from '../utils/security.js';
 
 import {
@@ -1479,7 +1477,7 @@ export class MessagingManager {
             // Create notification element
             const notification = document.createElement('div');
             notification.className = 'social-proof-notification';
-            notification.innerHTML = `💬 New message: ${chatData.lastMessage}`;
+            notification.textContent = `💬 New message: ${chatData.lastMessage}`;
             
             document.body.appendChild(notification);
             // Show notification dot

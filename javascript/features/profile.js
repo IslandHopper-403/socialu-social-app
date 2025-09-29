@@ -506,10 +506,12 @@ export class ProfileManager {
             businessData.email = user.email;
             businessData.updatedAt = serverTimestamp();
             
-            // Update status if profile is complete
-            if (businessData.name && businessData.description && businessData.type) {
-                businessData.status = 'active'; // In real app, this would be 'pending_approval'
+            // Get current status from state (preserves existing status)
+            const currentProfile = this.state.get('businessProfile');
+            if (currentProfile && currentProfile.status) {
+                businessData.status = currentProfile.status;
             }
+            // Don't change status - only admin can promote from pending to active
             
             // Save to Firebase
             await setDoc(doc(this.db, 'businesses', user.uid), businessData, { merge: true });

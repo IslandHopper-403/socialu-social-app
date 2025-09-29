@@ -834,47 +834,14 @@ export class MessagingManager {
         
         messageElement.appendChild(messageBubble);
         
-        if (timeStr) {
-                    const timeElement = document.createElement('div');
-                    timeElement.className = 'message-time';
-                    
-                    // Add read receipt indicator for sent messages
-                    if (isSent) {
-                        const messageId = `${this.currentChatId}_${msg.id}`;
-                        const readState = this.messageReadStates.get(messageId) || msg;
-                        
-                        if (readState.read) {
-                            timeElement.textContent = `${timeStr} ✓✓`;
-                            timeElement.style.color = '#00D4FF'; // Blue checkmarks for read
-                        } else {
-                            timeElement.textContent = `${timeStr} ✓`;
-                            timeElement.style.opacity = '0.6'; // Gray single check for sent
-                        }
-                    } else {
-                        timeElement.textContent = timeStr;
-                        
-                        // Mark incoming message as read if chat is visible
-                        if (this.isChatVisible && this.isAppVisible && msg.id) {
-                            const messageId = `${this.currentChatId}_${msg.id}`;
-                            if (!this.messageReadStates.has(messageId)) {
-                                this.messageReadStates.set(messageId, {
-                                    read: true,
-                                    readAt: Date.now()
-                                });
-                                // Don't await - fire and forget
-                                this.updateMessageReadStatus(msg.id, this.currentChatId);
-                            }
-                        }
-                    }
-                    
-                    messageElement.appendChild(timeElement);
-                }
-                
-                messagesContainer.appendChild(messageElement);
-            }
-        });
+       if (timeStr) {
+            const timeElement = document.createElement('div');
+            timeElement.className = 'message-time';
+            timeElement.textContent = timeStr;
+            messageElement.appendChild(timeElement);
+        }
         
-        // Scroll to bottom
+        messagesContainer.appendChild(messageElement);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
     
@@ -1086,7 +1053,36 @@ export class MessagingManager {
                 if (timeStr) {
                     const timeElement = document.createElement('div');
                     timeElement.className = 'message-time';
-                    timeElement.textContent = timeStr;
+                    
+                    // Add read receipt indicator for sent messages
+                    if (isSent) {
+                        const messageId = `${this.currentChatId}_${msg.id}`;
+                        const readState = this.messageReadStates.get(messageId) || msg;
+                        
+                        if (readState.read) {
+                            timeElement.textContent = `${timeStr} ✓✓`;
+                            timeElement.style.color = '#00D4FF'; // Blue checkmarks for read
+                        } else {
+                            timeElement.textContent = `${timeStr} ✓`;
+                            timeElement.style.opacity = '0.6'; // Gray single check for sent
+                        }
+                    } else {
+                        timeElement.textContent = timeStr;
+                        
+                        // Mark incoming message as read if chat is visible
+                        if (this.isChatVisible && this.isAppVisible && msg.id) {
+                            const messageId = `${this.currentChatId}_${msg.id}`;
+                            if (!this.messageReadStates.has(messageId)) {
+                                this.messageReadStates.set(messageId, {
+                                    read: true,
+                                    readAt: Date.now()
+                                });
+                                // Don't await - fire and forget
+                                this.updateMessageReadStatus(msg.id, this.currentChatId);
+                            }
+                        }
+                    }
+                    
                     messageElement.appendChild(timeElement);
                 }
                 

@@ -179,8 +179,12 @@ export class MessagingManager {
      * Initialize messaging system
      */
 
-async init() {
+    async init() {
         console.log('💬 Initializing messaging manager...');
+        
+        // Clean up old data on startup
+        this.cleanupOldMatchTimestamps();
+        
         // Set up event listeners
         this.setupEventListeners();
 
@@ -2362,5 +2366,25 @@ async sendPromotionMessage(promoData) {
         
         messagesContainer.appendChild(promoElement);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+     /**
+     * Clean up old match timestamps from localStorage (housekeeping)
+     */
+    cleanupOldMatchTimestamps() {
+        const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        const keysToRemove = [];
+        
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key?.startsWith('match_time_')) {
+                const timestamp = parseInt(localStorage.getItem(key) || '0');
+                if (timestamp < oneWeekAgo) {
+                    keysToRemove.push(key);
+                }
+            }
+        }
+        
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        console.log(`🧹 Cleaned up ${keysToRemove.length} old match timestamps`);
     }
 }

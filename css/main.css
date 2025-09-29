@@ -1961,3 +1961,11 @@ input:disabled + .toggle-slider {
 .error-icon {
   font-size: 24px;
 }
+
+/* ===== Hide Social Elements for Business Users ===== */
+/* Hide social elements for business users */
+body.business-user .social-tabs,
+body.business-user .social-content,
+body.business-user #socialScreen {
+    display: none !important;
+}

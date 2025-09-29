@@ -198,18 +198,37 @@ export class AuthManager {
             // Check for referral
             const referredBy = sessionStorage.getItem('referralCode');
             
-            // Create user profile
+            // Create COMPLETE initial user profile with all fields
             const profileData = {
-                name: name,
-                email: email,
+                // Required fields
                 uid: user.uid,
-                referralCode: referralCode,
+                email: email,
+                name: name,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
+                
+                // Profile fields (initialize empty/defaults)
+                bio: '',
+                age: null,
+                birthday: '',
+                zodiac: '',
+                height: '',
+                career: '',
+                interests: [],
+                priority: '',
+                relationship: '',
+                lookingFor: '',
+                marriage: '',
+                photos: [],  // Initialize empty array
+                
+                // System fields
+                referralCode: referralCode,
                 location: 'Hoi An, Vietnam',
                 isOnline: true,
                 isPremium: !!referredBy,
-                premiumUntil: referredBy ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) : null
+                premiumUntil: referredBy ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) : null,
+                businessFavorites: [],  // Initialize empty
+                offerFavorites: []      // Initialize empty
             };
             
             await this.createUserProfile(user.uid, profileData);

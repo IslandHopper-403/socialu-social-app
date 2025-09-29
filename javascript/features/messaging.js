@@ -292,12 +292,11 @@ export class MessagingManager {
     /**
      * Populate the chat list with provided data
      */
-    populateChatList(chats) {
+   populateChatList(chats) {
         const chatListContainer = document.getElementById('chatList');
         if (!chatListContainer) return;
 
-
-    chatListContainer.innerHTML = chats.map(chat => {
+        chatListContainer.innerHTML = chats.map(chat => {
             // Escape quotes for onclick attribute
             const safeName = chat.name.replace(/'/g, "\\'").replace(/"/g, "&quot;");
             const safeAvatar = chat.avatar.replace(/'/g, "\\'");
@@ -316,7 +315,6 @@ export class MessagingManager {
             `;
         }).join('');
     }
-
 
     /**
      * Request notification permission

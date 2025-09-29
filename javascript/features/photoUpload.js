@@ -409,7 +409,9 @@ export class PhotoUploadManager {
             
             // Generate unique filename
             const timestamp = Date.now();
-            const filename = `${profileType}s/${currentUser.uid}/${timestamp}_${file.name}`;
+            // Fix: Handle plural correctly for business vs user
+            const folderName = profileType === 'business' ? 'businesses' : 'users';
+            const filename = `${folderName}/${currentUser.uid}/${timestamp}_${file.name}`;
             
             // Create storage reference
             const storageRef = ref(this.storage, filename);

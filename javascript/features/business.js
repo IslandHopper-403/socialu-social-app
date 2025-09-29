@@ -84,24 +84,106 @@ export class BusinessManager {
         }
     }
     
-    /**
+   /**
      * Handle business login
      */
     async handleBusinessLogin(businessData) {
         console.log('🏢 Business user logged in');
         
-        // Load business dashboard
-        await this.loadBusinessDashboard();
-        
-        // Show business-specific UI elements
-        this.showBusinessUI();
+        // Store business data
+        this.currentBusinessData = businessData;
         
         // Check if profile needs completion
         if (businessData.status === 'pending_approval' && !businessData.description) {
+            this.needsProfileCompletion = true;
+        }
+    }
+    
+    /**
+     * Initialize business dashboard
+     */
+    async initializeDashboard() {
+        console.log('📊 Initializing business dashboard');
+        
+        // Load dashboard data
+        await this.loadBusinessDashboard();
+        
+        // Update dashboard UI
+        this.updateDashboardUI();
+        
+        // Show profile completion prompt if needed
+        if (this.needsProfileCompletion) {
             setTimeout(() => {
                 alert('Welcome! Please complete your business profile to get approved and start appearing in feeds.');
                 this.profileManager.openBusinessProfileEditor();
             }, 1000);
+        }
+        
+        // Set up dashboard refresh interval
+        this.dashboardRefreshInterval = setInterval(() => {
+            this.updateDashboardStats();
+        }, 30000); // Refresh every 30 seconds
+    }
+    
+    /**
+     * Update dashboard UI with current data
+     */
+    updateDashboardUI() {
+        const businessData = this.currentBusinessData;
+        if (!businessData) return;
+        
+        // Update business name - SAFE
+        const nameEl = document.getElementById('businessName');
+        if (nameEl) {
+            nameEl.textContent = sanitizeText(businessData.name || 'Business');
+        }
+        
+        // Update greeting based on time
+        const greetingEl = document.getElementById('businessGreeting');
+        if (greetingEl) {
+            const hour = new Date().getHours();
+            let greeting = 'Good morning';
+            if (hour >= 12 && hour < 17) greeting = 'Good afternoon';
+            if (hour >= 17) greeting = 'Good evening';
+            greetingEl.textContent = greeting;
+        }
+        
+        // Update status message - SAFE
+        const statusEl = document.getElementById('businessStatusMessage');
+        if (statusEl) {
+            statusEl.textContent = businessData.isOpen ? 'Currently accepting orders' : 'Temporarily closed';
+        }
+        
+        // Update stats - SAFE
+        this.updateDashboardStats();
+    }
+    
+    /**
+     * Update dashboard statistics
+     */
+    async updateDashboardStats() {
+        // Update view count
+        const viewsEl = document.getElementById('businessViewsCount');
+        if (viewsEl) {
+            viewsEl.textContent = this.dashboardData.views || '0';
+        }
+        
+        // Update message count
+        const messagesEl = document.getElementById('businessMessagesCount');
+        if (messagesEl) {
+            messagesEl.textContent = this.dashboardData.messages || '0';
+        }
+        
+        // Update rating (mock for now)
+        const ratingEl = document.getElementById('businessRatingValue');
+        if (ratingEl) {
+            ratingEl.textContent = '4.8';
+        }
+        
+        // Update response rate (mock for now)
+        const responseEl = document.getElementById('businessResponseRate');
+        if (responseEl) {
+            responseEl.textContent = '95%';
         }
     }
     
@@ -477,5 +559,33 @@ export class BusinessManager {
     getBusinessStatus() {
         const businessProfile = this.state.get('businessProfile');
         return businessProfile?.status || 'unknown';
+    }
+    
+    /**
+     * Cleanup business dashboard resources
+     */
+    cleanup() {
+        console.log('🧹 Cleaning up business dashboard');
+        
+        // Clear refresh interval
+        if (this.dashboardRefreshInterval) {
+            clearInterval(this.dashboardRefreshInterval);
+            this.dashboardRefreshInterval = null;
+        }
+        
+        // Clear any business message listeners
+        if (this.businessMessageListener) {
+            this.businessMessageListener();
+            this.businessMessageListener = null;
+        }
+        
+        // Clear cached data
+        this.currentBusinessData = null;
+        this.dashboardData = {
+            views: 0,
+            clicks: 0,
+            messages: 0,
+            promotions: []
+        };
     }
 }

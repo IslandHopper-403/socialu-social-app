@@ -315,7 +315,7 @@ export class MessagingManager {
                 </div>
             `;
         }).join('');
-    
+    }
 
 
     /**

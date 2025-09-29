@@ -116,11 +116,12 @@ export class AuthManager {
     /**
      * Handle user logout
      */
-    handleUserLogout() {
+   handleUserLogout() {
         this.state.update({
             currentUser: null,
             isAuthenticated: false,
-            isBusinessUser: false
+            isBusinessUser: false,
+            isGuestMode: false  // Reset guest mode too
         });
         
         // Clean up messaging listeners
@@ -128,10 +129,8 @@ export class AuthManager {
             this.messagingManager.cleanup();
         }
         
-        // Show login screen unless in guest mode
-        if (!this.state.get('isGuestMode')) {
-            this.showLogin();
-        }
+        // Always show login screen after logout
+        this.showLogin();
         
         // Reset user data
         this.state.reset(['userProfile', 'businessProfile']);

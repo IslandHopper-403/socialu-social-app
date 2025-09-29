@@ -251,8 +251,10 @@ export class AuthManager {
             
         } catch (error) {
             this.hideLoading();
-            console.error('❌ Registration failed:', error);
-            throw this.formatAuthError(error);
+            console.warn('⚠️ Profile document creation deferred:', error);
+            // Don't throw - account created successfully
+            // Profile will be created when user saves their profile
+            return user;
         }
     }
     

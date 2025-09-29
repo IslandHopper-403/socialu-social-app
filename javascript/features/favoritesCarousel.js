@@ -284,7 +284,7 @@ extractBusinessIdFromCard(cardElement) {
                 
                 .carousel-content {
                     padding: 10px;
-                    max-height: 400px;
+                    max-height: 200px;
                     overflow-y: auto;
                 }
                 

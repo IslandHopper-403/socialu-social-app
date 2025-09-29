@@ -242,6 +242,14 @@ export class ProfileManager {
                 profileData.referralCode = this.generateReferralCode();
             }
             
+            // FIXED: Ensure required fields for Firebase rules
+            if (!profileData.name) {
+                profileData.name = 'User';
+            }
+            if (!profileData.email) {
+                profileData.email = user.email;
+            }
+            
             // Save to Firebase
             await setDoc(doc(this.db, 'users', user.uid), profileData, { merge: true });
             

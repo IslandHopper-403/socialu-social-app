@@ -240,7 +240,29 @@ extractBusinessIdFromCard(cardElement) {
                     border: 1px solid rgba(255, 255, 255, 0.1);
                     border-left: none;
                     overflow: hidden;
+                    transition: opacity 0.3s ease; 
                 }
+
+               /* Make it semi-transparent when minimized */
+                .favorites-carousel.minimized .carousel-container {
+                    opacity: 0.3;  /* Faded when minimized */
+                }
+                
+                /* Optional: Also fade the handle */
+                .favorites-carousel.minimized .carousel-handle {
+                    opacity: 0.5;  /* Slightly visible handle */
+                }
+                
+                /* Return to full opacity on hover even when minimized */
+                .favorites-carousel.minimized:hover .carousel-container {
+                    opacity: 1;  /* Full opacity on hover */
+                }
+                
+                .favorites-carousel.minimized:hover .carousel-handle {
+                    opacity: 1;
+                }
+
+                
                 
                 .carousel-header {
                     padding: 12px 15px;

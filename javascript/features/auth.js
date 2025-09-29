@@ -80,24 +80,30 @@ export class AuthManager {
     /**
      * Handle user login
      */
-   async handleUserLogin(user) {
-    this.state.update({
-        currentUser: user,
-        isAuthenticated: true,
-        isGuestMode: false
-    });
-    
-    // ADD THIS LINE to force nav visibility
-    document.querySelector('.bottom-nav').style.display = 'flex';
-        
+       async handleUserLogin(user) {
+        this.state.update({
+            currentUser: user,
+            isAuthenticated: true,
+            isGuestMode: false
+        });
+            
         // Hide auth screens
         this.hideAuthScreens();
         
         // Load user profile
         await this.loadUserProfile(user.uid);
         
-        // Check if business user
-        await this.checkIfBusiness(user);
+        // Check if business user BEFORE showing UI
+        const isBusiness = await this.checkIfBusiness(user);
+        
+        // Route to appropriate interface
+        if (isBusiness) {
+            // Business users go straight to dashboard
+            this.routeBusinessUser();
+        } else {
+            // Regular users see social features
+            this.routeRegularUser();
+        }
         
         // Initialize messaging if available
         if (this.messagingManager) {
@@ -465,9 +471,71 @@ export class AuthManager {
                 if (this.businessManager) {
                     this.businessManager.handleBusinessLogin(businessDoc.data());
                 }
+                return true; // Return true for business
             }
+            return false; // Return false for regular user
         } catch (error) {
             console.error('Error checking business status:', error);
+            return false;
+        }
+    }
+    
+    /**
+     * Route business user to dashboard
+     */
+    routeBusinessUser() {
+        console.log('🏢 Routing business user to dashboard');
+        
+        // Hide regular user UI
+        document.querySelector('.main-screens').style.display = 'none';
+        document.querySelector('.bottom-nav').style.display = 'none';
+        
+        // Show business dashboard
+        const businessDashboard = document.getElementById('businessDashboard');
+        if (businessDashboard) {
+            businessDashboard.classList.add('show');
+            businessDashboard.style.display = 'flex';
+        }
+        
+        // Initialize business messaging if available
+        if (this.messagingManager) {
+            this.messagingManager.initBusinessMode();
+        }
+        
+        // Initialize business dashboard
+        if (this.businessManager) {
+            this.businessManager.initializeDashboard();
+        }
+    }
+    
+    /**
+     * Route regular user to social features
+     */
+    routeRegularUser() {
+        console.log('👥 Routing regular user to social features');
+        
+        // Show regular UI
+        document.querySelector('.main-screens').style.display = 'block';
+        document.querySelector('.bottom-nav').style.display = 'flex';
+        
+        // Hide business dashboard if visible
+        const businessDashboard = document.getElementById('businessDashboard');
+        if (businessDashboard) {
+            businessDashboard.classList.remove('show');
+            businessDashboard.style.display = 'none';
+        }
+        
+        // Initialize messaging for regular users
+        if (this.messagingManager) {
+            this.messagingManager.init();
+        }
+        
+        // Notify other managers
+        this.notifyLogin(this.state.get('currentUser'));
+        
+        // Load favorites for logged in user
+        if (this.favoritesCarousel) {
+            this.favoritesCarousel.onUserLogin(this.state.get('currentUser'));
         }
     }
     

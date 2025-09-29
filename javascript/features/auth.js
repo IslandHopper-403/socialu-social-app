@@ -503,6 +503,10 @@ export class AuthManager {
     routeBusinessUser() {
         try {
             console.log('🏢 Routing business user to dashboard');
+
+            // Mark body as business user for CSS
+            document.body.classList.add('business-user');
+            document.body.classList.remove('regular-user');
             
             // Hide regular user UI
             const mainScreens = document.querySelector('.main-screens');
@@ -545,6 +549,10 @@ export class AuthManager {
     routeRegularUser() {
         try {
             console.log('👥 Routing regular user to social features');
+
+            // Mark body as regular user for CSS
+            document.body.classList.add('regular-user');
+            document.body.classList.remove('business-user');
             
             // Show regular UI
             const mainScreens = document.querySelector('.main-screens');

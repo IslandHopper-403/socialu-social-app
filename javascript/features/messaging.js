@@ -57,10 +57,15 @@ export class MessagingManager {
     this.unreadMessages = new Map();
     this.loadUnreadStateFromStorage();
     this.isAppVisible = !document.hidden;
+    this.isChatVisible = false; // Track if chat overlay is actually visible
 
     // FIXED: Track when messages were last seen per chat
     this.lastSeenTimestamps = new Map(); // chatId -> timestamp
-    this.loadLastSeenTimestamps(); 
+    this.loadLastSeenTimestamps();
+    
+    // Track read receipts per message
+    this.messageReadStates = new Map(); // messageId -> {read: boolean, readAt: timestamp}
+    this.loadMessageReadStates();
     
     // FIXED: Track seen matches across sessions
     this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
@@ -73,17 +78,23 @@ export class MessagingManager {
     this.firstLoadTimestamp = Date.now(); // When THIS session started
     this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
        
-    // ADDED: Track app visibility for smart notifications
+      // ADDED: Track app visibility for smart notifications
     document.addEventListener('visibilitychange', () => {
         this.isAppVisible = !document.hidden;
         
         if (document.hidden) {
             // App going to background - save timestamp
             localStorage.setItem('lastAppActive', Date.now().toString());
+            this.isChatVisible = false; // Chat can't be visible if app is hidden
         } else {
             // App coming to foreground - update timestamp
             this.lastAppActive = parseInt(localStorage.getItem('lastAppActive') || Date.now().toString(), 10);
-            this.markCurrentChatAsRead();
+            
+            // Only mark as read if chat is actually open
+            if (this.currentChatId && this.isChatVisible) {
+                this.markCurrentChatAsRead();
+                this.markAllMessagesAsRead(this.currentChatId);
+            }
         }
     });
        // Add this line to track seen matches across sessions
@@ -128,6 +139,40 @@ export class MessagingManager {
             localStorage.setItem('lastSeenTimestamps', JSON.stringify(toSave));
         } catch (error) {
             console.error('Error saving last seen timestamps:', error);
+        }
+    }
+    
+    /**
+     * Load message read states from localStorage
+     */
+    loadMessageReadStates() {
+        try {
+            const saved = localStorage.getItem('messageReadStates');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                Object.entries(parsed).forEach(([messageId, state]) => {
+                    this.messageReadStates.set(messageId, state);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading message read states:', error);
+        }
+    }
+    
+    /**
+     * Save message read states to localStorage
+     */
+    saveMessageReadStates() {
+        try {
+            const toSave = {};
+            // Only save last 100 message states to prevent localStorage bloat
+            const entries = Array.from(this.messageReadStates.entries()).slice(-100);
+            entries.forEach(([messageId, state]) => {
+                toSave[messageId] = state;
+            });
+            localStorage.setItem('messageReadStates', JSON.stringify(toSave));
+        } catch (error) {
+            console.error('Error saving message read states:', error);
         }
     }
 
@@ -631,8 +676,9 @@ export class MessagingManager {
             
             console.log('💬 Chat ID:', chatId);
             
-            // Show chat screen
+           // Show chat screen
             this.navigationManager.showOverlay('individualChat');
+            this.isChatVisible = true; // Track that chat is now visible
             
             // Load chat messages
             await this.loadChatMessages(chatId);
@@ -679,8 +725,11 @@ export class MessagingManager {
             // Mark current chat as read before closing
             if (this.currentChatId) {
                 this.markChatAsRead(this.currentChatId);
+                this.markAllMessagesAsRead(this.currentChatId);
                 this.unregisterListener(`chat_${this.currentChatId}`);
             }
+            
+            this.isChatVisible = false; // Track that chat is no longer visible
             
             document.dispatchEvent(new CustomEvent('chatClosed'));
             this.navigationManager.closeOverlay('individualChat');
@@ -786,13 +835,46 @@ export class MessagingManager {
         messageElement.appendChild(messageBubble);
         
         if (timeStr) {
-            const timeElement = document.createElement('div');
-            timeElement.className = 'message-time';
-            timeElement.textContent = timeStr;
-            messageElement.appendChild(timeElement);
-        }
+                    const timeElement = document.createElement('div');
+                    timeElement.className = 'message-time';
+                    
+                    // Add read receipt indicator for sent messages
+                    if (isSent) {
+                        const messageId = `${this.currentChatId}_${msg.id}`;
+                        const readState = this.messageReadStates.get(messageId) || msg;
+                        
+                        if (readState.read) {
+                            timeElement.textContent = `${timeStr} ✓✓`;
+                            timeElement.style.color = '#00D4FF'; // Blue checkmarks for read
+                        } else {
+                            timeElement.textContent = `${timeStr} ✓`;
+                            timeElement.style.opacity = '0.6'; // Gray single check for sent
+                        }
+                    } else {
+                        timeElement.textContent = timeStr;
+                        
+                        // Mark incoming message as read if chat is visible
+                        if (this.isChatVisible && this.isAppVisible && msg.id) {
+                            const messageId = `${this.currentChatId}_${msg.id}`;
+                            if (!this.messageReadStates.has(messageId)) {
+                                this.messageReadStates.set(messageId, {
+                                    read: true,
+                                    readAt: Date.now()
+                                });
+                                // Don't await - fire and forget
+                                this.updateMessageReadStatus(msg.id, this.currentChatId);
+                            }
+                        }
+                    }
+                    
+                    messageElement.appendChild(timeElement);
+                }
+                
+                messagesContainer.appendChild(messageElement);
+            }
+        });
         
-        messagesContainer.appendChild(messageElement);
+        // Scroll to bottom
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
     
@@ -2034,6 +2116,69 @@ markCurrentChatAsRead() {
     }
 }
 
+/**
+ * Mark all messages in a chat as read and update Firebase
+ */
+async markAllMessagesAsRead(chatId) {
+    if (!chatId || !this.isChatVisible || !this.isAppVisible) return;
+    
+    try {
+        const currentUser = this.state.get('currentUser');
+        if (!currentUser) return;
+        
+        // Query unread messages in this chat
+        const messagesRef = collection(this.db, 'chats', chatId, 'messages');
+        const q = query(
+            messagesRef,
+            where('senderId', '!=', currentUser.uid),
+            where('read', '==', false)
+        );
+        
+        const snapshot = await getDocs(q);
+        const batch = writeBatch(this.db);
+        
+        snapshot.forEach(doc => {
+            // Update local state
+            const messageId = `${chatId}_${doc.id}`;
+            this.messageReadStates.set(messageId, {
+                read: true,
+                readAt: Date.now()
+            });
+            
+            // Prepare batch update
+            batch.update(doc.ref, {
+                read: true,
+                readAt: serverTimestamp()
+            });
+        });
+        
+        // Execute batch update
+        if (!snapshot.empty) {
+            await batch.commit();
+            this.saveMessageReadStates();
+            console.log(`✅ Marked ${snapshot.size} messages as read in chat ${chatId}`);
+        }
+        
+    } catch (error) {
+        console.error('Error marking messages as read:', error);
+    }
+}
+
+/**
+ * Update read status for a single message in Firebase
+ */
+async updateMessageReadStatus(messageId, chatId) {
+    try {
+        const messageRef = doc(this.db, 'chats', chatId, 'messages', messageId);
+        await updateDoc(messageRef, {
+            read: true,
+            readAt: serverTimestamp()
+        });
+        this.saveMessageReadStates();
+    } catch (error) {
+        console.error('Error updating message read status:', error);
+    }
+}
 
 /**
  * NEW: Update chat list with unread indicators

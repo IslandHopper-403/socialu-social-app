@@ -1030,3 +1030,78 @@
         right: 20px;
     }
 }
+
+
+/* =====  Required CSS additions for analytics overlay: ===== */
+
+.analytics-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    padding-bottom: 100px;
+}
+
+.analytics-time-range {
+    margin-bottom: 20px;
+}
+
+.time-range-selector {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    background: rgba(255,255,255,0.05);
+    padding: 4px;
+    border-radius: 12px;
+}
+
+.time-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    color: white;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+.time-btn.active {
+    background: var(--primary-gradient);
+    border-color: transparent;
+}
+
+.photo-performance-grid {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+}
+
+.perf-photo-item {
+    min-width: 100px;
+    text-align: center;
+}
+
+.perf-photo-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 8px;
+}
+
+.perf-photo-stats {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.analytics-footer {
+    display: flex;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.analytics-footer .btn {
+    flex: 1;
+}

@@ -2165,7 +2165,7 @@ updateNotificationState() {
         
         // 7. Reset UI
         document.title = 'CLASSIFIED - Hoi An Social Discovery';
-        this.resetFavicon();
+        // this.resetFavicon(); // Function doesn't exist
         this.hideNotificationDot();
         
         console.log('✅ Messaging cleanup complete');

@@ -89,9 +89,14 @@ export class MessagingManager {
        // Add this line to track seen matches across sessions
        this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
 
-       window.addEventListener('beforeunload', () => {
+    window.addEventListener('beforeunload', () => {
         this.cleanup();
     });
+    
+    // Auto-cleanup stale listeners every 5 minutes
+    this.listenerCleanupInterval = setInterval(() => {
+        this.cleanupStaleListeners();
+    }, 300000); // 5 minutes
 }
 
 /**
@@ -2093,10 +2098,29 @@ updateNotificationState() {
     this.updateChatListUnreadIndicators();
 }
 
-    /**
-     * Cleanup on destroy
+     /**
+     * Clean up stale listeners (older than 10 minutes)
      */
-   /**
+    cleanupStaleListeners() {
+        const tenMinutesAgo = Date.now() - (10 * 60 * 1000);
+        const staleListeners = [];
+        
+        this.activeListeners.forEach((listener, id) => {
+            if (listener.createdAt < tenMinutesAgo && !id.startsWith('chat_')) {
+                // Don't auto-cleanup active chat listeners
+                staleListeners.push(id);
+            }
+        });
+        
+        if (staleListeners.length > 0) {
+            console.log(`🧹 Cleaning up ${staleListeners.length} stale listeners`);
+            staleListeners.forEach(id => {
+                this.unregisterListener(id);
+            });
+        }
+    }
+    
+    /**
  * ENHANCED: Cleanup on destroy with better resource management
  */
     cleanup() {
@@ -2154,16 +2178,22 @@ updateNotificationState() {
             }
         }
         
-        // 5. Clear notification state
+        // 5. Clear intervals
+        if (this.listenerCleanupInterval) {
+            clearInterval(this.listenerCleanupInterval);
+            this.listenerCleanupInterval = null;
+        }
+        
+        // 6. Clear notification state
         if (this.unreadMessages) this.unreadMessages.clear();
         if (this.lastSeenMessages) this.lastSeenMessages.clear();
         if (this.lastNotificationTimes) this.lastNotificationTimes.clear();
         this.notificationQueue = [];
         
-        // 6. Remove notification elements
+        // 7. Remove notification elements
         document.querySelectorAll('.chat-notification').forEach(el => el.remove());
         
-        // 7. Reset UI
+        // 8. Reset UI
         document.title = 'CLASSIFIED - Hoi An Social Discovery';
         // this.resetFavicon(); // Function doesn't exist
         this.hideNotificationDot();
@@ -2177,25 +2207,58 @@ updateNotificationState() {
      * Diagnostic method to check active listeners
      * Call this in console: window.classifiedApp.managers.messaging.diagnosticListeners()
      */
+    /**
+     * Diagnostic method to check active listeners
+     * Call this in console: window.classifiedApp.managers.messaging.diagnosticListeners()
+     */
     diagnosticListeners() {
         console.log('🔍 LISTENER DIAGNOSTIC REPORT');
         console.log('================================');
         console.log(`Total active listeners: ${this.activeListeners.size}`);
         
         const byType = {};
+        const listenerDetails = [];
         this.activeListeners.forEach((listener, id) => {
             byType[listener.type] = (byType[listener.type] || 0) + 1;
             const age = ((Date.now() - listener.createdAt) / 1000).toFixed(1);
-            console.log(`  ${id} (${listener.type}) - ${age}s old`);
+            listenerDetails.push({
+                id,
+                type: listener.type,
+                age: `${age}s`,
+                created: new Date(listener.createdAt).toISOString()
+            });
         });
+        
+        console.log('\nActive Listeners:');
+        console.table(listenerDetails);
         
         console.log('\nBreakdown by type:');
         Object.entries(byType).forEach(([type, count]) => {
             console.log(`  ${type}: ${count}`);
         });
         
-        console.log('\nLegacy chat listeners:', this.chatListeners.size);
+        // Check for potential leaks
+        const potentialLeaks = [];
+        this.activeListeners.forEach((listener, id) => {
+            const age = (Date.now() - listener.createdAt) / 1000;
+            if (age > 300) { // Older than 5 minutes
+                potentialLeaks.push(id);
+            }
+        });
+        
+        if (potentialLeaks.length > 0) {
+            console.warn('\n⚠️ Potential memory leaks (listeners >5 min old):');
+            potentialLeaks.forEach(id => console.warn(`  - ${id}`));
+        }
+        
+        console.log('\nLegacy chat listeners:', this.chatListeners?.size || 0);
         console.log('================================');
+        
+        return {
+            total: this.activeListeners.size,
+            byType,
+            potentialLeaks: potentialLeaks.length
+        };
     }
     
     /**

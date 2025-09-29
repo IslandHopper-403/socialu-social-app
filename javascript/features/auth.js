@@ -183,6 +183,14 @@ export class AuthManager {
             
             // Update display name
             await updateProfile(user, { displayName: name });
+
+            // Save name to Firestore immediately
+            await setDoc(doc(this.db, 'users', userCredential.user.uid), {
+                uid: userCredential.user.uid,
+                email: email,
+                name: name,  // Save the signup name
+                createdAt: serverTimestamp()
+            }, { merge: true });
             
             // Generate referral code
             const referralCode = this.generateReferralCode();

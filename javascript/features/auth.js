@@ -484,27 +484,41 @@ export class AuthManager {
      * Route business user to dashboard
      */
     routeBusinessUser() {
-        console.log('🏢 Routing business user to dashboard');
-        
-        // Hide regular user UI
-        document.querySelector('.main-screens').style.display = 'none';
-        document.querySelector('.bottom-nav').style.display = 'none';
-        
-        // Show business dashboard
-        const businessDashboard = document.getElementById('businessDashboard');
-        if (businessDashboard) {
-            businessDashboard.classList.add('show');
-            businessDashboard.style.display = 'flex';
-        }
-        
-        // Initialize business messaging if available
-        if (this.messagingManager) {
-            this.messagingManager.initBusinessMode();
-        }
-        
-        // Initialize business dashboard
-        if (this.businessManager) {
-            this.businessManager.initializeDashboard();
+        try {
+            console.log('🏢 Routing business user to dashboard');
+            
+            // Hide regular user UI
+            const mainScreens = document.querySelector('.main-screens');
+            const bottomNav = document.querySelector('.bottom-nav');
+            
+            if (mainScreens) mainScreens.style.display = 'none';
+            if (bottomNav) bottomNav.style.display = 'none';
+            
+            // Show business dashboard
+            const businessDashboard = document.getElementById('businessDashboard');
+            if (businessDashboard) {
+                businessDashboard.classList.add('show');
+                businessDashboard.style.display = 'flex';
+            } else {
+                console.error('Business dashboard element not found');
+                // Fallback to regular view
+                this.routeRegularUser();
+                return;
+            }
+            
+            // Initialize business messaging if available
+            if (this.messagingManager) {
+                this.messagingManager.initBusinessMode();
+            }
+            
+            // Initialize business dashboard
+            if (this.businessManager) {
+                this.businessManager.initializeDashboard();
+            }
+        } catch (error) {
+            console.error('Error routing business user:', error);
+            // Fallback to regular view if routing fails
+            this.routeRegularUser();
         }
     }
     
@@ -512,30 +526,39 @@ export class AuthManager {
      * Route regular user to social features
      */
     routeRegularUser() {
-        console.log('👥 Routing regular user to social features');
-        
-        // Show regular UI
-        document.querySelector('.main-screens').style.display = 'block';
-        document.querySelector('.bottom-nav').style.display = 'flex';
-        
-        // Hide business dashboard if visible
-        const businessDashboard = document.getElementById('businessDashboard');
-        if (businessDashboard) {
-            businessDashboard.classList.remove('show');
-            businessDashboard.style.display = 'none';
-        }
-        
-        // Initialize messaging for regular users
-        if (this.messagingManager) {
-            this.messagingManager.init();
-        }
-        
-        // Notify other managers
-        this.notifyLogin(this.state.get('currentUser'));
-        
-        // Load favorites for logged in user
-        if (this.favoritesCarousel) {
-            this.favoritesCarousel.onUserLogin(this.state.get('currentUser'));
+        try {
+            console.log('👥 Routing regular user to social features');
+            
+            // Show regular UI
+            const mainScreens = document.querySelector('.main-screens');
+            const bottomNav = document.querySelector('.bottom-nav');
+            
+            if (mainScreens) mainScreens.style.display = 'block';
+            if (bottomNav) bottomNav.style.display = 'flex';
+            
+            // Hide business dashboard if visible
+            const businessDashboard = document.getElementById('businessDashboard');
+            if (businessDashboard) {
+                businessDashboard.classList.remove('show');
+                businessDashboard.style.display = 'none';
+            }
+            
+            // Initialize messaging for regular users
+            if (this.messagingManager) {
+                this.messagingManager.init();
+            }
+            
+            // Notify other managers
+            this.notifyLogin(this.state.get('currentUser'));
+            
+            // Load favorites for logged in user
+            if (this.favoritesCarousel) {
+                this.favoritesCarousel.onUserLogin(this.state.get('currentUser'));
+            }
+        } catch (error) {
+            console.error('Error routing regular user:', error);
+            // Show error message but continue
+            console.warn('Some features may not be available');
         }
     }
     

@@ -488,13 +488,30 @@ export class PhotoUploadManager {
     /**
      * Update profile with new photo URL
      */
-    async updateProfilePhoto(profileType, slotIndex, photoURL) {
+   async updateProfilePhoto(profileType, slotIndex, photoURL) {
         const currentUser = this.state.get('currentUser');
         if (!currentUser) return;
         
         try {
             if (profileType === 'user') {
-                // Update user profile photos
+                // CHECK: Ensure profile document exists first
+                const userDocRef = doc(this.db, 'users', currentUser.uid);
+                const userDoc = await getDoc(userDocRef);
+                
+                if (!userDoc.exists()) {
+                    console.log('📝 Creating initial user profile document...');
+                    // Create minimal profile if doesn't exist
+                    await setDoc(userDocRef, {
+                        uid: currentUser.uid,
+                        email: currentUser.email,
+                        name: currentUser.displayName || 'User',
+                        photos: [],
+                        createdAt: serverTimestamp(),
+                        updatedAt: serverTimestamp()
+                    });
+                }
+                
+                // Now safely update profile photos
                 const profile = this.state.get('userProfile');
                 if (!profile.photos) profile.photos = [];
                 
@@ -511,11 +528,11 @@ export class PhotoUploadManager {
                 // Update photo URL
                 profile.photos[slotIndex] = photoURL;
                 
-                // Save to Firebase
-                await updateDoc(doc(this.db, 'users', currentUser.uid), {
+              // Save to Firebase - use setDoc with merge for safety
+                await setDoc(doc(this.db, 'users', currentUser.uid), {
                     photos: profile.photos,
                     updatedAt: serverTimestamp()
-                });
+                }, { merge: true });
                 
                 // Update local state
                 this.state.set('userProfile', profile);

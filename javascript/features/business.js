@@ -345,19 +345,20 @@ export class BusinessManager {
         // Clear and rebuild list
         messagesList.innerHTML = ''; // Safe - we'll use textContent for user data
         
-        // Show first 3 messages
+        // Show first 3 conversations
         let count = 0;
         snapshot.forEach(doc => {
             if (count >= 3) return;
             
             const data = doc.data();
             const messageItem = document.createElement('div');
-            messageItem.className = 'message-item unread';
-            messageItem.dataset.messageId = doc.id;
+            // Only mark as unread if has unread messages
+            messageItem.className = data.businessUnread > 0 ? 'message-item unread' : 'message-item';
+            messageItem.dataset.conversationId = doc.id;
             
             const avatar = document.createElement('div');
             avatar.className = 'customer-avatar';
-            avatar.textContent = '👤'; // Safe
+            avatar.textContent = data.businessUnread > 0 ? '🔴' : '👤'; // Show indicator for unread
             
             const content = document.createElement('div');
             content.className = 'message-content';
@@ -368,30 +369,42 @@ export class BusinessManager {
             const name = document.createElement('span');
             name.className = 'customer-name';
             // SECURITY: Use textContent for user data
-            name.textContent = data.senderName || 'Customer';
+            name.textContent = data.userName || 'Customer';
             
             const time = document.createElement('span');
             time.className = 'message-time';
-            time.textContent = this.formatMessageTime(data.timestamp);
+            time.textContent = this.formatMessageTime(data.lastMessageTime);
             
             header.appendChild(name);
             header.appendChild(time);
             
             const preview = document.createElement('div');
             preview.className = 'message-preview';
+            if (data.businessUnread > 0) {
+                preview.style.fontWeight = '700'; // Bold for unread
+            }
             // SECURITY: Use textContent for message content
-            preview.textContent = data.text || 'New message';
+            preview.textContent = data.lastMessage || 'New inquiry about your business';
             
             content.appendChild(header);
             content.appendChild(preview);
+            
+            // Add unread badge if needed
+            if (data.businessUnread > 0) {
+                const badge = document.createElement('div');
+                badge.className = 'unread-badge';
+                badge.textContent = data.businessUnread.toString();
+                badge.style.cssText = 'background: #ff6b6b; color: white; border-radius: 10px; padding: 2px 6px; font-size: 11px; margin-left: auto;';
+                content.appendChild(badge);
+            }
             
             messageItem.appendChild(avatar);
             messageItem.appendChild(content);
             
             messageItem.onclick = () => {
-                // SECURITY: Validate message ID
-                if (doc.id && /^[a-zA-Z0-9_-]+$/.test(doc.id)) {
-                    window.CLASSIFIED.openBusinessMessage(doc.id);
+                // SECURITY: Validate conversation ID
+                if (doc.id && typeof doc.id === 'string') {
+                    window.CLASSIFIED.openBusinessConversation(doc.id);
                 }
             };
             

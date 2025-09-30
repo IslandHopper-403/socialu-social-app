@@ -129,7 +129,18 @@ export class BusinessMessagingManager {
             // Try multiple possible property names for the business name
             const displayName = businessData.businessName || businessData.name || businessData.title || 'Business';
             chatHeader.textContent = displayName;
+            chatHeader.dataset.businessChat = 'true'; // Mark as business chat
             console.log('✅ Chat header updated to:', displayName);
+            
+            // Also update the avatar to show it's a business
+            const chatAvatar = document.getElementById('chatAvatar');
+            if (chatAvatar) {
+                chatAvatar.textContent = '🏪'; // Business icon
+                chatAvatar.style.fontSize = '24px';
+                chatAvatar.style.display = 'flex';
+                chatAvatar.style.alignItems = 'center';
+                chatAvatar.style.justifyContent = 'center';
+            }
         } else {
             console.error('❌ Chat header element not found or businessData missing');
         }

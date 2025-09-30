@@ -44,7 +44,7 @@ export class MessagingManager {
     // Real-time listeners
     this.activeListeners = new Map(); // Track ALL listeners with metadata
     // Business messaging handler
-    this.businessMessaging = new BusinessMessagingManager(firebaseServices, appState);
+    this.businessMessaging = new BusinessMessagingManager(firebaseServices, appState, this);
     this.chatListeners = new Map();
     this.matchListener = null;
     this.notificationListener = null;

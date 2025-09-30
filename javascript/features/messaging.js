@@ -863,17 +863,25 @@ export class MessagingManager {
      * Open chat with user
      */
     async openChat(name, avatar, userId) {
-        console.log(`💬 Opening chat with ${name} (${userId})`);
+    console.log(`💬 Opening chat with ${name} (${userId})`);
+    
+    const currentUser = this.state.get('currentUser');
+    if (!currentUser) {
+        alert('Please login to chat');
+        return;
+    }
+    
+    try {
+        // Check if this is a business chat
+        const chatType = this.state.get('currentChatType');
         
-        const currentUser = this.state.get('currentUser');
-        if (!currentUser) {
-            alert('Please login to chat');
-            return;
+        // Update UI immediately for better UX
+        document.getElementById('chatName').textContent = name;
+        
+        // FIXED: Don't override avatar if business chat already set it
+        if (chatType !== 'business') {
+            document.getElementById('chatAvatar').style.backgroundImage = `url('${avatar}')`;
         }
-        
-        try {
-            // Update UI immediately for better UX
-            document.getElementById('chatName').textContent = name;
             document.getElementById('chatAvatar').style.backgroundImage = `url('${avatar}')`;
             
             // Store current chat context

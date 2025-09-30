@@ -1,10 +1,11 @@
 // javascript/ui/navigation.js
 
-/**
- * Navigation Manager
- * Handles screen navigation, tab switching, and UI state management
- */
-    constructor(firebaseServices, appState) {
+            /**
+     * Navigation Manager
+     * Handles screen navigation, tab switching, and UI state management
+     */
+    export class NavigationManager {
+        constructor(firebaseServices, appState) {
         this.state = appState;
         
         // References to other managers (set later)

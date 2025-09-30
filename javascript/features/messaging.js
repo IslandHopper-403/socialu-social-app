@@ -562,6 +562,10 @@ export class MessagingManager {
      * Set up event listeners
      */
     setupEventListeners() {
+        // Only set up once
+        if (this.eventListenersSetup) return;
+        this.eventListenersSetup = true;
+        
         // Send button
         const sendBtn = document.getElementById('sendBtn');
         if (sendBtn) {

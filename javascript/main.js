@@ -550,10 +550,20 @@ loadDemoContent() {
 
             // Business messaging & actions
             messageBusinessFromProfile: () => {
-                const businessId = this.state.get('currentBusiness')?.uid;
+                const businessData = this.state.get('currentBusiness');
+                console.log('📬 Starting conversation with:', {
+                    businessData: businessData,
+                    businessId: businessData?.id,
+                    businessUid: businessData?.uid,
+                    businessName: businessData?.name || businessData?.businessName
+                });
+                
+                // Try different possible ID fields
+                const businessId = businessData?.uid || businessData?.id;
                 if (businessId) {
                     this.managers.messaging?.startBusinessConversation(businessId);
                 } else {
+                    console.error('❌ No business ID found in currentBusiness state');
                     alert('Unable to message this business. Please try again.');
                 }
             },

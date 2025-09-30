@@ -1236,7 +1236,7 @@ export class BusinessManager {
         }
     }
     
-        /**
+            /**
      * Load Business Conversations (SECURITY: Business messages only)
      */
     async loadBusinessConversations() {
@@ -1256,17 +1256,8 @@ export class BusinessManager {
             
             const snapshot = await getDocs(conversationsQuery);
             
-            // FIXED: Target the correct container inside businessMessages overlay
-            const messagesOverlay = document.getElementById('businessMessages');
-            const messagesList = messagesOverlay ? messagesOverlay.querySelector('.messages-list') : null;
-            const emptyState = messagesOverlay ? messagesOverlay.querySelector('.empty-state') : null;
-            
-            console.log('📋 Found elements:', {
-                overlay: !!messagesOverlay,
-                list: !!messagesList,
-                empty: !!emptyState,
-                conversations: snapshot.size
-            });
+            const messagesList = document.getElementById('businessMessagesList');
+            const emptyState = document.getElementById('businessMessagesEmpty');
             
             if (snapshot.empty) {
                 if (emptyState) emptyState.style.display = 'block';

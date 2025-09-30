@@ -131,6 +131,7 @@ export class BusinessManager {
                 this.profileManager.openBusinessProfileEditor();
             }, 1000);
         }
+    }
 
             /**
      * Set up real-time listeners for dashboard stats

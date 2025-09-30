@@ -260,14 +260,20 @@ export class BusinessManager {
                     const messagesEl = document.getElementById('businessMessagesCount');
                     if (messagesEl) messagesEl.textContent = unreadCount;
                     
-                    // Update message list preview with conversations data
-                    this.updateMessagesList(snapshot);
-                    
-                    console.log(`💬 Business conversations: ${conversations.length} total, ${unreadCount} unread`);
-                },
-                (error) => {
-                    console.error('❌ Messages listener error:', error);
-                }
+                  // Update message list preview with conversations data
+                        this.updateMessagesList(snapshot);
+                        
+                        // ADDED: Update Recent Messages block on dashboard
+                        this.updateRecentMessagesBlock(conversations);
+                        
+                        // ADDED: Update Messages count block on dashboard
+                        this.updateMessagesCountBlock(unreadCount, conversations.length);
+                        
+                        console.log(`💬 Business conversations: ${conversations.length} total, ${unreadCount} unread`);
+                    },
+                    (error) => {
+                        console.error('❌ Messages listener error:', error);
+                    }
             );
         } catch (error) {
             console.error('❌ Error setting up messages listener:', error);
@@ -1230,7 +1236,7 @@ export class BusinessManager {
         }
     }
     
-    /**
+            /**
      * Load Business Conversations (SECURITY: Business messages only)
      */
     async loadBusinessConversations() {
@@ -1238,17 +1244,99 @@ export class BusinessManager {
         if (!user || !this.state.get('isBusinessUser')) return;
         
         try {
-            // TODO: Query Firestore for business conversations only
-            // Exclude social/match messages
             console.log('Loading business conversations...');
             
-            // Show empty state for now
+            // Query businessConversations collection
+            const conversationsQuery = query(
+                collection(this.db, 'businessConversations'),
+                where('businessId', '==', user.uid),
+                orderBy('lastMessageTime', 'desc'),
+                limit(50)
+            );
+            
+            const snapshot = await getDocs(conversationsQuery);
+            
+            const messagesList = document.getElementById('businessMessagesList');
             const emptyState = document.getElementById('businessMessagesEmpty');
-            if (emptyState) emptyState.style.display = 'block';
+            
+            if (snapshot.empty) {
+                if (emptyState) emptyState.style.display = 'block';
+                if (messagesList) messagesList.style.display = 'none';
+                return;
+            }
+            
+            // Hide empty state, show list
+            if (emptyState) emptyState.style.display = 'none';
+            if (messagesList) {
+                messagesList.style.display = 'block';
+                messagesList.innerHTML = ''; // Clear existing
+                
+                // Populate conversations
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    this.renderConversationItem(doc.id, data, messagesList);
+                });
+            }
             
         } catch (error) {
             console.error('❌ Error loading conversations:', error);
         }
+    }
+    
+    /**
+     * Render a single conversation item
+     */
+    renderConversationItem(conversationId, data, container) {
+        const messageItem = document.createElement('div');
+        messageItem.className = data.businessUnread > 0 ? 'message-item unread' : 'message-item';
+        messageItem.dataset.conversationId = conversationId;
+        
+        const avatar = document.createElement('div');
+        avatar.className = 'customer-avatar';
+        avatar.textContent = '👤';
+        
+        const content = document.createElement('div');
+        content.className = 'message-content';
+        
+        const header = document.createElement('div');
+        header.className = 'message-header';
+        
+        const name = document.createElement('span');
+        name.className = 'customer-name';
+        name.textContent = data.userName || 'Customer';
+        
+        const time = document.createElement('span');
+        time.className = 'message-time';
+        time.textContent = this.formatMessageTime(data.lastMessageTime);
+        
+        header.appendChild(name);
+        header.appendChild(time);
+        
+        const preview = document.createElement('div');
+        preview.className = 'message-preview';
+        preview.textContent = data.lastMessage || 'New inquiry';
+        
+        content.appendChild(header);
+        content.appendChild(preview);
+        
+        // Unread badge
+        if (data.businessUnread > 0) {
+            const badge = document.createElement('div');
+            badge.className = 'unread-badge';
+            badge.textContent = data.businessUnread.toString();
+            content.appendChild(badge);
+        }
+        
+        messageItem.appendChild(avatar);
+        messageItem.appendChild(content);
+        
+        messageItem.onclick = () => {
+            if (this.managers && this.managers.messaging && this.managers.messaging.businessMessaging) {
+                this.managers.messaging.businessMessaging.openBusinessConversationFromDashboard(conversationId);
+            }
+        };
+        
+        container.appendChild(messageItem);
     }
     
     /**
@@ -1278,6 +1366,85 @@ export class BusinessManager {
         // TODO: Generate insights from analytics data
         console.log('Loading business insights...');
     }
+
+      /**
+     * Format timestamp for message display
+     */
+    formatMessageTime(timestamp) {
+        if (!timestamp) return 'Now';
+        
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        const now = new Date();
+        const diff = now - date;
+        
+        if (diff < 60000) return 'Just now';
+        if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+        if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+        
+        return date.toLocaleDateString();
+    }
+    
+    /**
+     * Update Recent Messages block on dashboard
+     */
+    updateRecentMessagesBlock(conversations) {
+        const recentBlock = document.getElementById('recentMessagesBlock');
+        if (!recentBlock) return;
+        
+        const recentList = recentBlock.querySelector('.recent-messages-list');
+        if (!recentList) return;
+        
+        // Clear existing
+        recentList.innerHTML = '';
+        
+        // Show top 3 most recent
+        const topThree = conversations.slice(0, 3);
+        
+        if (topThree.length === 0) {
+            recentList.innerHTML = '<p style="opacity: 0.6; font-size: 14px;">No messages yet</p>';
+            return;
+        }
+        
+        topThree.forEach(conv => {
+            const item = document.createElement('div');
+            item.className = 'recent-message-item';
+            item.style.cssText = 'padding: 10px; border-bottom: 1px solid #eee; cursor: pointer;';
+            
+            const name = document.createElement('div');
+            name.style.fontWeight = '600';
+            name.textContent = conv.userName || 'Customer';
+            
+            const preview = document.createElement('div');
+            preview.style.cssText = 'font-size: 13px; opacity: 0.7; margin-top: 4px;';
+            preview.textContent = conv.lastMessage || 'New inquiry';
+            
+            item.appendChild(name);
+            item.appendChild(preview);
+            
+            item.onclick = () => {
+                if (this.managers && this.managers.messaging && this.managers.messaging.businessMessaging) {
+                    this.managers.messaging.businessMessaging.openBusinessConversationFromDashboard(conv.id);
+                }
+            };
+            
+            recentList.appendChild(item);
+        });
+    }
+    
+    /**
+     * Update Messages count block on dashboard
+     */
+    updateMessagesCountBlock(unreadCount, totalCount) {
+        const countBlock = document.getElementById('messagesCountBlock');
+        if (!countBlock) return;
+        
+        const unreadEl = countBlock.querySelector('.unread-count');
+        const totalEl = countBlock.querySelector('.total-count');
+        
+        if (unreadEl) unreadEl.textContent = unreadCount;
+        if (totalEl) totalEl.textContent = totalCount;
+    }
+    
     
     /**
      * Cleanup business dashboard resources
@@ -1310,4 +1477,6 @@ export class BusinessManager {
             promotions: []
         };
     }
+
+    
 }

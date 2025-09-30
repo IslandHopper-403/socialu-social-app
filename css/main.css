@@ -730,9 +730,16 @@ body {
 #settingsOverlay.overlay-screen {
     z-index: 350;
 }
+#individualChat.overlay-screen {
+    z-index: 320;  /* Above profile overlays (250) but below settings (350) */
+}
+#individualChat[data-chat-type="business"] {
+    z-index: 330;  /* Slightly higher for business chats to ensure visibility */
+}
 .overlay-screen.show {
     display: flex;
 }
+
 @keyframes slideUp {
     from { transform: translateX(-50%) translateY(100%); }
     to { transform: translateX(-50%) translateY(0); }

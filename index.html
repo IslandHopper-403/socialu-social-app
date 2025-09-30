@@ -1128,6 +1128,174 @@
         </div>
     </div>
 </div>
+
+     <!-- Promotions Manager Overlay -->
+        <div id="promotionsManager" class="overlay-screen">
+            <div class="header">
+                <button class="back-btn" onclick="CLASSIFIED.backToDashboard()">←</button>
+                <div class="header-title">Promotions</div>
+                <button class="settings-btn" onclick="CLASSIFIED.createPromotion()">+ New</button>
+            </div>
+            
+            <div class="promotions-content">
+                <!-- Active Promotions Tab -->
+                <div class="promo-tabs">
+                    <button class="promo-tab active" onclick="CLASSIFIED.switchPromoTab('active', this)">Active</button>
+                    <button class="promo-tab" onclick="CLASSIFIED.switchPromoTab('paused', this)">Paused</button>
+                    <button class="promo-tab" onclick="CLASSIFIED.switchPromoTab('expired', this)">Expired</button>
+                </div>
+                
+                <!-- Promotions List -->
+                <div class="promotions-list" id="promotionsList">
+                    <!-- Promotions will be dynamically loaded here -->
+                    <div class="empty-state" id="promotionsEmptyState">
+                        <div style="font-size: 48px; margin-bottom: 10px;">📢</div>
+                        <div style="font-weight: 600; margin-bottom: 5px;">No Promotions Yet</div>
+                        <div style="font-size: 14px; opacity: 0.7;">Create your first promotion to attract customers</div>
+                        <button class="btn primary-btn" onclick="CLASSIFIED.createPromotion()" style="margin-top: 20px;">Create Promotion</button>
+                    </div>
+                </div>
+                
+                <!-- Promotion Form (Hidden by default) -->
+                <div class="promotion-form" id="promotionForm" style="display: none;">
+                    <div class="form-section">
+                        <label>Promotion Title</label>
+                        <input type="text" id="promoTitle" maxlength="50" placeholder="e.g., Happy Hour Special">
+                        <div class="char-count">0/50</div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <label>Description</label>
+                        <textarea id="promoDescription" maxlength="200" placeholder="Describe your offer..."></textarea>
+                        <div class="char-count">0/200</div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <label>Promotion Type</label>
+                        <div class="promo-type-selector">
+                            <button class="type-btn active" data-type="discount">💸 Discount</button>
+                            <button class="type-btn" data-type="special">⭐ Special</button>
+                            <button class="type-btn" data-type="event">🎉 Event</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-section">
+                            <label>Start Date</label>
+                            <input type="date" id="promoStartDate">
+                        </div>
+                        <div class="form-section">
+                            <label>End Date</label>
+                            <input type="date" id="promoEndDate">
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button class="btn secondary-btn" onclick="CLASSIFIED.cancelPromotion()">Cancel</button>
+                        <button class="btn primary-btn" onclick="CLASSIFIED.savePromotion()">Save Promotion</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Business Messages Overlay -->
+        <div id="businessMessages" class="overlay-screen">
+            <div class="header">
+                <button class="back-btn" onclick="CLASSIFIED.backToDashboard()">←</button>
+                <div class="header-title">Business Messages</div>
+                <button class="settings-btn" onclick="CLASSIFIED.filterBusinessMessages()">🔍</button>
+            </div>
+            
+            <div class="business-messages-content">
+                <!-- Message Filters -->
+                <div class="message-filters">
+                    <button class="filter-btn active" onclick="CLASSIFIED.filterBusinessMessages('all', this)">All</button>
+                    <button class="filter-btn" onclick="CLASSIFIED.filterBusinessMessages('unread', this)">Unread</button>
+                    <button class="filter-btn" onclick="CLASSIFIED.filterBusinessMessages('inquiries', this)">Inquiries</button>
+                </div>
+                
+                <!-- Conversations List -->
+                <div class="business-conversations" id="businessConversationsList">
+                    <!-- Conversations will be dynamically loaded -->
+                    <div class="empty-state" id="businessMessagesEmpty">
+                        <div style="font-size: 48px; margin-bottom: 10px;">💬</div>
+                        <div style="font-weight: 600; margin-bottom: 5px;">No Messages Yet</div>
+                        <div style="font-size: 14px; opacity: 0.7;">Customer messages will appear here</div>
+                    </div>
+                </div>
+                
+                <!-- Quick Reply Templates -->
+                <div class="quick-replies-section">
+                    <div class="section-header">
+                        <div class="section-title">Quick Replies</div>
+                    </div>
+                    <div class="quick-reply-grid">
+                        <button class="quick-reply-btn" onclick="CLASSIFIED.insertQuickReply('greeting')">👋 Greeting</button>
+                        <button class="quick-reply-btn" onclick="CLASSIFIED.insertQuickReply('hours')">🕐 Hours</button>
+                        <button class="quick-reply-btn" onclick="CLASSIFIED.insertQuickReply('location')">📍 Location</button>
+                        <button class="quick-reply-btn" onclick="CLASSIFIED.insertQuickReply('promotion')">📢 Current Offers</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Business Insights Overlay -->
+        <div id="businessInsights" class="overlay-screen">
+            <div class="header">
+                <button class="back-btn" onclick="CLASSIFIED.backToDashboard()">←</button>
+                <div class="header-title">Insights</div>
+                <button class="settings-btn" onclick="CLASSIFIED.exportInsights()">📤</button>
+            </div>
+            
+            <div class="insights-content">
+                <!-- Performance Score -->
+                <div class="performance-score-card">
+                    <div class="score-title">Performance Score</div>
+                    <div class="score-value" id="performanceScore">85</div>
+                    <div class="score-label">Great performance!</div>
+                </div>
+                
+                <!-- Recommendations -->
+                <div class="recommendations-section">
+                    <div class="section-header">
+                        <div class="section-title">Recommendations</div>
+                    </div>
+                    <div class="recommendations-list" id="recommendationsList">
+                        <!-- Dynamic recommendations will be added here -->
+                        <div class="recommendation-item">
+                            <div class="recommendation-icon">💡</div>
+                            <div class="recommendation-text">Post promotions on Friday for 3x more engagement</div>
+                        </div>
+                        <div class="recommendation-item">
+                            <div class="recommendation-icon">📸</div>
+                            <div class="recommendation-text">Add 2 more photos to increase views by 40%</div>
+                        </div>
+                        <div class="recommendation-item">
+                            <div class="recommendation-icon">⏰</div>
+                            <div class="recommendation-text">Respond to messages within 1 hour for best results</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Peak Hours Heatmap -->
+                <div class="peak-hours-section">
+                    <div class="section-header">
+                        <div class="section-title">Peak Activity Hours</div>
+                    </div>
+                    <div class="heatmap-grid" id="peakHoursHeatmap">
+                        <!-- Heatmap will be generated here -->
+                    </div>
+                </div>
+                
+                <!-- Engagement Trends -->
+                <div class="trends-section">
+                    <div class="section-header">
+                        <div class="section-title">Engagement Trends</div>
+                    </div>
+                    <canvas id="trendsChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
         
         <!-- Loading Overlay -->
         <div id="loadingOverlay" class="loading-overlay">

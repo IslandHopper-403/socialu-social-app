@@ -560,6 +560,179 @@ export class BusinessManager {
         const businessProfile = this.state.get('businessProfile');
         return businessProfile?.status || 'unknown';
     }
+
+
+    // ========== OVERLAY MANAGEMENT FUNCTIONS ==========
+    
+    /**
+     * Open Business Analytics Overlay
+     */
+    openBusinessAnalytics() {
+        console.log('📊 Opening Business Analytics');
+        const overlay = document.getElementById('businessAnalytics');
+        if (overlay) {
+            overlay.classList.add('show');
+            this.loadAnalyticsData('today');
+        }
+    }
+    
+    /**
+     * Close Business Analytics Overlay
+     */
+    closeBusinessAnalytics() {
+        const overlay = document.getElementById('businessAnalytics');
+        if (overlay) {
+            overlay.classList.remove('show');
+        }
+    }
+    
+    /**
+     * Change Analytics Time Range
+     */
+    changeAnalyticsRange(range, button) {
+        // Update active button
+        document.querySelectorAll('.time-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        if (button) button.classList.add('active');
+        
+        // Load data for new range
+        this.loadAnalyticsData(range);
+    }
+    
+    /**
+     * Load Analytics Data
+     */
+    async loadAnalyticsData(range) {
+        console.log(`📈 Loading analytics for: ${range}`);
+        
+        // Calculate date range
+        const now = new Date();
+        let startDate = new Date();
+        
+        switch(range) {
+            case 'today':
+                startDate.setHours(0, 0, 0, 0);
+                break;
+            case 'week':
+                startDate.setDate(now.getDate() - 7);
+                break;
+            case 'month':
+                startDate.setDate(now.getDate() - 30);
+                break;
+            case 'quarter':
+                startDate.setMonth(now.getMonth() - 3);
+                break;
+        }
+        
+        // TODO: Fetch real data from Firestore
+        // For now, use mock data
+        const mockData = {
+            profileViews: Math.floor(Math.random() * 500) + 100,
+            messages: Math.floor(Math.random() * 50) + 10,
+            directions: Math.floor(Math.random() * 30) + 5,
+            photoViews: Math.floor(Math.random() * 300) + 50,
+            viewsChange: Math.random() * 40 - 10, // -10% to +30%
+            messagesChange: Math.random() * 30 - 5,
+            directionsChange: Math.random() * 25 - 5,
+            photoChange: Math.random() * 35 - 10
+        };
+        
+        // Update UI
+        this.updateAnalyticsUI(mockData);
+    }
+    
+    /**
+     * Update Analytics UI
+     */
+    updateAnalyticsUI(data) {
+        // Profile Views
+        const viewsEl = document.getElementById('analyticsProfileViews');
+        if (viewsEl) viewsEl.textContent = data.profileViews.toLocaleString();
+        
+        const viewsChangeEl = document.getElementById('analyticsViewsChange');
+        if (viewsChangeEl) {
+            const change = data.viewsChange.toFixed(1);
+            viewsChangeEl.textContent = `${change > 0 ? '+' : ''}${change}%`;
+            viewsChangeEl.className = change > 0 ? 'card-change positive' : 'card-change negative';
+        }
+        
+        // Messages
+        const messagesEl = document.getElementById('analyticsMessages');
+        if (messagesEl) messagesEl.textContent = data.messages.toLocaleString();
+        
+        const messagesChangeEl = document.getElementById('analyticsMessagesChange');
+        if (messagesChangeEl) {
+            const change = data.messagesChange.toFixed(1);
+            messagesChangeEl.textContent = `${change > 0 ? '+' : ''}${change}%`;
+            messagesChangeEl.className = change > 0 ? 'card-change positive' : 'card-change negative';
+        }
+        
+        // Continue for other metrics...
+    }
+    
+    /**
+     * Open Promotions Manager
+     */
+    openPromotionsManager() {
+        console.log('📢 Opening Promotions Manager');
+        const overlay = document.getElementById('promotionsManager');
+        if (overlay) {
+            overlay.classList.add('show');
+            this.loadPromotions('active');
+        }
+    }
+    
+    /**
+     * Close Promotions Manager
+     */
+    closePromotionsManager() {
+        const overlay = document.getElementById('promotionsManager');
+        if (overlay) {
+            overlay.classList.remove('show');
+        }
+    }
+    
+    /**
+     * Open Business Messages
+     */
+    openBusinessMessages() {
+        console.log('💬 Opening Business Messages');
+        const overlay = document.getElementById('businessMessages');
+        if (overlay) {
+            overlay.classList.add('show');
+            this.loadBusinessConversations();
+        }
+    }
+    
+    /**
+     * Close Business Messages
+     */
+    closeBusinessMessages() {
+        const overlay = document.getElementById('businessMessages');
+        if (overlay) {
+            overlay.classList.remove('show');
+        }
+    }
+    
+    /**
+     * Back to Dashboard
+     */
+    backToDashboard() {
+        console.log('↩️ Returning to Dashboard');
+        
+        // Close all business overlays
+        ['businessAnalytics', 'promotionsManager', 'businessMessages', 'businessInsights', 'businessProfileEditor']
+            .forEach(id => {
+                const overlay = document.getElementById(id);
+                if (overlay) overlay.classList.remove('show');
+            });
+        
+        // Show dashboard
+        const dashboard = document.getElementById('businessDashboard');
+        if (dashboard) dashboard.classList.add('show');
+    }
+    
     
     /**
      * Cleanup business dashboard resources

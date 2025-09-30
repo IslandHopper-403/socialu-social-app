@@ -312,5 +312,4 @@ export class BusinessMessagingManager {
             
             return date.toLocaleDateString();
         }
-    }
 }

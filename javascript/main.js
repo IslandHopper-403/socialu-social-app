@@ -548,7 +548,16 @@ loadDemoContent() {
             startChatFromMatch: () => this.managers.messaging.startChatFromMatch(),
             startChatWithViewedUser: () => this.managers.messaging.startChatWithViewedUser(),
 
-            // Business messaging & actions
+          // Business messaging & actions
+            openBusinessConversation: (conversationId) => {
+                console.log('Opening business conversation:', conversationId);
+                if (this.managers.messaging?.businessMessaging) {
+                    this.managers.messaging.businessMessaging.openBusinessConversationFromDashboard(conversationId);
+                } else {
+                    console.error('Business messaging manager not found');
+                }
+            },
+            
             messageBusinessFromProfile: () => {
                 const businessData = this.state.get('currentBusiness');
                 console.log('📬 Starting conversation with:', {
@@ -567,6 +576,7 @@ loadDemoContent() {
                     alert('Unable to message this business. Please try again.');
                 }
             },
+
             
             getBusinessDirections: () => {
                 const business = this.state.get('currentBusiness');

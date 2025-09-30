@@ -36,9 +36,24 @@ export class BusinessMessagingManager {
      */
     async startBusinessConversation(businessId) {
         const user = this.state.get('currentUser');
+        const businessData = this.state.get('currentBusiness');
+        
+        console.log('📬 Starting conversation with:', {
+            businessId,
+            businessData,
+            user: user?.displayName
+        });
+        
         if (!user) {
             alert('Please sign in to message businesses');
             return;
+        }
+        
+        if (!businessData || businessData.uid !== businessId) {
+            console.error('❌ Business data mismatch!', {
+                expected: businessId,
+                actual: businessData?.uid
+            });
         }
         
         try {

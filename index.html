@@ -656,10 +656,10 @@
         
         <!-- Business Profile View Overlay -->
         <div id="businessProfile" class="overlay-screen">
-            <div class="header">
+           <div class="header">
                 <button class="back-btn" id="profileBackBtn">←</button>
                 <div class="header-title" id="profileHeaderTitle">Business Profile</div>
-                <button class="settings-btn">⚙️</button>
+                <button class="settings-btn" onclick="CLASSIFIED.getBusinessDirections()">🗺️</button>
             </div>
             <div class="profile-content">
                   <div class="profile-hero" id="profileHero">
@@ -768,9 +768,9 @@
                     </div>
                 </div>
             </div>
-            <div class="action-buttons">
+           <div class="action-buttons">
                 <button class="action-button secondary-btn" onclick="CLASSIFIED.shareBusinessProfile()">Share</button>
-                <button class="action-button primary-btn" onclick="CLASSIFIED.getDirections()">Get Directions</button>
+                <button class="action-button primary-btn" onclick="CLASSIFIED.messageBusinessFromProfile()">Message</button>
             </div>
         </div>
         

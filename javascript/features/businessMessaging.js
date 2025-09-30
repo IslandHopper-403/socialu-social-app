@@ -279,7 +279,7 @@ export class BusinessMessagingManager {
         }
     }
     
-    /**
+ /**
      * Track business message for analytics
      */
     async trackBusinessMessage(businessId) {
@@ -293,6 +293,24 @@ export class BusinessMessagingManager {
             });
         } catch (error) {
             console.error('Error tracking message:', error);
+        }
+    }
+    
+        /**
+         * Format timestamp for message display
+         */
+        formatMessageTime(timestamp) {
+            if (!timestamp) return 'Now';
+            
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+            if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+            
+            return date.toLocaleDateString();
         }
     }
 }

@@ -365,27 +365,33 @@ export class BusinessMessagingManager {
             
             return date.toLocaleDateString();
         }
-        /**
-     * Open business conversation from dashboard
-     */
-    async openBusinessConversationFromDashboard(conversationId) {
-        try {
-            console.log('📬 Opening conversation from dashboard:', conversationId);
-            
-            const conversationRef = doc(this.db, 'businessConversations', conversationId);
-            const conversationDoc = await getDoc(conversationRef);
-            
-            if (!conversationDoc.exists()) {
-                console.error('Conversation not found');
-                return;
-            }
-            
-            const data = conversationDoc.data();
-            
-            // Set the current business state for the chat context
-            this.state.set('currentChatType', 'business');
-            this.state.set('currentBusinessConversationId', conversationId);
-            this.state.set('currentChatBusinessId', data.businessId);
+         /**
+         * Open business conversation from dashboard
+         */
+        async openBusinessConversationFromDashboard(conversationId) {
+            try {
+                console.log('📬 Opening conversation from dashboard:', conversationId);
+                
+                const conversationRef = doc(this.db, 'businessConversations', conversationId);
+                const conversationDoc = await getDoc(conversationRef);
+                
+                if (!conversationDoc.exists()) {
+                    console.error('❌ Conversation not found:', conversationId);
+                    return;
+                }
+                
+                const data = conversationDoc.data();
+                
+                console.log('✅ Found conversation data:', {
+                    id: conversationId,
+                    userName: data.userName,
+                    messageCount: data.businessUnread || 0
+                });
+                
+                // Set the current business state for the chat context
+                this.state.set('currentChatType', 'business');
+                this.state.set('currentBusinessConversationId', conversationId);
+                this.state.set('currentChatBusinessId', data.businessId);
             
             // Update chat header with customer name
             const chatHeader = document.getElementById('chatName');
@@ -416,16 +422,21 @@ export class BusinessMessagingManager {
             // Set up message listener
             this.setupBusinessMessageListener(conversationId);
             
-            // Mark messages as read from business perspective
-            await updateDoc(conversationRef, {
-                businessUnread: 0
-            });
-            
-            console.log('✅ Opened conversation with customer:', data.userName);
-            
-        } catch (error) {
-            console.error('❌ Error opening conversation from dashboard:', error);
-        }
+           // Mark messages as read from business perspective
+        await updateDoc(conversationRef, {
+            businessUnread: 0
+        });
+        
+        console.log('✅ Opened conversation with customer:', data.userName);
+        
+        // FIXED: Force reload messages after marking as read
+        setTimeout(() => {
+            this.loadBusinessMessages(conversationId);
+        }, 100);
+        
+    } catch (error) {
+        console.error('❌ Error opening conversation from dashboard:', error);
     }
+}
     
 }

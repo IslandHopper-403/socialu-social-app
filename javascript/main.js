@@ -547,6 +547,46 @@ loadDemoContent() {
             openProfileFromChat: () => this.managers.messaging.openProfileFromChat(),
             startChatFromMatch: () => this.managers.messaging.startChatFromMatch(),
             startChatWithViewedUser: () => this.managers.messaging.startChatWithViewedUser(),
+
+            // Business messaging & actions
+            messageBusinessFromProfile: () => {
+                const businessId = this.state.get('currentBusiness')?.uid;
+                if (businessId) {
+                    this.managers.messaging?.startBusinessConversation(businessId);
+                } else {
+                    alert('Unable to message this business. Please try again.');
+                }
+            },
+            
+            getBusinessDirections: () => {
+                const business = this.state.get('currentBusiness');
+                if (business && business.address) {
+                    const encodedAddress = encodeURIComponent(business.address);
+                    window.open(`https://maps.google.com/?q=${encodedAddress}`, '_blank');
+                } else {
+                    alert('Address not available for this business');
+                }
+            },
+            
+            shareBusinessProfile: () => {
+                const business = this.state.get('currentBusiness');
+                if (!business) return;
+                
+                const shareText = `Check out ${business.name} on CLASSIFIED Hoi An!`;
+                const shareUrl = window.location.href;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: business.name,
+                        text: shareText,
+                        url: shareUrl
+                    }).catch(err => console.log('Share cancelled'));
+                } else {
+                    navigator.clipboard.writeText(`${shareText} - ${shareUrl}`).then(() => {
+                        alert('Link copied to clipboard! 📋');
+                    });
+                }
+            },
             
             // Photo upload
             triggerPhotoUpload: (slot) => this.managers.photoUpload.triggerPhotoUpload(slot),

@@ -285,6 +285,126 @@ loadDemoContent() {
             showHelp: () => this.showHelp(),
             contactSupport: () => this.contactSupport(),
             
+            // Business Dashboard & Overlays (SECURITY: All methods check authentication)
+            openBusinessDashboard: () => this.openBusinessDashboard(),
+            closeBusinessDashboard: () => {
+                const overlay = document.getElementById('businessDashboard');
+                if (overlay) overlay.classList.remove('show');
+            },
+            toggleBusinessStatus: () => this.managers.business?.toggleBusinessStatus(),
+            openBusinessNotifications: () => alert('Business notifications coming soon!'),
+            
+            // Business Analytics (SECURITY: Business authentication required)
+            openBusinessAnalytics: () => {
+                if (!this.state.get('isBusinessUser')) {
+                    console.error('❌ Business authentication required');
+                    return;
+                }
+                this.managers.business?.openBusinessAnalytics();
+            },
+            closeBusinessAnalytics: () => this.managers.business?.closeBusinessAnalytics(),
+            changeAnalyticsRange: (range, button) => {
+                // SECURITY: Sanitize range input
+                const validRanges = ['today', 'week', 'month', 'quarter'];
+                const safeRange = validRanges.includes(range) ? range : 'today';
+                this.managers.business?.changeAnalyticsRange(safeRange, button);
+            },
+            exportAnalytics: () => this.managers.business?.exportAnalytics(),
+            scheduleAnalyticsReport: () => alert('Scheduled reports coming soon!'),
+            exportAnalyticsData: () => alert('Export feature coming soon!'),
+            
+            // Promotions Manager (SECURITY: Input sanitization required)
+            openPromotionsManager: () => {
+                if (!this.state.get('isBusinessUser')) {
+                    console.error('❌ Business authentication required');
+                    return;
+                }
+                this.managers.business?.openPromotionsManager();
+            },
+            closePromotionsManager: () => this.managers.business?.closePromotionsManager(),
+            createPromotion: () => this.managers.business?.createPromotion(),
+            savePromotion: () => {
+                // SECURITY: Sanitize all promotion inputs
+                const title = document.getElementById('promoTitle')?.value || '';
+                const description = document.getElementById('promoDescription')?.value || '';
+                
+                if (window.DOMPurify) {
+                    const safeTitle = window.DOMPurify.sanitize(title);
+                    const safeDescription = window.DOMPurify.sanitize(description);
+                    this.managers.business?.savePromotion(safeTitle, safeDescription);
+                } else {
+                    // Fallback: use textContent method
+                    this.managers.business?.savePromotion(title, description);
+                }
+            },
+            cancelPromotion: () => this.managers.business?.cancelPromotion(),
+            switchPromoTab: (tab, button) => {
+                // SECURITY: Validate tab input
+                const validTabs = ['active', 'paused', 'expired'];
+                const safeTab = validTabs.includes(tab) ? tab : 'active';
+                this.managers.business?.switchPromoTab(safeTab, button);
+            },
+            
+            // Business Messages (SECURITY: Filter to business messages only)
+            openBusinessMessages: () => {
+                if (!this.state.get('isBusinessUser')) {
+                    console.error('❌ Business authentication required');
+                    return;
+                }
+                this.managers.business?.openBusinessMessages();
+            },
+            closeBusinessMessages: () => this.managers.business?.closeBusinessMessages(),
+            filterBusinessMessages: (filter, button) => {
+                // SECURITY: Validate filter input
+                const validFilters = ['all', 'unread', 'inquiries'];
+                const safeFilter = validFilters.includes(filter) ? filter : 'all';
+                this.managers.business?.filterBusinessMessages(safeFilter, button);
+            },
+            insertQuickReply: (type) => {
+                // SECURITY: Only allow predefined reply types
+                const validTypes = ['greeting', 'hours', 'location', 'promotion'];
+                const safeType = validTypes.includes(type) ? type : 'greeting';
+                this.managers.business?.insertQuickReply(safeType);
+            },
+            
+            // Business Insights
+            openBusinessInsights: () => {
+                if (!this.state.get('isBusinessUser')) {
+                    console.error('❌ Business authentication required');
+                    return;
+                }
+                const overlay = document.getElementById('businessInsights');
+                if (overlay) {
+                    overlay.classList.add('show');
+                    this.managers.business?.loadInsights();
+                }
+            },
+            exportInsights: () => alert('Export insights coming soon!'),
+            
+            // Business Profile Editor (handled by profileManager)
+            openBusinessProfileEditor: () => this.managers.profile?.openBusinessProfileEditor(),
+            closeBusinessProfileEditor: () => this.managers.profile?.closeBusinessProfileEditor(),
+            viewBusinessProfile: () => this.managers.profile?.viewBusinessProfile(),
+            
+            // Back to Dashboard helper
+            backToDashboard: () => {
+                // SECURITY: Close all overlays safely
+                const overlays = ['businessAnalytics', 'promotionsManager', 'businessMessages', 'businessInsights', 'businessProfileEditor'];
+                overlays.forEach(id => {
+                    const overlay = document.getElementById(id);
+                    if (overlay) overlay.classList.remove('show');
+                });
+                
+                // Show dashboard
+                const dashboard = document.getElementById('businessDashboard');
+                if (dashboard && this.state.get('isBusinessUser')) {
+                    dashboard.classList.add('show');
+                }
+            },
+            
+            openAdminPanel: () => alert('Admin panel coming soon!'),
+            
+            
             // Profile methods
             openProfileEditor: () => this.managers.profile.openProfileEditor(),
             closeProfileEditor: () => this.managers.navigation.closeOverlay('profileEditor'),

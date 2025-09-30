@@ -99,19 +99,25 @@ export class BusinessMessagingManager {
         // Get business data for header
         const businessData = this.state.get('currentBusiness');
         
-       // Update chat header for business
-        const chatHeader = document.getElementById('chatHeaderName');
+        // Debug logging
+        console.log('📬 Opening business chat with data:', {
+            businessId: businessId,
+            businessData: businessData,
+            businessName: businessData?.name,
+            businessTitle: businessData?.businessName,
+            allKeys: businessData ? Object.keys(businessData) : []
+        });
+        
+        // Update chat header for business - correct element ID is 'chatName'
+        const chatHeader = document.getElementById('chatName');
         if (chatHeader && businessData) {
-            // Debug: Check what's in businessData
-            console.log('🔍 BusinessData contents:', {
-                name: businessData.name,
-                businessName: businessData.businessName,
-                title: businessData.title,
-                keys: Object.keys(businessData)
-            });
-            
             // SECURITY: Use textContent for business name
-            chatHeader.textContent = businessData.name || businessData.businessName || 'Business';
+            // Try multiple possible property names for the business name
+            const displayName = businessData.businessName || businessData.name || businessData.title || 'Business';
+            chatHeader.textContent = displayName;
+            console.log('✅ Chat header updated to:', displayName);
+        } else {
+            console.error('❌ Chat header element not found or businessData missing');
         }
         
         // Mark this as a business chat

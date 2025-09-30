@@ -563,7 +563,7 @@ export class FeedManager {
         // Create card container safely
         const card = document.createElement('div');
         card.className = 'business-card';
-        card.onclick = () => window.CLASSIFIED.openBusinessProfile(business.id, type);
+        card.onclick = () => window.CLASSIFIED.openBusinessProfile(business, type);
         
         // Create header
         const header = document.createElement('div');

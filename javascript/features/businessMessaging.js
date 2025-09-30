@@ -65,8 +65,7 @@ export class BusinessMessagingManager {
             // Don't block - continue anyway since we have the business data
         }
         
-        // Extract business name early for use throughout the function
-        const businessName = businessData?.businessName || businessData?.name || businessData?.title || 'Business';
+        // businessName already declared above, just log it
         console.log('🏪 Using business name:', businessName);
         
         try {

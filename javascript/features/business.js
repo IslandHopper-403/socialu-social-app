@@ -219,34 +219,51 @@ export class BusinessManager {
      */
     setupMessagesListener(businessId) {
         try {
-            // Query for unread business messages
+            // FIXED: Query the businessConversations collection, not messages
             const messagesQuery = query(
-                collection(this.db, 'messages'),
+                collection(this.db, 'businessConversations'),
                 where('businessId', '==', businessId),
-                where('read', '==', false),
-                orderBy('timestamp', 'desc'),
+                orderBy('lastMessageTime', 'desc'),
                 limit(50)
             );
             
             // SECURITY: Clean up previous listener
             if (this.messagesListener) {
                 this.messagesListener();
+                this.messagesListener = null;
             }
+            
+            console.log('👂 Setting up business messages listener for:', businessId);
             
             // Real-time listener for messages
             this.messagesListener = onSnapshot(messagesQuery,
                 (snapshot) => {
-                    const unreadCount = snapshot.size;
+                    let unreadCount = 0;
+                    const conversations = [];
+                    
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        conversations.push({
+                            id: doc.id,
+                            ...data
+                        });
+                        
+                        // Count unread from business perspective
+                        if (data.businessUnread && data.businessUnread > 0) {
+                            unreadCount += data.businessUnread;
+                        }
+                    });
+                    
                     this.dashboardData.messages = unreadCount;
                     
                     // Update UI with textContent (SECURITY)
                     const messagesEl = document.getElementById('businessMessagesCount');
                     if (messagesEl) messagesEl.textContent = unreadCount;
                     
-                    // Update message list preview
+                    // Update message list preview with conversations data
                     this.updateMessagesList(snapshot);
                     
-                    console.log(`💬 Unread messages: ${unreadCount}`);
+                    console.log(`💬 Business conversations: ${conversations.length} total, ${unreadCount} unread`);
                 },
                 (error) => {
                     console.error('❌ Messages listener error:', error);

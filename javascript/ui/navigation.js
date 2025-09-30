@@ -4,7 +4,6 @@
  * Navigation Manager
  * Handles screen navigation, tab switching, and UI state management
  */
-export class NavigationManager {
     constructor(firebaseServices, appState) {
         this.state = appState;
         
@@ -13,7 +12,11 @@ export class NavigationManager {
         
         // Track navigation history
         this.navigationHistory = [];
-
+        
+        // SECURITY: Track overlay stack for proper back navigation
+        this.overlayStack = [];
+        this.businessOverlays = ['businessDashboard', 'businessAnalytics', 'promotionsManager', 
+                                'businessMessages', 'businessInsights', 'businessProfileEditor'];
     }
 
 // Ghost content loading frames - Delete if unwanted
@@ -276,29 +279,97 @@ showContentSkeleton(containerId, type = 'default') {
     
     
     /**
-     * Show overlay screen
+     * Show overlay screen with stack management
      */
     showOverlay(overlayId) {
         const overlay = document.getElementById(overlayId);
         if (overlay) {
             overlay.classList.add('show');
             
+            // SECURITY: Add to overlay stack for navigation
+            if (!this.overlayStack.includes(overlayId)) {
+                this.overlayStack.push(overlayId);
+                console.log('📚 Overlay stack:', this.overlayStack);
+            }
+            
             // Update corresponding state
             this.updateOverlayState(overlayId, true);
         }
     }
     
-    /**
-     * Close overlay screen
+   /**
+     * Close overlay screen with stack management
      */
     closeOverlay(overlayId) {
         const overlay = document.getElementById(overlayId);
         if (overlay) {
             overlay.classList.remove('show');
             
+            // SECURITY: Remove from overlay stack
+            const index = this.overlayStack.indexOf(overlayId);
+            if (index > -1) {
+                this.overlayStack.splice(index, 1);
+                console.log('📚 Overlay stack after close:', this.overlayStack);
+            }
+            
             // Update corresponding state
             this.updateOverlayState(overlayId, false);
         }
+    }
+
+
+    /**
+     * Handle back navigation for business overlays
+     * SECURITY: Always returns to dashboard from business overlays
+     */
+    handleBusinessOverlayBack() {
+        // Get current overlay from stack
+        const currentOverlay = this.overlayStack[this.overlayStack.length - 1];
+        
+        if (!currentOverlay) return;
+        
+        // If it's a business overlay, handle specially
+        if (this.businessOverlays.includes(currentOverlay)) {
+            // Close current overlay
+            this.closeOverlay(currentOverlay);
+            
+            // If we have more overlays in stack
+            if (this.overlayStack.length > 0) {
+                const previousOverlay = this.overlayStack[this.overlayStack.length - 1];
+                
+                // If previous is business dashboard, show it
+                if (previousOverlay === 'businessDashboard') {
+                    const dashboard = document.getElementById('businessDashboard');
+                    if (dashboard) dashboard.classList.add('show');
+                }
+            } else {
+                // No more overlays, show business dashboard
+                const dashboard = document.getElementById('businessDashboard');
+                if (dashboard && this.state.get('isBusinessUser')) {
+                    dashboard.classList.add('show');
+                    this.overlayStack.push('businessDashboard');
+                }
+            }
+        } else {
+            // Regular overlay, just close it
+            this.closeOverlay(currentOverlay);
+        }
+    }
+    
+    /**
+     * Clear overlay stack (use when logging out or switching users)
+     */
+    clearOverlayStack() {
+        console.log('🧹 Clearing overlay stack');
+        
+        // Close all overlays
+        this.overlayStack.forEach(overlayId => {
+            const overlay = document.getElementById(overlayId);
+            if (overlay) overlay.classList.remove('show');
+        });
+        
+        // Clear the stack
+        this.overlayStack = [];
     }
     
     /**

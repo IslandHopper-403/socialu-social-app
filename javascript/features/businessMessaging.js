@@ -20,9 +20,10 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 export class BusinessMessagingManager {
-    constructor(firebaseServices, appState) {
+    constructor(firebaseServices, appState, parentMessaging = null) {
         this.db = firebaseServices.db;
         this.state = appState;
+        this.parentMessaging = parentMessaging;
         // Any other initialization
     }
 
@@ -214,8 +215,10 @@ export class BusinessMessagingManager {
             });
         });
         
-        // Store listener for cleanup
-        this.registerListener(`business_chat_${conversationId}`, this.businessChatListener, 'business_chat');
+        // Store listener for cleanup if parent messaging manager is available
+        if (this.parentMessaging && this.parentMessaging.registerListener) {
+            this.parentMessaging.registerListener(`business_chat_${conversationId}`, this.businessChatListener, 'business_chat');
+        }
     }
     
     /**

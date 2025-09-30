@@ -24,6 +24,7 @@ import {
     deleteDoc
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
+import { BusinessMessagingManager } from './businessMessaging.js';
 
 /**
  * Messaging Manager - COMPLETE VERSION
@@ -42,6 +43,8 @@ export class MessagingManager {
     
     // Real-time listeners
     this.activeListeners = new Map(); // Track ALL listeners with metadata
+    // Business messaging handler
+    this.businessMessaging = new BusinessMessagingManager(firebaseServices, appState);
     this.chatListeners = new Map();
     this.matchListener = null;
     this.notificationListener = null;
@@ -1043,6 +1046,17 @@ export class MessagingManager {
                 lastMessage.remove();
             }
         }
+    }
+
+    /**
+     * Delegate to business messaging
+     */
+    startBusinessConversation(businessId) {
+        return this.businessMessaging.startBusinessConversation(businessId);
+    }
+    
+    sendBusinessMessage() {
+        return this.businessMessaging.sendBusinessMessage();
     }
     
     /**

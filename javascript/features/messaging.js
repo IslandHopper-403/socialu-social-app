@@ -970,6 +970,12 @@ export class MessagingManager {
      * Send message with proper sanitization
      */
     async sendMessage() {
+        // SECURITY: Check if this is a business chat
+        const chatType = this.state.get('currentChatType');
+        if (chatType === 'business') {
+            return this.sendBusinessMessage();
+        }
+        
         const messageInput = document.getElementById('messageInput');
         const rawMessage = messageInput.value.trim();
         

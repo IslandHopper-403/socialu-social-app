@@ -29,7 +29,7 @@ export class BusinessMessagingManager {
 
 
 // ========== BUSINESS MESSAGING FUNCTIONS ==========
-    
+
     /**
      * Start a business conversation
      * SECURITY: Separate from social messaging
@@ -38,10 +38,15 @@ export class BusinessMessagingManager {
         const user = this.state.get('currentUser');
         const businessData = this.state.get('currentBusiness');
         
+        // Extract business name from various possible properties
+        const businessName = businessData?.businessName || businessData?.name || businessData?.title || 'Business';
+        
         console.log('📬 Starting conversation with:', {
             businessId,
             businessData,
-            user: user?.displayName
+            businessName,
+            user: user?.displayName,
+            allBusinessKeys: businessData ? Object.keys(businessData) : []
         });
         
         if (!user) {
@@ -49,12 +54,20 @@ export class BusinessMessagingManager {
             return;
         }
         
-        if (!businessData || businessData.uid !== businessId) {
-            console.error('❌ Business data mismatch!', {
+       // Check both uid and id fields for compatibility
+        if (!businessData || (businessData.uid !== businessId && businessData.id !== businessId)) {
+            console.warn('⚠️ Business ID field mismatch, but continuing...', {
                 expected: businessId,
-                actual: businessData?.uid
+                actualUid: businessData?.uid,
+                actualId: businessData?.id,
+                businessName: businessData?.name || businessData?.businessName
             });
+            // Don't block - continue anyway since we have the business data
         }
+        
+        // Extract business name early for use throughout the function
+        const businessName = businessData?.businessName || businessData?.name || businessData?.title || 'Business';
+        console.log('🏪 Using business name:', businessName);
         
         try {
             // Create unique conversation ID for business chats
@@ -69,6 +82,7 @@ export class BusinessMessagingManager {
                 // Create new business conversation
                 await setDoc(conversationRef, {
                     businessId: businessId,
+                    businessName: businessName, // Add business name
                     userId: user.uid,
                     userName: user.displayName || 'User',
                     createdAt: serverTimestamp(),

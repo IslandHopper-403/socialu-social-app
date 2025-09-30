@@ -560,15 +560,21 @@ export class BusinessManager {
         }
     }
     
-    /**
-     * Open business profile
-     */
-    async openBusinessProfile(businessId, businessType) {
-        console.log(`🏢 Opening ${businessType} profile: ${businessId}`);
-
-
-        // ADD THIS LINE HERE:
-        window.currentBusinessProfileId = businessId;
+   async openBusinessProfile(businessDataOrId, businessType) {
+        let businessData;
+        let businessId;
+        
+        // Handle both full object and ID
+        if (typeof businessDataOrId === 'object' && businessDataOrId !== null) {
+            businessData = businessDataOrId;
+            businessId = businessData.id || businessData.uid;
+        } else {
+            businessId = businessDataOrId;
+            businessData = null; // Will fetch below
+        }
+        
+        console.log(`🏢 Opening ${businessType} profile:`, businessId);
+        window.currentBusinessProfileId = businessId;  // Keep this - useful for tracking
         
         try {
             this.navigationManager.showLoading();

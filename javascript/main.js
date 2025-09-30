@@ -388,18 +388,8 @@ loadDemoContent() {
             
             // Back to Dashboard helper
             backToDashboard: () => {
-                // SECURITY: Close all overlays safely
-                const overlays = ['businessAnalytics', 'promotionsManager', 'businessMessages', 'businessInsights', 'businessProfileEditor'];
-                overlays.forEach(id => {
-                    const overlay = document.getElementById(id);
-                    if (overlay) overlay.classList.remove('show');
-                });
-                
-                // Show dashboard
-                const dashboard = document.getElementById('businessDashboard');
-                if (dashboard && this.state.get('isBusinessUser')) {
-                    dashboard.classList.add('show');
-                }
+                // SECURITY: Use navigation manager for proper stack handling
+                this.managers.navigation?.handleBusinessOverlayBack();
             },
             
             openAdminPanel: () => alert('Admin panel coming soon!'),

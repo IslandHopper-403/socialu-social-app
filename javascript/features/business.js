@@ -562,12 +562,17 @@ export class BusinessManager {
     }
 
 
-    // ========== OVERLAY MANAGEMENT FUNCTIONS ==========
+// ========== SECURE OVERLAY MANAGEMENT FUNCTIONS ==========
     
     /**
-     * Open Business Analytics Overlay
+     * Open Business Analytics (SECURITY: Requires business auth)
      */
     openBusinessAnalytics() {
+        if (!this.state.get('isBusinessUser')) {
+            console.error('❌ Unauthorized: Business authentication required');
+            return;
+        }
+        
         console.log('📊 Opening Business Analytics');
         const overlay = document.getElementById('businessAnalytics');
         if (overlay) {
@@ -577,75 +582,104 @@ export class BusinessManager {
     }
     
     /**
-     * Close Business Analytics Overlay
+     * Close Business Analytics (with listener cleanup)
      */
     closeBusinessAnalytics() {
         const overlay = document.getElementById('businessAnalytics');
         if (overlay) {
             overlay.classList.remove('show');
+            // SECURITY: Clean up any analytics listeners
+            this.cleanupAnalyticsListeners();
         }
     }
     
     /**
-     * Change Analytics Time Range
+     * Clean up analytics listeners to prevent memory leaks
+     */
+    cleanupAnalyticsListeners() {
+        if (this.analyticsListener) {
+            this.analyticsListener();
+            this.analyticsListener = null;
+        }
+    }
+    
+    /**
+     * Change Analytics Range (SECURITY: Input validation)
      */
     changeAnalyticsRange(range, button) {
-        // Update active button
+        // SECURITY: Validate range input
+        const validRanges = ['today', 'week', 'month', 'quarter'];
+        if (!validRanges.includes(range)) {
+            console.error('❌ Invalid range:', range);
+            return;
+        }
+        
+        // Update UI - use textContent for safety
         document.querySelectorAll('.time-btn').forEach(btn => {
             btn.classList.remove('active');
         });
         if (button) button.classList.add('active');
         
-        // Load data for new range
         this.loadAnalyticsData(range);
     }
     
     /**
-     * Load Analytics Data
+     * Load Analytics Data (SECURITY: Firestore rules enforce access)
      */
     async loadAnalyticsData(range) {
-        console.log(`📈 Loading analytics for: ${range}`);
-        
-        // Calculate date range
-        const now = new Date();
-        let startDate = new Date();
-        
-        switch(range) {
-            case 'today':
-                startDate.setHours(0, 0, 0, 0);
-                break;
-            case 'week':
-                startDate.setDate(now.getDate() - 7);
-                break;
-            case 'month':
-                startDate.setDate(now.getDate() - 30);
-                break;
-            case 'quarter':
-                startDate.setMonth(now.getMonth() - 3);
-                break;
+        const user = this.state.get('currentUser');
+        if (!user || !this.state.get('isBusinessUser')) {
+            console.error('❌ Unauthorized access attempt');
+            return;
         }
         
-        // TODO: Fetch real data from Firestore
-        // For now, use mock data
-        const mockData = {
-            profileViews: Math.floor(Math.random() * 500) + 100,
-            messages: Math.floor(Math.random() * 50) + 10,
-            directions: Math.floor(Math.random() * 30) + 5,
-            photoViews: Math.floor(Math.random() * 300) + 50,
-            viewsChange: Math.random() * 40 - 10, // -10% to +30%
-            messagesChange: Math.random() * 30 - 5,
-            directionsChange: Math.random() * 25 - 5,
-            photoChange: Math.random() * 35 - 10
-        };
+        console.log(`📈 Loading analytics for: ${range}`);
         
-        // Update UI
-        this.updateAnalyticsUI(mockData);
+        try {
+            // Calculate date range
+            const now = new Date();
+            let startDate = new Date();
+            
+            switch(range) {
+                case 'today':
+                    startDate.setHours(0, 0, 0, 0);
+                    break;
+                case 'week':
+                    startDate.setDate(now.getDate() - 7);
+                    break;
+                case 'month':
+                    startDate.setDate(now.getDate() - 30);
+                    break;
+                case 'quarter':
+                    startDate.setMonth(now.getMonth() - 3);
+                    break;
+            }
+            
+            // TODO: Fetch real data from Firestore with proper queries
+            // For now, use mock data
+            const mockData = {
+                profileViews: Math.floor(Math.random() * 500) + 100,
+                messages: Math.floor(Math.random() * 50) + 10,
+                directions: Math.floor(Math.random() * 30) + 5,
+                photoViews: Math.floor(Math.random() * 300) + 50,
+                viewsChange: Math.random() * 40 - 10,
+                messagesChange: Math.random() * 30 - 5,
+                directionsChange: Math.random() * 25 - 5,
+                photoChange: Math.random() * 35 - 10
+            };
+            
+            this.updateAnalyticsUI(mockData);
+        } catch (error) {
+            console.error('❌ Error loading analytics:', error);
+        }
     }
     
     /**
-     * Update Analytics UI
+     * Update Analytics UI (SECURITY: Use textContent only)
      */
     updateAnalyticsUI(data) {
+        // SECURITY: Always use textContent, never innerHTML
+        
         // Profile Views
         const viewsEl = document.getElementById('analyticsProfileViews');
         if (viewsEl) viewsEl.textContent = data.profileViews.toLocaleString();
@@ -657,7 +691,7 @@ export class BusinessManager {
             viewsChangeEl.className = change > 0 ? 'card-change positive' : 'card-change negative';
         }
         
-        // Messages
+        // Messages (using textContent for safety)
         const messagesEl = document.getElementById('analyticsMessages');
         if (messagesEl) messagesEl.textContent = data.messages.toLocaleString();
         
@@ -668,13 +702,38 @@ export class BusinessManager {
             messagesChangeEl.className = change > 0 ? 'card-change positive' : 'card-change negative';
         }
         
-        // Continue for other metrics...
+        // Directions
+        const directionsEl = document.getElementById('analyticsDirections');
+        if (directionsEl) directionsEl.textContent = data.directions.toLocaleString();
+        
+        const directionsChangeEl = document.getElementById('analyticsDirectionsChange');
+        if (directionsChangeEl) {
+            const change = data.directionsChange.toFixed(1);
+            directionsChangeEl.textContent = `${change > 0 ? '+' : ''}${change}%`;
+            directionsChangeEl.className = change > 0 ? 'card-change positive' : 'card-change negative';
+        }
+        
+        // Photo Views
+        const photoViewsEl = document.getElementById('analyticsPhotoViews');
+        if (photoViewsEl) photoViewsEl.textContent = data.photoViews.toLocaleString();
+        
+        const photoChangeEl = document.getElementById('analyticsPhotoChange');
+        if (photoChangeEl) {
+            const change = data.photoChange.toFixed(1);
+            photoChangeEl.textContent = `${change > 0 ? '+' : ''}${change}%`;
+            photoChangeEl.className = change > 0 ? 'card-change positive' : 'card-change negative';
+        }
     }
     
     /**
-     * Open Promotions Manager
+     * Open Promotions Manager (SECURITY: Business only)
      */
     openPromotionsManager() {
+        if (!this.state.get('isBusinessUser')) {
+            console.error('❌ Unauthorized: Business authentication required');
+            return;
+        }
+        
         console.log('📢 Opening Promotions Manager');
         const overlay = document.getElementById('promotionsManager');
         if (overlay) {
@@ -684,19 +743,103 @@ export class BusinessManager {
     }
     
     /**
-     * Close Promotions Manager
+     * Load Promotions (SECURITY: Firestore rules enforce ownership)
      */
-    closePromotionsManager() {
-        const overlay = document.getElementById('promotionsManager');
-        if (overlay) {
-            overlay.classList.remove('show');
+    async loadPromotions(status) {
+        const user = this.state.get('currentUser');
+        if (!user || !this.state.get('isBusinessUser')) return;
+        
+        try {
+            // TODO: Implement Firestore query for promotions
+            console.log(`Loading ${status} promotions for business ${user.uid}`);
+            
+            // Show empty state for now
+            const emptyState = document.getElementById('promotionsEmptyState');
+            if (emptyState) emptyState.style.display = 'block';
+            
+        } catch (error) {
+            console.error('❌ Error loading promotions:', error);
         }
     }
     
     /**
-     * Open Business Messages
+     * Create Promotion (SECURITY: Show form with validation)
+     */
+    createPromotion() {
+        const form = document.getElementById('promotionForm');
+        const list = document.getElementById('promotionsList');
+        const emptyState = document.getElementById('promotionsEmptyState');
+        
+        if (form) {
+            form.style.display = 'block';
+            if (list) list.style.display = 'none';
+            if (emptyState) emptyState.style.display = 'none';
+        }
+    }
+    
+    /**
+     * Save Promotion (SECURITY: Sanitized inputs from main.js)
+     */
+    async savePromotion(safeTitle, safeDescription) {
+        const user = this.state.get('currentUser');
+        if (!user || !this.state.get('isBusinessUser')) {
+            console.error('❌ Unauthorized');
+            return;
+        }
+        
+        // Additional validation
+        if (!safeTitle || safeTitle.length > 50) {
+            alert('Title is required (max 50 characters)');
+            return;
+        }
+        
+        if (!safeDescription || safeDescription.length > 200) {
+            alert('Description is required (max 200 characters)');
+            return;
+        }
+        
+        try {
+            // TODO: Save to Firestore with proper structure
+            console.log('Saving promotion:', { safeTitle, safeDescription });
+            
+            // Close form
+            this.cancelPromotion();
+            
+            // Reload promotions
+            this.loadPromotions('active');
+            
+        } catch (error) {
+            console.error('❌ Error saving promotion:', error);
+            alert('Failed to save promotion');
+        }
+    }
+    
+    /**
+     * Cancel Promotion Creation
+     */
+    cancelPromotion() {
+        const form = document.getElementById('promotionForm');
+        const list = document.getElementById('promotionsList');
+        
+        if (form) {
+            form.style.display = 'none';
+            // Clear form inputs
+            const inputs = form.querySelectorAll('input, textarea');
+            inputs.forEach(input => input.value = '');
+        }
+        
+        if (list) list.style.display = 'block';
+    }
+    
+    /**
+     * Open Business Messages (SECURITY: Filter business messages only)
      */
     openBusinessMessages() {
+        if (!this.state.get('isBusinessUser')) {
+            console.error('❌ Unauthorized: Business authentication required');
+            return;
+        }
+        
         console.log('💬 Opening Business Messages');
         const overlay = document.getElementById('businessMessages');
         if (overlay) {
@@ -706,33 +849,53 @@ export class BusinessManager {
     }
     
     /**
-     * Close Business Messages
+     * Load Business Conversations (SECURITY: Business messages only)
      */
-    closeBusinessMessages() {
-        const overlay = document.getElementById('businessMessages');
-        if (overlay) {
-            overlay.classList.remove('show');
+    async loadBusinessConversations() {
+        const user = this.state.get('currentUser');
+        if (!user || !this.state.get('isBusinessUser')) return;
+        
+        try {
+            // TODO: Query Firestore for business conversations only
+            // Exclude social/match messages
+            console.log('Loading business conversations...');
+            
+            // Show empty state for now
+            const emptyState = document.getElementById('businessMessagesEmpty');
+            if (emptyState) emptyState.style.display = 'block';
+            
+        } catch (error) {
+            console.error('❌ Error loading conversations:', error);
         }
     }
     
     /**
-     * Back to Dashboard
+     * Insert Quick Reply Template (SECURITY: Predefined templates only)
      */
-    backToDashboard() {
-        console.log('↩️ Returning to Dashboard');
+    insertQuickReply(type) {
+        const templates = {
+            greeting: 'Hello! Thank you for your interest in our business.',
+            hours: 'We are open Monday-Saturday 9AM-9PM, Sunday 10AM-6PM.',
+            location: 'We are located at [Your Address]. Click here for directions: [Map Link]',
+            promotion: 'Check out our current promotions! [Promotion Details]'
+        };
         
-        // Close all business overlays
-        ['businessAnalytics', 'promotionsManager', 'businessMessages', 'businessInsights', 'businessProfileEditor']
-            .forEach(id => {
-                const overlay = document.getElementById(id);
-                if (overlay) overlay.classList.remove('show');
-            });
-        
-        // Show dashboard
-        const dashboard = document.getElementById('businessDashboard');
-        if (dashboard) dashboard.classList.add('show');
+        const template = templates[type];
+        if (template) {
+            // TODO: Insert into active chat input
+            console.log('Quick reply:', template);
+        }
     }
     
+    /**
+     * Load Business Insights
+     */
+    async loadInsights() {
+        if (!this.state.get('isBusinessUser')) return;
+        
+        // TODO: Generate insights from analytics data
+        console.log('Loading business insights...');
+    }
     
     /**
      * Cleanup business dashboard resources

@@ -11,7 +11,11 @@ import {
     query,
     where,
     getDocs,
-    serverTimestamp
+    serverTimestamp,
+    onSnapshot,
+    orderBy,
+    limit,
+    Timestamp
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 
@@ -33,13 +37,22 @@ export class BusinessManager {
         this.profileManager = null;
         this.authManager = null;
         
-        // Business dashboard data
+        // Dashboard data
         this.dashboardData = {
             views: 0,
             clicks: 0,
             messages: 0,
-            promotions: []
+            promotions: [],
+            todayViews: 0,
+            rating: 0,
+            responseRate: 0
         };
+        
+        // Real-time listeners (SECURITY: Must clean up on logout)
+        this.statsListener = null;
+        this.messagesListener = null;
+        this.promotionsListener = null;
+        this.analyticsListener = null;
     }
     
     /**
@@ -118,11 +131,345 @@ export class BusinessManager {
                 this.profileManager.openBusinessProfileEditor();
             }, 1000);
         }
+
+            /**
+     * Set up real-time listeners for dashboard stats
+     * SECURITY: Firestore rules must restrict to business owner only
+     */
+    setupDashboardListeners() {
+        const user = this.state.get('currentUser');
+        if (!user || !this.state.get('isBusinessUser')) {
+            console.error('❌ Unauthorized: Business authentication required');
+            return;
+        }
         
-        // Set up dashboard refresh interval
+        console.log('📊 Setting up dashboard real-time listeners');
+        
+        // 1. Listen to business analytics collection for views
+        this.setupAnalyticsListener(user.uid);
+        
+        // 2. Listen to messages for this business
+        this.setupMessagesListener(user.uid);
+        
+        // 3. Listen to promotions
+        this.setupPromotionsListener(user.uid);
+        
+        // 4. Set up auto-refresh interval (30 seconds)
         this.dashboardRefreshInterval = setInterval(() => {
             this.updateDashboardStats();
-        }, 30000); // Refresh every 30 seconds
+        }, 30000);
+    }
+    
+    /**
+     * Set up analytics listener for real-time view counts
+     */
+    setupAnalyticsListener(businessId) {
+        try {
+            // Query for today's analytics
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const analyticsQuery = query(
+                collection(this.db, 'businessAnalytics'),
+                where('businessId', '==', businessId),
+                where('timestamp', '>=', Timestamp.fromDate(today)),
+                orderBy('timestamp', 'desc')
+            );
+            
+            // SECURITY: Clean up previous listener
+            if (this.analyticsListener) {
+                this.analyticsListener();
+            }
+            
+            // Real-time listener for analytics
+            this.analyticsListener = onSnapshot(analyticsQuery, 
+                (snapshot) => {
+                    let todayViews = 0;
+                    let todayMessages = 0;
+                    
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (data.type === 'view') todayViews++;
+                        if (data.type === 'message') todayMessages++;
+                    });
+                    
+                    // Update dashboard data
+                    this.dashboardData.todayViews = todayViews;
+                    
+                    // Update UI with textContent (SECURITY)
+                    const viewsEl = document.getElementById('businessViewsCount');
+                    if (viewsEl) viewsEl.textContent = todayViews;
+                    
+                    console.log(`📈 Today's views: ${todayViews}`);
+                },
+                (error) => {
+                    console.error('❌ Analytics listener error:', error);
+                }
+            );
+        } catch (error) {
+            console.error('❌ Error setting up analytics listener:', error);
+        }
+    }
+    
+    /**
+     * Set up messages listener for unread count
+     */
+    setupMessagesListener(businessId) {
+        try {
+            // Query for unread business messages
+            const messagesQuery = query(
+                collection(this.db, 'messages'),
+                where('businessId', '==', businessId),
+                where('read', '==', false),
+                orderBy('timestamp', 'desc'),
+                limit(50)
+            );
+            
+            // SECURITY: Clean up previous listener
+            if (this.messagesListener) {
+                this.messagesListener();
+            }
+            
+            // Real-time listener for messages
+            this.messagesListener = onSnapshot(messagesQuery,
+                (snapshot) => {
+                    const unreadCount = snapshot.size;
+                    this.dashboardData.messages = unreadCount;
+                    
+                    // Update UI with textContent (SECURITY)
+                    const messagesEl = document.getElementById('businessMessagesCount');
+                    if (messagesEl) messagesEl.textContent = unreadCount;
+                    
+                    // Update message list preview
+                    this.updateMessagesList(snapshot);
+                    
+                    console.log(`💬 Unread messages: ${unreadCount}`);
+                },
+                (error) => {
+                    console.error('❌ Messages listener error:', error);
+                }
+            );
+        } catch (error) {
+            console.error('❌ Error setting up messages listener:', error);
+        }
+    }
+    
+    /**
+     * Set up promotions listener
+     */
+    setupPromotionsListener(businessId) {
+        try {
+            // Query for active promotions
+            const promotionsQuery = query(
+                collection(this.db, 'promotions'),
+                where('businessId', '==', businessId),
+                where('status', '==', 'active'),
+                orderBy('createdAt', 'desc')
+            );
+            
+            // SECURITY: Clean up previous listener
+            if (this.promotionsListener) {
+                this.promotionsListener();
+            }
+            
+            // Real-time listener for promotions
+            this.promotionsListener = onSnapshot(promotionsQuery,
+                (snapshot) => {
+                    const promotions = [];
+                    snapshot.forEach(doc => {
+                        promotions.push({ id: doc.id, ...doc.data() });
+                    });
+                    
+                    this.dashboardData.promotions = promotions;
+                    
+                    // Update promotions count badge
+                    const badgeEl = document.getElementById('promotionsBadge');
+                    if (badgeEl) {
+                        if (promotions.length > 0) {
+                            badgeEl.textContent = promotions.length;
+                            badgeEl.style.display = 'flex';
+                        } else {
+                            badgeEl.style.display = 'none';
+                        }
+                    }
+                    
+                    console.log(`📢 Active promotions: ${promotions.length}`);
+                },
+                (error) => {
+                    console.error('❌ Promotions listener error:', error);
+                }
+            );
+        } catch (error) {
+            console.error('❌ Error setting up promotions listener:', error);
+        }
+    }
+    
+    /**
+     * Update messages list in dashboard
+     * SECURITY: Always use textContent for user data
+     */
+    updateMessagesList(snapshot) {
+        const messagesList = document.getElementById('businessMessagesList');
+        if (!messagesList) return;
+        
+        const emptyState = document.getElementById('businessMessagesEmpty');
+        
+        if (snapshot.empty) {
+            if (emptyState) emptyState.style.display = 'block';
+            messagesList.innerHTML = ''; // Safe - no user content
+            return;
+        }
+        
+        if (emptyState) emptyState.style.display = 'none';
+        
+        // Clear and rebuild list
+        messagesList.innerHTML = ''; // Safe - we'll use textContent for user data
+        
+        // Show first 3 messages
+        let count = 0;
+        snapshot.forEach(doc => {
+            if (count >= 3) return;
+            
+            const data = doc.data();
+            const messageItem = document.createElement('div');
+            messageItem.className = 'message-item unread';
+            messageItem.dataset.messageId = doc.id;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'customer-avatar';
+            avatar.textContent = '👤'; // Safe
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            
+            const header = document.createElement('div');
+            header.className = 'message-header';
+            
+            const name = document.createElement('span');
+            name.className = 'customer-name';
+            // SECURITY: Use textContent for user data
+            name.textContent = data.senderName || 'Customer';
+            
+            const time = document.createElement('span');
+            time.className = 'message-time';
+            time.textContent = this.formatMessageTime(data.timestamp);
+            
+            header.appendChild(name);
+            header.appendChild(time);
+            
+            const preview = document.createElement('div');
+            preview.className = 'message-preview';
+            // SECURITY: Use textContent for message content
+            preview.textContent = data.text || 'New message';
+            
+            content.appendChild(header);
+            content.appendChild(preview);
+            
+            messageItem.appendChild(avatar);
+            messageItem.appendChild(content);
+            
+            messageItem.onclick = () => {
+                // SECURITY: Validate message ID
+                if (doc.id && /^[a-zA-Z0-9_-]+$/.test(doc.id)) {
+                    window.CLASSIFIED.openBusinessMessage(doc.id);
+                }
+            };
+            
+            messagesList.appendChild(messageItem);
+            count++;
+        });
+    }
+    
+    /**
+     * Format timestamp for message display
+     */
+    formatMessageTime(timestamp) {
+        if (!timestamp) return 'Now';
+        
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        const now = new Date();
+        const diff = now - date;
+        
+        if (diff < 60000) return 'Just now';
+        if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+        if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+        
+        return date.toLocaleDateString();
+    }
+    
+    /**
+     * Update dashboard stats (called by interval)
+     */
+    async updateDashboardStats() {
+        const user = this.state.get('currentUser');
+        if (!user || !this.state.get('isBusinessUser')) return;
+        
+        try {
+            // Calculate rating from reviews
+            const reviewsQuery = query(
+                collection(this.db, 'reviews'),
+                where('businessId', '==', user.uid)
+            );
+            
+            const reviewsSnapshot = await getDocs(reviewsQuery);
+            let totalRating = 0;
+            let reviewCount = 0;
+            
+            reviewsSnapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.rating) {
+                    totalRating += data.rating;
+                    reviewCount++;
+                }
+            });
+            
+            const avgRating = reviewCount > 0 ? (totalRating / reviewCount).toFixed(1) : '5.0';
+            
+            // Update UI with textContent (SECURITY)
+            const ratingEl = document.getElementById('businessRatingValue');
+            if (ratingEl) ratingEl.textContent = avgRating;
+            
+            // Calculate response rate
+            // TODO: Implement actual response rate calculation
+            const responseRate = '95%';
+            const responseEl = document.getElementById('businessResponseRate');
+            if (responseEl) responseEl.textContent = responseRate;
+            
+        } catch (error) {
+            console.error('❌ Error updating stats:', error);
+        }
+    }
+    
+    /**
+     * Clean up all dashboard listeners
+     * SECURITY: Must be called on logout/cleanup
+     */
+    cleanupDashboardListeners() {
+        console.log('🧹 Cleaning up dashboard listeners');
+        
+        if (this.analyticsListener) {
+            this.analyticsListener();
+            this.analyticsListener = null;
+        }
+        
+        if (this.messagesListener) {
+            this.messagesListener();
+            this.messagesListener = null;
+        }
+        
+        if (this.promotionsListener) {
+            this.promotionsListener();
+            this.promotionsListener = null;
+        }
+        
+        if (this.dashboardRefreshInterval) {
+            clearInterval(this.dashboardRefreshInterval);
+            this.dashboardRefreshInterval = null;
+        }
+    }
+        
+        // SECURITY: Set up real-time listeners with proper cleanup
+        this.setupDashboardListeners();
     }
     
     /**
@@ -900,8 +1247,12 @@ export class BusinessManager {
     /**
      * Cleanup business dashboard resources
      */
-    cleanup() {
+   cleanup() {
         console.log('🧹 Cleaning up business dashboard');
+        
+        // SECURITY: Clean up all listeners to prevent memory leaks
+        this.cleanupDashboardListeners();
+        this.cleanupAnalyticsListeners();
         
         // Clear refresh interval
         if (this.dashboardRefreshInterval) {

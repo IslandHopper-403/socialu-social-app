@@ -131,6 +131,8 @@ export class BusinessManager {
                 this.profileManager.openBusinessProfileEditor();
             }, 1000);
         }
+         // SECURITY: Set up real-time listeners with proper cleanup
+        this.setupDashboardListeners();  // <-- ADD THIS LINE HERE
     }
 
             /**
@@ -467,10 +469,6 @@ export class BusinessManager {
             clearInterval(this.dashboardRefreshInterval);
             this.dashboardRefreshInterval = null;
         }
-    }
-        
-        // SECURITY: Set up real-time listeners with proper cleanup
-        this.setupDashboardListeners();
     }
     
     /**

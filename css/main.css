@@ -732,12 +732,10 @@ body {
 }
 
 #individualChat.overlay-screen {
-    z-index: var(--z-overlay-chat);
+    z-index: var(--z-overlay-chat);  /* 200 - always above profiles (150) */
 }
 
-#individualChat[data-chat-type="business"] {
-    z-index: var(--z-overlay-business-chat);
-}
+/* Remove business-specific override - same z-index for all chats */
 .overlay-screen.show {
     display: flex;
 }

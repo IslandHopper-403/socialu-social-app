@@ -107,16 +107,20 @@ showContentSkeleton(containerId, type = 'default') {
         });
         
         // Back button listeners for overlays only
-        document.querySelectorAll('.overlay-screen .back-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const parentOverlay = btn.closest('.overlay-screen');
-                if (parentOverlay) {
-                    this.closeOverlay(parentOverlay.id);
-                }
+            document.querySelectorAll('.overlay-screen .back-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const parentOverlay = btn.closest('.overlay-screen');
+                    if (parentOverlay) {
+                        // Chat needs cleanup first
+                        if (parentOverlay.id === 'individualChat' && window.CLASSIFIED?.managers?.messaging) {
+                            window.CLASSIFIED.managers.messaging.closeChat();
+                        }
+                        // Then close the overlay
+                        this.closeOverlay(parentOverlay.id);
+                    }
+                });
             });
-        });
-        
         // Handle browser back button
         window.addEventListener('popstate', (e) => {
             if (e.state && e.state.screen) {

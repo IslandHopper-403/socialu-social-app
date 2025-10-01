@@ -609,11 +609,6 @@ export class BusinessManager {
             businessId = businessDataOrId;
             businessData = null; // Will fetch below
         }
-
-       // DEBUG LOGGING - Add these 3 lines here
-        console.log(`🏢 Opening ${businessType} profile:`, businessId);
-        console.log('🔍 Navigation manager exists?', !!this.navigationManager);
-        console.log('🔍 Overlay stack before:', this.navigationManager?.overlayStack);
         
         console.log(`🏢 Opening ${businessType} profile:`, businessId);
         window.currentBusinessProfileId = businessId;  // Keep this - useful for tracking

@@ -1302,8 +1302,13 @@ input:disabled + .toggle-slider {
     display: flex;
     gap: 15px;
     padding: var(--spacing-lg);
-    background: rgba(0,0,0,0.9);
+    background: rgba(0,0,0,0.95);
+    backdrop-filter: blur(10px);
     border-top: 1px solid var(--border-light);
+    position: sticky;
+    bottom: 0;
+    z-index: 50; /* CRITICAL: Above profile content, but below overlays */
+    flex-shrink: 0;
 }
 .action-button {
     flex: 1;

@@ -149,25 +149,20 @@ export class BusinessMessagingManager {
         this.state.set('currentChatBusinessId', businessId);
         this.state.set('currentBusinessConversationId', conversationId);
         
-        // Show chat overlay with dynamic z-index management
+        // Show chat overlay with fixed z-index (always above business dashboard)
         const chatOverlay = document.getElementById('individualChat');
         if (chatOverlay) {
-            // DYNAMIC Z-INDEX: Calculate based on overlay stack
-            const currentOverlays = document.querySelectorAll('.overlay-screen.show');
-            const maxZIndex = Array.from(currentOverlays).reduce((max, el) => {
-                const zIndex = parseInt(window.getComputedStyle(el).zIndex) || 0;
-                return Math.max(max, zIndex);
-            }, 0);
-            
-            // Boost chat above all current overlays
-            const boostZIndex = maxZIndex + 50;
-            chatOverlay.style.zIndex = boostZIndex;
-            console.log(`🎯 Chat z-index boosted to ${boostZIndex} (above ${maxZIndex})`);
+            // FIXED Z-INDEX: Set to 450 (dashboard is 400, messages overlay is 405)
+            chatOverlay.style.zIndex = '450';
+            console.log('🎯 Business chat z-index set to 450 (above dashboard and messages)');
             
             chatOverlay.classList.add('show');
-            chatOverlay.dataset.chatType = 'business'; // Mark as business chat
+            chatOverlay.dataset.chatType = 'business-response'; // Mark as business responding
             
-            // Track in overlay stack for proper back button behavior
+            // Force display in case CSS is blocking
+            chatOverlay.style.display = 'flex';
+            
+            // Track in overlay stack
             if (window.CLASSIFIED && window.CLASSIFIED.managers && window.CLASSIFIED.managers.navigation) {
                 window.CLASSIFIED.managers.navigation.showOverlay('individualChat');
             }

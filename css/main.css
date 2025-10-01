@@ -1296,16 +1296,13 @@ input:disabled + .toggle-slider {
     margin-bottom: 10px;
     font-weight: 600;
 }
+
 .action-buttons {
     display: flex;
     gap: 15px;
     padding: var(--spacing-lg);
-    background: rgba(0,0,0,0.95); /* Increased opacity for consistency */
+    background: rgba(0,0,0,0.9);
     border-top: 1px solid var(--border-light);
-    flex-shrink: 0;
-    position: sticky;
-    bottom: 0;
-    /* No explicit z-index - inherits from parent overlay's stacking context */
 }
 
 .action-button {

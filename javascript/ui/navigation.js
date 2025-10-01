@@ -288,15 +288,19 @@ showContentSkeleton(containerId, type = 'default') {
     /**
      * Show overlay screen with stack management
      */
-    showOverlay(overlayId) {
+    showOverlay(overlayId, context = null) {
         const overlay = document.getElementById(overlayId);
         if (overlay) {
             overlay.classList.add('show');
             
-            // SECURITY: Add to overlay stack for navigation
+            // ENHANCED: Store overlay with context (which screen/overlay it came from)
             if (!this.overlayStack.includes(overlayId)) {
-                this.overlayStack.push(overlayId);
-                console.log('📚 Overlay stack:', this.overlayStack);
+                const currentContext = context || this.getCurrentContext();
+                this.overlayStack.push({
+                    id: overlayId,
+                    from: currentContext
+                });
+                console.log('📚 Overlay stack:', this.overlayStack.map(o => `${o.id} (from: ${o.from})`));
             }
             
             // Update corresponding state
@@ -304,7 +308,20 @@ showContentSkeleton(containerId, type = 'default') {
         }
     }
     
-   /**
+    /**
+     * Get current context (screen or overlay)
+     */
+    getCurrentContext() {
+        // If there's an overlay open, that's the context
+        if (this.overlayStack.length > 0) {
+            const lastOverlay = this.overlayStack[this.overlayStack.length - 1];
+            return typeof lastOverlay === 'object' ? lastOverlay.id : lastOverlay;
+        }
+        // Otherwise, return current screen
+        return this.state.get('currentScreen') || 'restaurant';
+    }
+    
+  /**
      * Close overlay screen with stack management
      */
     closeOverlay(overlayId) {
@@ -318,11 +335,15 @@ showContentSkeleton(containerId, type = 'default') {
                 console.log('🎯 Reset chat z-index on close');
             }
             
-            // SECURITY: Remove from overlay stack
-            const index = this.overlayStack.indexOf(overlayId);
+            // ENHANCED: Remove from overlay stack (handle both old and new format)
+            const index = this.overlayStack.findIndex(item => 
+                (typeof item === 'string' ? item : item.id) === overlayId
+            );
             if (index > -1) {
                 this.overlayStack.splice(index, 1);
-                console.log('📚 Overlay stack after close:', this.overlayStack);
+                console.log('📚 Overlay stack after close:', this.overlayStack.map(o => 
+                    typeof o === 'string' ? o : `${o.id} (from: ${o.from})`
+                ));
             }
             
             // Update corresponding state
@@ -341,17 +362,39 @@ showContentSkeleton(containerId, type = 'default') {
                     window.classifiedApp.managers.messaging.closeChat();
                 }
                 
+                // Get the current overlay's context BEFORE closing
+                const currentOverlayData = this.overlayStack.find(item => 
+                    (typeof item === 'string' ? item : item.id) === overlayId
+                );
+                const returnTo = typeof currentOverlayData === 'object' ? currentOverlayData.from : null;
+                
                 // Close current overlay (removes from stack)
                 this.closeOverlay(overlayId);
                 
-                // Show previous overlay if one exists in stack
+                // ENHANCED: Determine where to return to
                 if (this.overlayStack.length > 0) {
+                    // There's still an overlay in the stack - show it
                     const previousOverlay = this.overlayStack[this.overlayStack.length - 1];
-                    const prevElement = document.getElementById(previousOverlay);
+                    const prevId = typeof previousOverlay === 'string' ? previousOverlay : previousOverlay.id;
+                    const prevElement = document.getElementById(prevId);
                     
                     if (prevElement && !prevElement.classList.contains('show')) {
                         prevElement.classList.add('show');
-                        console.log('📱 Restored:', previousOverlay);
+                        console.log('📱 Restored overlay:', prevId);
+                    }
+                } else if (returnTo && returnTo !== overlayId) {
+                    // No more overlays - check if we need to return to a screen
+                    const validScreens = ['restaurant', 'social', 'activity'];
+                    if (validScreens.includes(returnTo)) {
+                        console.log('📱 Returning to screen:', returnTo);
+                        this.showScreen(returnTo, false);
+                    } else {
+                        // It was an overlay - try to show it
+                        const returnElement = document.getElementById(returnTo);
+                        if (returnElement) {
+                            returnElement.classList.add('show');
+                            console.log('📱 Returned to:', returnTo);
+                        }
                     }
                 }
             }

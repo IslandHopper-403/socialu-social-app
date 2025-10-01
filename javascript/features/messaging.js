@@ -581,12 +581,6 @@ export class MessagingManager {
                 }
             });
         }
-        
-        // Chat back button
-        const chatBackBtn = document.getElementById('chatBackBtn');
-        if (chatBackBtn) {
-            chatBackBtn.addEventListener('click', () => this.closeChat());
-        }
     }
     
     /**
@@ -956,52 +950,28 @@ export class MessagingManager {
         }
     }
 
-         /**
-     * Close chat Overlay
-     */
-    closeChat() {
-        console.log('🔙 Closing chat');
-        
-        // Mark current chat as read before closing
-        if (this.currentChatId) {
-            this.markChatAsRead(this.currentChatId);
-            this.markAllMessagesAsRead(this.currentChatId);
-            this.unregisterListener(`chat_${this.currentChatId}`);
-        }
-        
-        // Clear ALL chat state
-        const chatIdToClose = this.currentChatId;
-        this.currentChatId = null;
-        this.currentChatPartner = null;
-        this.isChatVisible = false;
-        this.state.set('currentChatUser', null);
-        this.state.set('chatOpenedFromBusinessProfile', false);
-        this.state.set('currentChatType', null);
-        this.state.set('currentBusinessConversationId', null);
-        this.state.set('currentChatBusinessId', null);
-        
-        // DON'T call navigationManager.closeOverlay() - that creates a loop
-        // Just close the overlay directly
-        const chatOverlay = document.getElementById('individualChat');
-        if (chatOverlay) {
-            chatOverlay.classList.remove('show');
-            chatOverlay.style.zIndex = '';
-        }
-        
-        // Remove from overlay stack manually
-        if (this.navigationManager && this.navigationManager.overlayStack) {
-            const index = this.navigationManager.overlayStack.indexOf('individualChat');
-            if (index > -1) {
-                this.navigationManager.overlayStack.splice(index, 1);
-                console.log('📚 Removed individualChat from stack:', this.navigationManager.overlayStack);
-            }
-        }
-        
-        // Dispatch event for other components
-        document.dispatchEvent(new CustomEvent('chatClosed', {
-            detail: { chatId: chatIdToClose }
-        }));
+/**
+ * Cleanup chat state (called by navigation manager)
+ */
+closeChat() {
+    console.log('🧹 Messaging cleanup');
+    
+    if (this.currentChatId) {
+        this.markChatAsRead(this.currentChatId);
+        this.markAllMessagesAsRead(this.currentChatId);
+        this.unregisterListener(`chat_${this.currentChatId}`);
     }
+    
+    this.currentChatId = null;
+    this.currentChatPartner = null;
+    this.isChatVisible = false;
+    this.state.set('currentChatUser', null);
+    this.state.set('chatOpenedFromBusinessProfile', false);
+    this.state.set('currentChatType', null);
+    this.state.set('currentBusinessConversationId', null);
+    this.state.set('currentChatBusinessId', null);
+}
+    
       /**
      * Send message with proper sanitization
      */

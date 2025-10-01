@@ -732,11 +732,16 @@ body {
 }
 
 #individualChat.overlay-screen {
-    z-index: var(--z-overlay-chat);
+    z-index: var(--z-overlay-chat); /* 600 - Above all profiles */
 }
 
 #individualChat[data-chat-type="business"] {
-    z-index: var(--z-overlay-business-chat);
+    z-index: var(--z-overlay-business-chat); /* 610 - Slightly higher */
+}
+
+/* CRITICAL: Ensure chat is ALWAYS above profiles */
+#individualChat.overlay-screen.show {
+    z-index: var(--z-overlay-chat) !important;
 }
 .overlay-screen.show {
     display: flex;

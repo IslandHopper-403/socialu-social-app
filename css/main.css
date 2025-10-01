@@ -695,9 +695,9 @@ body {
     opacity: 0.5;
 }
 
-/* Overlay Screens */
+/* Overlay Base Styles */
 .overlay-screen {
-    position: fixed; 
+    position: fixed;
     top: 0;
     left: 50%;
     transform: translateX(-50%);
@@ -705,7 +705,7 @@ body {
     max-width: 430px;
     height: 100vh;
     background: var(--bg-dark);
-    z-index: 200;
+    z-index: var(--z-overlay-base);
     display: none;
     flex-direction: column;
     animation: slideUp 0.3s ease;
@@ -714,27 +714,29 @@ body {
 
 /* Specific z-index for each overlay type */
 #businessProfile.overlay-screen {
-    z-index: 375;
+    z-index: var(--z-business-profile);
 }
 
 #userProfileView.overlay-screen,
 #myProfileView.overlay-screen {
-    z-index: 250;
+    z-index: var(--z-overlay-profile);
 }
 
 #profileEditor.overlay-screen,
 #businessProfileEditor.overlay-screen {
-    z-index: 400;
+    z-index: var(--z-profile-editor);
 }
 
 #settingsOverlay.overlay-screen {
-    z-index: 450;
+    z-index: var(--z-settings);
 }
+
 #individualChat.overlay-screen {
-    z-index: 320;  /* Above profile overlays (250) but below settings (350) */
+    z-index: var(--z-overlay-chat);
 }
+
 #individualChat[data-chat-type="business"] {
-    z-index: 330;  /* Slightly higher for business chats to ensure visibility */
+    z-index: var(--z-overlay-business-chat);
 }
 .overlay-screen.show {
     display: flex;

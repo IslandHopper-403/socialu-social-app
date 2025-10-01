@@ -714,7 +714,7 @@ body {
 
 /* Specific z-index for each overlay type */
 #businessProfile.overlay-screen {
-    z-index: 250;
+    z-index: 375;
 }
 
 #userProfileView.overlay-screen,
@@ -724,11 +724,11 @@ body {
 
 #profileEditor.overlay-screen,
 #businessProfileEditor.overlay-screen {
-    z-index: 300;
+    z-index: 400;
 }
 
 #settingsOverlay.overlay-screen {
-    z-index: 350;
+    z-index: 450;
 }
 #individualChat.overlay-screen {
     z-index: 320;  /* Above profile overlays (250) but below settings (350) */

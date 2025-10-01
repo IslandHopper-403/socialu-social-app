@@ -330,15 +330,15 @@ showContentSkeleton(containerId, type = 'default') {
         }
     }
 
-                /**
+            /**
              * Handle back navigation with overlay stack memory
              */
             handleOverlayBack(overlayId) {
                 console.log('🔙 Back pressed on:', overlayId, '| Stack:', this.overlayStack);
                 
                 // Special cleanup for chat
-                if (overlayId === 'individualChat' && window.CLASSIFIED?.managers?.messaging) {
-                    window.CLASSIFIED.managers.messaging.closeChat();
+                if (overlayId === 'individualChat' && window.classifiedApp?.managers?.messaging) {
+                    window.classifiedApp.managers.messaging.closeChat();
                 }
                 
                 // Close current overlay (removes from stack)

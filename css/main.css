@@ -732,16 +732,11 @@ body {
 }
 
 #individualChat.overlay-screen {
-    z-index: var(--z-overlay-chat); /* 600 - Above all profiles */
+    z-index: var(--z-overlay-chat);
 }
 
 #individualChat[data-chat-type="business"] {
-    z-index: var(--z-overlay-business-chat); /* 610 - Slightly higher */
-}
-
-/* CRITICAL: Ensure chat is ALWAYS above profiles */
-#individualChat.overlay-screen.show {
-    z-index: var(--z-overlay-chat) !important;
+    z-index: var(--z-overlay-business-chat);
 }
 .overlay-screen.show {
     display: flex;
@@ -1307,13 +1302,8 @@ input:disabled + .toggle-slider {
     display: flex;
     gap: 15px;
     padding: var(--spacing-lg);
-    background: rgba(0,0,0,0.95);
-    backdrop-filter: blur(10px);
+    background: rgba(0,0,0,0.9);
     border-top: 1px solid var(--border-light);
-    position: sticky;
-    bottom: 0;
-    z-index: var(--z-sticky);
-    flex-shrink: 0;
 }
 .action-button {
     flex: 1;
@@ -1499,9 +1489,8 @@ input:disabled + .toggle-slider {
     display: flex;
     justify-content: space-around;
     border-top: 1px solid var(--border-light);
-    z-index: var(--z-navigation);
+    z-index: 150;
 }
-
 .nav-item {
     display: flex;
     flex-direction: column;

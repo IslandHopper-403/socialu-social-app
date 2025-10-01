@@ -651,17 +651,14 @@ export class BusinessManager {
             // Update UI
             this.updateBusinessProfileUI(businessData);
             
-            // CRITICAL FIX: Show profile overlay AND ensure it's in the navigation stack
-            const profileOverlay = document.getElementById('businessProfile');
-            if (profileOverlay) {
-                profileOverlay.classList.add('show');
-                
-                // Manually add to overlay stack if navigation manager exists
-                if (this.navigationManager) {
-                    if (!this.navigationManager.overlayStack.includes('businessProfile')) {
-                        this.navigationManager.overlayStack.push('businessProfile');
-                        console.log('📚 Added businessProfile to overlay stack:', this.navigationManager.overlayStack);
-                    }
+           // ENHANCED: Use showOverlay with context tracking
+            if (this.navigationManager) {
+                this.navigationManager.showOverlay('businessProfile');
+            } else {
+                // Fallback if navigation manager not available
+                const profileOverlay = document.getElementById('businessProfile');
+                if (profileOverlay) {
+                    profileOverlay.classList.add('show');
                 }
             }
             

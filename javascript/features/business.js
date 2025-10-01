@@ -1435,13 +1435,20 @@ export class BusinessManager {
         recentList.style.display = 'block';
         console.log('🧹 Container cleared and display set to block');
         
+        // Hide/show empty state
+        const emptyState = document.getElementById('businessMessagesEmpty');
+        
         // Show top 3 most recent
         const topThree = conversations.slice(0, 3);
         
         if (topThree.length === 0) {
-            recentList.innerHTML = '<p style="opacity: 0.6; font-size: 14px;">No messages yet</p>';
+            recentList.style.display = 'none';
+            if (emptyState) emptyState.style.display = 'block';
             return;
         }
+        
+        // Hide empty state when we have messages
+        if (emptyState) emptyState.style.display = 'none';
         
         topThree.forEach(conv => {
         console.log('📝 Rendering message from:', conv.userName, 'ID:', conv.id);

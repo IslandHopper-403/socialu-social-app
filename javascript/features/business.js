@@ -1427,10 +1427,13 @@ export class BusinessManager {
         
         console.log('✅ Found elements, rendering messages...');
         console.log('📦 Container before clear:', recentList.innerHTML.substring(0, 100));
-
+        
         // Clear existing
         recentList.innerHTML = '';
-        console.log('🧹 Container cleared');
+        
+        // CRITICAL FIX: Force display to block
+        recentList.style.display = 'block';
+        console.log('🧹 Container cleared and display set to block');
         
         // Show top 3 most recent
         const topThree = conversations.slice(0, 3);

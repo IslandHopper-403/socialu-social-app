@@ -976,17 +976,6 @@ export class MessagingManager {
             console.log('🎯 Chat z-index reset to default');
         }
         
-        // FIXED: If chat was opened from business profile, don't close it
-        const fromBusinessProfile = this.state.get('chatOpenedFromBusinessProfile');
-        if (!fromBusinessProfile) {
-            // If NOT from business profile, close the business profile overlay
-            const businessProfileOverlay = document.getElementById('businessProfile');
-            if (businessProfileOverlay && businessProfileOverlay.classList.contains('show')) {
-                businessProfileOverlay.classList.remove('show');
-                console.log('✅ Closed business profile overlay after chat');
-            }
-        }
-        
         // Clear chat context
         this.currentChatId = null;
         this.currentChatPartner = null;

@@ -1,4 +1,4 @@
-// javascript/features/messaging.js - COMPLETE VERSION
+// javascript/features/messaging.js - COMPLETE VERSION 3.21
 
 import { sanitizeMessage, sanitizeText, escapeHtml, sanitizeHtml } from '../utils/security.js';
 import { handleSecurityError } from '../utils/security.js';

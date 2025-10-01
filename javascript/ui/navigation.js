@@ -351,13 +351,11 @@ showContentSkeleton(containerId, type = 'default') {
         }
     }
 
-           /**
+            /**
              * Handle back navigation with overlay stack memory
              */
             handleOverlayBack(overlayId) {
-                console.log('🔙 Back pressed on:', overlayId);
-                console.log('📚 Current stack:', JSON.stringify(this.overlayStack, null, 2));
-                console.log('📍 Current screen:', this.state.get('currentScreen'));
+                console.log('🔙 Back pressed on:', overlayId, '| Stack:', this.overlayStack);
                 
                 // Special cleanup for chat
                 if (overlayId === 'individualChat' && window.classifiedApp?.managers?.messaging) {

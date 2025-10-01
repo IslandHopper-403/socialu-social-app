@@ -102,24 +102,37 @@
     --transition-slow: 0.3s ease;
     --transition-slowest: 0.5s ease;
     
-    /* Z-index Scale - Organized Hierarchy */
-    --z-base: 1;
-    --z-dropdown: 10;
-    --z-sticky: 50;
-    
-    /* Overlays: 100-199 */
-    --z-overlay-base: 100;           /* Base overlay screens */
-    --z-overlay-profile: 250;        /* User/profile views */
-    --z-overlay-chat: 320;           /* Chat screens */
-    --z-overlay-business-chat: 330;  /* Business chat (slightly higher) */
-    
-    /* Floating UI: 300-399 */
-    --z-carousel: 355;               /* Favorites carousel */
-    --z-business-profile: 375;       /* Business profile overlay */
-    
-    /* Editors & Settings: 400-499 */
-    --z-profile-editor: 400;         /* Profile editors */
-    --z-settings: 450;               /* Settings overlay */
+    /* Z-INDEX HIERARCHY DOCUMENTATION
+   Update this comment when adding new overlays
+   
+   RULE: Child overlays = Parent + 50
+   
+   Navigation Flows:
+   - Feed → Business Profile (150) → Chat (200)
+   - Dashboard → Business Messages (150) → Chat (200)
+   - Any → Settings (300)
+   - Any → Modal (400)
+   */
+   
+   --z-base: 1;
+   --z-dropdown: 10;
+   --z-sticky: 50;
+   
+   /* Overlay Layer (100-299) */
+   --z-overlay-base: 100;
+   --z-business-profile: 150;       /* FROM: feed */
+   --z-overlay-profile: 150;        /* FROM: feed */
+   --z-overlay-chat: 200;           /* FROM: profile overlays */
+   
+   /* Floating UI (300-399) */
+   --z-carousel: 300;
+   --z-settings: 350;               /* FROM: any overlay */
+   --z-profile-editor: 350;
+   
+   /* System (400+) */
+   --z-modal: 400;                  /* FROM: any overlay */
+   --z-auth-portal: 500;
+   --z-loading: 600;
     
     /* Authentication: 500-599 */
     --z-auth-portal: 500;            /* Login/Register/Business auth screens */

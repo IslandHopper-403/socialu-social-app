@@ -1339,11 +1339,23 @@ export class BusinessManager {
         messageItem.appendChild(avatar);
         messageItem.appendChild(content);
         
-        messageItem.onclick = () => {
-            if (this.managers && this.managers.messaging && this.managers.messaging.businessMessaging) {
-                this.managers.messaging.businessMessaging.openBusinessConversationFromDashboard(conversationId);
-            }
-        };
+       messageItem.onclick = () => {
+        console.log('🖱️ Conversation clicked from overlay:', conversationId);
+        
+        // Close business messages overlay first
+        const messagesOverlay = document.getElementById('businessMessages');
+        if (messagesOverlay) {
+            messagesOverlay.classList.remove('show');
+            console.log('✅ Closed business messages overlay');
+        }
+        
+        // Open conversation in chat
+        if (this.managers && this.managers.messaging && this.managers.messaging.businessMessaging) {
+            this.managers.messaging.businessMessaging.openBusinessConversationFromDashboard(conversationId);
+        } else {
+            console.error('❌ BusinessMessaging manager not available');
+        }
+    };
         
         container.appendChild(messageItem);
     }

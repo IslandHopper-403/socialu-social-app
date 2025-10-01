@@ -1446,21 +1446,53 @@ export class BusinessManager {
         topThree.forEach(conv => {
         console.log('📝 Rendering message from:', conv.userName, 'ID:', conv.id);
         
+        // Use same structure as Business Messages overlay
         const item = document.createElement('div');
-        item.className = 'recent-message-item';
-        item.style.cssText = 'padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); cursor: pointer; background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px;';
+        item.className = conv.businessUnread > 0 ? 'message-item unread' : 'message-item';
+        item.dataset.conversationId = conv.id;
         
-        const name = document.createElement('div');
-        name.style.fontWeight = '600';
-        name.style.color = '#ffffff';  // ADD THIS LINE
+        // Avatar
+        const avatar = document.createElement('div');
+        avatar.className = 'customer-avatar';
+        avatar.textContent = '👤';
+        
+        // Content container
+        const content = document.createElement('div');
+        content.className = 'message-content';
+        
+        // Header (name + time)
+        const header = document.createElement('div');
+        header.className = 'message-header';
+        
+        const name = document.createElement('span');
+        name.className = 'customer-name';
         name.textContent = conv.userName || 'Customer';
         
+        const time = document.createElement('span');
+        time.className = 'message-time';
+        time.textContent = this.formatMessageTime(conv.lastMessageTime);
+        
+        header.appendChild(name);
+        header.appendChild(time);
+        
+        // Preview
         const preview = document.createElement('div');
-        preview.style.cssText = 'font-size: 13px; opacity: 0.7; margin-top: 4px; color: #ffffff;';  // ADD color property
+        preview.className = 'message-preview';
         preview.textContent = conv.lastMessage || 'New inquiry';
         
-        item.appendChild(name);
-        item.appendChild(preview);
+        content.appendChild(header);
+        content.appendChild(preview);
+        
+        // Unread badge
+        if (conv.businessUnread > 0) {
+            const badge = document.createElement('div');
+            badge.className = 'unread-badge';
+            badge.textContent = conv.businessUnread.toString();
+            content.appendChild(badge);
+        }
+        
+        item.appendChild(avatar);
+        item.appendChild(content);
         
         item.onclick = () => {
         console.log('🖱️ Message clicked, opening conversation:', conv.id);

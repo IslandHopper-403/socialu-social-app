@@ -1258,8 +1258,8 @@ export class BusinessManager {
                 
                 // FIXED: Target the correct container inside businessMessages overlay
                 const messagesOverlay = document.getElementById('businessMessages');
-                const messagesList = messagesOverlay ? messagesOverlay.querySelector('.messages-list') : null;
-                const emptyState = messagesOverlay ? messagesOverlay.querySelector('.empty-state') : null;
+                const messagesList = messagesOverlay ? document.getElementById('businessConversationsList') : null;
+                const emptyState = messagesOverlay ? document.getElementById('businessMessagesEmpty') : null;
                 
                 console.log('📋 Found elements:', {
                     overlay: !!messagesOverlay,

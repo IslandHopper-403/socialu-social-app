@@ -330,31 +330,31 @@ showContentSkeleton(containerId, type = 'default') {
         }
     }
 
-    /**
- * Handle back navigation with overlay stack memory
- */
-handleOverlayBack(overlayId) {
-    console.log('🔙 Back pressed on:', overlayId, '| Stack:', this.overlayStack);
-    
-    // Special cleanup for chat
-    if (overlayId === 'individualChat' && window.CLASSIFIED?.managers?.messaging) {
-        window.CLASSIFIED.managers.messaging.closeChat();
-    }
-    
-    // Close current overlay (removes from stack)
-    this.closeOverlay(overlayId);
-    
-    // Show previous overlay if one exists in stack
-    if (this.overlayStack.length > 0) {
-        const previousOverlay = this.overlayStack[this.overlayStack.length - 1];
-        const prevElement = document.getElementById(previousOverlay);
-        
-        if (prevElement && !prevElement.classList.contains('show')) {
-            prevElement.classList.add('show');
-            console.log('📱 Restored:', previousOverlay);
-        }
-    }
-}
+                /**
+             * Handle back navigation with overlay stack memory
+             */
+            handleOverlayBack(overlayId) {
+                console.log('🔙 Back pressed on:', overlayId, '| Stack:', this.overlayStack);
+                
+                // Special cleanup for chat
+                if (overlayId === 'individualChat' && window.CLASSIFIED?.managers?.messaging) {
+                    window.CLASSIFIED.managers.messaging.closeChat();
+                }
+                
+                // Close current overlay (removes from stack)
+                this.closeOverlay(overlayId);
+                
+                // Show previous overlay if one exists in stack
+                if (this.overlayStack.length > 0) {
+                    const previousOverlay = this.overlayStack[this.overlayStack.length - 1];
+                    const prevElement = document.getElementById(previousOverlay);
+                    
+                    if (prevElement && !prevElement.classList.contains('show')) {
+                        prevElement.classList.add('show');
+                        console.log('📱 Restored:', previousOverlay);
+                    }
+                }
+            }
 
 
     /**

@@ -91,47 +91,41 @@ showContentSkeleton(containerId, type = 'default') {
         // Initialize navigation state
         this.initializeNavigation();
     }
-    
-    /**
-     * Set up event listeners for navigation
-     */
-    setupEventListeners() {
-        // Bottom navigation listeners - Remove existing onclick first
-        document.querySelectorAll('.nav-item').forEach(item => {
-            // Remove any existing onclick
-            item.onclick = null;
-            item.addEventListener('click', (e) => {
-                const screen = item.dataset.screen;
-                this.showScreen(screen);
-            });
-        });
-        
-        // Back button listeners for overlays only
-            document.querySelectorAll('.overlay-screen .back-btn').forEach(btn => {
-                // REMOVE any existing listeners first
-                const newBtn = btn.cloneNode(true);
-                btn.parentNode.replaceChild(newBtn, btn);
+
+            /**
+             * Set up event listeners for navigation
+             */
+            setupEventListeners() {
+                // Prevent multiple setups
+                if (this._listenersSetup) return;
+                this._listenersSetup = true;
                 
-                newBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    
-                    const parentOverlay = newBtn.closest('.overlay-screen');
-                    if (parentOverlay) {
-                        console.log('🔙 Back button clicked for:', parentOverlay.id);
+                // Bottom navigation listeners
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const screen = item.dataset.screen;
+                        this.showScreen(screen);
+                    });
+                });
+                
+                // Back button listeners for overlays only
+                document.querySelectorAll('.overlay-screen .back-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
                         
-                        // Chat needs cleanup first
-                        if (parentOverlay.id === 'individualChat' && window.CLASSIFIED?.managers?.messaging) {
-                            console.log('🧹 Calling messaging cleanup');
-                            window.CLASSIFIED.managers.messaging.closeChat();
+                        const parentOverlay = btn.closest('.overlay-screen');
+                        if (parentOverlay) {
+                            // Chat needs cleanup first
+                            if (parentOverlay.id === 'individualChat' && window.CLASSIFIED?.managers?.messaging) {
+                                window.CLASSIFIED.managers.messaging.closeChat();
+                            }
+                            
+                            // Then close the overlay
+                            this.closeOverlay(parentOverlay.id);
                         }
-                        
-                        // Then close the overlay
-                        console.log('📚 Closing overlay:', parentOverlay.id);
-                        this.closeOverlay(parentOverlay.id);
-                    }
-                }, { once: true }); // CRITICAL: only fire once
-            });
+                    });
+                });
+
         // Handle browser back button
         window.addEventListener('popstate', (e) => {
             if (e.state && e.state.screen) {

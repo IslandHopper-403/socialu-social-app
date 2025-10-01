@@ -169,12 +169,12 @@ extractBusinessIdFromCard(cardElement) {
         if (document.getElementById('favoritesCarouselStyles')) return;
         
         const styles = `
-            <style id="favoritesCarouselStyles">
+               <style id="favoritesCarouselStyles">
                 .favorites-carousel {
                     position: fixed;
                     left: 0;
                     top: 200px;
-                    z-index: 355;
+                    z-index: var(--z-carousel, 355);
                     display: flex;
                     align-items: center;
                     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1052,7 +1052,7 @@ extractBusinessIdFromCard(cardElement) {
             border-radius: 25px;
             font-size: 14px;
             font-weight: 600;
-            z-index: 1000;
+            z-index: var(--z-toast, 1100);
             animation: slideUp 0.3s ease;
         `;
         

@@ -1407,7 +1407,7 @@ export class BusinessManager {
         return date.toLocaleDateString();
     }
     
-    /**
+     /**
      * Update Recent Messages block on dashboard
      */
     updateRecentMessagesBlock(conversations) {
@@ -1419,9 +1419,10 @@ export class BusinessManager {
             return;
         }
         
-        const recentList = recentBlock.querySelector('.recent-messages-list');
+        // FIXED: Use correct ID instead of class selector
+        const recentList = document.getElementById('businessMessagesList');
         if (!recentList) {
-            console.error('❌ recent-messages-list not found!');
+            console.error('❌ businessMessagesList not found!');
             return;
         }
         

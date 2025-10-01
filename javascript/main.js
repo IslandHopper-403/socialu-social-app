@@ -217,6 +217,7 @@ loadDemoContent() {
     setupGlobalAPI() {
         // Create the global CLASSIFIED object with all public methods
         window.CLASSIFIED = {
+            managers: this.managers, 
             // State access
             state: this.state._state,
             data: this.mockData,

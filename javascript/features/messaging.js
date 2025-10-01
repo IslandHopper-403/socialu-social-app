@@ -956,7 +956,7 @@ export class MessagingManager {
         }
     }
 
-   /**
+        /**
      * Close chat Overlay
      */
     closeChat() {
@@ -969,24 +969,36 @@ export class MessagingManager {
             this.unregisterListener(`chat_${this.currentChatId}`);
         }
         
-        // DYNAMIC Z-INDEX CLEANUP: Reset chat overlay z-index
-        const chatOverlay = document.getElementById('individualChat');
-        if (chatOverlay) {
-            chatOverlay.style.zIndex = '';
-            console.log('🎯 Chat z-index reset to default');
-        }
-        
-        // Clear chat context
+        // Clear ALL chat state BEFORE closing overlay
+        const chatIdToClose = this.currentChatId;
         this.currentChatId = null;
         this.currentChatPartner = null;
         this.isChatVisible = false;
         this.state.set('currentChatUser', null);
-        this.state.set('chatOpenedFromBusinessProfile', false); // Reset flag
+        this.state.set('chatOpenedFromBusinessProfile', false);
+        this.state.set('currentChatType', null);
+        this.state.set('currentBusinessConversationId', null);
+        this.state.set('currentChatBusinessId', null);
+        
+        // FIXED: Use internal navigation manager reference to properly close overlay
+        if (this.navigationManager) {
+            this.navigationManager.closeOverlay('individualChat');
+            console.log('✅ Chat overlay closed via navigation manager');
+        } else {
+            // Fallback: manual close if navigation manager not set
+            const chatOverlay = document.getElementById('individualChat');
+            if (chatOverlay) {
+                chatOverlay.classList.remove('show');
+                chatOverlay.style.zIndex = '';
+                console.log('⚠️ Chat manually closed (navigation manager not initialized)');
+            }
+        }
         
         // Dispatch event for other components
-        document.dispatchEvent(new CustomEvent('chatClosed'));
+        document.dispatchEvent(new CustomEvent('chatClosed', {
+            detail: { chatId: chatIdToClose }
+        }));
     }
-   
       /**
      * Send message with proper sanitization
      */

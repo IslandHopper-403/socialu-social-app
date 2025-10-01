@@ -259,6 +259,9 @@ export class BusinessManager {
                     // Update UI with textContent (SECURITY)
                     const messagesEl = document.getElementById('businessMessagesCount');
                     if (messagesEl) messagesEl.textContent = unreadCount;
+
+                    // Update message list preview with conversations data
+                    this.updateMessagesList(snapshot);
                     
                         // ADDED: Update Recent Messages block on dashboard
                         this.updateRecentMessagesBlock(conversations);

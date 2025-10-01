@@ -149,7 +149,15 @@ export class BusinessMessagingManager {
         this.state.set('currentChatBusinessId', businessId);
         this.state.set('currentBusinessConversationId', conversationId);
         
-        // Show chat overlay with fixed z-index (always above business dashboard)
+        // Mark this as a business chat
+        this.state.set('currentChatType', 'business');
+        this.state.set('currentChatBusinessId', businessId);
+        this.state.set('currentBusinessConversationId', conversationId);
+        
+        // Store that we came from business profile (for proper back navigation)
+        this.state.set('chatOpenedFromBusinessProfile', true);
+        
+        // Show chat overlay with dynamic z-index management
         const chatOverlay = document.getElementById('individualChat');
         if (chatOverlay) {
             // FIXED Z-INDEX: Set to 450 (dashboard is 400, messages overlay is 405)

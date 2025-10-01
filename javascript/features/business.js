@@ -1409,6 +1409,13 @@ export class BusinessManager {
         }
         
         console.log('✅ Found elements, rendering messages...');
+
+        // FORCE VISIBILITY FOR DEBUGGING
+        recentList.style.display = 'block';
+        recentList.style.visibility = 'visible';
+        recentList.style.opacity = '1';
+        recentList.style.minHeight = '100px';
+        recentList.style.backgroundColor = '#ff0000'; // Red background so you can SEE it
         
         // Clear existing
         recentList.innerHTML = '';

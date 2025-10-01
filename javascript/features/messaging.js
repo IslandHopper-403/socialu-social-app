@@ -882,7 +882,6 @@ export class MessagingManager {
         if (chatType !== 'business') {
             document.getElementById('chatAvatar').style.backgroundImage = `url('${avatar}')`;
         }
-            document.getElementById('chatAvatar').style.backgroundImage = `url('${avatar}')`;
             
             // Store current chat context
             this.currentChatPartner = { name, avatar, userId };

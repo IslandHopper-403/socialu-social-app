@@ -969,12 +969,8 @@ export class MessagingManager {
             this.unregisterListener(`chat_${this.currentChatId}`);
         }
         
-        // DYNAMIC Z-INDEX CLEANUP: Reset chat overlay z-index
-        const chatOverlay = document.getElementById('individualChat');
-        if (chatOverlay) {
-            chatOverlay.style.zIndex = '';
-            console.log('🎯 Chat z-index reset to default');
-        }
+        // Chat closes - CSS maintains proper z-index
+        // No manual z-index manipulation needed
         
         // Clear chat context
         this.currentChatId = null;

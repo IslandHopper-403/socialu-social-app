@@ -1394,11 +1394,21 @@ export class BusinessManager {
      * Update Recent Messages block on dashboard
      */
     updateRecentMessagesBlock(conversations) {
+        console.log('🔧 updateRecentMessagesBlock called with:', conversations.length, 'conversations');
+        
         const recentBlock = document.getElementById('recentMessagesBlock');
-        if (!recentBlock) return;
+        if (!recentBlock) {
+            console.error('❌ recentMessagesBlock not found!');
+            return;
+        }
         
         const recentList = recentBlock.querySelector('.recent-messages-list');
-        if (!recentList) return;
+        if (!recentList) {
+            console.error('❌ recent-messages-list not found!');
+            return;
+        }
+        
+        console.log('✅ Found elements, rendering messages...');
         
         // Clear existing
         recentList.innerHTML = '';

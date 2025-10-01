@@ -1410,13 +1410,6 @@ export class BusinessManager {
         
         console.log('✅ Found elements, rendering messages...');
 
-        // FORCE VISIBILITY FOR DEBUGGING
-        recentList.style.display = 'block';
-        recentList.style.visibility = 'visible';
-        recentList.style.opacity = '1';
-        recentList.style.minHeight = '100px';
-        recentList.style.backgroundColor = '#ff0000'; // Red background so you can SEE it
-        
         // Clear existing
         recentList.innerHTML = '';
         
@@ -1433,7 +1426,7 @@ export class BusinessManager {
         
         const item = document.createElement('div');
         item.className = 'recent-message-item';
-        item.style.cssText = 'padding: 10px; border-bottom: 1px solid #eee; cursor: pointer;';
+        item.style.cssText = 'padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); cursor: pointer; background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px;';
         
         const name = document.createElement('div');
         name.style.fontWeight = '600';

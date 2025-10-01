@@ -883,13 +883,13 @@
             </div>
             
             <!-- Messages Section -->
-            <div class="messages-section">
+            <div class="messages-section" id="recentMessagesBlock">
                 <div class="section-header">
                     <div class="section-title">Recent Messages</div>
                     <div class="view-all" onclick="CLASSIFIED.openBusinessMessages()">View All</div>
                 </div>
                 <!-- Security: Message list container for dynamic content -->
-                <div class="message-list" id="businessMessagesList">
+                <div class="recent-messages-list" id="businessMessagesList">
                     <!-- Messages will be dynamically inserted here -->
                     <!-- Template for reference (will be created in JS):
                     <div class="message-item unread" data-message-id="[messageId]" onclick="CLASSIFIED.openBusinessMessage('[sanitized-messageId]')">

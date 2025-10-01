@@ -969,22 +969,35 @@ export class MessagingManager {
             this.unregisterListener(`chat_${this.currentChatId}`);
         }
         
-        // DYNAMIC Z-INDEX CLEANUP: Reset chat overlay z-index
-        const chatOverlay = document.getElementById('individualChat');
-        if (chatOverlay) {
-            chatOverlay.style.zIndex = '';
-            console.log('🎯 Chat z-index reset to default');
-        }
-        
-        // Clear chat context
+        // Clear ALL chat state BEFORE closing overlay
+        const chatIdToClose = this.currentChatId;
         this.currentChatId = null;
         this.currentChatPartner = null;
         this.isChatVisible = false;
         this.state.set('currentChatUser', null);
-        this.state.set('chatOpenedFromBusinessProfile', false); // Reset flag
+        this.state.set('chatOpenedFromBusinessProfile', false);
+        this.state.set('currentChatType', null); // Clear chat type
+        this.state.set('currentBusinessConversationId', null); // Clear business conversation
+        this.state.set('currentChatBusinessId', null); // Clear business ID
+        
+        // FIXED: Use navigation manager to properly close overlay and manage stack
+        if (window.CLASSIFIED?.managers?.navigation) {
+            window.CLASSIFIED.managers.navigation.closeOverlay('individualChat');
+            console.log('✅ Chat overlay properly closed via navigation manager');
+        } else {
+            // Fallback: manual close if navigation manager not available
+            const chatOverlay = document.getElementById('individualChat');
+            if (chatOverlay) {
+                chatOverlay.classList.remove('show');
+                chatOverlay.style.zIndex = '';
+                console.log('⚠️ Chat manually closed (navigation manager unavailable)');
+            }
+        }
         
         // Dispatch event for other components
-        document.dispatchEvent(new CustomEvent('chatClosed'));
+        document.dispatchEvent(new CustomEvent('chatClosed', {
+            detail: { chatId: chatIdToClose }
+        }));
     }
    
       /**

@@ -1300,9 +1300,14 @@ input:disabled + .toggle-slider {
     display: flex;
     gap: 15px;
     padding: var(--spacing-lg);
-    background: rgba(0,0,0,0.9);
+    background: rgba(0,0,0,0.95); /* Increased opacity for consistency */
     border-top: 1px solid var(--border-light);
+    flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    /* No explicit z-index - inherits from parent overlay's stacking context */
 }
+
 .action-button {
     flex: 1;
     padding: var(--spacing-md);

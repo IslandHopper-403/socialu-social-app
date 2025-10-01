@@ -1236,28 +1236,37 @@ export class BusinessManager {
         }
     }
     
-            /**
-     * Load Business Conversations (SECURITY: Business messages only)
-     */
-    async loadBusinessConversations() {
-        const user = this.state.get('currentUser');
-        if (!user || !this.state.get('isBusinessUser')) return;
-        
-        try {
-            console.log('Loading business conversations...');
+        /**
+         * Load Business Conversations (SECURITY: Business messages only)
+         */
+        async loadBusinessConversations() {
+            const user = this.state.get('currentUser');
+            if (!user || !this.state.get('isBusinessUser')) return;
             
-            // Query businessConversations collection
-            const conversationsQuery = query(
-                collection(this.db, 'businessConversations'),
-                where('businessId', '==', user.uid),
-                orderBy('lastMessageTime', 'desc'),
-                limit(50)
-            );
-            
-            const snapshot = await getDocs(conversationsQuery);
-            
-            const messagesList = document.getElementById('businessMessagesList');
-            const emptyState = document.getElementById('businessMessagesEmpty');
+            try {
+                console.log('Loading business conversations...');
+                
+                // Query businessConversations collection
+                const conversationsQuery = query(
+                    collection(this.db, 'businessConversations'),
+                    where('businessId', '==', user.uid),
+                    orderBy('lastMessageTime', 'desc'),
+                    limit(50)
+                );
+                
+                const snapshot = await getDocs(conversationsQuery);
+                
+                // FIXED: Target the correct container inside businessMessages overlay
+                const messagesOverlay = document.getElementById('businessMessages');
+                const messagesList = messagesOverlay ? messagesOverlay.querySelector('.messages-list') : null;
+                const emptyState = messagesOverlay ? messagesOverlay.querySelector('.empty-state') : null;
+                
+                console.log('📋 Found elements:', {
+                    overlay: !!messagesOverlay,
+                    list: !!messagesList,
+                    empty: !!emptyState,
+                    conversations: snapshot.size
+                });
             
             if (snapshot.empty) {
                 if (emptyState) emptyState.style.display = 'block';

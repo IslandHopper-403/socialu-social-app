@@ -1489,8 +1489,9 @@ input:disabled + .toggle-slider {
     display: flex;
     justify-content: space-around;
     border-top: 1px solid var(--border-light);
-    z-index: 150;
+    z-index: 9999; /* CRITICAL: Must stay above ALL overlays */
 }
+
 .nav-item {
     display: flex;
     flex-direction: column;

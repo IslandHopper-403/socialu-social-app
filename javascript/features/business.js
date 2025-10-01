@@ -1426,9 +1426,11 @@ export class BusinessManager {
         }
         
         console.log('✅ Found elements, rendering messages...');
+        console.log('📦 Container before clear:', recentList.innerHTML.substring(0, 100));
 
         // Clear existing
         recentList.innerHTML = '';
+        console.log('🧹 Container cleared');
         
         // Show top 3 most recent
         const topThree = conversations.slice(0, 3);
@@ -1471,6 +1473,10 @@ export class BusinessManager {
     });
     
     console.log('✅ Finished rendering', topThree.length, 'messages to Recent Messages block');
+    console.log('📦 Container after render:', recentList.innerHTML.substring(0, 200));
+    console.log('📊 Container display:', recentList.style.display);
+    console.log('📊 Container visibility:', window.getComputedStyle(recentList).visibility);
+    console.log('📊 Container height:', window.getComputedStyle(recentList).height);
     }
     
     /**

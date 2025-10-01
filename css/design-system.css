@@ -102,13 +102,34 @@
     --transition-slow: 0.3s ease;
     --transition-slowest: 0.5s ease;
     
-    /* Z-index Scale */
+    /* Z-index Scale - Organized Hierarchy */
     --z-base: 1;
     --z-dropdown: 10;
     --z-sticky: 50;
-    --z-overlay: 100;
-    --z-modal: 200;
-    --z-toast: 1000;
+    
+    /* Overlays: 100-199 */
+    --z-overlay-base: 100;           /* Base overlay screens */
+    --z-overlay-profile: 250;        /* User/profile views */
+    --z-overlay-chat: 320;           /* Chat screens */
+    --z-overlay-business-chat: 330;  /* Business chat (slightly higher) */
+    
+    /* Floating UI: 300-399 */
+    --z-carousel: 355;               /* Favorites carousel */
+    --z-business-profile: 375;       /* Business profile overlay */
+    
+    /* Editors & Settings: 400-499 */
+    --z-profile-editor: 400;         /* Profile editors */
+    --z-settings: 450;               /* Settings overlay */
+    
+    /* Authentication: 500-599 */
+    --z-auth-portal: 500;            /* Login/Register/Business auth screens */
+    
+    /* System: 600-999 */
+    --z-loading: 600;                /* Loading overlays */
+    
+    /* Top Level: 1000+ */
+    --z-modal: 1000;                 /* Match popup, alerts */
+    --z-toast: 1100;                 /* Toast notifications */
     
     /* Layout */
     --container-max: 430px;

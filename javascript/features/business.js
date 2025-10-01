@@ -260,12 +260,9 @@ export class BusinessManager {
                     const messagesEl = document.getElementById('businessMessagesCount');
                     if (messagesEl) messagesEl.textContent = unreadCount;
                     
-                  // Update message list preview with conversations data
-                        this.updateMessagesList(snapshot);
-                        
                         // ADDED: Update Recent Messages block on dashboard
                         this.updateRecentMessagesBlock(conversations);
-                        
+                    
                         // ADDED: Update Messages count block on dashboard
                         this.updateMessagesCountBlock(unreadCount, conversations.length);
                         

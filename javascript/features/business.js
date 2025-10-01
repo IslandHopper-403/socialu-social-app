@@ -1433,10 +1433,11 @@ export class BusinessManager {
         
         const name = document.createElement('div');
         name.style.fontWeight = '600';
+        name.style.color = '#ffffff';  // ADD THIS LINE
         name.textContent = conv.userName || 'Customer';
         
         const preview = document.createElement('div');
-        preview.style.cssText = 'font-size: 13px; opacity: 0.7; margin-top: 4px;';
+        preview.style.cssText = 'font-size: 13px; opacity: 0.7; margin-top: 4px; color: #ffffff;';  // ADD color property
         preview.textContent = conv.lastMessage || 'New inquiry';
         
         item.appendChild(name);

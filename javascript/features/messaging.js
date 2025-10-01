@@ -956,7 +956,7 @@ export class MessagingManager {
         }
     }
 
-        /**
+         /**
      * Close chat Overlay
      */
     closeChat() {
@@ -969,7 +969,7 @@ export class MessagingManager {
             this.unregisterListener(`chat_${this.currentChatId}`);
         }
         
-        // Clear ALL chat state BEFORE closing overlay
+        // Clear ALL chat state
         const chatIdToClose = this.currentChatId;
         this.currentChatId = null;
         this.currentChatPartner = null;
@@ -980,17 +980,20 @@ export class MessagingManager {
         this.state.set('currentBusinessConversationId', null);
         this.state.set('currentChatBusinessId', null);
         
-        // FIXED: Use internal navigation manager reference to properly close overlay
-        if (this.navigationManager) {
-            this.navigationManager.closeOverlay('individualChat');
-            console.log('✅ Chat overlay closed via navigation manager');
-        } else {
-            // Fallback: manual close if navigation manager not set
-            const chatOverlay = document.getElementById('individualChat');
-            if (chatOverlay) {
-                chatOverlay.classList.remove('show');
-                chatOverlay.style.zIndex = '';
-                console.log('⚠️ Chat manually closed (navigation manager not initialized)');
+        // DON'T call navigationManager.closeOverlay() - that creates a loop
+        // Just close the overlay directly
+        const chatOverlay = document.getElementById('individualChat');
+        if (chatOverlay) {
+            chatOverlay.classList.remove('show');
+            chatOverlay.style.zIndex = '';
+        }
+        
+        // Remove from overlay stack manually
+        if (this.navigationManager && this.navigationManager.overlayStack) {
+            const index = this.navigationManager.overlayStack.indexOf('individualChat');
+            if (index > -1) {
+                this.navigationManager.overlayStack.splice(index, 1);
+                console.log('📚 Removed individualChat from stack:', this.navigationManager.overlayStack);
             }
         }
         

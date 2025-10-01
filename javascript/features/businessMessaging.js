@@ -149,11 +149,28 @@ export class BusinessMessagingManager {
         this.state.set('currentChatBusinessId', businessId);
         this.state.set('currentBusinessConversationId', conversationId);
         
-        // Show chat overlay
+        // Show chat overlay with dynamic z-index management
         const chatOverlay = document.getElementById('individualChat');
         if (chatOverlay) {
+            // DYNAMIC Z-INDEX: Calculate based on overlay stack
+            const currentOverlays = document.querySelectorAll('.overlay-screen.show');
+            const maxZIndex = Array.from(currentOverlays).reduce((max, el) => {
+                const zIndex = parseInt(window.getComputedStyle(el).zIndex) || 0;
+                return Math.max(max, zIndex);
+            }, 0);
+            
+            // Boost chat above all current overlays
+            const boostZIndex = maxZIndex + 50;
+            chatOverlay.style.zIndex = boostZIndex;
+            console.log(`🎯 Chat z-index boosted to ${boostZIndex} (above ${maxZIndex})`);
+            
             chatOverlay.classList.add('show');
             chatOverlay.dataset.chatType = 'business'; // Mark as business chat
+            
+            // Track in overlay stack for proper back button behavior
+            if (window.CLASSIFIED && window.CLASSIFIED.managers && window.CLASSIFIED.managers.navigation) {
+                window.CLASSIFIED.managers.navigation.showOverlay('individualChat');
+            }
         }
         
         // Load business conversation messages
@@ -410,11 +427,28 @@ export class BusinessMessagingManager {
                 chatAvatar.style.justifyContent = 'center';
             }
             
-            // Show chat overlay
+            // Show chat overlay with dynamic z-index
             const chatOverlay = document.getElementById('individualChat');
             if (chatOverlay) {
+                // DYNAMIC Z-INDEX: Calculate based on current overlays
+                const currentOverlays = document.querySelectorAll('.overlay-screen.show');
+                const maxZIndex = Array.from(currentOverlays).reduce((max, el) => {
+                    const zIndex = parseInt(window.getComputedStyle(el).zIndex) || 0;
+                    return Math.max(max, zIndex);
+                }, 0);
+                
+                // Boost chat above all current overlays
+                const boostZIndex = maxZIndex + 50;
+                chatOverlay.style.zIndex = boostZIndex;
+                console.log(`🎯 Business chat z-index boosted to ${boostZIndex}`);
+                
                 chatOverlay.classList.add('show');
                 chatOverlay.dataset.chatType = 'business-response'; // Mark as business responding
+                
+                // Track in overlay stack
+                if (window.CLASSIFIED && window.CLASSIFIED.managers && window.CLASSIFIED.managers.navigation) {
+                    window.CLASSIFIED.managers.navigation.showOverlay('individualChat');
+                }
             }
             
             // Load conversation messages

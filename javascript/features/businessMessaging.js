@@ -157,9 +157,10 @@ export class BusinessMessagingManager {
         // Store that we came from business profile (for proper back navigation)
         this.state.set('chatOpenedFromBusinessProfile', true);
         
-        // Show chat overlay
+        /// Show chat overlay with higher z-index
         const chatOverlay = document.getElementById('individualChat');
         if (chatOverlay) {
+            chatOverlay.style.zIndex = '400';
             chatOverlay.classList.add('show');
             chatOverlay.dataset.chatType = 'business-response'; // Mark as business responding
             

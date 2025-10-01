@@ -174,7 +174,7 @@ extractBusinessIdFromCard(cardElement) {
                     position: fixed;
                     left: 0;
                     top: 200px;
-                    z-index: 205;
+                    z-index: 275;
                     display: flex;
                     align-items: center;
                     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);

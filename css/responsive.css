@@ -53,7 +53,7 @@
     flex-shrink: 0; /* Prevent buttons from shrinking */
     position: sticky;
     bottom: 0;
-    z-index: 10;
+    /* z-index removed - inherits from parent overlay */
 }
 
 /* =============================================================================

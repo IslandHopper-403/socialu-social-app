@@ -955,47 +955,37 @@ export class MessagingManager {
             console.error('Error ensuring chat exists:', error);
         }
     }
-    
-   /**
+
+    /**
      * Close chat Overlay
      */
-        closeChat() {
-            console.log('🔙 Closing chat');
-            
-            // Mark current chat as read before closing
-            if (this.currentChatId) {
-                this.markChatAsRead(this.currentChatId);
-                this.markAllMessagesAsRead(this.currentChatId);
-                this.unregisterListener(`chat_${this.currentChatId}`);
-            }
-            
-            // DYNAMIC Z-INDEX CLEANUP: Reset chat overlay z-index
-            const chatOverlay = document.getElementById('individualChat');
-            if (chatOverlay) {
-                chatOverlay.style.zIndex = '';
-                console.log('🎯 Chat z-index reset to default');
-            }
-            
-            // Clear chat context
-            this.currentChatId = null;
-            this.currentChatPartner = null;
-            this.isChatVisible = false;
-            
-            // Dispatch event for other components
-            document.dispatchEvent(new CustomEvent('chatClosed'));
+    closeChat() {
+        console.log('🔙 Closing chat');
+        
+        // Mark current chat as read before closing
+        if (this.currentChatId) {
+            this.markChatAsRead(this.currentChatId);
+            this.markAllMessagesAsRead(this.currentChatId);
+            this.unregisterListener(`chat_${this.currentChatId}`);
         }
-            
-            this.isChatVisible = false; // Track that chat is no longer visible
-            
-            document.dispatchEvent(new CustomEvent('chatClosed'));
-            this.navigationManager.closeOverlay('individualChat');
-            
-            // Clear chat context
-            this.currentChatId = null;
-            this.currentChatPartner = null;
-            this.state.set('currentChatUser', null);
+        
+        // DYNAMIC Z-INDEX CLEANUP: Reset chat overlay z-index
+        const chatOverlay = document.getElementById('individualChat');
+        if (chatOverlay) {
+            chatOverlay.style.zIndex = '';
+            console.log('🎯 Chat z-index reset to default');
         }
-    
+        
+        // Clear chat context
+        this.currentChatId = null;
+        this.currentChatPartner = null;
+        this.isChatVisible = false;
+        this.state.set('currentChatUser', null);
+        
+        // Dispatch event for other components
+        document.dispatchEvent(new CustomEvent('chatClosed'));
+    }
+   
       /**
      * Send message with proper sanitization
      */

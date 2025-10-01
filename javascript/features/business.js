@@ -1422,29 +1422,37 @@ export class BusinessManager {
         }
         
         topThree.forEach(conv => {
-            const item = document.createElement('div');
-            item.className = 'recent-message-item';
-            item.style.cssText = 'padding: 10px; border-bottom: 1px solid #eee; cursor: pointer;';
-            
-            const name = document.createElement('div');
-            name.style.fontWeight = '600';
-            name.textContent = conv.userName || 'Customer';
-            
-            const preview = document.createElement('div');
-            preview.style.cssText = 'font-size: 13px; opacity: 0.7; margin-top: 4px;';
-            preview.textContent = conv.lastMessage || 'New inquiry';
-            
-            item.appendChild(name);
-            item.appendChild(preview);
-            
-            item.onclick = () => {
-                if (this.managers && this.managers.messaging && this.managers.messaging.businessMessaging) {
-                    this.managers.messaging.businessMessaging.openBusinessConversationFromDashboard(conv.id);
-                }
-            };
-            
-            recentList.appendChild(item);
-        });
+        console.log('📝 Rendering message from:', conv.userName, 'ID:', conv.id);
+        
+        const item = document.createElement('div');
+        item.className = 'recent-message-item';
+        item.style.cssText = 'padding: 10px; border-bottom: 1px solid #eee; cursor: pointer;';
+        
+        const name = document.createElement('div');
+        name.style.fontWeight = '600';
+        name.textContent = conv.userName || 'Customer';
+        
+        const preview = document.createElement('div');
+        preview.style.cssText = 'font-size: 13px; opacity: 0.7; margin-top: 4px;';
+        preview.textContent = conv.lastMessage || 'New inquiry';
+        
+        item.appendChild(name);
+        item.appendChild(preview);
+        
+        item.onclick = () => {
+            console.log('🖱️ Message clicked, opening conversation:', conv.id);
+            if (this.managers && this.managers.messaging && this.managers.messaging.businessMessaging) {
+                this.managers.messaging.businessMessaging.openBusinessConversationFromDashboard(conv.id);
+            } else {
+                console.error('❌ Managers not available');
+            }
+        };
+        
+        recentList.appendChild(item);
+        console.log('✅ Message appended to list');
+    });
+    
+    console.log('✅ Finished rendering', topThree.length, 'messages to Recent Messages block');
     }
     
     /**

@@ -108,7 +108,7 @@ showContentSkeleton(containerId, type = 'default') {
                     });
                 });
                 
-                // Back button listeners for overlays only  
+              // Back button listeners for overlays only  
             document.querySelectorAll('.overlay-screen .back-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -117,13 +117,8 @@ showContentSkeleton(containerId, type = 'default') {
                     
                     // Only process if overlay is actually visible
                     if (parentOverlay && parentOverlay.classList.contains('show')) {
-                        // Chat needs cleanup first
-                        if (parentOverlay.id === 'individualChat' && window.CLASSIFIED?.managers?.messaging) {
-                            window.CLASSIFIED.managers.messaging.closeChat();
-                        }
-                        
-                        // Then close the overlay
-                        this.closeOverlay(parentOverlay.id);
+                        // Handle stack-based navigation
+                        this.handleOverlayBack(parentOverlay.id);
                     }
                 });
             });
@@ -334,6 +329,32 @@ showContentSkeleton(containerId, type = 'default') {
             this.updateOverlayState(overlayId, false);
         }
     }
+
+    /**
+ * Handle back navigation with overlay stack memory
+ */
+handleOverlayBack(overlayId) {
+    console.log('🔙 Back pressed on:', overlayId, '| Stack:', this.overlayStack);
+    
+    // Special cleanup for chat
+    if (overlayId === 'individualChat' && window.CLASSIFIED?.managers?.messaging) {
+        window.CLASSIFIED.managers.messaging.closeChat();
+    }
+    
+    // Close current overlay (removes from stack)
+    this.closeOverlay(overlayId);
+    
+    // Show previous overlay if one exists in stack
+    if (this.overlayStack.length > 0) {
+        const previousOverlay = this.overlayStack[this.overlayStack.length - 1];
+        const prevElement = document.getElementById(previousOverlay);
+        
+        if (prevElement && !prevElement.classList.contains('show')) {
+            prevElement.classList.add('show');
+            console.log('📱 Restored:', previousOverlay);
+        }
+    }
+}
 
 
     /**

@@ -105,7 +105,7 @@
     /* Z-index Scale - Organized Hierarchy */
    --z-base: 1;
    --z-dropdown: 10;
-   --z-profile-action-buttons: 50;  /* Profile action buttons (sticky within profiles) */
+   --z-sticky: 50;                  /* Sticky headers, action buttons */
    
    /* Overlays: 100-199 */
    --z-overlay-base: 100;           /* Base overlay screens */
@@ -122,9 +122,9 @@
    /* Authentication: 500-599 */
    --z-auth-portal: 500;            /* Login/Register/Business auth screens */
    
-   /* Chat Overlays: 600-699 - MUST be above profiles */
-   --z-overlay-chat: 600;           /* Chat screens - above profiles */
-   --z-overlay-business-chat: 610;  /* Business chat (slightly higher) */
+   /* Chat Overlays: 600-699 - Above profiles */
+   --z-overlay-chat: 600;           /* Chat screens */
+   --z-overlay-business-chat: 610;  /* Business chat */
    
    /* System: 700-999 */
    --z-loading: 700;                /* Loading overlays */
@@ -133,7 +133,6 @@
    --z-modal: 1000;                 /* Match popup, modals */
    --z-toast: 1100;                 /* Toast notifications */
    --z-navigation: 9999;            /* Navigation bar - ALWAYS ON TOP */
-    --z-toast: 1100;                 /* Toast notifications */
     
     /* Layout */
     --container-max: 430px;

@@ -1559,13 +1559,14 @@ input:disabled + .toggle-slider {
     max-width: 430px;
     height: 100vh;
     background: linear-gradient(135deg, var(--bg-dark) 0%, #2d2d2d 100%);
-    z-index: 400;
+    z-index: var(--z-auth-portal);
     display: none;
     flex-direction: column;
     animation: slideUp 0.3s ease;
-    overflow-y: auto;  /* ADD: Enable scrolling */
-    padding-bottom: 100px;  /* ADD: Extra space at bottom */
+    overflow-y: auto;
+    padding-bottom: 100px;
 }
+
 .auth-screen.show {
     display: flex;
 }
@@ -1717,7 +1718,7 @@ input:disabled + .toggle-slider {
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 400;
+    z-index: var(--z-loading);
 }
 .loading-overlay.show {
     display: flex;

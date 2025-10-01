@@ -157,13 +157,9 @@ export class BusinessMessagingManager {
         // Store that we came from business profile (for proper back navigation)
         this.state.set('chatOpenedFromBusinessProfile', true);
         
-        // Show chat overlay with dynamic z-index management
+        // Show chat overlay
         const chatOverlay = document.getElementById('individualChat');
         if (chatOverlay) {
-            // FIXED Z-INDEX: Set to 450 (dashboard is 400, messages overlay is 405)
-            chatOverlay.style.zIndex = '450';
-            console.log('🎯 Business chat z-index set to 450 (above dashboard and messages)');
-            
             chatOverlay.classList.add('show');
             chatOverlay.dataset.chatType = 'business-response'; // Mark as business responding
             

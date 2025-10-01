@@ -306,6 +306,12 @@ showContentSkeleton(containerId, type = 'default') {
         if (overlay) {
             overlay.classList.remove('show');
             
+            // DYNAMIC Z-INDEX: Reset any dynamic z-index when closing
+            if (overlayId === 'individualChat') {
+                overlay.style.zIndex = '';
+                console.log('🎯 Reset chat z-index on close');
+            }
+            
             // SECURITY: Remove from overlay stack
             const index = this.overlayStack.indexOf(overlayId);
             if (index > -1) {

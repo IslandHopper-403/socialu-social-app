@@ -36,6 +36,7 @@ export class BusinessManager {
         this.navigationManager = null;
         this.profileManager = null;
         this.authManager = null;
+        this.messagingManager = null;  // ADD THIS LINE
         
         // Dashboard data
         this.dashboardData = {
@@ -62,6 +63,7 @@ export class BusinessManager {
         this.navigationManager = managers.navigation;
         this.profileManager = managers.profile;
         this.authManager = managers.auth;
+        this.messagingManager = managers.messaging;  // ADD THIS LINE
         
         // Get mock data reference from the main app
         if (window.classifiedApp && window.classifiedApp.mockData) {
@@ -1339,7 +1341,7 @@ export class BusinessManager {
         messageItem.appendChild(avatar);
         messageItem.appendChild(content);
         
-       messageItem.onclick = () => {
+        messageItem.onclick = () => {
         console.log('🖱️ Conversation clicked from overlay:', conversationId);
         
         // Close business messages overlay first
@@ -1350,8 +1352,8 @@ export class BusinessManager {
         }
         
         // Open conversation in chat
-        if (this.managers && this.managers.messaging && this.managers.messaging.businessMessaging) {
-            this.managers.messaging.businessMessaging.openBusinessConversationFromDashboard(conversationId);
+        if (this.messagingManager && this.messagingManager.businessMessaging) {
+            this.messagingManager.businessMessaging.openBusinessConversationFromDashboard(conversationId);
         } else {
             console.error('❌ BusinessMessaging manager not available');
         }
@@ -1456,13 +1458,13 @@ export class BusinessManager {
         item.appendChild(preview);
         
         item.onclick = () => {
-            console.log('🖱️ Message clicked, opening conversation:', conv.id);
-            if (this.managers && this.managers.messaging && this.managers.messaging.businessMessaging) {
-                this.managers.messaging.businessMessaging.openBusinessConversationFromDashboard(conv.id);
-            } else {
-                console.error('❌ Managers not available');
-            }
-        };
+        console.log('🖱️ Message clicked, opening conversation:', conv.id);
+        if (this.messagingManager && this.messagingManager.businessMessaging) {
+            this.messagingManager.businessMessaging.openBusinessConversationFromDashboard(conv.id);
+        } else {
+            console.error('❌ Managers not available');
+        }
+    };
         
         recentList.appendChild(item);
         console.log('✅ Message appended to list');

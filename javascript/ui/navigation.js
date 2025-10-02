@@ -150,13 +150,14 @@ showContentSkeleton(containerId, type = 'default') {
     console.log('💬 Closing chat independently');
     
     const chatOverlay = document.getElementById('individualChat');
-    if (chatOverlay) {
-        chatOverlay.classList.remove('show');
-        chatOverlay.style.zIndex = '';
-        chatOverlay.dataset.chatType = '';
-        
-        // IMPORTANT: Remove from stack!
-        const index = this.overlayStack.indexOf('individualChat');
+if (chatOverlay) {
+    chatOverlay.classList.remove('show');
+    chatOverlay.classList.remove('z-boosted'); // Remove boost class
+    chatOverlay.style.zIndex = '';
+    chatOverlay.dataset.chatType = '';
+    
+    // IMPORTANT: Remove from stack!
+    const index = this.overlayStack.indexOf('individualChat');
         if (index > -1) {
             this.overlayStack.splice(index, 1);
             console.log('📚 Removed chat from stack:', this.overlayStack);

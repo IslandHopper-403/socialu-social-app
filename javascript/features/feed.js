@@ -636,30 +636,43 @@ export class FeedManager {
         header.appendChild(info);
         header.appendChild(favBtn);
         
-        // Create image carousel container
+       // Create image carousel container
         const imageContainer = document.createElement('div');
         imageContainer.className = 'business-image-carousel';
-        imageContainer.style.cssText = 'position: relative; overflow: hidden; height: 200px;';
         
-        // Create scrollable images wrapper
-        const imagesWrapper = document.createElement('div');
-        imagesWrapper.className = 'carousel-images';
-        imagesWrapper.style.cssText = 'display: flex; transition: transform 0.3s ease; height: 100%;';
+        // Create scrollable wrapper
+        const scrollWrapper = document.createElement('div');
+        scrollWrapper.className = 'carousel-scroll';
+        scrollWrapper.style.cssText = `
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            height: 200px;
+        `;
+        
+        // Hide scrollbar
+        scrollWrapper.style.msOverflowStyle = 'none';
+        scrollWrapper.style.webkitScrollbar = 'none';
         
         // Add all available images
         const photos = business.photos || [business.image];
-        photos.slice(0, 5).forEach((photo, index) => {
+        photos.slice(0, 5).forEach((photo) => {
             const imageDiv = document.createElement('div');
             imageDiv.className = 'carousel-image';
             imageDiv.style.cssText = `
                 min-width: 100%;
                 height: 100%;
+                scroll-snap-align: start;
                 background-image: url('${escapeHtml(photo)}');
                 background-size: cover;
                 background-position: center;
             `;
-            imagesWrapper.appendChild(imageDiv);
+            scrollWrapper.appendChild(imageDiv);
         });
+        
+        imageContainer.appendChild(scrollWrapper);
         
         // Add dot indicators
         const dotsContainer = document.createElement('div');

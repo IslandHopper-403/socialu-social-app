@@ -907,7 +907,12 @@ export class BusinessManager {
         
         // Make hero clickable
         heroElement.style.cursor = 'pointer';
-        heroElement.onclick = () => this.openPhotoViewer(business);
+        heroElement.onclick = () => {
+            const currentBusiness = this.state.get('currentBusiness');
+            if (currentBusiness) {
+                this.openPhotoViewer(currentBusiness);
+            }
+        };
     }
     
     // Open photo viewer

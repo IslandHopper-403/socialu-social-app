@@ -710,11 +710,14 @@ export class BusinessManager {
      * Update business profile UI
      */
       updateBusinessProfileUI(business) {
-        // Safety check
+       // Safety check
         if (!business) {
             console.error('No business data provided to updateBusinessProfileUI');
             return;
         }
+        
+        // Clean up old special offer dots from previous profiles
+        document.querySelectorAll('.special-dot').forEach(dot => dot.parentElement?.remove());
         
         // Update header - SAFE
         const headerTitle = document.getElementById('profileHeaderTitle');

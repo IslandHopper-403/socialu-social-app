@@ -108,33 +108,21 @@ showContentSkeleton(containerId, type = 'default') {
                     });
                 });
                 
-            // Use event delegation to handle ALL back buttons
-            document.addEventListener('click', (e) => {
-                // Check if clicked element is a back button in an overlay
-                if (e.target.closest('.overlay-screen .back-btn')) {
+              // Back button listeners for overlays only  
+            document.querySelectorAll('.overlay-screen .back-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    e.preventDefault();
-                    e.stopImmediatePropagation(); // This is the key!
                     
-                    const btn = e.target.closest('.back-btn');
                     const parentOverlay = btn.closest('.overlay-screen');
                     
                     // Only process if overlay is actually visible
                     if (parentOverlay && parentOverlay.classList.contains('show')) {
-                        console.log('🔙 Back button clicked on:', parentOverlay.id);
-                        
-                        // SPECIAL: Chat is independent - just close it, don't touch nav stack
-                        if (parentOverlay.id === 'individualChat') {
-                            this.closeChat();
-                            return;
-                        }
-                        
-                        // All other overlays use normal stack navigation
+                        // Handle stack-based navigation
                         this.handleOverlayBack(parentOverlay.id);
                     }
-                }
-            }, true); // true = capture phase, handles event before it bubbles
-                        
+                });
+            });
+
         // Handle browser back button
         window.addEventListener('popstate', (e) => {
             if (e.state && e.state.screen) {
@@ -142,33 +130,6 @@ showContentSkeleton(containerId, type = 'default') {
             }
         });
     }
-    
-    /**
-     * Close chat independently - doesn't affect navigation stack
-     */
-    closeChat() {
-    console.log('💬 Closing chat independently');
-    
-    const chatOverlay = document.getElementById('individualChat');
-if (chatOverlay) {
-    chatOverlay.classList.remove('show');
-    chatOverlay.classList.remove('z-boosted'); // Remove boost class
-    chatOverlay.style.zIndex = '';
-    chatOverlay.dataset.chatType = '';
-    
-    // IMPORTANT: Remove from stack!
-    const index = this.overlayStack.indexOf('individualChat');
-        if (index > -1) {
-            this.overlayStack.splice(index, 1);
-            console.log('📚 Removed chat from stack:', this.overlayStack);
-        }
-    }
-    
-    // Clean up messaging state
-    if (window.classifiedApp?.managers?.messaging) {
-        window.classifiedApp.managers.messaging.closeChat();
-    }
-}
     
     /**
      * Initialize navigation on app start
@@ -323,46 +284,41 @@ if (chatOverlay) {
         }, 300000);
     }
     
-    /**
-     * Show overlay screen - simplified tracking
-     */
-   showOverlay(overlayId) {
-    const overlay = document.getElementById(overlayId);
-    if (overlay) {
-        overlay.classList.add('show');
-        
-        // Simple tracking - just track what's open
-        if (!this.overlayStack.includes(overlayId)) {
-            this.overlayStack.push(overlayId);
-            console.log('📚 Opened overlay:', overlayId, '| Stack:', this.overlayStack);
-        }
-        
-        // Dynamic z-index based on stack position
-        const stackIndex = this.overlayStack.indexOf(overlayId);
-        if (stackIndex !== -1) {
-            // Base z-index + (stack position * 50)
-            const baseZ = parseInt(getComputedStyle(overlay).getPropertyValue('z-index')) || 100;
-            overlay.style.zIndex = baseZ + (stackIndex * 50);
-        }
-        
-        // Update corresponding state
-        this.updateOverlayState(overlayId, true);
-    }
-}
     
-  /**
-     * Close overlay screen - simplified without stacking
+    /**
+     * Show overlay screen with stack management
+     */
+    showOverlay(overlayId) {
+        const overlay = document.getElementById(overlayId);
+        if (overlay) {
+            overlay.classList.add('show');
+            
+            // SECURITY: Add to overlay stack for navigation
+            if (!this.overlayStack.includes(overlayId)) {
+                this.overlayStack.push(overlayId);
+                console.log('📚 Overlay stack:', this.overlayStack);
+            }
+            
+            // Update corresponding state
+            this.updateOverlayState(overlayId, true);
+        }
+    }
+    
+   /**
+     * Close overlay screen with stack management
      */
     closeOverlay(overlayId) {
-    const overlay = document.getElementById(overlayId);
-    if (overlay) {
-        overlay.classList.remove('show');
-        
-        // Reset any dynamic z-index for ALL overlays
-        overlay.style.zIndex = '';
-        console.log('🎯 Reset z-index on close for:', overlayId);
+        const overlay = document.getElementById(overlayId);
+        if (overlay) {
+            overlay.classList.remove('show');
             
-            // Simple stack removal - no complex logic
+            // DYNAMIC Z-INDEX: Reset any dynamic z-index when closing
+            if (overlayId === 'individualChat') {
+                overlay.style.zIndex = '';
+                console.log('🎯 Reset chat z-index on close');
+            }
+            
+            // SECURITY: Remove from overlay stack
             const index = this.overlayStack.indexOf(overlayId);
             if (index > -1) {
                 this.overlayStack.splice(index, 1);
@@ -374,49 +330,32 @@ if (chatOverlay) {
         }
     }
 
-               handleOverlayBack(overlayId) {
+            /**
+             * Handle back navigation with overlay stack memory
+             */
+            handleOverlayBack(overlayId) {
                 console.log('🔙 Back pressed on:', overlayId, '| Stack:', this.overlayStack);
-
-             // TODO: Temporary workaround for business profile back issue
-                if (overlayId === 'businessProfile' && this.overlayStack.includes('individualChat')) {
-                    console.warn('⚠️ Detected problematic state, clearing overlay stack');
-                    this.overlayStack = [];
-
-             // Also force close any visible chat overlay
-                    const chatOverlay = document.getElementById('individualChat');
-                    if (chatOverlay && chatOverlay.classList.contains('show')) {
-                        chatOverlay.classList.remove('show');
-                    }
-                }
                 
                 // Special cleanup for chat
                 if (overlayId === 'individualChat' && window.classifiedApp?.managers?.messaging) {
                     window.classifiedApp.managers.messaging.closeChat();
                 }
                 
-                // Close current overlay
+                // Close current overlay (removes from stack)
                 this.closeOverlay(overlayId);
                 
-                // STOP PROPAGATION - Don't let this trigger other overlays
-                event?.stopPropagation();
-                event?.preventDefault();
-                
-                // SIMPLE RULE: If stack has overlays, show the last one. Otherwise, show feed.
+                // Show previous overlay if one exists in stack
                 if (this.overlayStack.length > 0) {
                     const previousOverlay = this.overlayStack[this.overlayStack.length - 1];
                     const prevElement = document.getElementById(previousOverlay);
                     
                     if (prevElement && !prevElement.classList.contains('show')) {
                         prevElement.classList.add('show');
-                        console.log('📱 Restored previous overlay:', previousOverlay);
+                        console.log('📱 Restored:', previousOverlay);
                     }
-                } else {
-                    // No overlays left - return to current feed screen
-                    const currentScreen = this.state.get('currentScreen') || 'restaurant';
-                    this.showScreen(currentScreen, false);
-                    console.log('📱 Returned to feed:', currentScreen);
                 }
             }
+
 
     /**
      * Handle back navigation for business overlays

@@ -811,11 +811,13 @@ export class BusinessManager {
                             // Update text
                             promoDetails.textContent = sanitizeText(specials[currentSpecialIndex]);
                             
-                            // Update dots
-                            dotsContainer.querySelectorAll('.special-dot').forEach((dot, i) => {
-                                dot.style.background = i === currentSpecialIndex ? 'white' : 'rgba(255,255,255,0.4)';
-                            });
-                            
+                           // Update dots if they exist
+                            if (dotsContainer) {
+                                dotsContainer.querySelectorAll('.special-dot').forEach((dot, i) => {
+                                    dot.style.background = i === currentIndex ? 'white' : 'rgba(255,255,255,0.4)';
+                                });
+                            }
+                                                        
                             // Fade in
                             promoDetails.style.opacity = '1';
                         }, 500);

@@ -724,10 +724,11 @@ export class BusinessManager {
         
        // Update hero - SAFE (CSS background)
         const heroElement = document.getElementById('profileHero');
-        if (heroElement && business.image) {
-            heroElement.style.backgroundImage = `url('${escapeHtml(business.image)}')`;
+        if (heroElement && (business.photos?.[0] || business.image)) {
+            const imageUrl = business.photos?.[0] || business.image;
+            heroElement.style.backgroundImage = `url('${escapeHtml(imageUrl)}')`;
         }
-        
+                
         // Update basic info - SAFE
         document.getElementById('profileName').textContent = sanitizeText(business.name || 'Business Name');
         document.getElementById('profileType').textContent = sanitizeText(business.type || 'Business Type');

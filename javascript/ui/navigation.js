@@ -108,17 +108,32 @@ showContentSkeleton(containerId, type = 'default') {
                     });
                 });
                 
-              // Back button listeners for overlays only  
+            // Back button listeners for overlays only  
             document.querySelectorAll('.overlay-screen .back-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
+                    e.preventDefault(); // ADDED: Prevent default to stop propagation
                     
                     const parentOverlay = btn.closest('.overlay-screen');
                     
                     // Only process if overlay is actually visible
                     if (parentOverlay && parentOverlay.classList.contains('show')) {
+                        // ADDED: Check if we're already processing this overlay
+                        if (this._processingOverlay === parentOverlay.id) {
+                            console.log('⏭️ Skipping duplicate back press for:', parentOverlay.id);
+                            return;
+                        }
+                        
+                        // Mark as processing
+                        this._processingOverlay = parentOverlay.id;
+                        
                         // Handle stack-based navigation
                         this.handleOverlayBack(parentOverlay.id);
+                        
+                        // Clear processing flag after a brief delay
+                        setTimeout(() => {
+                            this._processingOverlay = null;
+                        }, 100);
                     }
                 });
             });

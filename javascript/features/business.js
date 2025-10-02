@@ -749,13 +749,13 @@ export class BusinessManager {
             sanitizeText(business.contact || business.phone || 'Contact for details');
     }
     
-    /**
-     * Close business profile
-     */
-    closeBusinessProfile() {
+   closeBusinessProfile() {
         console.log('🔙 Closing business profile');
         this.navigationManager.closeOverlay('businessProfile');
         this.state.set('currentBusiness', null);
+        
+        // Business profile always returns to feed - independent of overlay stack
+        // Chat handles its own back to profile, profile handles its own back to feed
     }
     
     /**

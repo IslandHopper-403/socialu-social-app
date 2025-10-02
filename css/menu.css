@@ -612,6 +612,59 @@ body {
     border-color: rgba(255,255,255,0.3);
 }
 
+
+/* Business Image Carousel */
+.business-image-carousel {
+    position: relative;
+    overflow: hidden;
+    height: 200px;
+    cursor: grab;
+}
+
+.business-image-carousel:active {
+    cursor: grabbing;
+}
+
+.carousel-images {
+    display: flex;
+    transition: transform 0.3s ease;
+    height: 100%;
+}
+
+.carousel-image {
+    min-width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+}
+
+.carousel-dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+}
+
+.carousel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transition: background 0.3s;
+}
+
+.carousel-dot.active {
+    background: white;
+}
+
+/* Remove old business-image class if it exists */
+.business-card .business-image {
+    display: none;
+}
+
 /* Messaging Styles */
 .messaging-container {
     min-height: calc(100vh - 200px);

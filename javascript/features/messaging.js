@@ -971,7 +971,6 @@ closeChat() {
     this.state.set('currentChatType', null);
     this.state.set('currentBusinessConversationId', null);
     this.state.set('currentChatBusinessId', null);
-    this.state.set('currentBusiness', null); // ADDED: Clear business reference
 }
     
       /**

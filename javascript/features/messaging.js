@@ -2514,12 +2514,19 @@ updateNotificationState() {
     /**
  * ENHANCED: Cleanup on destroy with better resource management
  */
-    cleanup() {
+       cleanup() {
         console.log('🧹 Cleaning up messaging listeners and resources');
         
-        this.saveUnreadStateToStorage();
-        this.saveSeenMatches();
-        
+        // Save state first
+        try {
+            this.saveUnreadStateToStorage();
+            this.saveSeenMatches();
+            this.saveLastSeenTimestamps();
+            this.saveMessageReadStates();
+        } catch (error) {
+            console.error('Error saving messaging state:', error);
+        }
+            
         console.log(`📊 Active listeners before cleanup: ${this.activeListeners.size}`);
         
         // 1. Remove ALL tracked listeners

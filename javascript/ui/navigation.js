@@ -370,13 +370,13 @@ showContentSkeleton(containerId, type = 'default') {
                     return;
                 }
                 
-                // Standard handling for other overlays
-                const currentOverlayData = this.overlayStack.find(item => 
-                    (typeof item === 'string' ? item : item.id) === overlayId
-                );
-                const returnTo = typeof currentOverlayData === 'object' ? currentOverlayData.from : null;
-                
-                this.closeOverlay(overlayId);
+                // FIXED: Special handling for business profile - always return to feed
+                if (overlayId === 'businessProfile') {
+                    const currentScreen = this.state.get('currentScreen');
+                    this.showScreen(currentScreen || 'restaurant', false);
+                    console.log('📱 Returned to feed from business profile');
+                    return;
+                }
                 
                 if (this.overlayStack.length > 0) {
                     const previousOverlay = this.overlayStack[this.overlayStack.length - 1];

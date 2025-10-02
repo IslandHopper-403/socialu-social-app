@@ -756,73 +756,81 @@ export class BusinessManager {
         }
         
         // Update promotion - SAFE
-if (business.currentSpecials && business.currentSpecials.length > 0) {
-    const promoTitle = document.getElementById('profilePromoTitle');
-    const promoDetails = document.getElementById('profilePromoDetails');
-    
-    if (promoTitle && promoDetails) {
-        // Set title
-        promoTitle.textContent = 'Special Offer';
-        
-        // Create rotating specials
-        let currentSpecialIndex = 0;
-        const specials = business.currentSpecials;
-        
-        // Display first special
-        promoDetails.textContent = sanitizeText(specials[0]);
-        promoDetails.style.transition = 'opacity 0.5s ease-in-out';
-        
-        // Add indicator dots if multiple specials
-        if (specials.length > 1) {
-            const dotsContainer = document.createElement('div');
-            dotsContainer.style.cssText = `
-                text-align: center;
-                margin-top: 10px;
-            `;
+        if (business.currentSpecials && business.currentSpecials.length > 0) {
+            const promoTitle = document.getElementById('profilePromoTitle');
+            const promoDetails = document.getElementById('profilePromoDetails');
             
-            specials.forEach((_, index) => {
-                const dot = document.createElement('span');
-                dot.style.cssText = `
-                    display: inline-block;
-                    width: 6px;
-                    height: 6px;
-                    border-radius: 50%;
-                    margin: 0 3px;
-                    background: ${index === 0 ? 'white' : 'rgba(255,255,255,0.4)'}; 
-                    transition: background 0.3s ease;
-                `;
-                dot.className = 'special-dot';
-                dotsContainer.appendChild(dot);
-            });
-            
-            promoDetails.parentElement.appendChild(dotsContainer);
-            
-            // Auto-rotate specials
-            const rotateSpecials = setInterval(() => {
-                // Fade out
-                promoDetails.style.opacity = '0';
+            if (promoTitle && promoDetails) {
+                // Set title
+                promoTitle.textContent = 'Special Offer';
                 
-                setTimeout(() => {
-                    // Update index
-                    currentSpecialIndex = (currentSpecialIndex + 1) % specials.length;
+                // Create rotating specials
+                let currentSpecialIndex = 0;
+                const specials = business.currentSpecials;
+                
+                // Display first special
+                promoDetails.textContent = sanitizeText(specials[0]);
+                promoDetails.style.transition = 'opacity 0.5s ease-in-out';
+                
+                // Add indicator dots if multiple specials
+                if (specials.length > 1) {
+                    const dotsContainer = document.createElement('div');
+                    dotsContainer.style.cssText = `
+                        text-align: center;
+                        margin-top: 10px;
+                    `;
                     
-                    // Update text
-                    promoDetails.textContent = sanitizeText(specials[currentSpecialIndex]);
-                    
-                    // Update dots
-                    dotsContainer.querySelectorAll('.special-dot').forEach((dot, i) => {
-                        dot.style.background = i === currentSpecialIndex ? 'white' : 'rgba(255,255,255,0.4)';
+                    specials.forEach((_, index) => {
+                        const dot = document.createElement('span');
+                        dot.style.cssText = `
+                            display: inline-block;
+                            width: 6px;
+                            height: 6px;
+                            border-radius: 50%;
+                            margin: 0 3px;
+                            background: ${index === 0 ? 'white' : 'rgba(255,255,255,0.4)'}; 
+                            transition: background 0.3s ease;
+                        `;
+                        dot.className = 'special-dot';
+                        dotsContainer.appendChild(dot);
                     });
                     
-                    // Fade in
-                    promoDetails.style.opacity = '1';
-                }, 500);
-            }, 4000);
-            
-            // Store interval ID for cleanup
-            this.specialsInterval = rotateSpecials;
+                    promoDetails.parentElement.appendChild(dotsContainer);
+                    
+                    // Auto-rotate specials
+                    const rotateSpecials = setInterval(() => {
+                        // Fade out
+                        promoDetails.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                            // Update index
+                            currentSpecialIndex = (currentSpecialIndex + 1) % specials.length;
+                            
+                            // Update text
+                            promoDetails.textContent = sanitizeText(specials[currentSpecialIndex]);
+                            
+                            // Update dots
+                            dotsContainer.querySelectorAll('.special-dot').forEach((dot, i) => {
+                                dot.style.background = i === currentSpecialIndex ? 'white' : 'rgba(255,255,255,0.4)';
+                            });
+                            
+                            // Fade in
+                            promoDetails.style.opacity = '1';
+                        }, 500);
+                    }, 4000);
+                    
+                    // Store interval ID for cleanup
+                    this.specialsInterval = rotateSpecials;
+                }
+            }
+
+            } else if (business.promo) {
+            document.getElementById('profilePromoTitle').textContent = sanitizeText(business.promo);
+            document.getElementById('profilePromoDetails').textContent = sanitizeText(business.details || '');
+        } else if (business.promoTitle) {
+            document.getElementById('profilePromoTitle').textContent = sanitizeText(business.promoTitle);
+            document.getElementById('profilePromoDetails').textContent = sanitizeText(business.promoDetails || '');
         }
-    }
         
         // Update description - SAFE
         document.getElementById('profileDescription').textContent = 

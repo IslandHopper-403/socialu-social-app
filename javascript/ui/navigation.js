@@ -111,9 +111,10 @@ showContentSkeleton(containerId, type = 'default') {
             // Use event delegation to handle ALL back buttons
             document.addEventListener('click', (e) => {
                 // Check if clicked element is a back button in an overlay
-                const backBtn = e.target.closest('.overlay-screen .back-btn');
-                if (backBtn) {
+                if (e.target.closest('.overlay-screen .back-btn')) {
+                    e.stopPropagation();
                     e.preventDefault();
+                    e.stopImmediatePropagation(); // This is the key!
                     
                     const btn = e.target.closest('.back-btn');
                     const parentOverlay = btn.closest('.overlay-screen');
@@ -336,11 +337,13 @@ if (chatOverlay) {
             console.log('📚 Opened overlay:', overlayId, '| Stack:', this.overlayStack);
         }
         
-        // Remove dynamic z-index - let CSS handle it
-            // Only boost for special cases
-            if (overlayId === 'individualChat' && this.overlayStack.length > 1) {
-                overlay.classList.add('z-boosted');
-            }
+        // Dynamic z-index based on stack position
+        const stackIndex = this.overlayStack.indexOf(overlayId);
+        if (stackIndex !== -1) {
+            // Base z-index + (stack position * 50)
+            const baseZ = parseInt(getComputedStyle(overlay).getPropertyValue('z-index')) || 100;
+            overlay.style.zIndex = baseZ + (stackIndex * 50);
+        }
         
         // Update corresponding state
         this.updateOverlayState(overlayId, true);
@@ -354,8 +357,10 @@ if (chatOverlay) {
     const overlay = document.getElementById(overlayId);
     if (overlay) {
         overlay.classList.remove('show');
-        overlay.classList.remove('z-boosted');
+        
+        // Reset any dynamic z-index for ALL overlays
         overlay.style.zIndex = '';
+        console.log('🎯 Reset z-index on close for:', overlayId);
             
             // Simple stack removal - no complex logic
             const index = this.overlayStack.indexOf(overlayId);
@@ -372,14 +377,10 @@ if (chatOverlay) {
                handleOverlayBack(overlayId) {
                 console.log('🔙 Back pressed on:', overlayId, '| Stack:', this.overlayStack);
 
-             // Clean up any orphaned overlays
-            if (overlayId === 'businessProfile') {
-                // Ensure chat is properly closed if it exists
-                const chatOverlay = document.getElementById('individualChat');
-                if (chatOverlay && chatOverlay.classList.contains('show')) {
-                    this.closeChat();
-                }
-            }
+             // TODO: Temporary workaround for business profile back issue
+                if (overlayId === 'businessProfile' && this.overlayStack.includes('individualChat')) {
+                    console.warn('⚠️ Detected problematic state, clearing overlay stack');
+                    this.overlayStack = [];
 
              // Also force close any visible chat overlay
                     const chatOverlay = document.getElementById('individualChat');

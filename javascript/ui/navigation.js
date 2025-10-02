@@ -339,23 +339,46 @@ showContentSkeleton(containerId, type = 'default') {
             handleOverlayBack(overlayId) {
                 console.log('🔙 Back pressed on:', overlayId, '| Stack:', this.overlayStack);
                 
-                // Special cleanup for chat
-                if (overlayId === 'individualChat' && window.classifiedApp?.managers?.messaging) {
-                    window.classifiedApp.managers.messaging.closeChat();
+                // FIXED: Independent chat navigation
+                if (overlayId === 'individualChat') {
+                    if (window.classifiedApp?.managers?.messaging) {
+                        window.classifiedApp.managers.messaging.closeChat();
+                    }
+                    
+                    this.closeOverlay(overlayId);
+                    
+                    // Check where chat was opened from
+                    const chatOpenedFrom = this.state.get('chatOpenedFrom');
+                    
+                    if (chatOpenedFrom === 'businessProfile' && this.overlayStack.length > 0) {
+                        const businessProfile = document.getElementById('businessProfile');
+                        if (businessProfile && !businessProfile.classList.contains('show')) {
+                            businessProfile.classList.add('show');
+                            console.log('📱 Returned to business profile from chat');
+                        }
+                    } else if (this.overlayStack.length > 0) {
+                        const previousOverlay = this.overlayStack[this.overlayStack.length - 1];
+                        const prevId = typeof previousOverlay === 'string' ? previousOverlay : previousOverlay.id;
+                        const prevElement = document.getElementById(prevId);
+                        
+                        if (prevElement && !prevElement.classList.contains('show')) {
+                            prevElement.classList.add('show');
+                            console.log('📱 Restored overlay:', prevId);
+                        }
+                    }
+                    
+                    return;
                 }
                 
-                // Get the current overlay's context BEFORE closing
+                // Standard handling for other overlays
                 const currentOverlayData = this.overlayStack.find(item => 
                     (typeof item === 'string' ? item : item.id) === overlayId
                 );
                 const returnTo = typeof currentOverlayData === 'object' ? currentOverlayData.from : null;
                 
-                // Close current overlay (removes from stack)
                 this.closeOverlay(overlayId);
                 
-                // ENHANCED: Determine where to return to
                 if (this.overlayStack.length > 0) {
-                    // There's still an overlay in the stack - show it
                     const previousOverlay = this.overlayStack[this.overlayStack.length - 1];
                     const prevId = typeof previousOverlay === 'string' ? previousOverlay : previousOverlay.id;
                     const prevElement = document.getElementById(prevId);
@@ -365,13 +388,11 @@ showContentSkeleton(containerId, type = 'default') {
                         console.log('📱 Restored overlay:', prevId);
                     }
                 } else if (returnTo && returnTo !== overlayId) {
-                    // No more overlays - check if we need to return to a screen
                     const validScreens = ['restaurant', 'social', 'activity'];
                     if (validScreens.includes(returnTo)) {
                         console.log('📱 Returning to screen:', returnTo);
                         this.showScreen(returnTo, false);
                     } else {
-                        // It was an overlay - try to show it
                         const returnElement = document.getElementById(returnTo);
                         if (returnElement) {
                             returnElement.classList.add('show');

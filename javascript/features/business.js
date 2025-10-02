@@ -713,7 +713,7 @@ export class BusinessManager {
         // Update header - SAFE
         document.getElementById('profileHeaderTitle').textContent = sanitizeText(business.type || 'Business');
         
-        // Update hero - SAFE (CSS background)
+       // Update hero - SAFE (CSS background)
         const heroElement = document.getElementById('profileHero');
         if (heroElement && business.image) {
             heroElement.style.backgroundImage = `url('${escapeHtml(business.image)}')`;
@@ -722,6 +722,28 @@ export class BusinessManager {
         // Update basic info - SAFE
         document.getElementById('profileName').textContent = sanitizeText(business.name || 'Business Name');
         document.getElementById('profileType').textContent = sanitizeText(business.type || 'Business Type');
+        
+        // Update rating display
+        const starsElement = document.querySelector('#businessProfile .stars');
+        const ratingSpan = document.querySelector('#businessProfile .profile-rating span');
+        if (business.rating && starsElement) {
+            // Display filled stars based on rating
+            const fullStars = Math.floor(business.rating);
+            const hasHalfStar = business.rating % 1 >= 0.5;
+            let starsHTML = '★'.repeat(fullStars);
+            if (hasHalfStar && fullStars < 5) {
+                starsHTML += '☆';
+                starsHTML += '☆'.repeat(4 - fullStars);
+            } else {
+                starsHTML += '☆'.repeat(5 - fullStars);
+            }
+            starsElement.textContent = starsHTML;
+            starsElement.style.color = '#FFD700'; // Gold color for stars
+        }
+        
+        if (business.reviewCount && ratingSpan) {
+            ratingSpan.textContent = `${business.rating || 0} (${business.reviewCount} reviews)`;
+        }
         
         // Update promotion - SAFE
         if (business.promo) {

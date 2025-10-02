@@ -326,35 +326,41 @@ if (chatOverlay) {
     /**
      * Show overlay screen - simplified tracking
      */
-    showOverlay(overlayId) {
-        const overlay = document.getElementById(overlayId);
-        if (overlay) {
-            overlay.classList.add('show');
-            
-            // Simple tracking - just track what's open
-            if (!this.overlayStack.includes(overlayId)) {
-                this.overlayStack.push(overlayId);
-                console.log('📚 Opened overlay:', overlayId, '| Stack:', this.overlayStack);
-            }
-            
-            // Update corresponding state
-            this.updateOverlayState(overlayId, true);
+   showOverlay(overlayId) {
+    const overlay = document.getElementById(overlayId);
+    if (overlay) {
+        overlay.classList.add('show');
+        
+        // Simple tracking - just track what's open
+        if (!this.overlayStack.includes(overlayId)) {
+            this.overlayStack.push(overlayId);
+            console.log('📚 Opened overlay:', overlayId, '| Stack:', this.overlayStack);
         }
+        
+        // Dynamic z-index based on stack position
+        const stackIndex = this.overlayStack.indexOf(overlayId);
+        if (stackIndex !== -1) {
+            // Base z-index + (stack position * 50)
+            const baseZ = parseInt(getComputedStyle(overlay).getPropertyValue('z-index')) || 100;
+            overlay.style.zIndex = baseZ + (stackIndex * 50);
+        }
+        
+        // Update corresponding state
+        this.updateOverlayState(overlayId, true);
     }
+}
     
   /**
      * Close overlay screen - simplified without stacking
      */
     closeOverlay(overlayId) {
-        const overlay = document.getElementById(overlayId);
-        if (overlay) {
-            overlay.classList.remove('show');
-            
-            // Reset any dynamic z-index
-            if (overlayId === 'individualChat') {
-                overlay.style.zIndex = '';
-                console.log('🎯 Reset chat z-index on close');
-            }
+    const overlay = document.getElementById(overlayId);
+    if (overlay) {
+        overlay.classList.remove('show');
+        
+        // Reset any dynamic z-index for ALL overlays
+        overlay.style.zIndex = '';
+        console.log('🎯 Reset z-index on close for:', overlayId);
             
             // Simple stack removal - no complex logic
             const index = this.overlayStack.indexOf(overlayId);

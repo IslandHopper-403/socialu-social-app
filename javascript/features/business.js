@@ -728,6 +728,8 @@ export class BusinessManager {
             const imageUrl = business.photos?.[0] || business.image;
             heroElement.style.backgroundImage = `url('${escapeHtml(imageUrl)}')`;
         }
+          // Add photo counter
+         this.addPhotoCounter(business);
                 
         // Update basic info - SAFE
         document.getElementById('profileName').textContent = sanitizeText(business.name || 'Business Name');
@@ -867,6 +869,138 @@ export class BusinessManager {
         this.navigationManager.showScreen(currentScreen, false);
         console.log('📱 Returned to', currentScreen, 'feed from business profile');
     }
+
+
+
+        // Add photo counter to hero image
+    addPhotoCounter(business) {
+        const heroElement = document.getElementById('profileHero');
+        if (!heroElement || !business.photos || business.photos.length <= 1) return;
+        
+        // Remove existing counter if any
+        const existingCounter = heroElement.querySelector('.hero-photo-counter');
+        if (existingCounter) existingCounter.remove();
+        
+        // Add new counter
+        const counter = document.createElement('div');
+        counter.className = 'hero-photo-counter';
+        counter.textContent = `1/${business.photos.length}`;
+        counter.style.cssText = `
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 500;
+        `;
+        heroElement.appendChild(counter);
+        
+        // Make hero clickable
+        heroElement.style.cursor = 'pointer';
+        heroElement.onclick = () => this.openPhotoViewer(business);
+    }
+    
+    // Open photo viewer
+    openPhotoViewer(business) {
+        if (!business.photos || business.photos.length === 0) return;
+        
+        const viewer = document.getElementById('photoViewer');
+        const swiper = document.getElementById('photoSwiper');
+        const counter = document.getElementById('photoCounter');
+        
+        // Clear existing photos
+        swiper.innerHTML = '';
+        
+        // Add all photos
+        business.photos.forEach((photo, index) => {
+            const slide = document.createElement('div');
+            slide.className = 'photo-slide';
+            slide.innerHTML = `<img src="${escapeHtml(photo)}" alt="${business.name} photo ${index + 1}">`;
+            swiper.appendChild(slide);
+        });
+        
+        // Initialize swipe tracking
+        let currentIndex = 0;
+        counter.textContent = `1/${business.photos.length}`;
+        
+        // Touch/swipe handling
+        let startX = 0;
+        let currentX = 0;
+        let isDragging = false;
+        
+        const updateSlide = (index) => {
+            swiper.style.transform = `translateX(-${index * 100}%)`;
+            counter.textContent = `${index + 1}/${business.photos.length}`;
+            currentIndex = index;
+        };
+        
+        const handleStart = (e) => {
+            startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            isDragging = true;
+        };
+        
+        const handleMove = (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        };
+        
+        const handleEnd = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            const diff = currentX - startX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0 && currentIndex > 0) {
+                    updateSlide(currentIndex - 1);
+                } else if (diff < 0 && currentIndex < business.photos.length - 1) {
+                    updateSlide(currentIndex + 1);
+                }
+            }
+        };
+        
+        // Store listeners for cleanup
+        this.photoViewerListeners = {
+            touchstart: handleStart,
+            touchmove: handleMove,
+            touchend: handleEnd,
+            mousedown: handleStart,
+            mousemove: handleMove,
+            mouseup: handleEnd,
+            mouseleave: handleEnd
+        };
+        
+        // Add event listeners
+        swiper.addEventListener('touchstart', this.photoViewerListeners.touchstart, { passive: true });
+        swiper.addEventListener('touchmove', this.photoViewerListeners.touchmove, { passive: false });
+        swiper.addEventListener('touchend', this.photoViewerListeners.touchend);
+        swiper.addEventListener('mousedown', this.photoViewerListeners.mousedown);
+        swiper.addEventListener('mousemove', this.photoViewerListeners.mousemove);
+        swiper.addEventListener('mouseup', this.photoViewerListeners.mouseup);
+        swiper.addEventListener('mouseleave', this.photoViewerListeners.mouseleave);
+        
+        // Show viewer
+        viewer.classList.add('show');
+    }
+    
+        closePhotoViewer() {
+        const viewer = document.getElementById('photoViewer');
+        const swiper = document.getElementById('photoSwiper');
+        
+        // Clean up event listeners
+        if (this.photoViewerListeners && swiper) {
+            Object.entries(this.photoViewerListeners).forEach(([event, handler]) => {
+                swiper.removeEventListener(event, handler);
+            });
+            this.photoViewerListeners = null;
+        }
+        
+        viewer.classList.remove('show');
+    }
+
     
     /**
      * Show business signup modal

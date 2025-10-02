@@ -754,8 +754,13 @@ export class BusinessManager {
         this.navigationManager.closeOverlay('businessProfile');
         this.state.set('currentBusiness', null);
         
-        // Business profile always returns to feed - independent of overlay stack
-        // Chat handles its own back to profile, profile handles its own back to feed
+        // FIXED: Always return to the feed screen when closing business profile
+        const currentScreen = this.state.get('currentScreen');
+        if (!currentScreen || currentScreen === 'businessProfile') {
+            // Default to restaurant screen if no screen is active
+            this.navigationManager.showScreen('restaurant', false);
+            console.log('📱 Returned to restaurant feed from business profile');
+        }
     }
     
     /**

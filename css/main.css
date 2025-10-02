@@ -748,10 +748,6 @@ body {
     z-index: calc(var(--z-overlay-business-chat) + 100) !important;
 }
 
-.overlay-screen.z-boosted {
-    z-index: calc(var(--z-overlay-business-chat) + 100) !important;
-}
-
 @keyframes slideUp {
     from { transform: translateX(-50%) translateY(100%); }
     to { transform: translateX(-50%) translateY(0); }

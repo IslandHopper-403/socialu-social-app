@@ -312,7 +312,7 @@ export class FeedManager {
                 location: business.address || 'Hoi An, Vietnam',
                 hours: business.hours || 'Daily tours available',
                 price: this.formatPriceRange(business.priceRange),
-                contact: business.phone || '+84 123 456 789'
+                contact: business.phone || '+84 123 456 789',
                 rating: business.rating || 4.5,
                 reviewCount: business.reviewCount || 0,
                 photos: business.photos || [business.photos?.[0] || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop']

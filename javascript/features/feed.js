@@ -665,7 +665,9 @@ export class FeedManager {
             imageDiv.className = 'carousel-image';
             imageDiv.style.cssText = `
                 min-width: 100%;
+                width: 100%;
                 height: 100%;
+                flex-shrink: 0;
                 scroll-snap-align: start;
                 background-image: url('${escapeHtml(photo)}');
                 background-size: cover;

@@ -108,16 +108,20 @@ showContentSkeleton(containerId, type = 'default') {
                     });
                 });
                 
-            // Back button listeners for overlays only  
-            document.querySelectorAll('.overlay-screen .back-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
+            // Use event delegation to handle ALL back buttons
+            document.addEventListener('click', (e) => {
+                // Check if clicked element is a back button in an overlay
+                if (e.target.closest('.overlay-screen .back-btn')) {
                     e.stopPropagation();
-                    e.preventDefault(); // Add this too
+                    e.preventDefault();
+                    e.stopImmediatePropagation(); // This is the key!
                     
+                    const btn = e.target.closest('.back-btn');
                     const parentOverlay = btn.closest('.overlay-screen');
                     
                     // Only process if overlay is actually visible
                     if (parentOverlay && parentOverlay.classList.contains('show')) {
+                        console.log('🔙 Back button clicked on:', parentOverlay.id);
                         
                         // SPECIAL: Chat is independent - just close it, don't touch nav stack
                         if (parentOverlay.id === 'individualChat') {
@@ -128,10 +132,8 @@ showContentSkeleton(containerId, type = 'default') {
                         // All other overlays use normal stack navigation
                         this.handleOverlayBack(parentOverlay.id);
                     }
-                });
-
-                        
-            });
+                }
+            }, true); // true = capture phase, handles event before it bubbles
                         
         // Handle browser back button
         window.addEventListener('popstate', (e) => {

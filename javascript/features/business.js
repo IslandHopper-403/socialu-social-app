@@ -756,10 +756,14 @@ export class BusinessManager {
     
    closeBusinessProfile() {
         console.log('🔙 Closing business profile');
-        this.navigationManager.closeOverlay('businessProfile');
+        
+        // Clear business state first
         this.state.set('currentBusiness', null);
         
-        // FIXED: Always return to the feed screen when closing business profile
+        // Close the overlay
+        this.navigationManager.closeOverlay('businessProfile');
+        
+        // SIMPLE: Always return to current feed screen
         const currentScreen = this.state.get('currentScreen') || 'restaurant';
         this.navigationManager.showScreen(currentScreen, false);
         console.log('📱 Returned to', currentScreen, 'feed from business profile');

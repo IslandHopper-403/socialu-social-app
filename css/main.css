@@ -1209,7 +1209,6 @@ input:disabled + .toggle-slider {
     background-position: center;
     position: relative;
     flex-shrink: 0; /* Add this line */
-    border: 3px solid red !important; /* DEBUG: See if hero moves */
 }
 
 
@@ -1246,9 +1245,9 @@ input:disabled + .toggle-slider {
     overflow-y: auto;
      overflow-x: hidden; /* Add this line */
     -webkit-overflow-scrolling: touch; /* Add this line */
-    border: 3px solid green !important; /* DEBUG: See scrolling area */
-    background: rgba(0, 255, 0, 0.1) !important;
+
 }
+
 /* Make hero break out of content padding */
 .profile-content .profile-hero {
     margin: -20px -20px 16px -20px; /* Negative margins to counteract padding */

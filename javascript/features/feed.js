@@ -587,6 +587,38 @@ export class FeedManager {
         info.appendChild(name);
         info.appendChild(typeEl);
         
+        // Add rating and review count if available
+        if (business.rating || business.reviewCount) {
+            const ratingDiv = document.createElement('div');
+            ratingDiv.className = 'business-rating-info';
+            ratingDiv.style.cssText = 'display: flex; align-items: center; gap: 8px; margin-top: 4px;';
+            
+            if (business.rating) {
+                const stars = document.createElement('span');
+                stars.className = 'rating-stars';
+                stars.textContent = '⭐'.repeat(Math.round(business.rating));
+                stars.style.cssText = 'font-size: 14px;';
+                
+                const ratingText = document.createElement('span');
+                ratingText.className = 'rating-value';
+                ratingText.textContent = business.rating;
+                ratingText.style.cssText = 'font-weight: 600; font-size: 14px;';
+                
+                ratingDiv.appendChild(stars);
+                ratingDiv.appendChild(ratingText);
+            }
+            
+            if (business.reviewCount) {
+                const reviews = document.createElement('span');
+                reviews.className = 'review-count';
+                reviews.textContent = `(${business.reviewCount} reviews)`;
+                reviews.style.cssText = 'font-size: 12px; opacity: 0.8;';
+                ratingDiv.appendChild(reviews);
+            }
+            
+            info.appendChild(ratingDiv);
+        }
+        
         // Favorite button - Store ID safely in data attribute
         const favBtn = document.createElement('button');
         favBtn.className = 'business-favorite-btn';

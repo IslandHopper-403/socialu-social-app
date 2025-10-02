@@ -87,16 +87,9 @@ export class BusinessManager {
         }
     }
     
-    /**
-     * Set up event listeners
-     */
-    setupEventListeners() {
-        // Profile back button
-        const profileBackBtn = document.getElementById('profileBackBtn');
-        if (profileBackBtn) {
-            profileBackBtn.onclick = null;
-            profileBackBtn.addEventListener('click', () => this.closeBusinessProfile());
-        }
+  setupEventListeners() {
+        // DON'T set up back button - navigation manager handles ALL back buttons
+        // Removed duplicate handler that was causing the loop
     }
     
    /**

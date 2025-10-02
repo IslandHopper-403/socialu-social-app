@@ -369,6 +369,11 @@ showContentSkeleton(containerId, type = 'default') {
 
                handleOverlayBack(overlayId) {
                 console.log('🔙 Back pressed on:', overlayId, '| Stack:', this.overlayStack);
+
+             // TODO: Temporary workaround for business profile back issue
+                if (overlayId === 'businessProfile' && this.overlayStack.includes('individualChat')) {
+                    console.warn('⚠️ Detected problematic state, clearing overlay stack');
+                    this.overlayStack = [];
                 
                 // Special cleanup for chat
                 if (overlayId === 'individualChat' && window.classifiedApp?.managers?.messaging) {

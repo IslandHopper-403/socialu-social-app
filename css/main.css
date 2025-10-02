@@ -485,6 +485,16 @@ body {
 
 /* Business Cards */
 
+.business-image-carousel {
+    position: relative;
+    overflow: hidden;
+    height: 200px;
+}
+
+.carousel-scroll::-webkit-scrollbar {
+    display: none;
+}
+
 /* User Feed Styles */
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(20px); }

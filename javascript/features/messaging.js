@@ -966,7 +966,7 @@ closeChat() {
     this.currentChatPartner = null;
     this.isChatVisible = false;
     this.state.set('currentChatUser', null);
-    this.state.set('chatOpenedFromBusinessProfile', false);
+    this.state.set('chatOpenedFrom', null);
     this.state.set('currentChatType', null);
     this.state.set('currentBusinessConversationId', null);
     this.state.set('currentChatBusinessId', null);

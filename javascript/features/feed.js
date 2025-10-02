@@ -646,6 +646,7 @@ export class FeedManager {
         scrollWrapper.style.cssText = `
         display: flex;
         overflow-x: scroll;
+        overflow-y: hidden;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;

@@ -284,41 +284,23 @@ showContentSkeleton(containerId, type = 'default') {
         }, 300000);
     }
     
-    
     /**
      * Show overlay screen with stack management
      */
-    showOverlay(overlayId, context = null) {
+    showOverlay(overlayId) {
         const overlay = document.getElementById(overlayId);
         if (overlay) {
             overlay.classList.add('show');
             
-            // ENHANCED: Store overlay with context (which screen/overlay it came from)
+            // Add to overlay stack for navigation
             if (!this.overlayStack.includes(overlayId)) {
-                const currentContext = context || this.getCurrentContext();
-                this.overlayStack.push({
-                    id: overlayId,
-                    from: currentContext
-                });
-                console.log('📚 Overlay stack:', this.overlayStack.map(o => `${o.id} (from: ${o.from})`));
+                this.overlayStack.push(overlayId);
+                console.log('📚 Overlay stack:', this.overlayStack);
             }
             
             // Update corresponding state
             this.updateOverlayState(overlayId, true);
         }
-    }
-    
-    /**
-     * Get current context (screen or overlay)
-     */
-    getCurrentContext() {
-        // If there's an overlay open, that's the context
-        if (this.overlayStack.length > 0) {
-            const lastOverlay = this.overlayStack[this.overlayStack.length - 1];
-            return typeof lastOverlay === 'object' ? lastOverlay.id : lastOverlay;
-        }
-        // Otherwise, return current screen
-        return this.state.get('currentScreen') || 'restaurant';
     }
     
   /**

@@ -962,6 +962,7 @@ closeChat() {
         this.unregisterListener(`chat_${this.currentChatId}`);
     }
     
+    // Clear ALL chat-related state
     this.currentChatId = null;
     this.currentChatPartner = null;
     this.isChatVisible = false;
@@ -970,6 +971,7 @@ closeChat() {
     this.state.set('currentChatType', null);
     this.state.set('currentBusinessConversationId', null);
     this.state.set('currentChatBusinessId', null);
+    this.state.set('currentBusiness', null); // ADDED: Clear business reference
 }
     
       /**

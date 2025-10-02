@@ -635,10 +635,108 @@ export class FeedManager {
         header.appendChild(info);
         header.appendChild(favBtn);
         
-        // Create image
-        const image = document.createElement('div');
-        image.className = 'business-image';
-        image.style.backgroundImage = `url('${escapeHtml(business.image)}')`;
+        // Create image carousel container
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'business-image-carousel';
+        imageContainer.style.cssText = 'position: relative; overflow: hidden; height: 200px;';
+        
+        // Create scrollable images wrapper
+        const imagesWrapper = document.createElement('div');
+        imagesWrapper.className = 'carousel-images';
+        imagesWrapper.style.cssText = 'display: flex; transition: transform 0.3s ease; height: 100%;';
+        
+        // Add all available images
+        const photos = business.photos || [business.image];
+        photos.slice(0, 5).forEach((photo, index) => {
+            const imageDiv = document.createElement('div');
+            imageDiv.className = 'carousel-image';
+            imageDiv.style.cssText = `
+                min-width: 100%;
+                height: 100%;
+                background-image: url('${escapeHtml(photo)}');
+                background-size: cover;
+                background-position: center;
+            `;
+            imagesWrapper.appendChild(imageDiv);
+        });
+        
+        // Add dot indicators
+        const dotsContainer = document.createElement('div');
+        dotsContainer.className = 'carousel-dots';
+        dotsContainer.style.cssText = `
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+        `;
+        
+        photos.slice(0, 5).forEach((_, index) => {
+            const dot = document.createElement('span');
+            dot.className = 'carousel-dot';
+            dot.style.cssText = `
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: ${index === 0 ? 'white' : 'rgba(255,255,255,0.5)'};
+                transition: background 0.3s;
+            `;
+            dotsContainer.appendChild(dot);
+        });
+        
+        // Track current image
+        let currentIndex = 0;
+        
+        // Touch handling
+        let startX = 0;
+        let currentX = 0;
+        let isDragging = false;
+        
+        imageContainer.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+        }, { passive: true });
+        
+        imageContainer.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            currentX = e.touches[0].clientX;
+            const diff = currentX - startX;
+            imagesWrapper.style.transform = `translateX(${-currentIndex * 100 + (diff / imageContainer.offsetWidth * 100)}%)`;
+        }, { passive: false });
+        
+        imageContainer.addEventListener('touchend', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            const diff = currentX - startX;
+            
+            if (Math.abs(diff) > 50) { // Swipe threshold
+                if (diff > 0 && currentIndex > 0) {
+                    currentIndex--;
+                } else if (diff < 0 && currentIndex < photos.length - 1) {
+                    currentIndex++;
+                }
+            }
+            
+            // Update position and dots
+            imagesWrapper.style.transform = `translateX(${-currentIndex * 100}%)`;
+            dotsContainer.querySelectorAll('.carousel-dot').forEach((dot, i) => {
+                dot.style.background = i === currentIndex ? 'white' : 'rgba(255,255,255,0.5)';
+            });
+        });
+        
+        // Prevent card click on swipe
+        imageContainer.addEventListener('click', (e) => {
+            if (Math.abs(currentX - startX) > 5) {
+                e.stopPropagation();
+            }
+        });
+        
+        imageContainer.appendChild(imagesWrapper);
+        if (photos.length > 1) {
+            imageContainer.appendChild(dotsContainer);
+        }
         
         // Create content
         const content = document.createElement('div');

@@ -1,6 +1,6 @@
 // 🎯 CLASSIFIED v7.0 - Complete Business Management System
 // 
-// WORKING CONDITION - EVERYTHING WORKS BUG FREE - Good working Copy - Business Feed Photo Carousel + Reviews!
+// WORKING CONDITION - EVERYTHING WORKS BUG FREE - Good working Copy - Business Feed Photo Carousel + Reviews**
 // From this place forward start refactoring Users and Business for seperate UI/UX portals
 
 // BUSINESS WORKFLOW:

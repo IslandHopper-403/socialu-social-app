@@ -205,8 +205,10 @@ export class FeedManager {
                 location: business.address || 'Hoi An Ancient Town',
                 hours: business.hours || 'Daily 8am-10pm',
                 price: this.formatPriceRange(business.priceRange),
-                contact: business.phone || '+84 123 456 789'
-            });
+                contact: business.phone || '+84 123 456 789',
+                rating: business.rating || 4.5,
+                reviewCount: business.reviewCount || 0
+                });
         });
         
         return restaurants;

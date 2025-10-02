@@ -639,18 +639,26 @@ export class FeedManager {
        // Create image carousel container
         const imageContainer = document.createElement('div');
         imageContainer.className = 'business-image-carousel';
+        imageContainer.style.cssText = `
+        position: relative;
+        overflow: hidden;
+        height: 200px;
+        width: 100%;
+    `;
         
         // Create scrollable wrapper
         const scrollWrapper = document.createElement('div');
         scrollWrapper.className = 'carousel-scroll';
         scrollWrapper.style.cssText = `
         display: flex;
-        overflow-x: scroll;
+        flex-direction: row;
+        overflow-x: auto;
         overflow-y: hidden;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         height: 200px;
+        width: 100%;
         -ms-overflow-style: none;
     `;
     scrollWrapper.style.WebkitScrollbar = 'display: none';
@@ -678,6 +686,7 @@ export class FeedManager {
         });
         
         imageContainer.appendChild(scrollWrapper);
+        
         
         // Add dot indicators
         const dotsContainer = document.createElement('div');

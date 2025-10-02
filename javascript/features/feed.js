@@ -644,13 +644,15 @@ export class FeedManager {
         const scrollWrapper = document.createElement('div');
         scrollWrapper.className = 'carousel-scroll';
         scrollWrapper.style.cssText = `
-            display: flex;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            height: 200px;
-        `;
+        display: flex;
+        overflow-x: scroll;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        height: 200px;
+        -ms-overflow-style: none;
+    `;
+    scrollWrapper.style.WebkitScrollbar = 'display: none';
         
         // Hide scrollbar
         scrollWrapper.style.msOverflowStyle = 'none';

@@ -144,17 +144,28 @@ export class BusinessMessagingManager {
             console.error('❌ Chat header element not found or businessData missing');
         }
         
-       // Mark this as a business chat and track origin
+        // Mark this as a business chat
         this.state.set('currentChatType', 'business');
         this.state.set('currentChatBusinessId', businessId);
         this.state.set('currentBusinessConversationId', conversationId);
-        this.state.set('chatOpenedFrom', 'businessProfile');
         
-       // Show chat overlay
-    const chatOverlay = document.getElementById('individualChat');
-    if (chatOverlay) {
-        chatOverlay.classList.add('show');
-        chatOverlay.dataset.chatType = 'business'; // Mark as business chat
+        // Mark this as a business chat
+        this.state.set('currentChatType', 'business');
+        this.state.set('currentChatBusinessId', businessId);
+        this.state.set('currentBusinessConversationId', conversationId);
+        
+        // Store that we came from business profile (for proper back navigation)
+        this.state.set('chatOpenedFromBusinessProfile', true);
+        
+        // Show chat overlay with dynamic z-index management
+        const chatOverlay = document.getElementById('individualChat');
+        if (chatOverlay) {
+            // FIXED Z-INDEX: Set to 450 (dashboard is 400, messages overlay is 405)
+            chatOverlay.style.zIndex = '450';
+            console.log('🎯 Business chat z-index set to 450 (above dashboard and messages)');
+            
+            chatOverlay.classList.add('show');
+            chatOverlay.dataset.chatType = 'business-response'; // Mark as business responding
             
             // Force display in case CSS is blocking
             chatOverlay.style.display = 'flex';
@@ -422,16 +433,16 @@ export class BusinessMessagingManager {
             // Show chat overlay with dynamic z-index
             const chatOverlay = document.getElementById('individualChat');
             if (chatOverlay) {
-              // DYNAMIC Z-INDEX: Use CSS class instead of inline style
-            const currentOverlays = document.querySelectorAll('.overlay-screen.show');
-            const needsBoost = currentOverlays.length > 1;
-            
-            if (needsBoost) {
-                chatOverlay.classList.add('z-boosted');
-                console.log('🎯 Business chat z-index boosted via CSS class');
-            } else {
-                chatOverlay.classList.remove('z-boosted');
-            }
+                // DYNAMIC Z-INDEX: Calculate based on current overlays
+                const currentOverlays = document.querySelectorAll('.overlay-screen.show');
+                const maxZIndex = Array.from(currentOverlays).reduce((max, el) => {
+                    const zIndex = parseInt(window.getComputedStyle(el).zIndex) || 0;
+                    return Math.max(max, zIndex);
+                }, 0);
+                
+                // Boost chat above all current overlays
+                const boostZIndex = maxZIndex + 50;
+                chatOverlay.style.zIndex = boostZIndex;
                 console.log(`🎯 Business chat z-index boosted to ${boostZIndex}`);
                 
                 chatOverlay.classList.add('show');

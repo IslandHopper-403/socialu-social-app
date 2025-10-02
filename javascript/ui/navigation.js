@@ -112,32 +112,24 @@ showContentSkeleton(containerId, type = 'default') {
             document.querySelectorAll('.overlay-screen .back-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    e.preventDefault(); // ADDED: Prevent default to stop propagation
                     
                     const parentOverlay = btn.closest('.overlay-screen');
                     
                     // Only process if overlay is actually visible
                     if (parentOverlay && parentOverlay.classList.contains('show')) {
-                        // ADDED: Check if we're already processing this overlay
-                        if (this._processingOverlay === parentOverlay.id) {
-                            console.log('⏭️ Skipping duplicate back press for:', parentOverlay.id);
+                        
+                        // SPECIAL: Chat is independent - just close it, don't touch nav stack
+                        if (parentOverlay.id === 'individualChat') {
+                            this.closeChat();
                             return;
                         }
                         
-                        // Mark as processing
-                        this._processingOverlay = parentOverlay.id;
-                        
-                        // Handle stack-based navigation
+                        // All other overlays use normal stack navigation
                         this.handleOverlayBack(parentOverlay.id);
-                        
-                        // Clear processing flag after a brief delay
-                        setTimeout(() => {
-                            this._processingOverlay = null;
-                        }, 100);
                     }
                 });
             });
-
+                        
         // Handle browser back button
         window.addEventListener('popstate', (e) => {
             if (e.state && e.state.screen) {

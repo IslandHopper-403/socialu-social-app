@@ -329,10 +329,7 @@ showContentSkeleton(containerId, type = 'default') {
         }
     }
 
-            /**
-             * Handle back navigation - simplified direct approach
-             */
-            handleOverlayBack(overlayId) {
+               handleOverlayBack(overlayId) {
                 console.log('🔙 Back pressed on:', overlayId, '| Stack:', this.overlayStack);
                 
                 // Special cleanup for chat
@@ -342,6 +339,10 @@ showContentSkeleton(containerId, type = 'default') {
                 
                 // Close current overlay
                 this.closeOverlay(overlayId);
+                
+                // STOP PROPAGATION - Don't let this trigger other overlays
+                event?.stopPropagation();
+                event?.preventDefault();
                 
                 // SIMPLE RULE: If stack has overlays, show the last one. Otherwise, show feed.
                 if (this.overlayStack.length > 0) {

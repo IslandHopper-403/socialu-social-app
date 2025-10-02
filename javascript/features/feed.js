@@ -207,7 +207,7 @@ export class FeedManager {
                 price: this.formatPriceRange(business.priceRange),
                 contact: business.phone || '+84 123 456 789',
                 rating: business.rating || 4.5,
-                reviewCount: business.reviewCount || 0
+                reviewCount: business.reviewCount || 0,
                 photos: business.photos || [business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop']
                 });
         });

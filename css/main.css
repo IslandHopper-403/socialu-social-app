@@ -745,7 +745,7 @@ body {
 
 /* Z-index boost for stacked overlays */
 .overlay-screen.z-boosted {
-    z-index: calc(var(--z-overlay-business-chat) + 100) !important;
+    z-index: 430 !important; /* Fixed value higher than --z-overlay-business-chat (330) */
 }
 
 @keyframes slideUp {

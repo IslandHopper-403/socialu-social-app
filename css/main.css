@@ -1988,3 +1988,108 @@ body.business-user .social-content,
 body.business-user #socialScreen {
     display: none !important;
 }
+
+
+/* ===== Restaurant Profile Hero Photo Viewer Overlay Expand ===== */
+/* Photo Viewer Overlay */
+.photo-viewer-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 500;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.photo-viewer-overlay.show {
+    display: flex;
+    flex-direction: column;
+    opacity: 1;
+}
+
+.photo-viewer-header {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    z-index: 10;
+}
+
+.photo-counter {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    color: white;
+}
+
+.photo-close-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    color: white;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.photo-viewer-content {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.photo-swiper {
+    display: flex;
+    height: 100%;
+    transition: transform 0.3s ease;
+}
+
+.photo-slide {
+    min-width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.photo-slide img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Semi-transparent edges effect */
+.photo-viewer-content::before,
+.photo-viewer-content::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 60px;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.photo-viewer-content::before {
+    left: 0;
+    background: linear-gradient(to right, rgba(0,0,0,0.8), transparent);
+}
+
+.photo-viewer-content::after {
+    right: 0;
+    background: linear-gradient(to left, rgba(0,0,0,0.8), transparent);
+}

@@ -1435,6 +1435,19 @@
         <input type="file" id="photoUpload" accept="image/*" style="display: none;" onchange="CLASSIFIED.handlePhotoUpload(event)">
         <input type="file" id="businessPhotoUpload" accept="image/*" style="display: none;" onchange="CLASSIFIED.handleBusinessPhotoUpload(event)">
     </div>
+
+    <!-- Photo Viewer Overlay -->
+    <div id="photoViewer" class="photo-viewer-overlay">
+        <div class="photo-viewer-header">
+            <span id="photoCounter" class="photo-counter">1/24</span>
+            <button class="photo-close-btn" onclick="CLASSIFIED.closePhotoViewer()">×</button>
+        </div>
+        <div class="photo-viewer-content">
+            <div id="photoSwiper" class="photo-swiper">
+                <!-- Photos will be dynamically added here -->
+            </div>
+        </div>
+    </div>
     
     <!-- Load JavaScript modules -->
     <!-- Note: Firebase is loaded as ES6 modules via CDN in firebase.js -->

@@ -150,11 +150,11 @@ export class BusinessMessagingManager {
         this.state.set('currentBusinessConversationId', conversationId);
         this.state.set('chatOpenedFrom', 'businessProfile');
         
-        /// Show chat overlay with higher z-index
-        const chatOverlay = document.getElementById('individualChat');
-        if (chatOverlay) {
-            chatOverlay.classList.add('show');
-            chatOverlay.dataset.chatType = 'business-response'; // Mark as business responding
+       // Show chat overlay
+    const chatOverlay = document.getElementById('individualChat');
+    if (chatOverlay) {
+        chatOverlay.classList.add('show');
+        chatOverlay.dataset.chatType = 'business'; // Mark as business chat
             
             // Force display in case CSS is blocking
             chatOverlay.style.display = 'flex';

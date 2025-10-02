@@ -816,7 +816,7 @@ export class BusinessManager {
                             const dots = promoDetails.parentElement.querySelector('.special-dot')?.parentElement;
                             if (dots) {
                                 dots.querySelectorAll('.special-dot').forEach((dot, i) => {
-                                    dot.style.background = i === currentIndex ? 'white' : 'rgba(255,255,255,0.4)';
+                                   dot.style.background = i === currentSpecialIndex ? 'white' : 'rgba(255,255,255,0.4)';
                                 });
                             }
                                                         

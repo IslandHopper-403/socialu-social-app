@@ -694,22 +694,25 @@ export class FeedManager {
         let currentX = 0;
         let isDragging = false;
         
-        imageContainer.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
+       // Touch AND mouse handling for better compatibility
+        const handleStart = (e) => {
+            startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
             isDragging = true;
-        }, { passive: true });
+            imageContainer.style.cursor = 'grabbing';
+        };
         
-        imageContainer.addEventListener('touchmove', (e) => {
+        const handleMove = (e) => {
             if (!isDragging) return;
             e.preventDefault();
-            currentX = e.touches[0].clientX;
+            currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
             const diff = currentX - startX;
             imagesWrapper.style.transform = `translateX(${-currentIndex * 100 + (diff / imageContainer.offsetWidth * 100)}%)`;
-        }, { passive: false });
+        };
         
-        imageContainer.addEventListener('touchend', (e) => {
+        const handleEnd = () => {
             if (!isDragging) return;
             isDragging = false;
+            imageContainer.style.cursor = 'grab';
             const diff = currentX - startX;
             
             if (Math.abs(diff) > 50) { // Swipe threshold
@@ -725,7 +728,22 @@ export class FeedManager {
             dotsContainer.querySelectorAll('.carousel-dot').forEach((dot, i) => {
                 dot.style.background = i === currentIndex ? 'white' : 'rgba(255,255,255,0.5)';
             });
-        });
+            
+            // Reset for next swipe
+            startX = 0;
+            currentX = 0;
+        };
+        
+        // Add both touch and mouse events
+        imageContainer.addEventListener('touchstart', handleStart, { passive: true });
+        imageContainer.addEventListener('touchmove', handleMove, { passive: false });
+        imageContainer.addEventListener('touchend', handleEnd);
+        
+        // Mouse events for desktop testing
+        imageContainer.addEventListener('mousedown', handleStart);
+        imageContainer.addEventListener('mousemove', handleMove);
+        imageContainer.addEventListener('mouseup', handleEnd);
+        imageContainer.addEventListener('mouseleave', handleEnd);
         
         // Prevent card click on swipe
         imageContainer.addEventListener('click', (e) => {

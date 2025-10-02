@@ -422,16 +422,16 @@ export class BusinessMessagingManager {
             // Show chat overlay with dynamic z-index
             const chatOverlay = document.getElementById('individualChat');
             if (chatOverlay) {
-                // DYNAMIC Z-INDEX: Calculate based on current overlays
-                const currentOverlays = document.querySelectorAll('.overlay-screen.show');
-                const maxZIndex = Array.from(currentOverlays).reduce((max, el) => {
-                    const zIndex = parseInt(window.getComputedStyle(el).zIndex) || 0;
-                    return Math.max(max, zIndex);
-                }, 0);
-                
-                // Boost chat above all current overlays
-                const boostZIndex = maxZIndex + 50;
-                chatOverlay.style.zIndex = boostZIndex;
+              // DYNAMIC Z-INDEX: Use CSS class instead of inline style
+            const currentOverlays = document.querySelectorAll('.overlay-screen.show');
+            const needsBoost = currentOverlays.length > 1;
+            
+            if (needsBoost) {
+                chatOverlay.classList.add('z-boosted');
+                console.log('🎯 Business chat z-index boosted via CSS class');
+            } else {
+                chatOverlay.classList.remove('z-boosted');
+            }
                 console.log(`🎯 Business chat z-index boosted to ${boostZIndex}`);
                 
                 chatOverlay.classList.add('show');

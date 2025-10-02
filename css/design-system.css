@@ -110,12 +110,12 @@
    /* Overlays: 100-199 */
    --z-overlay-base: 100;           /* Base overlay screens */
    --z-overlay-profile: 250;        /* User/profile views */
-   --z-overlay-chat: 350;           /* Chat screens - INCREASED */
-   --z-overlay-business-chat: 360;  /* Business chat (slightly higher) - INCREASED */
+   --z-overlay-chat: 320;           /* Chat screens */
+   --z-overlay-business-chat: 330;  /* Business chat (slightly higher) */
    
    /* Floating UI: 300-399 */
    --z-carousel: 355;               /* Favorites carousel */
-   --z-business-profile: 300;       /* Business profile overlay - REDUCED */
+   --z-business-profile: 375;       /* Business profile overlay */
     
     /* Editors & Settings: 400-499 */
     --z-profile-editor: 400;         /* Profile editors */

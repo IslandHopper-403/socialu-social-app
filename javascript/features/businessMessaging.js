@@ -144,18 +144,11 @@ export class BusinessMessagingManager {
             console.error('❌ Chat header element not found or businessData missing');
         }
         
-        // Mark this as a business chat
+       // Mark this as a business chat and track origin
         this.state.set('currentChatType', 'business');
         this.state.set('currentChatBusinessId', businessId);
         this.state.set('currentBusinessConversationId', conversationId);
-        
-        // Mark this as a business chat
-        this.state.set('currentChatType', 'business');
-        this.state.set('currentChatBusinessId', businessId);
-        this.state.set('currentBusinessConversationId', conversationId);
-        
-        // Store that we came from business profile (for proper back navigation)
-        this.state.set('chatOpenedFromBusinessProfile', true);
+        this.state.set('chatOpenedFrom', 'businessProfile');
         
         /// Show chat overlay with higher z-index
         const chatOverlay = document.getElementById('individualChat');

@@ -765,7 +765,6 @@ export class FeedManager {
             }
         });
         
-        imageContainer.appendChild(imagesWrapper);
         if (photos.length > 1) {
             imageContainer.appendChild(dotsContainer);
         }

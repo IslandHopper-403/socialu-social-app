@@ -313,6 +313,11 @@ loadDemoContent() {
             exportAnalytics: () => this.managers.business?.exportAnalytics(),
             scheduleAnalyticsReport: () => alert('Scheduled reports coming soon!'),
             exportAnalyticsData: () => alert('Export feature coming soon!'),
+
+            // Photo Viewer
+            openPhotoViewer: (business) => this.managers.business?.openPhotoViewer(business),
+            closePhotoViewer: () => this.managers.business?.closePhotoViewer(),
+
             
             // Promotions Manager (SECURITY: Input sanitization required)
             openPromotionsManager: () => {

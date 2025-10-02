@@ -128,6 +128,8 @@ showContentSkeleton(containerId, type = 'default') {
                         this.handleOverlayBack(parentOverlay.id);
                     }
                 });
+
+                        
             });
                         
         // Handle browser back button
@@ -136,6 +138,25 @@ showContentSkeleton(containerId, type = 'default') {
                 this.showScreen(e.state.screen, false);
             }
         });
+    }
+    
+    /**
+     * Close chat independently - doesn't affect navigation stack
+     */
+    closeChat() {
+        console.log('💬 Closing chat independently');
+        
+        const chatOverlay = document.getElementById('individualChat');
+        if (chatOverlay) {
+            chatOverlay.classList.remove('show');
+            chatOverlay.style.zIndex = '';
+            chatOverlay.dataset.chatType = '';
+        }
+        
+        // Clean up messaging state
+        if (window.classifiedApp?.managers?.messaging) {
+            window.classifiedApp.managers.messaging.closeChat();
+        }
     }
     
     /**

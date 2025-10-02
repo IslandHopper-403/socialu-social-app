@@ -306,13 +306,16 @@ export class FeedManager {
                 image: business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop',
                 logo: business.photos?.[1] || business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop',
                 story: business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=150&h=200&fit=crop',
-                promo: business.promoTitle || 'Special Activity',
-                details: business.promoDetails || 'Book now for special rates',
+                promo: business.currentSpecials?.[0] || business.promoTitle || 'Special Activity',
+                details: business.currentSpecials?.[1] || business.promoDetails || 'Book now for special rates',
                 description: business.description || 'Amazing activity experience in Hoi An',
                 location: business.address || 'Hoi An, Vietnam',
                 hours: business.hours || 'Daily tours available',
                 price: this.formatPriceRange(business.priceRange),
                 contact: business.phone || '+84 123 456 789'
+                rating: business.rating || 4.5,
+                reviewCount: business.reviewCount || 0,
+                photos: business.photos || [business.photos?.[0] || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop']
             });
         });
         

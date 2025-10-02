@@ -710,8 +710,17 @@ export class BusinessManager {
      * Update business profile UI
      */
       updateBusinessProfileUI(business) {
+        // Safety check
+        if (!business) {
+            console.error('No business data provided to updateBusinessProfileUI');
+            return;
+        }
+        
         // Update header - SAFE
-        document.getElementById('profileHeaderTitle').textContent = sanitizeText(business.type || 'Business');
+        const headerTitle = document.getElementById('profileHeaderTitle');
+        if (headerTitle) {
+            headerTitle.textContent = sanitizeText(business.type || 'Business');
+        }
         
        // Update hero - SAFE (CSS background)
         const heroElement = document.getElementById('profileHero');

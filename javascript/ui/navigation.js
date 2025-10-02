@@ -374,6 +374,13 @@ showContentSkeleton(containerId, type = 'default') {
                 if (overlayId === 'businessProfile' && this.overlayStack.includes('individualChat')) {
                     console.warn('⚠️ Detected problematic state, clearing overlay stack');
                     this.overlayStack = [];
+
+             // Also force close any visible chat overlay
+                    const chatOverlay = document.getElementById('individualChat');
+                    if (chatOverlay && chatOverlay.classList.contains('show')) {
+                        chatOverlay.classList.remove('show');
+                    }
+                }
                 
                 // Special cleanup for chat
                 if (overlayId === 'individualChat' && window.classifiedApp?.managers?.messaging) {

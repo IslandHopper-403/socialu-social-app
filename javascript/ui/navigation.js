@@ -112,6 +112,7 @@ showContentSkeleton(containerId, type = 'default') {
             document.querySelectorAll('.overlay-screen .back-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
+                    e.preventDefault(); // Add this too
                     
                     const parentOverlay = btn.closest('.overlay-screen');
                     
@@ -144,20 +145,27 @@ showContentSkeleton(containerId, type = 'default') {
      * Close chat independently - doesn't affect navigation stack
      */
     closeChat() {
-        console.log('💬 Closing chat independently');
+    console.log('💬 Closing chat independently');
+    
+    const chatOverlay = document.getElementById('individualChat');
+    if (chatOverlay) {
+        chatOverlay.classList.remove('show');
+        chatOverlay.style.zIndex = '';
+        chatOverlay.dataset.chatType = '';
         
-        const chatOverlay = document.getElementById('individualChat');
-        if (chatOverlay) {
-            chatOverlay.classList.remove('show');
-            chatOverlay.style.zIndex = '';
-            chatOverlay.dataset.chatType = '';
-        }
-        
-        // Clean up messaging state
-        if (window.classifiedApp?.managers?.messaging) {
-            window.classifiedApp.managers.messaging.closeChat();
+        // IMPORTANT: Remove from stack!
+        const index = this.overlayStack.indexOf('individualChat');
+        if (index > -1) {
+            this.overlayStack.splice(index, 1);
+            console.log('📚 Removed chat from stack:', this.overlayStack);
         }
     }
+    
+    // Clean up messaging state
+    if (window.classifiedApp?.managers?.messaging) {
+        window.classifiedApp.managers.messaging.closeChat();
+    }
+}
     
     /**
      * Initialize navigation on app start

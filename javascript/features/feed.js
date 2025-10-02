@@ -765,7 +765,7 @@ export class FeedManager {
         
         // Assemble card
         card.appendChild(header);
-        card.appendChild(image);
+        card.appendChild(imageContainer);
         card.appendChild(content);
         
         // Fix: Convert to HTML string but preserve onclick

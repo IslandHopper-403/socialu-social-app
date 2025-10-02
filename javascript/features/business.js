@@ -651,8 +651,13 @@ export class BusinessManager {
             // Update UI
             this.updateBusinessProfileUI(businessData);
             
-           // ENHANCED: Use showOverlay with context tracking
+           // FIXED: Always track that business profile came from feed
             if (this.navigationManager) {
+                // Clear any previous overlay stack issues
+                const stackIndex = this.navigationManager.overlayStack.indexOf('businessProfile');
+                if (stackIndex > -1) {
+                    this.navigationManager.overlayStack.splice(stackIndex, 1);
+                }
                 this.navigationManager.showOverlay('businessProfile');
             } else {
                 // Fallback if navigation manager not available

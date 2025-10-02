@@ -770,9 +770,10 @@ export class BusinessManager {
                 let currentSpecialIndex = 0;
                 const specials = business.currentSpecials;
                 
-                // Display first special
+               // Display first special
                 promoDetails.textContent = sanitizeText(specials[0]);
                 promoDetails.style.transition = 'opacity 0.5s ease-in-out';
+                promoDetails.style.opacity = '1'; // Ensure it's visible
                 
                 // Add indicator dots if multiple specials
                 if (specials.length > 1) {
@@ -811,9 +812,10 @@ export class BusinessManager {
                             // Update text
                             promoDetails.textContent = sanitizeText(specials[currentSpecialIndex]);
                             
-                           // Update dots if they exist
-                            if (dotsContainer) {
-                                dotsContainer.querySelectorAll('.special-dot').forEach((dot, i) => {
+                          // Update dots if they exist and dotsContainer is in scope
+                            const dots = promoDetails.parentElement.querySelector('.special-dot')?.parentElement;
+                            if (dots) {
+                                dots.querySelectorAll('.special-dot').forEach((dot, i) => {
                                     dot.style.background = i === currentIndex ? 'white' : 'rgba(255,255,255,0.4)';
                                 });
                             }

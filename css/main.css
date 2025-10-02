@@ -735,7 +735,6 @@ body {
     z-index: var(--z-overlay-chat);
 }
 
-/* Individual Chat Overlay */
 #individualChat[data-chat-type="business"] {
     z-index: var(--z-overlay-business-chat);
 }
@@ -743,16 +742,10 @@ body {
     display: flex;
 }
 
-/* Z-index boost for stacked overlays */
-.overlay-screen.z-boosted {
-    z-index: 430 !important; /* Fixed value higher than --z-overlay-business-chat (330) */
-}
-
 @keyframes slideUp {
     from { transform: translateX(-50%) translateY(100%); }
     to { transform: translateX(-50%) translateY(0); }
 }
-
 
 /* Settings Styles */
 .settings-content {

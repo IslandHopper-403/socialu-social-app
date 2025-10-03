@@ -78,8 +78,23 @@ export class BusinessMessagingManager {
             const conversationDoc = await getDoc(conversationRef);
             
             if (!conversationDoc.exists()) {
+                // Debug: Log exactly what we're sending
+                const conversationData = {
+                    businessId: businessId,
+                    userId: user.uid,
+                    userName: user.displayName || 'User',
+                    createdAt: serverTimestamp(),
+                    type: 'business_inquiry'
+                };
+                
+                console.log('📝 Attempting to create conversation with:', {
+                    conversationId: conversationId,
+                    data: conversationData,
+                    userAuth: user.uid
+                });
+                
                 // Create with only the fields required by Firebase rules
-                await setDoc(conversationRef, {
+                await setDoc(conversationRef, conversationData);
                     businessId: businessId,
                     userId: user.uid,
                     userName: user.displayName || 'User',

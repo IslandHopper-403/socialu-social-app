@@ -104,195 +104,115 @@ export class BusinessMessagingManager {
         }
     }
     
-    /**
-     * Open business chat interface
-     * SECURITY: Uses different UI than social chat
-     */
-    openBusinessChat(businessId, conversationId) {
-        // Get business data for header
-        const businessData = this.state.get('currentBusiness');
-        
-        // Debug logging
-        console.log('📬 Opening business chat with data:', {
-            businessId: businessId,
-            businessData: businessData,
-            businessName: businessData?.name,
-            businessTitle: businessData?.businessName,
-            allKeys: businessData ? Object.keys(businessData) : []
-        });
-        
-        // Update chat header for business - correct element ID is 'chatName'
-        const chatHeader = document.getElementById('chatName');
-        if (chatHeader && businessData) {
-            // SECURITY: Use textContent for business name
-            // Try multiple possible property names for the business name
-            const displayName = businessData.businessName || businessData.name || businessData.title || 'Business';
-            chatHeader.textContent = displayName;
-            chatHeader.dataset.businessChat = 'true'; // Mark as business chat
-            console.log('✅ Chat header updated to:', displayName);
-            
-            // Also update the avatar to show it's a business
-            const chatAvatar = document.getElementById('chatAvatar');
-            if (chatAvatar) {
-                chatAvatar.textContent = '🏪'; // Business icon
-                chatAvatar.style.fontSize = '24px';
-                chatAvatar.style.display = 'flex';
-                chatAvatar.style.alignItems = 'center';
-                chatAvatar.style.justifyContent = 'center';
-            }
-        } else {
-            console.error('❌ Chat header element not found or businessData missing');
-        }
-        
-        // Mark this as a business chat
-        this.state.set('currentChatType', 'business');
-        this.state.set('currentChatBusinessId', businessId);
-        this.state.set('currentBusinessConversationId', conversationId);
-        
-        // Mark this as a business chat
-        this.state.set('currentChatType', 'business');
-        this.state.set('currentChatBusinessId', businessId);
-        this.state.set('currentBusinessConversationId', conversationId);
-        
-        // Store that we came from business profile (for proper back navigation)
-        this.state.set('chatOpenedFromBusinessProfile', true);
-        
-        // Show chat overlay with dynamic z-index management
-        const chatOverlay = document.getElementById('individualChat');
-        if (chatOverlay) {
-            // FIXED Z-INDEX: Set to 450 (dashboard is 400, messages overlay is 405)
-            chatOverlay.style.zIndex = '450';
-            console.log('🎯 Business chat z-index set to 450 (above dashboard and messages)');
-            
-            chatOverlay.classList.add('show');
-            chatOverlay.dataset.chatType = 'business-response'; // Mark as business responding
-            
-            // Force display in case CSS is blocking
-            chatOverlay.style.display = 'flex';
-            
-            // Track in overlay stack
-            if (window.CLASSIFIED && window.CLASSIFIED.managers && window.CLASSIFIED.managers.navigation) {
-                window.CLASSIFIED.managers.navigation.showOverlay('individualChat');
-            }
-        }
-        
-        // Load business conversation messages
-        this.loadBusinessMessages(conversationId);
-        
-        // Set up business message listener
-        this.setupBusinessMessageListener(conversationId);
+ /**
+ * Open business chat overlay (NEW SEPARATE SYSTEM)
+ */
+openBusinessChat(businessId, conversationId) {
+    console.log('🏪 Opening business chat:', { businessId, conversationId });
+    
+    // Store current conversation info
+    this.state.set('currentBusinessChatId', conversationId);
+    this.state.set('currentBusinessId', businessId);
+    
+    // Get business data
+    const businessData = this.state.get('currentBusiness');
+    const businessName = businessData?.name || businessData?.businessName || 'Business';
+    
+    // Update chat header
+    const nameElement = document.getElementById('businessChatName');
+    if (nameElement) {
+        nameElement.textContent = businessName;
     }
     
-    /**
-     * Load business conversation messages
-     */
-    async loadBusinessMessages(conversationId) {
-        try {
-            const messagesRef = collection(this.db, 'businessConversations', conversationId, 'messages');
-            const messagesQuery = query(messagesRef, orderBy('timestamp', 'asc'));
-            const snapshot = await getDocs(messagesQuery);
-            
-            const chatMessages = document.getElementById('chatMessages');
-            if (!chatMessages) return;
-            
-            // Clear existing messages
-            chatMessages.innerHTML = '';
-            
-            // Add business chat notice
-            const notice = document.createElement('div');
-            notice.className = 'chat-notice';
-            notice.style.cssText = 'text-align: center; padding: 10px; opacity: 0.7; font-size: 12px;';
-            notice.textContent = '💼 Business Inquiry - Response time usually within 2 hours';
-            chatMessages.appendChild(notice);
-            
-            // Display messages
-            snapshot.forEach(doc => {
-                const message = doc.data();
-                this.displayBusinessMessage(message);
-            });
-            
-            // Scroll to bottom
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-        } catch (error) {
-            console.error('❌ Error loading business messages:', error);
-        }
+    // Show the overlay
+    const overlay = document.getElementById('businessChat');
+    if (overlay) {
+        overlay.classList.add('show');
+        overlay.style.display = 'flex';
     }
     
-    /**
-     * Display a business message
-     * SECURITY: Sanitize all user content
-     */
-    displayBusinessMessage(message) {
-        const chatMessages = document.getElementById('chatMessages');
-        if (!chatMessages) return;
-        
-        const user = this.state.get('currentUser');
-        const isOwn = message.senderId === user?.uid;
-        
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${isOwn ? 'sent' : 'received'}`;
-        
-        // For business messages, add business badge
-        if (!isOwn && message.senderType === 'business') {
-            const badge = document.createElement('div');
-            badge.className = 'business-badge';
-            badge.style.cssText = 'font-size: 10px; opacity: 0.7; margin-bottom: 2px;';
-            badge.textContent = '🏪 Business';
-            messageDiv.appendChild(badge);
-        }
-        
-        const textDiv = document.createElement('div');
-        textDiv.className = 'message-text';
-        // SECURITY: Use textContent for message content
-        textDiv.textContent = message.text || '';
-        
-        const timeDiv = document.createElement('div');
-        timeDiv.className = 'message-time';
-        timeDiv.textContent = this.formatMessageTime(message.timestamp);
-        
-        messageDiv.appendChild(textDiv);
-        messageDiv.appendChild(timeDiv);
-        
-        chatMessages.appendChild(messageDiv);
+    // Clear previous messages
+    const messagesContainer = document.getElementById('businessChatMessages');
+    if (messagesContainer) {
+        messagesContainer.innerHTML = '';
     }
     
-    /**
-     * Set up real-time listener for business messages
-     */
-    setupBusinessMessageListener(conversationId) {
-        // Clean up existing business listener
-        if (this.businessChatListener) {
-            this.businessChatListener();
-            this.businessChatListener = null;
-        }
-        
+    // Load messages
+    this.loadBusinessChatMessages(conversationId);
+    
+    // Set up real-time listener
+    this.setupBusinessChatListener(conversationId);
+}
+
+/**
+ * Load messages for business chat
+ */
+async loadBusinessChatMessages(conversationId) {
+    try {
         const messagesRef = collection(this.db, 'businessConversations', conversationId, 'messages');
-        const messagesQuery = query(messagesRef, orderBy('timestamp', 'asc'), limit(100));
+        const messagesQuery = query(messagesRef, orderBy('timestamp', 'asc'));
+        const snapshot = await getDocs(messagesQuery);
         
-        this.businessChatListener = onSnapshot(messagesQuery, (snapshot) => {
-            snapshot.docChanges().forEach(change => {
-                if (change.type === 'added') {
-                    // Only display new messages
-                    const existingMessages = document.querySelectorAll('.message').length;
-                    if (existingMessages > 0) {
-                        this.displayBusinessMessage(change.doc.data());
-                        
-                        // Auto-scroll to bottom
-                        const chatMessages = document.getElementById('chatMessages');
-                        if (chatMessages) {
-                            chatMessages.scrollTop = chatMessages.scrollHeight;
-                        }
-                    }
-                }
-            });
+        const messagesContainer = document.getElementById('businessChatMessages');
+        if (!messagesContainer) return;
+        
+        snapshot.forEach(doc => {
+            this.displayBusinessChatMessage(doc.data());
         });
         
-        // Store listener for cleanup if parent messaging manager is available
-        if (this.parentMessaging && this.parentMessaging.registerListener) {
-            this.parentMessaging.registerListener(`business_chat_${conversationId}`, this.businessChatListener, 'business_chat');
-        }
+        // Scroll to bottom
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+    } catch (error) {
+        console.error('Error loading business messages:', error);
     }
+}
+
+/**
+ * Display a message in business chat
+ */
+displayBusinessChatMessage(message) {
+    const messagesContainer = document.getElementById('businessChatMessages');
+    if (!messagesContainer) return;
+    
+    const currentUser = this.state.get('currentUser');
+    const isOwn = message.senderId === currentUser?.uid;
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isOwn ? 'sent' : 'received'}`;
+    
+    const bubbleDiv = document.createElement('div');
+    bubbleDiv.className = 'message-bubble';
+    bubbleDiv.textContent = message.text;
+    
+    messageDiv.appendChild(bubbleDiv);
+    messagesContainer.appendChild(messageDiv);
+}
+
+/**
+ * Set up real-time listener for business chat
+ */
+setupBusinessChatListener(conversationId) {
+    // Clean up existing listener
+    if (this.businessChatUnsubscribe) {
+        this.businessChatUnsubscribe();
+    }
+    
+    const messagesRef = collection(this.db, 'businessConversations', conversationId, 'messages');
+    const messagesQuery = query(messagesRef, orderBy('timestamp', 'asc'));
+    
+    this.businessChatUnsubscribe = onSnapshot(messagesQuery, (snapshot) => {
+        snapshot.docChanges().forEach(change => {
+            if (change.type === 'added') {
+                const messagesContainer = document.getElementById('businessChatMessages');
+                if (messagesContainer && messagesContainer.children.length > 0) {
+                    this.displayBusinessChatMessage(change.doc.data());
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+            }
+        });
+    });
+}
     
     /**
      * Send a business message

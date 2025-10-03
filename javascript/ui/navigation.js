@@ -316,6 +316,7 @@ showContentSkeleton(containerId, type = 'default') {
             if (overlayId === 'individualChat') {
                 overlay.style.zIndex = '';
                 console.log('🎯 Reset chat z-index on close');
+                console.trace('Chat close trace:');
             }
             
             // SECURITY: Remove from overlay stack

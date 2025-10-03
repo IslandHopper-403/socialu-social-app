@@ -541,7 +541,26 @@ loadDemoContent() {
             
             // Business interactions
             openBusinessProfile: (id, type) => this.managers.business.openBusinessProfile(id, type),
-            closeBusinessProfile: () => this.managers.navigation.closeOverlay('businessProfile'),
+            closeBusinessProfile: () => {
+            console.log('🔍 Closing business profile, current stack:', this.managers.navigation.overlayStack);
+            
+            // Check if we came from a chat
+            const chatOpenedFromBusiness = this.state.get('chatOpenedFromBusinessProfile');
+            if (chatOpenedFromBusiness) {
+                console.log('⚠️ Clearing chat-from-business flag');
+                this.state.set('chatOpenedFromBusinessProfile', false);
+            }
+            
+            // Close the business profile
+            this.managers.navigation.closeOverlay('businessProfile');
+            
+            // Make sure we're not accidentally showing the chat
+            const chatOverlay = document.getElementById('individualChat');
+            if (chatOverlay && chatOverlay.classList.contains('show')) {
+                console.log('⚠️ Chat was still showing, hiding it');
+                chatOverlay.classList.remove('show');
+            }
+        },
             showBusinessSignup: () => this.managers.business.showBusinessSignup(),
             shareBusinessProfile: () => this.managers.business.shareBusinessProfile(),
             getDirections: () => this.managers.business.getDirections(),

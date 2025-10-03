@@ -2170,3 +2170,20 @@ body.business-user #socialScreen {
     color: #999;
     margin-top: 2px;
 }
+
+/* Force business chat input to bottom */
+#businessChat .chat-input-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1a1a1a;
+    padding: 12px 15px 30px;
+    border-top: 1px solid #2a2a2a;
+    z-index: 10;
+}
+
+/* Make messages container leave room for input */
+#businessChat .chat-messages {
+    padding-bottom: 80px;
+}

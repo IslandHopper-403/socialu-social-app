@@ -555,6 +555,21 @@ loadDemoContent() {
             startChatWithViewedUser: () => this.managers.messaging.startChatWithViewedUser(),
 
           // Business messaging & actions
+            startBusinessConversation: (businessId) => {
+                console.log('📬 Starting conversation with:', {
+                    businessData: this.managers.state.get('currentBusiness'),
+                    businessId: businessId,
+                    businessUid: this.managers.state.get('currentBusiness')?.uid,
+                    businessName: this.managers.state.get('currentBusiness')?.name || this.managers.state.get('currentBusiness')?.businessName
+                });
+                if (this.managers.messaging?.businessMessaging) {
+                    return this.managers.messaging.businessMessaging.startBusinessConversation(businessId);
+                } else if (this.managers.messaging) {
+                    return this.managers.messaging.startBusinessConversation(businessId);
+                } else {
+                    console.error('❌ Messaging not initialized');
+                }
+            },
             openBusinessConversation: (conversationId) => {
                 console.log('Opening business conversation:', conversationId);
                 if (this.managers.messaging?.businessMessaging) {

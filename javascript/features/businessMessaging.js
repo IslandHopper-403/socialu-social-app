@@ -125,8 +125,11 @@ export class BusinessMessagingManager {
             if (chatName) chatName.textContent = businessName;
             
             // Update empty state title
-            const emptyTitle = document.querySelector('#businessChat .empty-title');
-            if (emptyTitle) emptyTitle.textContent = `Message ${businessName}`;
+            const emptyTitle = document.getElementById('emptyStateTitle');
+            if (emptyTitle) {
+                emptyTitle.textContent = `Message ${businessName}`;
+                console.log('✅ Set empty state title:', `Message ${businessName}`);
+            }
             
             // Set avatar image
             const chatAvatar = document.querySelector('#businessChat .chat-header-avatar');

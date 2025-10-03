@@ -542,20 +542,42 @@ loadDemoContent() {
             // Business interactions
             openBusinessProfile: (id, type) => this.managers.business.openBusinessProfile(id, type),
            closeBusinessProfile: () => {
-            // Nuclear option - force close everything and return to main
-            document.getElementById('businessProfile').classList.remove('show');
-            document.getElementById('individualChat').classList.remove('show');
+            // Clear business state
+            this.state.set('currentBusiness', null);
+            this.state.set('chatOpenedFromBusinessProfile', false);
             
-            // Clear the navigation stack
-            if (this.managers.navigation) {
-                this.managers.navigation.overlayStack = [];
+            // Use navigation manager for proper stack handling
+            this.managers.navigation.closeOverlay('businessProfile');
+        },
+        
+        closeBusinessChat: () => {
+            // Clean up listener
+            if (this.managers.messaging?.businessMessaging?.businessChatListener) {
+                this.managers.messaging.businessMessaging.businessChatListener();
+                this.managers.messaging.businessMessaging.businessChatListener = null;
             }
             
-            // Clear any chat state
-            this.state.set('chatOpenedFromBusinessProfile', false);
-            this.state.set('currentChatType', null);
+            // Clear chat state
+            this.state.set('currentBusinessChatId', null);
+            this.state.set('currentBusinessId', null);
             
-            console.log('💥 Force closed all overlays, returning to main');
+            // Use navigation manager for proper stack handling
+            this.managers.navigation.closeOverlay('businessChat');
+        },
+        
+        fillBusinessQuestion: (button) => {
+            const questionText = button.textContent.trim();
+            const input = document.getElementById('businessChatInput');
+            if (input) {
+                input.value = questionText;
+                input.focus();
+            }
+        },
+        
+        sendBusinessMessage: () => {
+            if (this.managers.messaging?.businessMessaging) {
+                this.managers.messaging.businessMessaging.sendBusinessMessage();
+            }
         },
             showBusinessSignup: () => this.managers.business.showBusinessSignup(),
             shareBusinessProfile: () => this.managers.business.shareBusinessProfile(),

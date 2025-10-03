@@ -132,8 +132,11 @@ export class BusinessMessagingManager {
      * SECURITY: Uses different UI than social chat
      */
     openBusinessChat(businessId, conversationId) {
-        // Get business data for header
-        const businessData = this.state.get('currentBusiness');
+        // Prevent chat from opening if we're closing overlays
+        if (this.state.get('closingOverlays')) {
+            console.log('⚠️ Blocking chat open during overlay closing');
+            return;
+        }
         
         // Debug logging
         console.log('📬 Opening business chat with data:', {

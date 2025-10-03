@@ -657,7 +657,7 @@
         <!-- Business Profile View Overlay -->
         <div id="businessProfile" class="overlay-screen">
            <div class="header">
-               <button class="back-btn" id="profileBackBtn" onclick="CLASSIFIED.closeBusinessProfile()">←</button>
+               <button class="back-btn" id="profileBackBtn" onclick="event.stopPropagation(); CLASSIFIED.closeBusinessProfile(); return false;">←</button>
                 <div class="header-title" id="profileHeaderTitle">Business Profile</div>
                 <button class="settings-btn" onclick="CLASSIFIED.getBusinessDirections()">🗺️</button>
             </div>
@@ -777,7 +777,7 @@
         <!-- Individual Chat Overlay -->
         <div id="individualChat" class="overlay-screen">
             <div class="chat-header">
-                <button class="back-btn" id="chatBackBtn" onclick="CLASSIFIED.closeChat(); event.stopPropagation();">←</button>
+                <button class="back-btn" id="chatBackBtn" onclick="event.stopPropagation(); CLASSIFIED.closeChat(); return false;">←</button>
                 <div class="chat-header-avatar" id="chatAvatar" onclick="CLASSIFIED.openProfileFromChat();"></div>
                 <div class="chat-header-info" onclick="CLASSIFIED.openProfileFromChat();">
                     <div class="chat-header-name" id="chatName">Jessica</div>

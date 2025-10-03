@@ -638,6 +638,78 @@ loadDemoContent() {
                     });
                 }
             },
+
+            // Business Chat (NEW SEPARATE SYSTEM)
+            openBusinessChat: (businessId, conversationId) => {
+                if (this.managers.messaging?.businessMessaging) {
+                    this.managers.messaging.businessMessaging.openBusinessChat(businessId, conversationId);
+                }
+            },
+
+            closeBusinessChat: () => {
+                console.log('🏪 Closing business chat');
+                
+                // Hide the overlay
+                const overlay = document.getElementById('businessChat');
+                if (overlay) {
+                    overlay.classList.remove('show');
+                    overlay.style.display = '';
+                }
+                
+                // Clean up listener
+                if (this.managers.messaging?.businessMessaging?.businessChatUnsubscribe) {
+                    this.managers.messaging.businessMessaging.businessChatUnsubscribe();
+                    this.managers.messaging.businessMessaging.businessChatUnsubscribe = null;
+                }
+                
+                // Clear state
+                this.state.set('currentBusinessChatId', null);
+                this.state.set('currentBusinessId', null);
+            },
+
+            sendBusinessChatMessage: async () => {
+                const input = document.getElementById('businessMessageInput');
+                if (!input || !input.value.trim()) return;
+                
+                const conversationId = this.state.get('currentBusinessChatId');
+                const user = this.state.get('currentUser');
+                
+                if (!conversationId || !user) {
+                    console.error('Missing conversation or user info');
+                    return;
+                }
+                
+                try {
+                    // Import the needed Firestore functions
+                    const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js');
+                    
+                    const messagesRef = collection(
+                        this.managers.db, 
+                        'businessConversations', 
+                        conversationId, 
+                        'messages'
+                    );
+                    
+                    await addDoc(messagesRef, {
+                        text: input.value.trim(),
+                        senderId: user.uid,
+                        senderName: user.displayName || 'User',
+                        senderType: 'user',
+                        timestamp: serverTimestamp(),
+                        read: false
+                    });
+                    
+                    // Clear input
+                    input.value = '';
+                    
+                    console.log('✅ Business message sent');
+                    
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    alert('Failed to send message');
+                }
+            },
+            
             
             // Photo upload
             triggerPhotoUpload: (slot) => this.managers.photoUpload.triggerPhotoUpload(slot),

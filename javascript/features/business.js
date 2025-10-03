@@ -1087,24 +1087,21 @@ export class BusinessManager {
      */
     async trackBusinessView(businessId) {
         try {
-            // Increment view counter
-            const analyticsRef = doc(this.db, 'businessAnalytics', businessId);
+            const user = this.state.get('currentUser');
+            if (!user) return;
             
-            const analyticsDoc = await getDoc(analyticsRef);
-            const currentViews = analyticsDoc.exists() ? (analyticsDoc.data().views || 0) : 0;
-            
-            await setDoc(analyticsRef, {
-                views: currentViews + 1,
-                lastViewedAt: serverTimestamp()
-            }, { merge: true });
+            await addDoc(collection(this.db, 'businessAnalytics'), {
+                businessId: businessId,
+                type: 'view',
+                timestamp: serverTimestamp()
+            });
             
             console.log('👁️ Business view tracked');
-            
         } catch (error) {
             console.error('Error tracking view:', error);
         }
     }
-    
+        
     /**
      * Show business UI elements
      */

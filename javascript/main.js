@@ -570,12 +570,27 @@ loadDemoContent() {
                     console.error('❌ Messaging not initialized');
                 }
             },
-            openBusinessConversation: (conversationId) => {
-                console.log('Opening business conversation:', conversationId);
-                if (this.managers.messaging?.businessMessaging) {
-                    this.managers.messaging.businessMessaging.openBusinessConversationFromDashboard(conversationId);
+            messageBusinessFromProfile: () => {
+                const businessData = this.managers.state.get('currentBusiness');
+                console.log('📬 Starting conversation from profile:', {
+                    businessData: businessData,
+                    businessId: businessData?.id || businessData?.uid,
+                    businessName: businessData?.name || businessData?.businessName
+                });
+                
+                // Try different possible ID fields
+                const businessId = businessData?.uid || businessData?.id;
+                if (businessId) {
+                    if (this.managers.messaging?.businessMessaging) {
+                        return this.managers.messaging.businessMessaging.startBusinessConversation(businessId);
+                    } else if (this.managers.messaging) {
+                        return this.managers.messaging.startBusinessConversation(businessId);
+                    } else {
+                        console.error('❌ Messaging not initialized');
+                    }
                 } else {
-                    console.error('Business messaging manager not found');
+                    console.error('❌ No business ID found in currentBusiness state');
+                    alert('Unable to message this business. Please try again.');
                 }
             },
             

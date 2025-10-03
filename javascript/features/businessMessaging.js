@@ -73,46 +73,23 @@ export class BusinessMessagingManager {
             // Format: business_[businessId]_user_[userId]
             const conversationId = `business_${businessId}_user_${user.uid}`;
             
-              // Check if conversation exists
-            console.log('🔍 Checking for existing conversation:', conversationId);
+            // Check if conversation exists
             const conversationRef = doc(this.db, 'businessConversations', conversationId);
-            
-            let conversationDoc;
-            try {
-                conversationDoc = await getDoc(conversationRef);
-                console.log('✅ Conversation check successful, exists:', conversationDoc.exists());
-            } catch (readError) {
-                console.error('❌ Error reading conversation:', readError);
-                // If we can't read, assume it doesn't exist and try to create
-                conversationDoc = { exists: () => false };
-            }
+            const conversationDoc = await getDoc(conversationRef);
             
             if (!conversationDoc.exists()) {
-                // Debug: Log exactly what we're sending
-                const conversationData = {
+                // Create new business conversation
+                await setDoc(conversationRef, {
                     businessId: businessId,
+                    businessName: businessName, // Add business name
                     userId: user.uid,
                     userName: user.displayName || 'User',
                     createdAt: serverTimestamp(),
-                    type: 'business_inquiry'
-                };
-                
-                console.log('📝 Attempting to create conversation with:', {
-                    conversationId: conversationId,
-                    data: conversationData,
-                    userAuth: user.uid
-                });
-                
-                // Create with only the fields required by Firebase rules
-                await setDoc(conversationRef, conversationData);
-                
-                // Then update with additional fields
-                await updateDoc(conversationRef, {
-                    businessName: businessName,
                     lastMessage: null,
                     lastMessageTime: serverTimestamp(),
                     userUnread: 0,
-                    businessUnread: 0
+                    businessUnread: 0,
+                    type: 'business_inquiry' // SECURITY: Mark as business message
                 });
                 
                 console.log('📬 Business conversation created:', conversationId);
@@ -132,11 +109,8 @@ export class BusinessMessagingManager {
      * SECURITY: Uses different UI than social chat
      */
     openBusinessChat(businessId, conversationId) {
-        // Prevent chat from opening if we're closing overlays
-        if (this.state.get('closingOverlays')) {
-            console.log('⚠️ Blocking chat open during overlay closing');
-            return;
-        }
+        // Get business data for header
+        const businessData = this.state.get('currentBusiness');
         
         // Debug logging
         console.log('📬 Opening business chat with data:', {

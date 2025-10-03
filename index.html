@@ -1448,6 +1448,32 @@
             </div>
         </div>
     </div>
+
+
+    <!-- Business Chat Overlay (Separate from Social Chat) -->
+<div id="businessChat" class="overlay-screen business-chat-overlay">
+    <div class="chat-header">
+        <button class="back-btn" onclick="CLASSIFIED.closeBusinessChat()">←</button>
+        <div class="chat-header-avatar">🏪</div>
+        <div class="chat-header-info">
+            <div class="chat-header-name" id="businessChatName">Business</div>
+            <div class="chat-status">Business Inquiry</div>
+        </div>
+    </div>
+    <div class="chat-messages" id="businessChatMessages">
+        <!-- Messages load here -->
+    </div>
+    <div class="chat-input-container">
+        <input type="text" 
+               id="businessMessageInput" 
+               class="chat-input" 
+               placeholder="Type a message..." 
+               onkeypress="if(event.key==='Enter') CLASSIFIED.sendBusinessChatMessage()">
+        <button class="send-button" onclick="CLASSIFIED.sendBusinessChatMessage()">
+            <span>Send</span>
+        </button>
+    </div>
+</div>
     
     <!-- Load JavaScript modules -->
     <!-- Note: Firebase is loaded as ES6 modules via CDN in firebase.js -->

@@ -95,6 +95,13 @@ export class BusinessMessagingManager {
                 
                 // Create with only the fields required by Firebase rules
                 await setDoc(conversationRef, conversationData);
+                    conversationId: conversationId,
+                    data: conversationData,
+                    userAuth: user.uid
+                });
+                
+                // Create with only the fields required by Firebase rules
+                await setDoc(conversationRef, conversationData);
                     businessId: businessId,
                     userId: user.uid,
                     userName: user.displayName || 'User',

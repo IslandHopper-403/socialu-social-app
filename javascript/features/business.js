@@ -729,7 +729,7 @@ export class BusinessManager {
         const heroElement = document.getElementById('profileHero');
         if (heroElement && (business.photos?.[0] || business.image)) {
             const imageUrl = business.photos?.[0] || business.image;
-            heroElement.style.backgroundImage = `url('${escapeHtml(imageUrl)}')`;
+            heroElement.style.backgroundImage = `url("${imageUrl}")`;
         }
           // Add photo counter
          this.addPhotoCounter(business);

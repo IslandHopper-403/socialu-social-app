@@ -416,27 +416,14 @@ export class BusinessMessagingManager {
                 chatAvatar.style.justifyContent = 'center';
             }
             
-            // Show chat overlay with dynamic z-index
-            const chatOverlay = document.getElementById('individualChat');
+            // Show business chat overlay
+            const chatOverlay = document.getElementById('businessChat');
             if (chatOverlay) {
-                // DYNAMIC Z-INDEX: Calculate based on current overlays
-                const currentOverlays = document.querySelectorAll('.overlay-screen.show');
-                const maxZIndex = Array.from(currentOverlays).reduce((max, el) => {
-                    const zIndex = parseInt(window.getComputedStyle(el).zIndex) || 0;
-                    return Math.max(max, zIndex);
-                }, 0);
-                
-                // Boost chat above all current overlays
-                const boostZIndex = maxZIndex + 50;
-                chatOverlay.style.zIndex = boostZIndex;
-                console.log(`🎯 Business chat z-index boosted to ${boostZIndex}`);
-                
                 chatOverlay.classList.add('show');
-                chatOverlay.dataset.chatType = 'business-response'; // Mark as business responding
                 
                 // Track in overlay stack
                 if (window.CLASSIFIED && window.CLASSIFIED.managers && window.CLASSIFIED.managers.navigation) {
-                    window.CLASSIFIED.managers.navigation.showOverlay('individualChat');
+                    window.CLASSIFIED.managers.navigation.showOverlay('businessChat');
                 }
             }
             

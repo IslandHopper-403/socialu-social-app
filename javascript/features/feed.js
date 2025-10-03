@@ -575,11 +575,10 @@ export class FeedManager {
         // Create header
         const header = document.createElement('div');
         header.className = 'business-header';
-
+        
         const logo = document.createElement('div');
         logo.className = 'business-logo';
-        const logoUrl = business.logo || business.photos?.[0] || '';
-        logo.style.backgroundImage = `url("${logoUrl}")`;  // Use double quotes
+        logo.style.backgroundImage = `url('${escapeHtml(business.logo)}')`;
         
         const info = document.createElement('div');
         info.className = 'business-info';
@@ -683,7 +682,7 @@ export class FeedManager {
                 height: 100%;
                 flex-shrink: 0;
                 scroll-snap-align: start;
-                background-image: url("${photo}");
+                background-image: url('${escapeHtml(photo)}');
                 background-size: cover;
                 background-position: center;
             `;

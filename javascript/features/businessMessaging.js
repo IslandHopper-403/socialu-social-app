@@ -159,20 +159,22 @@ export class BusinessMessagingManager {
         // Store that we came from business profile (for proper back navigation)
         this.state.set('chatOpenedFromBusinessProfile', true);
         
-        // Update business chat header with business info
-        const chatName = document.getElementById('businessChatName');
+        // Update business chat header with business info - use querySelector to avoid conflicts
+        const chatName = document.querySelector('#businessChat .chat-header-name');
         if (chatName) {
             chatName.textContent = businessName;
             console.log('✅ Set business chat name:', businessName);
+        } else {
+            console.error('❌ businessChatName element not found');
         }
         
-        const emptyStateTitle = document.getElementById('emptyStateTitle');
+        const emptyStateTitle = document.querySelector('#businessChat .empty-title');
         if (emptyStateTitle) {
             emptyStateTitle.textContent = `Message ${businessName}`;
         }
         
         // Set business avatar image
-        const chatAvatar = document.getElementById('businessChatAvatar');
+        const chatAvatar = document.querySelector('#businessChat .chat-header-avatar');
         if (chatAvatar) {
             console.log('📸 Business data for avatar:', businessData);
             

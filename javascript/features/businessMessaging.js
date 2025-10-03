@@ -148,6 +148,8 @@ export class BusinessMessagingManager {
         this.state.set('currentChatType', 'business');
         this.state.set('currentChatBusinessId', businessId);
         this.state.set('currentBusinessConversationId', conversationId);
+        // Store business data for chat header
+        this.state.set('currentBusinessChatData', businessData);
         
         // Mark this as a business chat
         this.state.set('currentChatType', 'business');
@@ -157,23 +159,40 @@ export class BusinessMessagingManager {
         // Store that we came from business profile (for proper back navigation)
         this.state.set('chatOpenedFromBusinessProfile', true);
         
-       // Update business chat header with business info
+        // Update business chat header with business info
         const chatName = document.getElementById('businessChatName');
-        if (chatName) chatName.textContent = businessName;
+        if (chatName) {
+            chatName.textContent = businessName;
+            console.log('✅ Set business chat name:', businessName);
+        }
         
         const emptyStateTitle = document.getElementById('emptyStateTitle');
-        if (emptyStateTitle) emptyStateTitle.textContent = `Message ${businessName}`;
+        if (emptyStateTitle) {
+            emptyStateTitle.textContent = `Message ${businessName}`;
+        }
         
         // Set business avatar image
         const chatAvatar = document.getElementById('businessChatAvatar');
-        if (chatAvatar && businessData) {
-            const avatarUrl = businessData.images?.[0] || businessData.avatar || businessData.profileImage || '';
+        if (chatAvatar) {
+            console.log('📸 Business data for avatar:', businessData);
+            
+            // Try multiple possible image sources
+            const avatarUrl = businessData?.images?.[0] || 
+                             businessData?.avatar || 
+                             businessData?.profileImage || 
+                             businessData?.photos?.[0] ||
+                             '';
+            
+            console.log('📸 Avatar URL:', avatarUrl);
+            
             if (avatarUrl) {
                 chatAvatar.src = avatarUrl;
                 chatAvatar.alt = businessName;
+                chatAvatar.style.display = 'block';
             } else {
-                // Fallback: use emoji if no image
+                // Fallback: hide image, show placeholder
                 chatAvatar.style.display = 'none';
+                console.warn('⚠️ No avatar image found for business');
             }
         }
         

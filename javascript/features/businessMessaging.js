@@ -157,22 +157,41 @@ export class BusinessMessagingManager {
         // Store that we came from business profile (for proper back navigation)
         this.state.set('chatOpenedFromBusinessProfile', true);
         
-        // Show chat overlay with dynamic z-index management
-        const chatOverlay = document.getElementById('individualChat');
+       // Update business chat header with business info
+        const chatName = document.getElementById('businessChatName');
+        if (chatName) chatName.textContent = businessName;
+        
+        const emptyStateTitle = document.getElementById('emptyStateTitle');
+        if (emptyStateTitle) emptyStateTitle.textContent = `Message ${businessName}`;
+        
+        // Set business avatar image
+        const chatAvatar = document.getElementById('businessChatAvatar');
+        if (chatAvatar && businessData) {
+            const avatarUrl = businessData.images?.[0] || businessData.avatar || businessData.profileImage || '';
+            if (avatarUrl) {
+                chatAvatar.src = avatarUrl;
+                chatAvatar.alt = businessName;
+            } else {
+                // Fallback: use emoji if no image
+                chatAvatar.style.display = 'none';
+            }
+        }
+        
+        // Set status text
+        const statusText = document.getElementById('businessChatStatusText');
+        if (statusText) {
+            // You can enhance this later with real business hours
+            statusText.textContent = 'Business Inquiry';
+        }
+        
+        // Show business chat overlay (separate from social chat)
+        const chatOverlay = document.getElementById('businessChat');
         if (chatOverlay) {
-            // FIXED Z-INDEX: Set to 450 (dashboard is 400, messages overlay is 405)
-            chatOverlay.style.zIndex = '450';
-            console.log('🎯 Business chat z-index set to 450 (above dashboard and messages)');
-            
             chatOverlay.classList.add('show');
-            chatOverlay.dataset.chatType = 'business-response'; // Mark as business responding
-            
-            // Force display in case CSS is blocking
-            chatOverlay.style.display = 'flex';
             
             // Track in overlay stack
             if (window.CLASSIFIED && window.CLASSIFIED.managers && window.CLASSIFIED.managers.navigation) {
-                window.CLASSIFIED.managers.navigation.showOverlay('individualChat');
+                window.CLASSIFIED.managers.navigation.showOverlay('businessChat');
             }
         }
         
@@ -192,8 +211,15 @@ export class BusinessMessagingManager {
             const messagesQuery = query(messagesRef, orderBy('timestamp', 'asc'));
             const snapshot = await getDocs(messagesQuery);
             
-            const chatMessages = document.getElementById('chatMessages');
+            const chatMessages = document.getElementById('businessChatMessages');
             if (!chatMessages) return;
+            
+            // Hide empty state on first message load
+            const emptyState = document.getElementById('businessChatEmptyState');
+            if (emptyState) emptyState.style.display = 'none';
+            
+            // Clear existing messages
+            chatMessages.innerHTML = '';
             
             // Clear existing messages
             chatMessages.innerHTML = '';
@@ -223,9 +249,13 @@ export class BusinessMessagingManager {
      * Display a business message
      * SECURITY: Sanitize all user content
      */
-    displayBusinessMessage(message) {
-        const chatMessages = document.getElementById('chatMessages');
+        displayBusinessMessage(message) {
+        const chatMessages = document.getElementById('businessChatMessages');
         if (!chatMessages) return;
+        
+        // Hide empty state when first message appears
+        const emptyState = document.getElementById('businessChatEmptyState');
+        if (emptyState) emptyState.style.display = 'none';
         
         const user = this.state.get('currentUser');
         const isOwn = message.senderId === user?.uid;
@@ -279,7 +309,7 @@ export class BusinessMessagingManager {
                         this.displayBusinessMessage(change.doc.data());
                         
                         // Auto-scroll to bottom
-                        const chatMessages = document.getElementById('chatMessages');
+                        const chatMessages = document.getElementById('businessChatMessages');
                         if (chatMessages) {
                             chatMessages.scrollTop = chatMessages.scrollHeight;
                         }

@@ -296,6 +296,7 @@ export class FeedManager {
         );
         
         const snapshot = await getDocs(q);
+        console.log(`🔍 Found ${snapshot.size} activities in Firebase`);
         
         snapshot.forEach(doc => {
             const business = doc.data();
@@ -984,5 +985,13 @@ export class FeedManager {
             'expensive': '$$$ - Expensive'
         };
         return priceMap[priceRange] || '$$ - Moderate';
+    }
+
+    /**
+     * Refresh activity feed (for debugging)
+     */
+    async refreshActivityFeed() {
+        console.log('🔄 Refreshing activity feed...');
+        await this.populateActivityFeed();
     }
 }

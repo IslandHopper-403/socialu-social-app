@@ -95,6 +95,15 @@ export class BusinessMessagingManager {
                 
                 // Create with only the fields required by Firebase rules
                 await setDoc(conversationRef, conversationData);
+                
+                // Then update with additional fields
+                await updateDoc(conversationRef, {
+                    businessName: businessName,
+                    lastMessage: null,
+                    lastMessageTime: serverTimestamp(),
+                    userUnread: 0,
+                    businessUnread: 0
+                });
                     conversationId: conversationId,
                     data: conversationData,
                     userAuth: user.uid

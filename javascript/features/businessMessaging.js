@@ -285,8 +285,8 @@ export class BusinessMessagingManager {
      * SECURITY: Validate and sanitize input
      */
     async sendBusinessMessage() {
-        const messageInput = document.getElementById('messageInput');
-        if (!messageInput || !messageInput.value.trim()) return;
+    const messageInput = document.getElementById('businessChatInput');
+    if (!messageInput || !messageInput.value.trim()) return;
         
         const user = this.state.get('currentUser');
         const conversationId = this.state.get('currentBusinessConversationId');
@@ -401,13 +401,13 @@ export class BusinessMessagingManager {
             this.state.set('currentChatBusinessId', data.businessId);
             
             // Update chat header with customer name
-            const chatHeader = document.getElementById('chatName');
+            const chatHeader = document.querySelector('#businessChat .chat-header-name');
             if (chatHeader) {
                 chatHeader.textContent = data.userName || 'Customer';
             }
             
             // Update avatar to show it's a customer chat
-            const chatAvatar = document.getElementById('chatAvatar');
+            const chatAvatar = document.querySelector('#businessChat .chat-header-avatar');
             if (chatAvatar) {
                 chatAvatar.textContent = '👤';
                 chatAvatar.style.fontSize = '24px';

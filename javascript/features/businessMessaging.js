@@ -73,9 +73,19 @@ export class BusinessMessagingManager {
             // Format: business_[businessId]_user_[userId]
             const conversationId = `business_${businessId}_user_${user.uid}`;
             
-            // Check if conversation exists
+              // Check if conversation exists
+            console.log('🔍 Checking for existing conversation:', conversationId);
             const conversationRef = doc(this.db, 'businessConversations', conversationId);
-            const conversationDoc = await getDoc(conversationRef);
+            
+            let conversationDoc;
+            try {
+                conversationDoc = await getDoc(conversationRef);
+                console.log('✅ Conversation check successful, exists:', conversationDoc.exists());
+            } catch (readError) {
+                console.error('❌ Error reading conversation:', readError);
+                // If we can't read, assume it doesn't exist and try to create
+                conversationDoc = { exists: () => false };
+            }
             
             if (!conversationDoc.exists()) {
                 // Debug: Log exactly what we're sending

@@ -578,9 +578,7 @@ export class FeedManager {
         
         const logo = document.createElement('div');
         logo.className = 'business-logo';
-        // Fix: Properly escape quotes in URL for CSS
-        const logoUrl = (business.logo || business.photos?.[0] || '').replace(/'/g, "\\'");
-        logo.style.backgroundImage = `url('${logoUrl}')`;
+        logo.style.backgroundImage = `url('${escapeHtml(business.logo)}')`;
         
         const info = document.createElement('div');
         info.className = 'business-info';
@@ -684,7 +682,7 @@ export class FeedManager {
                 height: 100%;
                 flex-shrink: 0;
                 scroll-snap-align: start;
-                window.classifiedApp.managers.feed.refreshActivityFeed()
+                background-image: url('${escapeHtml(photo)}');
                 background-size: cover;
                 background-position: center;
             `;

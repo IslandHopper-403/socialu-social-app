@@ -162,31 +162,36 @@ export class BusinessMessagingManager {
             const messagesQuery = query(messagesRef, orderBy('timestamp', 'asc'));
             const snapshot = await getDocs(messagesQuery);
             
-            const chatMessages = document.getElementById('businessChatMessages');
+          const chatMessages = document.getElementById('businessChatMessages');
             if (!chatMessages) return;
             
-            // Hide empty state on first message load
-            const emptyState = document.getElementById('businessChatEmptyState');
-            if (emptyState) emptyState.style.display = 'none';
+            // Check if there are any messages
+            const hasMessages = !snapshot.empty;
             
-            // Clear existing messages
-            chatMessages.innerHTML = '';
-            
-            // Clear existing messages
-            chatMessages.innerHTML = '';
-            
-            // Add business chat notice
-            const notice = document.createElement('div');
-            notice.className = 'chat-notice';
-            notice.style.cssText = 'text-align: center; padding: 10px; opacity: 0.7; font-size: 12px;';
-            notice.textContent = '💼 Business Inquiry - Response time usually within 2 hours';
-            chatMessages.appendChild(notice);
-            
-            // Display messages
-            snapshot.forEach(doc => {
-                const message = doc.data();
-                this.displayBusinessMessage(message);
-            });
+            if (hasMessages) {
+                // Hide empty state only if messages exist
+                const emptyState = document.getElementById('businessChatEmptyState');
+                if (emptyState) emptyState.style.display = 'none';
+                
+                // Clear existing messages
+                chatMessages.innerHTML = '';
+                
+                // Add business chat notice
+                const notice = document.createElement('div');
+                notice.className = 'chat-notice';
+                notice.style.cssText = 'text-align: center; padding: 10px; opacity: 0.7; font-size: 12px;';
+                notice.textContent = '💼 Business Inquiry - Response time usually within 2 hours';
+                chatMessages.appendChild(notice);
+                
+                // Display messages
+                snapshot.forEach(doc => {
+                    const message = doc.data();
+                    this.displayBusinessMessage(message);
+                });
+            } else {
+                // No messages - keep empty state visible
+                console.log('📭 No messages yet, showing empty state');
+            }
             
             // Scroll to bottom
             chatMessages.scrollTop = chatMessages.scrollHeight;

@@ -674,40 +674,19 @@ loadDemoContent() {
                 const conversationId = this.state.get('currentBusinessChatId');
                 const user = this.state.get('currentUser');
                 
-                if (!conversationId || !user) {
-                    console.error('Missing conversation or user info');
+                if (!conversationId || !user || !this.managers.messaging?.businessMessaging) {
+                    console.error('Missing required data');
                     return;
                 }
                 
-                try {
-                    // Import the needed Firestore functions
-                    const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js');
-                    
-                    const messagesRef = collection(
-                        this.managers.db, 
-                        'businessConversations', 
-                        conversationId, 
-                        'messages'
-                    );
-                    
-                    await addDoc(messagesRef, {
-                        text: input.value.trim(),
-                        senderId: user.uid,
-                        senderName: user.displayName || 'User',
-                        senderType: 'user',
-                        timestamp: serverTimestamp(),
-                        read: false
-                    });
-                    
-                    // Clear input
-                    input.value = '';
-                    
-                    console.log('✅ Business message sent');
-                    
-                } catch (error) {
-                    console.error('Error sending message:', error);
-                    alert('Failed to send message');
-                }
+                // Call the method in businessMessaging.js instead
+                await this.managers.messaging.businessMessaging.sendBusinessChatMessage(
+                    conversationId, 
+                    input.value.trim(), 
+                    user
+                );
+                
+                input.value = '';
             },
             
             

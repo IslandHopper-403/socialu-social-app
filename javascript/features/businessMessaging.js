@@ -104,124 +104,51 @@ export class BusinessMessagingManager {
         }
     }
     
-    /**
-     * Open business chat interface
-     * SECURITY: Uses different UI than social chat
-     */
-    openBusinessChat(businessId, conversationId) {
-        // Get business data for header
-        const businessData = this.state.get('currentBusiness');
-        
-        // Debug logging
-        console.log('📬 Opening business chat with data:', {
-            businessId: businessId,
-            businessData: businessData,
-            businessName: businessData?.name,
-            businessTitle: businessData?.businessName,
-            allKeys: businessData ? Object.keys(businessData) : []
-        });
-        
-        // Update chat header for business - correct element ID is 'chatName'
-        const chatHeader = document.getElementById('chatName');
-        if (chatHeader && businessData) {
-            // SECURITY: Use textContent for business name
-            // Try multiple possible property names for the business name
-            const displayName = businessData.businessName || businessData.name || businessData.title || 'Business';
-            chatHeader.textContent = displayName;
-            chatHeader.dataset.businessChat = 'true'; // Mark as business chat
-            console.log('✅ Chat header updated to:', displayName);
+         /**
+         * Open business chat interface
+         * SECURITY: Uses new businessChat overlay, separate from social chat
+         */
+        openBusinessChat(businessId, conversationId) {
+            const businessData = this.state.get('currentBusiness');
+            const businessName = businessData?.businessName || businessData?.name || businessData?.title || 'Business';
             
-            // Also update the avatar to show it's a business
-            const chatAvatar = document.getElementById('chatAvatar');
-            if (chatAvatar) {
-                chatAvatar.textContent = '🏪'; // Business icon
-                chatAvatar.style.fontSize = '24px';
-                chatAvatar.style.display = 'flex';
-                chatAvatar.style.alignItems = 'center';
-                chatAvatar.style.justifyContent = 'center';
+            console.log('📬 Opening business chat:', { businessId, businessName });
+            
+            // Set state
+            this.state.set('currentChatType', 'business');
+            this.state.set('currentChatBusinessId', businessId);
+            this.state.set('currentBusinessConversationId', conversationId);
+            this.state.set('chatOpenedFromBusinessProfile', true);
+            
+            // Update header name
+            const chatName = document.querySelector('#businessChat .chat-header-name');
+            if (chatName) chatName.textContent = businessName;
+            
+            // Update empty state title
+            const emptyTitle = document.querySelector('#businessChat .empty-title');
+            if (emptyTitle) emptyTitle.textContent = `Message ${businessName}`;
+            
+            // Set avatar image
+            const chatAvatar = document.querySelector('#businessChat .chat-header-avatar');
+            if (chatAvatar && businessData) {
+                const avatarUrl = businessData.images?.[0] || businessData.avatar || businessData.profileImage || '';
+                if (avatarUrl) {
+                    chatAvatar.src = avatarUrl;
+                    chatAvatar.alt = businessName;
+                }
             }
-        } else {
-            console.error('❌ Chat header element not found or businessData missing');
-        }
-        
-        // Mark this as a business chat
-        this.state.set('currentChatType', 'business');
-        this.state.set('currentChatBusinessId', businessId);
-        this.state.set('currentBusinessConversationId', conversationId);
-        // Store business data for chat header
-        this.state.set('currentBusinessChatData', businessData);
-        
-        // Mark this as a business chat
-        this.state.set('currentChatType', 'business');
-        this.state.set('currentChatBusinessId', businessId);
-        this.state.set('currentBusinessConversationId', conversationId);
-        
-        // Store that we came from business profile (for proper back navigation)
-        this.state.set('chatOpenedFromBusinessProfile', true);
-        
-        // Update business chat header with business info - use querySelector to avoid conflicts
-        const chatName = document.querySelector('#businessChat .chat-header-name');
-        if (chatName) {
-            chatName.textContent = businessName;
-            console.log('✅ Set business chat name:', businessName);
-        } else {
-            console.error('❌ businessChatName element not found');
-        }
-        
-        const emptyStateTitle = document.querySelector('#businessChat .empty-title');
-        if (emptyStateTitle) {
-            emptyStateTitle.textContent = `Message ${businessName}`;
-        }
-        
-        // Set business avatar image
-        const chatAvatar = document.querySelector('#businessChat .chat-header-avatar');
-        if (chatAvatar) {
-            console.log('📸 Business data for avatar:', businessData);
             
-            // Try multiple possible image sources
-            const avatarUrl = businessData?.images?.[0] || 
-                             businessData?.avatar || 
-                             businessData?.profileImage || 
-                             businessData?.photos?.[0] ||
-                             '';
-            
-            console.log('📸 Avatar URL:', avatarUrl);
-            
-            if (avatarUrl) {
-                chatAvatar.src = avatarUrl;
-                chatAvatar.alt = businessName;
-                chatAvatar.style.display = 'block';
-            } else {
-                // Fallback: hide image, show placeholder
-                chatAvatar.style.display = 'none';
-                console.warn('⚠️ No avatar image found for business');
+            // Show overlay
+            const overlay = document.getElementById('businessChat');
+            if (overlay) {
+                overlay.classList.add('show');
+                window.CLASSIFIED?.managers?.navigation?.showOverlay('businessChat');
             }
-        }
-        
-        // Set status text
-        const statusText = document.getElementById('businessChatStatusText');
-        if (statusText) {
-            // You can enhance this later with real business hours
-            statusText.textContent = 'Business Inquiry';
-        }
-        
-        // Show business chat overlay (separate from social chat)
-        const chatOverlay = document.getElementById('businessChat');
-        if (chatOverlay) {
-            chatOverlay.classList.add('show');
             
-            // Track in overlay stack
-            if (window.CLASSIFIED && window.CLASSIFIED.managers && window.CLASSIFIED.managers.navigation) {
-                window.CLASSIFIED.managers.navigation.showOverlay('businessChat');
-            }
+            // Load messages
+            this.loadBusinessMessages(conversationId);
+            this.setupBusinessMessageListener(conversationId);
         }
-        
-        // Load business conversation messages
-        this.loadBusinessMessages(conversationId);
-        
-        // Set up business message listener
-        this.setupBusinessMessageListener(conversationId);
-    }
     
     /**
      * Load business conversation messages

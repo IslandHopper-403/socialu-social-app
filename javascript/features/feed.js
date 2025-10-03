@@ -290,7 +290,7 @@ export class FeedManager {
         const q = query(
             collection(this.db, 'businesses'),
             where('type', '==', 'activity'),
-            where('status', '==', 'active'),
+            where('status', 'in', ['active', 'pending_approval']),
             orderBy('updatedAt', 'desc'),
             limit(20)
         );

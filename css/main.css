@@ -2093,3 +2093,80 @@ body.business-user #socialScreen {
     right: 0;
     background: linear-gradient(to left, rgba(0,0,0,0.8), transparent);
 }
+
+
+
+/* ===== Business Chat Overlay Styles (User to Business Messaging Overlay) ===== */
+/* Business Chat Overlay Styles */
+#businessChat #businessChatAvatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+#businessChatEmptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+#businessChatEmptyState .empty-icon {
+    font-size: 50px;
+    margin-bottom: 12px;
+    opacity: 0.6;
+}
+
+#businessChatEmptyState .empty-title {
+    color: #fff;
+    font-weight: 600;
+    font-size: 17px;
+    margin-bottom: 6px;
+}
+
+#businessChatEmptyState .empty-text {
+    color: #999;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.quick-questions-container {
+    width: 100%;
+    max-width: 280px;
+}
+
+.quick-questions-label {
+    color: #999;
+    font-size: 12px;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.quick-question-btn {
+    background: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    color: #fff;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    width: 100%;
+    text-align: left;
+    transition: all 0.2s;
+}
+
+.quick-question-btn:hover {
+    background: #3a3a3a;
+    border-color: #00d4ff;
+    transform: translateX(5px);
+}
+
+.chat-status {
+    font-size: 12px;
+    color: #999;
+    margin-top: 2px;
+}

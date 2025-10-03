@@ -330,7 +330,7 @@ showContentSkeleton(containerId, type = 'default') {
         }
     }
 
-            /**
+           /**
              * Handle back navigation with overlay stack memory
              */
             handleOverlayBack(overlayId) {
@@ -347,14 +347,37 @@ showContentSkeleton(containerId, type = 'default') {
                 // Show previous overlay if one exists in stack
                 if (this.overlayStack.length > 0) {
                     const previousOverlay = this.overlayStack[this.overlayStack.length - 1];
+                    
+                    console.log('📊 Stack check:', {
+                        currentOverlay: overlayId,
+                        previousOverlay: previousOverlay,
+                        fullStack: [...this.overlayStack],
+                        shouldSkip: overlayId === 'businessProfile' && previousOverlay === 'individualChat'
+                    });
+                    
+                    // Don't auto-restore if we're closing businessProfile and going back to main feed
+                    if (overlayId === 'businessProfile' && previousOverlay === 'individualChat') {
+                        console.log('⚠️ Skipping chat restore when closing business profile');
+                        console.log('🏠 Returning to main feed instead');
+                        return;
+                    }
+                    
                     const prevElement = document.getElementById(previousOverlay);
                     
                     if (prevElement && !prevElement.classList.contains('show')) {
                         prevElement.classList.add('show');
                         console.log('📱 Restored:', previousOverlay);
+                    } else {
+                        console.log('⚡ Previous overlay state:', {
+                            exists: !!prevElement,
+                            alreadyShowing: prevElement?.classList.contains('show')
+                        });
                     }
+                } else {
+                    console.log('📭 No overlays left in stack - returning to main view');
                 }
             }
+        }
 
 
     /**

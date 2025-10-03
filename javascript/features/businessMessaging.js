@@ -104,28 +104,6 @@ export class BusinessMessagingManager {
                     userUnread: 0,
                     businessUnread: 0
                 });
-                    conversationId: conversationId,
-                    data: conversationData,
-                    userAuth: user.uid
-                });
-                
-                // Create with only the fields required by Firebase rules
-                await setDoc(conversationRef, conversationData);
-                    businessId: businessId,
-                    userId: user.uid,
-                    userName: user.displayName || 'User',
-                    createdAt: serverTimestamp(),
-                    type: 'business_inquiry'
-                });
-                
-                // Then update with additional fields
-                await updateDoc(conversationRef, {
-                    businessName: businessName,
-                    lastMessage: null,
-                    lastMessageTime: serverTimestamp(),
-                    userUnread: 0,
-                    businessUnread: 0
-                });
                 
                 console.log('📬 Business conversation created:', conversationId);
             }

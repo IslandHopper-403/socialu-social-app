@@ -213,6 +213,29 @@ setupBusinessChatListener(conversationId) {
         });
     });
 }
+
+    /**
+ * Send message in business chat
+ */
+async sendBusinessChatMessage(conversationId, messageText, user) {
+    try {
+        const messagesRef = collection(this.db, 'businessConversations', conversationId, 'messages');
+        
+        await addDoc(messagesRef, {
+            text: messageText,
+            senderId: user.uid,
+            senderName: user.displayName || 'User',
+            senderType: 'user',
+            timestamp: serverTimestamp(),
+            read: false
+        });
+        
+        console.log('✅ Business message sent');
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Failed to send message');
+    }
+}
     
     /**
      * Send a business message

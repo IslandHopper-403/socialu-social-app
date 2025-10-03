@@ -556,12 +556,14 @@ loadDemoContent() {
             startChatWithViewedUser: () => this.managers.messaging.startChatWithViewedUser(),
 
           // Business messaging & actions
-            openBusinessConversation: (conversationId) => {
-                console.log('Opening business conversation:', conversationId);
+            startBusinessConversation: (businessId) => {
+                console.log('📬 Starting business conversation with ID:', businessId);
                 if (this.managers.messaging?.businessMessaging) {
-                    this.managers.messaging.businessMessaging.openBusinessConversationFromDashboard(conversationId);
+                    return this.managers.messaging.businessMessaging.startBusinessConversation(businessId);
+                } else if (this.managers.messaging) {
+                    return this.managers.messaging.startBusinessConversation(businessId);
                 } else {
-                    console.error('Business messaging manager not found');
+                    console.error('❌ Messaging not initialized');
                 }
             },
             

@@ -541,14 +541,21 @@ loadDemoContent() {
             
             // Business interactions
             openBusinessProfile: (id, type) => this.managers.business.openBusinessProfile(id, type),
-            closeBusinessProfile: () => {
-            // Use the navigation manager's handleOverlayBack to ensure proper stack handling
+           closeBusinessProfile: () => {
+            // Nuclear option - force close everything and return to main
+            document.getElementById('businessProfile').classList.remove('show');
+            document.getElementById('individualChat').classList.remove('show');
+            
+            // Clear the navigation stack
             if (this.managers.navigation) {
-                this.managers.navigation.handleOverlayBack('businessProfile');
-            } else {
-                // Fallback
-                this.managers.navigation.closeOverlay('businessProfile');
+                this.managers.navigation.overlayStack = [];
             }
+            
+            // Clear any chat state
+            this.state.set('chatOpenedFromBusinessProfile', false);
+            this.state.set('currentChatType', null);
+            
+            console.log('💥 Force closed all overlays, returning to main');
         },
             showBusinessSignup: () => this.managers.business.showBusinessSignup(),
             shareBusinessProfile: () => this.managers.business.shareBusinessProfile(),

@@ -777,7 +777,7 @@
         <!-- Individual Chat Overlay -->
         <div id="individualChat" class="overlay-screen">
             <div class="chat-header">
-                <button class="back-btn" id="chatBackBtn">←</button>
+                <button class="back-btn" id="chatBackBtn" onclick="CLASSIFIED.closeChat(); event.stopPropagation();">←</button>
                 <div class="chat-header-avatar" id="chatAvatar" onclick="CLASSIFIED.openProfileFromChat();"></div>
                 <div class="chat-header-info" onclick="CLASSIFIED.openProfileFromChat();">
                     <div class="chat-header-name" id="chatName">Jessica</div>

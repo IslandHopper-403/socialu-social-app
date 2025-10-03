@@ -773,7 +773,48 @@
                 <button class="action-button primary-btn" onclick="CLASSIFIED.messageBusinessFromProfile()">Message</button>
             </div>
         </div>
-        
+
+        <!-- Business Chat Overlay -->
+        <div id="businessChat" class="overlay-screen">
+            <div class="chat-header">
+                <button class="back-btn" onclick="CLASSIFIED.closeBusinessChat()">←</button>
+                <img src="" alt="" class="chat-header-avatar" id="businessChatAvatar" style="width: 45px; height: 45px; border-radius: 12px; object-fit: cover;">
+                <div class="chat-header-info">
+                    <div class="chat-header-name" id="businessChatName">Business</div>
+                    <div class="chat-status" id="businessChatStatus">
+                        <span class="status-dot" style="width: 6px; height: 6px; background: #4ade80; border-radius: 50%; display: inline-block; margin-right: 5px;"></span>
+                        <span id="businessChatStatusText">Business Inquiry</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="businessChatMessages">
+                <!-- Empty state with quick questions -->
+                <div class="business-chat-empty-state" id="businessChatEmptyState" style="display: flex; flex-direction: column; align-items: center; padding: 40px 20px; text-align: center;">
+                    <div style="font-size: 50px; margin-bottom: 12px; opacity: 0.6;">💬</div>
+                    <div style="color: #fff; font-weight: 600; font-size: 17px; margin-bottom: 6px;" id="emptyStateTitle">Message Business</div>
+                    <div style="color: #999; font-size: 13px; line-height: 1.5; margin-bottom: 20px;">Send a message to start the conversation</div>
+                    
+                    <div style="width: 100%; max-width: 280px;">
+                        <div style="color: #999; font-size: 12px; margin-bottom: 10px; text-align: left;">Need help getting started?</div>
+                        <button class="business-quick-question" onclick="CLASSIFIED.fillBusinessQuestion(this)" style="background: #2a2a2a; border: 1px solid #3a3a3a; color: #fff; padding: 12px 14px; border-radius: 12px; font-size: 13px; cursor: pointer; margin-bottom: 8px; width: 100%; text-align: left; transition: all 0.2s;">🕐 What are your hours?</button>
+                        <button class="business-quick-question" onclick="CLASSIFIED.fillBusinessQuestion(this)" style="background: #2a2a2a; border: 1px solid #3a3a3a; color: #fff; padding: 12px 14px; border-radius: 12px; font-size: 13px; cursor: pointer; margin-bottom: 8px; width: 100%; text-align: left; transition: all 0.2s;">📍 Where are you located?</button>
+                        <button class="business-quick-question" onclick="CLASSIFIED.fillBusinessQuestion(this)" style="background: #2a2a2a; border: 1px solid #3a3a3a; color: #fff; padding: 12px 14px; border-radius: 12px; font-size: 13px; cursor: pointer; margin-bottom: 8px; width: 100%; text-align: left; transition: all 0.2s;">🍽️ Can I see the menu?</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <input type="text" 
+                       id="businessChatInput" 
+                       class="chat-input" 
+                       placeholder="Type a message..."
+                       maxlength="500">
+                <button class="send-btn" onclick="CLASSIFIED.sendBusinessMessage()">➤</button>
+            </div>
+        </div>
+    
+    
         <!-- Individual Chat Overlay -->
         <div id="individualChat" class="overlay-screen">
             <div class="chat-header">

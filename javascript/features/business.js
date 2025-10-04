@@ -747,20 +747,6 @@ export class BusinessManager {
         
      // Update hero - SAFE (CSS background) 
         const heroElement = document.getElementById('profileHero');
-        
-        // DEBUG: Log everything
-        console.log('🖼️ === HERO IMAGE DEBUG ===');
-        console.log('Business Name:', business.name);
-        console.log('Business Type:', business.type);
-        console.log('Business ID:', business.id);
-        console.log('Has photos array?', !!business.photos);
-        console.log('Photos array:', business.photos);
-        console.log('Has image field?', !!business.image);
-        console.log('Image field:', business.image);
-        console.log('Has story field?', !!business.story);
-        console.log('Story field:', business.story);
-        console.log('Hero element exists?', !!heroElement);
-        
         const imageUrl = business.photos?.[0] || business.image || business.story;
         console.log('Final imageUrl:', imageUrl);
         
@@ -768,17 +754,6 @@ export class BusinessManager {
             heroElement.style.backgroundImage = `url('${escapeHtml(imageUrl)}')`;
             heroElement.style.backgroundSize = 'cover';
             heroElement.style.backgroundPosition = 'center';
-            console.log('✅ Hero image SET successfully');
-            console.log('✅ Applied styles:', {
-                backgroundImage: heroElement.style.backgroundImage,
-                backgroundSize: heroElement.style.backgroundSize,
-                backgroundPosition: heroElement.style.backgroundPosition
-            });
-        } else {
-            console.error('❌ FAILED to set hero image:', {
-                hasElement: !!heroElement,
-                hasUrl: !!imageUrl
-            });
         }
         
           // Add photo counter

@@ -725,7 +725,7 @@ export class MessagingManager {
                     this.displayUnifiedChats(allChats);
                 }
                 
-        // Show demo chats if no real chats exist
+    // Show demo chats if no real chats exist
         if (allChats.length === 0) {
             const chats = this.mockData ? this.mockData.getChats() : [];
             const existingChats = chatList.querySelectorAll('.chat-item');
@@ -742,8 +742,9 @@ export class MessagingManager {
                     </div>
                 `).join('');
             }
+        }
             
-        } catch (error) {
+    } catch (error) {
             console.error('❌ Error loading chats:', error);
         }
     }

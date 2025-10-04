@@ -841,45 +841,53 @@ export class MessagingManager {
                 const snapshot = await getDocs(q);
                 console.log(`📊 Found ${snapshot.size} business conversations`);
                 
-                const businessChats = [];
+                const chatPromises = [];
                 
-               for (const conversationDoc of snapshot.docs) {
-                const data = conversationDoc.data();
-                
-                // Skip conversations with no messages
-                if (!data.lastMessage) {
-                    console.log('⏭️ Skipping empty conversation:', data.businessName);
-                    continue;
-                }
-                
-                // Fetch business avatar from businesses collection
-                let businessAvatar = '';
-                try {
-                    const businessRef = doc(this.db, 'businesses', data.businessId);
-                    const businessDoc = await getDoc(businessRef);
-                if (businessDoc.exists()) {
-                    const bizData = businessDoc.data();
-                    businessAvatar = bizData.images?.[0] || bizData.avatar || bizData.profileImage || '';
-                }
-            } catch (error) {
-                console.error('Error fetching business avatar:', error);
-            }
-            
-            businessChats.push({
-                id: doc.id,
-                type: 'business',
-                partnerId: data.businessId,
-                partnerName: data.businessName || 'Business',
-                partnerAvatar: businessAvatar,
-                lastMessage: data.lastMessage || 'Business inquiry',
-                lastMessageTime: data.lastMessageTime,
-                lastMessageSender: data.lastMessageSender,
-                hasUnread: (data.userUnread || 0) > 0,
-                unreadCount: data.userUnread || 0
-            });
-        }
-        
-        return businessChats;
+                for (const conversationDoc of snapshot.docs) {
+                    const data = conversationDoc.data();
+                    
+                    // Skip conversations with no messages
+                    if (!data.lastMessage) {
+                        console.log('⏭️ Skipping empty conversation:', data.businessName);
+                        continue;
+                    }
+                    
+                    // Create promise for fetching avatar
+                    const chatPromise = (async () => {
+                        let businessAvatar = '';
+                        try {
+                            const businessRef = doc(this.db, 'businesses', data.businessId);
+                            const businessDoc = await getDoc(businessRef);
+                            if (businessDoc.exists()) {
+                                const bizData = businessDoc.data();
+                                businessAvatar = bizData.logo || bizData.photos?.[0] || '';
+                                console.log('✅ Fetched avatar for', data.businessName, ':', businessAvatar ? 'YES' : 'NO');
+                            }
+                        } catch (error) {
+                            console.error('Error fetching business avatar:', error);
+                        }
+                        
+                        return {
+             id: conversationDoc.id,
+            type: 'business',
+            partnerId: data.businessId,
+            partnerName: data.businessName || 'Business',
+            partnerAvatar: businessAvatar,
+            lastMessage: data.lastMessage || 'Business inquiry',
+            lastMessageTime: data.lastMessageTime,
+            lastMessageSender: data.lastMessageSender,
+            hasUnread: (data.userUnread || 0) > 0,
+            unreadCount: data.userUnread || 0
+        };
+    })();
+    
+    chatPromises.push(chatPromise);
+}
+
+// Wait for all avatar fetches to complete
+const businessChats = await Promise.all(chatPromises);
+
+return businessChats;
         
     } catch (error) {
         console.error('❌ Error loading business conversations:', error);

@@ -78,19 +78,29 @@ export class BusinessMessagingManager {
             const conversationDoc = await getDoc(conversationRef);
             
             if (!conversationDoc.exists()) {
-                // Create new business conversation
-                await setDoc(conversationRef, {
-                    businessId: businessId,
-                    businessName: businessName, // Add business name
-                    userId: user.uid,
-                    userName: user.displayName || 'User',
-                    createdAt: serverTimestamp(),
-                    lastMessage: null,
-                    lastMessageTime: serverTimestamp(),
-                    userUnread: 0,
-                    businessUnread: 0,
-                    type: 'business_inquiry' // SECURITY: Mark as business message
-                });
+            const dataToSend = {
+                businessId: businessId,
+                businessName: businessName,
+                userId: user.uid,
+                userName: user.displayName || 'User',
+                createdAt: serverTimestamp(),
+                lastMessage: null,
+                lastMessageTime: serverTimestamp(),
+                userUnread: 0,
+                businessUnread: 0,
+                type: 'business_inquiry'
+            };
+            
+            console.log('🔍 ATTEMPTING TO CREATE:', {
+                conversationId,
+                data: dataToSend,
+                dataKeys: Object.keys(dataToSend),
+                rulesRequire: ['businessId', 'userId', 'userName', 'createdAt', 'type'],
+                authUid: user.uid,
+                matchesUserId: user.uid === dataToSend.userId
+            });
+            
+            await setDoc(conversationRef, dataToSend);
                 
                 console.log('📬 Business conversation created:', conversationId);
             }

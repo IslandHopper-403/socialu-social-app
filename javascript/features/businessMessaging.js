@@ -396,7 +396,16 @@ export class BusinessMessagingManager {
             console.log('📬 Opening conversation from dashboard:', conversationId);
             
             const conversationRef = doc(this.db, 'businessConversations', conversationId);
+        
+            console.log('🔍 Attempting to check if conversation exists:', {
+            conversationId,
+            userId: user.uid,
+            businessId: businessId
+        });
+
             const conversationDoc = await getDoc(conversationRef);
+
+            console.log('✅ getDoc succeeded, exists:', conversationDoc.exists());
             
             if (!conversationDoc.exists()) {
                 console.error('❌ Conversation not found:', conversationId);

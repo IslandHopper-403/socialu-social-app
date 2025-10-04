@@ -70,15 +70,18 @@
         min-height: 100dvh; /* Use dynamic viewport height for mobile */
     }
     
-    /* Fix overlay screens for mobile */
-    .overlay-screen {
+    /* Fix overlay screens for mobile - EXCLUDE map overlay */
+    .overlay-screen:not(#mapOverlay) {
         max-width: 430px;
         width: 100%;
-        left: 0;
-        right: 0;
-        margin: 0 auto;
+        left: 50%;
+        transform: translateX(-50%);
         height: 100vh;
         height: 100dvh;
+    }
+    
+    .overlay-screen.show {
+        animation: slideUp 0.3s ease;
     }
     
     /* Fix bottom navigation for mobile */

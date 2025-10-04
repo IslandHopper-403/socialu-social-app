@@ -5,7 +5,7 @@
      * Handles screen navigation, tab switching, and UI state management
      */
     export class NavigationManager {
-        constructor(firebaseServices, appState) {
+       constructor(firebaseServices, appState) {
         this.state = appState;
         
         // References to other managers (set later)
@@ -18,6 +18,9 @@
         this.overlayStack = [];
         this.businessOverlays = ['businessDashboard', 'businessAnalytics', 'promotionsManager', 
                                 'businessMessages', 'businessInsights', 'businessProfileEditor'];
+        
+        // Form overlays that need gentler scroll lock (mobile keyboard compatibility)
+        this.formOverlays = ['profileEditor', 'businessProfileEditor', 'registerScreen', 'loginScreen'];
     }
 
 // Ghost content loading frames - Delete if unwanted
@@ -285,9 +288,6 @@ showContentSkeleton(containerId, type = 'default') {
     }
     
     
-    /**
-     * Show overlay screen with stack management
-     */
     showOverlay(overlayId) {
         const overlay = document.getElementById(overlayId);
         if (overlay) {
@@ -299,16 +299,25 @@ showContentSkeleton(containerId, type = 'default') {
                 console.log('📚 Overlay stack:', this.overlayStack);
             }
             
-            // Lock body scroll when first overlay opens (MOBILE FRIENDLY)
+            // Lock body scroll when first overlay opens
             if (this.overlayStack.length === 1) {
-                // Save current scroll position
-                this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+                // Check if this is a form overlay (needs gentle lock for mobile keyboard)
+                const isFormOverlay = this.formOverlays.includes(overlayId);
                 
-                // Apply lock with saved position
-                document.body.style.position = 'fixed';
-                document.body.style.top = `-${this.scrollPosition}px`;
-                document.body.style.width = '100%';
-                document.body.classList.add('overlay-open');
+                if (isFormOverlay) {
+                    // GENTLE LOCK: Just prevent scroll, don't fix position (mobile keyboard friendly)
+                    document.body.style.overflow = 'hidden';
+                    document.body.classList.add('overlay-open', 'form-overlay-open');
+                    console.log('📝 Applied gentle scroll lock for form overlay');
+                } else {
+                    // STRONG LOCK: Save position and fix (for non-form overlays)
+                    this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+                    document.body.style.position = 'fixed';
+                    document.body.style.top = `-${this.scrollPosition}px`;
+                    document.body.style.width = '100%';
+                    document.body.classList.add('overlay-open');
+                    console.log('🔒 Applied strong scroll lock with position save');
+                }
             }
             
             // Update corresponding state
@@ -338,19 +347,28 @@ showContentSkeleton(containerId, type = 'default') {
                 console.log('📚 Overlay stack after close:', this.overlayStack);
             }
             
-            // Unlock body scroll when no overlays remain (RESTORE POSITION)
+            // Unlock body scroll when no overlays remain
             if (this.overlayStack.length === 0) {
-                document.body.classList.remove('overlay-open');
+                // Check if we used gentle or strong lock
+                const wasFormOverlay = document.body.classList.contains('form-overlay-open');
                 
-                // Remove fixed positioning
-                document.body.style.position = '';
-                document.body.style.top = '';
-                document.body.style.width = '';
+                document.body.classList.remove('overlay-open', 'form-overlay-open');
                 
-                // Restore scroll position
-                if (this.scrollPosition !== undefined) {
-                    window.scrollTo(0, this.scrollPosition);
-                    this.scrollPosition = undefined;
+                if (wasFormOverlay) {
+                    // GENTLE UNLOCK: Just restore overflow
+                    document.body.style.overflow = '';
+                    console.log('📝 Released gentle scroll lock');
+                } else {
+                    // STRONG UNLOCK: Restore position
+                    document.body.style.position = '';
+                    document.body.style.top = '';
+                    document.body.style.width = '';
+                    
+                    if (this.scrollPosition !== undefined) {
+                        window.scrollTo(0, this.scrollPosition);
+                        this.scrollPosition = undefined;
+                    }
+                    console.log('🔓 Released strong scroll lock');
                 }
             }
             
@@ -462,16 +480,19 @@ handleOverlayBack(overlayId) {
         this.overlayStack = [];
         
         // Unlock body scroll and restore position
-        document.body.classList.remove('overlay-open');
+        const wasFormOverlay = document.body.classList.contains('form-overlay-open');
+        document.body.classList.remove('overlay-open', 'form-overlay-open');
+        
+        // Clean up all scroll lock styles
+        document.body.style.overflow = '';
         document.body.style.position = '';
         document.body.style.top = '';
         document.body.style.width = '';
         
-        if (this.scrollPosition !== undefined) {
+        if (!wasFormOverlay && this.scrollPosition !== undefined) {
             window.scrollTo(0, this.scrollPosition);
             this.scrollPosition = undefined;
         }
-    }
     
     /**
      * Update overlay state

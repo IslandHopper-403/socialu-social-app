@@ -376,7 +376,7 @@ showContentSkeleton(containerId, type = 'default') {
             this.updateOverlayState(overlayId, false);
         }
     }
-
+                
            /**
  * Handle back navigation with overlay stack memory
  */

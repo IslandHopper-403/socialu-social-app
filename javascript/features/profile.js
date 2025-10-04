@@ -344,8 +344,28 @@ export class ProfileManager {
                 profileData.email = user.email;
             }
             
+           // SANITIZE: Remove any undefined keys/values before saving
+            const sanitizedProfileData = Object.entries(profileData).reduce((acc, [key, value]) => {
+                // Only include fields where BOTH key and value are defined
+                if (key !== undefined && key !== null && key !== '' &&
+                    value !== undefined && value !== null) {
+                    acc[key] = value;
+                }
+                return acc;
+            }, {});
+            
+            console.log('🧹 Sanitized profile data:', sanitizedProfileData);
+
+            // CRITICAL FIX: Remove undefined fields from sanitizedProfileData
+            const cleanedData = {};
+            for (const [key, value] of Object.entries(sanitizedProfileData)) {
+                if (key && key !== 'undefined' && value !== undefined && value !== null) {
+                    cleanedData[key] = value;
+                }
+            }
+            
             // Save to Firebase - always use setDoc with merge for safety
-            await setDoc(doc(this.db, 'users', user.uid), profileData, { merge: true });
+            await setDoc(doc(this.db, 'users', user.uid), cleanedData, { merge: true });
             
             // Update local state
             this.state.set('userProfile', profileData);

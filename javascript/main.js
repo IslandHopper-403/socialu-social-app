@@ -587,6 +587,7 @@ loadDemoContent() {
             openChat: (name, avatar, userId) => this.managers.messaging.openChat(name, avatar, userId),
             closeChat: () => this.managers.navigation.closeOverlay('individualChat'),
             sendMessage: () => this.managers.messaging.sendMessage(),
+            closeBusinessChat: () => this.managers.navigation.closeOverlay('businessChat'),
             openChatWithUser: (userName) => this.managers.messaging.openChatWithUser(userName),
             openProfileFromChat: () => this.managers.messaging.openProfileFromChat(),
             startChatFromMatch: () => this.managers.messaging.startChatFromMatch(),

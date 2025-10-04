@@ -846,9 +846,15 @@ async loadBusinessConversations(userId) {
         for (const doc of snapshot.docs) {
             const data = doc.data();
             
+            // Skip conversations with no messages
+            if (!data.lastMessage) {
+                console.log('⏭️ Skipping empty conversation:', data.businessName);
+                continue;
+            }
+            
             businessChats.push({
                 id: doc.id,
-                type: 'business', // Mark as business chat
+                type: 'business',
                 partnerId: data.businessId,
                 partnerName: data.businessName || 'Business',
                 partnerAvatar: '🏪', // Business emoji

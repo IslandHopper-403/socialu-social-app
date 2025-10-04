@@ -856,13 +856,13 @@ export class MessagingManager {
                     const chatPromise = (async () => {
                         let businessAvatar = '';
                         try {
-                            const businessRef = doc(this.db, 'businesses', data.businessId);
-                            const businessDoc = await getDoc(businessRef);
-                            if (businessDoc.exists()) {
-                                const bizData = businessDoc.data();
-                                businessAvatar = bizData.logo || bizData.photos?.[0] || '';
-                                console.log('✅ Fetched avatar for', data.businessName, ':', businessAvatar ? 'YES' : 'NO');
-                            }
+                         const businessRef = doc(this.db, 'businesses', data.businessId);
+                        const businessDoc = await getDoc(businessRef);
+                        if (businessDoc.exists()) {
+                            const bizData = businessDoc.data();
+                            businessAvatar = bizData.photos?.[0] || bizData.image || '';
+                            console.log('✅ Fetched avatar for', data.businessName, ':', businessAvatar ? 'YES' : 'NO');
+                        }
                         } catch (error) {
                             console.error('Error fetching business avatar:', error);
                         }

@@ -153,7 +153,7 @@ export class ProfileManager {
         this.isEditing = false;
     }
 
-    /**
+  /**
      * Calculate zodiac sign from birthday
      */
     calculateZodiac(birthday) {
@@ -161,7 +161,7 @@ export class ProfileManager {
         
         const date = new Date(birthday);
         const day = date.getDate();
-        const month = date.getMonth() + 1; // 0-indexed
+        const month = date.getMonth() + 1;
         
         const zodiacSigns = [
             { sign: '♑ Capricorn', start: [12, 22], end: [1, 19] },
@@ -192,6 +192,24 @@ export class ProfileManager {
         }
         
         return null;
+    }
+    
+    /**
+     * Update zodiac display based on birthday
+     */
+    updateZodiacDisplay() {
+        const birthday = document.getElementById('profileBirthday')?.value;
+        const zodiacDisplay = document.getElementById('calculatedZodiac');
+        const showHoroscope = document.getElementById('horoscopeYes')?.classList.contains('active');
+        
+        if (!zodiacDisplay) return;
+        
+        if (birthday && showHoroscope) {
+            const zodiac = this.calculateZodiac(birthday);
+            zodiacDisplay.textContent = zodiac ? `Your sign: ${zodiac}` : '';
+        } else {
+            zodiacDisplay.textContent = '';
+        }
     }
 
     /**

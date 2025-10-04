@@ -357,9 +357,25 @@ export class BusinessManager {
             messageItem.className = data.businessUnread > 0 ? 'message-item unread' : 'message-item';
             messageItem.dataset.conversationId = doc.id;
             
-            const avatar = document.createElement('div');
-            avatar.className = 'customer-avatar';
-            avatar.textContent = data.businessUnread > 0 ? '🔴' : '👤'; // Show indicator for unread
+            // Avatar with actual customer photo
+        const avatar = document.createElement('div');
+        avatar.className = 'customer-avatar';
+        
+        // Fetch customer photo
+        if (conv.userId) {
+            this.fetchCustomerPhoto(conv.userId).then(photoUrl => {
+                if (photoUrl) {
+                    avatar.style.backgroundImage = `url('${photoUrl}')`;
+                    avatar.style.backgroundSize = 'cover';
+                    avatar.style.backgroundPosition = 'center';
+                    avatar.textContent = ''; // Clear emoji
+                } else {
+                    avatar.textContent = '👤'; // Fallback
+                }
+            });
+        } else {
+            avatar.textContent = '👤'; // Fallback if no userId
+        }
             
             const content = document.createElement('div');
             content.className = 'message-content';
@@ -1564,8 +1580,23 @@ export class BusinessManager {
         messageItem.dataset.conversationId = conversationId;
         
         const avatar = document.createElement('div');
-        avatar.className = 'customer-avatar';
-        avatar.textContent = '👤';
+            avatar.className = 'customer-avatar';
+            
+            // Fetch customer photo
+            if (data.userId) {
+                this.fetchCustomerPhoto(data.userId).then(photoUrl => {
+                    if (photoUrl) {
+                        avatar.style.backgroundImage = `url('${photoUrl}')`;
+                        avatar.style.backgroundSize = 'cover';
+                        avatar.style.backgroundPosition = 'center';
+                        avatar.textContent = '';
+                    } else {
+                        avatar.textContent = '👤';
+                    }
+                });
+            } else {
+                avatar.textContent = '👤';
+            }
         
         const content = document.createElement('div');
         content.className = 'message-content';
@@ -1666,6 +1697,25 @@ export class BusinessManager {
         if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
         
         return date.toLocaleDateString();
+    }
+
+
+      /**
+     * Fetch customer profile photo
+     */
+    async fetchCustomerPhoto(userId) {
+        try {
+            const userRef = doc(this.db, 'users', userId);
+            const userDoc = await getDoc(userRef);
+            
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                return userData.photos?.[0] || userData.photo || '';
+            }
+        } catch (error) {
+            console.error('Error fetching customer photo:', error);
+        }
+        return '';
     }
     
      /**

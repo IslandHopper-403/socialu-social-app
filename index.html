@@ -340,41 +340,43 @@
                 </div>
                 
                 <!-- Basic Info Section -->
-                <div class="profile-section">
-                    <div class="section-title">Basic Info</div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Birthday <span style="color: #FF6B6B;">*</span> <span style="font-size: 11px; opacity: 0.7;">(must be 18+)</span></label>
-                        <input type="date" class="form-input" id="profileBirthday">
+            <div class="profile-section">
+                <div class="section-title">Basic Info</div>
+                
+                <div class="form-group">
+                    <label class="form-label">Birthday <span style="color: #FF6B6B;">*</span> <span style="font-size: 11px; opacity: 0.7;">(must be 18+)</span></label>
+                    <input type="date" class="form-input" id="profileBirthday">
+                </div>
+                
+                <!-- Show Horoscope Toggle -->
+                <div class="form-group">
+                    <label class="form-label">Show Horoscope in Bio</label>
+                    <div class="toggle-row">
+                        <button type="button" id="horoscopeYes" class="choice-btn active" onclick="window.classifiedApp.toggleHoroscope(true)">Yes</button>
+                        <button type="button" id="horoscopeNo" class="choice-btn" onclick="window.classifiedApp.toggleHoroscope(false)">No</button>
                     </div>
-                    <div class="form-group">
-                      <!-- Show Horoscope Toggle -->
-                        <div class="form-section">
-                            <label class="form-label">Show Horoscope in Bio</label>
-                            <div class="toggle-row">
-                                <button type="button" id="horoscopeYes" class="choice-btn active" onclick="window.classifiedApp.toggleHoroscope(true)">Yes</button>
-                                <button type="button" id="horoscopeNo" class="choice-btn" onclick="window.classifiedApp.toggleHoroscope(false)">No</button>
-                            </div>
-                            <div id="calculatedZodiac" class="calculated-zodiac" style="margin-top: 8px; color: var(--primary-blue); font-size: 14px;"></div>
-                        </div>
-                    <div class="form-group">
-                        <label class="form-label">Height</label>
-                        <input type="text" class="form-input" id="profileHeight" placeholder="5'7&quot; or 170cm">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Career <span style="color: #FF6B6B;">*</span></label>
-                        <div class="choice-group">
-                            <div class="choice-btn" data-choice="career" data-value="Student">Student</div>
-                            <div class="choice-btn" data-choice="career" data-value="Digital Nomad">Digital Nomad</div>
-                            <div class="choice-btn" data-choice="career" data-value="Teacher">Teacher</div>
-                            <div class="choice-btn" data-choice="career" data-value="Nurse">Nurse</div>
-                            <div class="choice-btn" data-choice="career" data-value="Engineer">Engineer</div>
-                            <div class="choice-btn" data-choice="career" data-value="Artist">Artist</div>
-                            <div class="choice-btn" data-choice="career" data-value="Business">Business</div>
-                            <div class="choice-btn" data-choice="career" data-value="Other">Other</div>
-                        </div>
+                    <div id="calculatedZodiac" class="calculated-zodiac" style="margin-top: 8px; color: var(--primary-blue); font-size: 14px;"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Height</label>
+                    <input type="text" class="form-input" id="profileHeight" placeholder="5'7&quot; or 170cm">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Career <span style="color: #FF6B6B;">*</span></label>
+                    <div class="choice-group">
+                        <div class="choice-btn" data-choice="career" data-value="Student">Student</div>
+                        <div class="choice-btn" data-choice="career" data-value="Digital Nomad">Digital Nomad</div>
+                        <div class="choice-btn" data-choice="career" data-value="Teacher">Teacher</div>
+                        <div class="choice-btn" data-choice="career" data-value="Nurse">Nurse</div>
+                        <div class="choice-btn" data-choice="career" data-value="Engineer">Engineer</div>
+                        <div class="choice-btn" data-choice="career" data-value="Artist">Artist</div>
+                        <div class="choice-btn" data-choice="career" data-value="Business">Business</div>
+                        <div class="choice-btn" data-choice="career" data-value="Other">Other</div>
                     </div>
                 </div>
+            </div>
                 
                 <!-- Interests Section -->
                 <div class="profile-section">

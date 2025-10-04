@@ -843,19 +843,20 @@ export class MessagingManager {
                 
                 const businessChats = [];
                 
-               for (const doc of snapshot.docs) {
-            const data = doc.data();
-            
-            // Skip conversations with no messages
-            if (!data.lastMessage) {
-                console.log('⏭️ Skipping empty conversation:', data.businessName);
-                continue;
-            }
-            
-            // Fetch business avatar from businesses collection
-            let businessAvatar = '';
-            try {
-                const businessDoc = await getDoc(doc(this.db, 'businesses', data.businessId));
+               for (const conversationDoc of snapshot.docs) {
+                const data = conversationDoc.data();
+                
+                // Skip conversations with no messages
+                if (!data.lastMessage) {
+                    console.log('⏭️ Skipping empty conversation:', data.businessName);
+                    continue;
+                }
+                
+                // Fetch business avatar from businesses collection
+                let businessAvatar = '';
+                try {
+                    const businessRef = doc(this.db, 'businesses', data.businessId);
+                    const businessDoc = await getDoc(businessRef);
                 if (businessDoc.exists()) {
                     const bizData = businessDoc.data();
                     businessAvatar = bizData.images?.[0] || bizData.avatar || bizData.profileImage || '';

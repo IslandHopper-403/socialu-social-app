@@ -858,9 +858,9 @@ export class MessagingManager {
                         try {
                          const businessRef = doc(this.db, 'businesses', data.businessId);
                         const businessDoc = await getDoc(businessRef);
-                        if (businessDoc.exists()) {
+                       if (businessDoc.exists()) {
                             const bizData = businessDoc.data();
-                            businessAvatar = bizData.photos?.[0] || bizData.image || '';
+                            businessAvatar = bizData.photos?.[1] || bizData.photos?.[0] || '';
                             console.log('✅ Fetched avatar for', data.businessName, ':', businessAvatar ? 'YES' : 'NO');
                         }
                         } catch (error) {

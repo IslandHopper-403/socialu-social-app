@@ -336,25 +336,22 @@
 
 /* Business Panel */
 .map-business-panel {
-    position: fixed;
+    position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(180deg, rgba(26, 26, 26, 0.98) 0%, #1a1a1a 100%);
+    background: #1a1a1a;
     border-radius: 20px 20px 0 0;
-    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
     transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 320;
+    z-index: 200;
     max-height: 40vh;
     overflow: hidden;
-    display: none;
 }
 
 .map-business-panel.active {
     transform: translateY(0);
-    display: flex;
-    flex-direction: column;
 }
 
 .panel-close-btn {

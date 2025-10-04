@@ -348,22 +348,15 @@
                         <input type="date" class="form-input" id="profileBirthday">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Zodiac Sign</label>
-                        <div class="choice-group">
-                            <div class="choice-btn" data-choice="zodiac" data-value="Aries">♈ Aries</div>
-                            <div class="choice-btn" data-choice="zodiac" data-value="Taurus">♉ Taurus</div>
-                            <div class="choice-btn" data-choice="zodiac" data-value="Gemini">♊ Gemini</div>
-                            <div class="choice-btn" data-choice="zodiac" data-value="Cancer">♋ Cancer</div>
-                            <div class="choice-btn" data-choice="zodiac" data-value="Leo">♌ Leo</div>
-                            <div class="choice-btn" data-choice="zodiac" data-value="Virgo">♍ Virgo</div>
-                            <div class="choice-btn" data-choice="zodiac" data-value="Libra">♎ Libra</div>
-                            <div class="choice-btn" data-choice="zodiac" data-value="Scorpio">♏ Scorpio</div>
-                            <div class="choice-btn" data-choice="zodiac" data-value="Sagittarius">♐ Sagittarius</div>
-                            <div class="choice-btn" data-choice="zodiac" data-value="Capricorn">♑ Capricorn</div>
-                            <div class="choice-btn" data-choice="zodiac" data-value="Aquarius">♒ Aquarius</div>
-                            <div class="choice-btn" data-choice="zodiac" data-value="Pisces">♓ Pisces</div>
+                      <!-- Show Horoscope Toggle -->
+                        <div class="form-section">
+                            <label class="form-label">Show Horoscope in Bio</label>
+                            <div class="toggle-row">
+                                <button type="button" id="horoscopeYes" class="choice-btn active" onclick="window.classifiedApp.toggleHoroscope(true)">Yes</button>
+                                <button type="button" id="horoscopeNo" class="choice-btn" onclick="window.classifiedApp.toggleHoroscope(false)">No</button>
+                            </div>
+                            <div id="calculatedZodiac" class="calculated-zodiac" style="margin-top: 8px; color: var(--primary-blue); font-size: 14px;"></div>
                         </div>
-                    </div>
                     <div class="form-group">
                         <label class="form-label">Height</label>
                         <input type="text" class="form-input" id="profileHeight" placeholder="5'7&quot; or 170cm">

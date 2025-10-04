@@ -140,13 +140,13 @@ export class AuthManager {
             this.businessManager.cleanup();
         }
         
-        // CRITICAL: Clear ALL overlays and their content when logging out
+        // Clear overlays but keep navigation state
         if (this.navigationManager) {
             this.navigationManager.clearOverlayStack();
-            this.navigationManager.clearNavigationHistory();
+            // DON'T clear navigation history - it breaks feed loading
         }
         
-        // CRITICAL: Reset overlay content to prevent previous user data showing
+        // Reset ONLY overlay content (profiles, chats) - NOT feeds
         this.resetOverlayContent();
         
         // Reset UI to default state
@@ -215,12 +215,7 @@ export class AuthManager {
         const chatList = document.getElementById('chatList');
         if (chatList) chatList.innerHTML = '';
         
-        // Clear feed content
-        const feedContainers = ['userFeedContent', 'restaurantFeedContent', 'activityFeedContent'];
-        feedContainers.forEach(containerId => {
-            const container = document.getElementById(containerId);
-            if (container) container.innerHTML = '';
-        });
+        // DON'T clear feed containers - they reload on next login via onUserLogin()
         
         console.log('✅ Overlay content reset complete');
     }

@@ -1012,12 +1012,3 @@ window.getCurrentBusinessId = function() {
     return window.currentBusinessProfileId || null;
 };
 
-/* Toggle row for Yes/No buttons */
-.toggle-row {
-    display: flex;
-    gap: 12px;
-}
-
-.toggle-row .choice-btn {
-    flex: 1;
-}

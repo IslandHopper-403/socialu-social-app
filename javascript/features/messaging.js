@@ -902,16 +902,17 @@ displayUnifiedChats(chats) {
         const unreadCount = chat.hasUnread ? (chat.unreadCount || 1) : 0;
         
            if (chat.type === 'business') {
-                // Business chat item
-                const avatarStyle = chat.partnerAvatar 
-                    ? `background-image: url('${chat.partnerAvatar}')` 
-                    : `font-size: 24px; display: flex; align-items: center; justify-content: center;`;
-                const avatarContent = chat.partnerAvatar ? '' : '🏪';
-                
-                return `
-                    <div class="chat-item" data-chat-id="${chat.id}" onclick="window.classifiedApp.managers.messaging.businessMessaging.openBusinessChat('${chat.partnerId}', '${chat.id}')">
-                        <div class="chat-avatar" style="${avatarStyle}">${avatarContent}</div>
-                        <div class="chat-name">${chat.partnerName} <span class="business-badge">Business</span></div>
+            // Business chat item (same styling as social chats)
+            const avatarStyle = chat.partnerAvatar 
+                ? `background-image: url('${chat.partnerAvatar}')` 
+                : `font-size: 24px; display: flex; align-items: center; justify-content: center;`;
+            const avatarContent = chat.partnerAvatar ? '' : '🏪';
+            
+            return `
+                <div class="chat-item" data-chat-id="${chat.id}" onclick="window.classifiedApp.managers.messaging.businessMessaging.openBusinessChat('${chat.partnerId}', '${chat.id}')">
+                    <div class="chat-avatar" style="${avatarStyle}">${avatarContent}</div>
+                    <div class="chat-info">
+                        <div class="chat-name">${chat.partnerName}</div>
                         <div class="chat-message" ${unreadCount > 0 ? 'style="font-weight: 600;"' : ''}>${chat.lastMessage}</div>
                     </div>
                     <div class="chat-time">${timeAgo}</div>

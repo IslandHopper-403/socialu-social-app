@@ -722,19 +722,11 @@ body {
     overflow: hidden;
 }
 
-   /* Prevent body scroll when overlay is open - MOBILE FRIENDLY */
-   body.overlay-open {
-       overflow: hidden;
-       /* DON'T use position: fixed - breaks mobile form inputs */
-       /* Use touch-action instead for better mobile behavior */
-       touch-action: none;
-       -webkit-overflow-scrolling: auto;
-   }
-   
-   /* Additional fix for iOS scroll issues */
-   body.overlay-open .overlay-screen {
-       -webkit-overflow-scrolling: touch;
-   }
+   /* Prevent body scroll when overlay is open */
+body.overlay-open {
+    overflow: hidden;
+    /* Position/top/width set dynamically in JS to preserve scroll position */
+}
 
 /* Specific z-index for each overlay type */
 #businessProfile.overlay-screen {

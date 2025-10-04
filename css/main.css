@@ -722,6 +722,14 @@ body {
     overflow: hidden;
 }
 
+/* Prevent body scroll when overlay is open */
+body.overlay-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100vh;
+}
+
 /* Specific z-index for each overlay type */
 #businessProfile.overlay-screen {
     z-index: var(--z-business-profile);

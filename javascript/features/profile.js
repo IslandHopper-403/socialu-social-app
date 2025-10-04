@@ -76,6 +76,17 @@ export class ProfileManager {
                 this.toggleInterest(btn);
             });
         });
+
+        // Auto-calculate zodiac when birthday changes
+        const birthdayInput = document.getElementById('profileBirthday');
+        if (birthdayInput) {
+            birthdayInput.addEventListener('change', () => {
+                this.updateZodiacDisplay();
+            });
+        }
+        
+        // Profile save buttons
+       // Profile save buttons - bind to the instance methods
         
         // Profile save buttons
        // Profile save buttons - bind to the instance methods
@@ -363,6 +374,8 @@ export class ProfileManager {
             ...profile,
             bio: document.getElementById('profileBio').value,
             birthday: document.getElementById('profileBirthday').value,
+            zodiac: this.calculateZodiac(document.getElementById('profileBirthday').value),
+            showHoroscope: document.getElementById('horoscopeYes')?.classList.contains('active') || false,
             height: document.getElementById('profileHeight').value,
             name: this.state.get('currentUser').displayName || profile.name,
             // Ensure all required fields are included

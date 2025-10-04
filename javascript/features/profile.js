@@ -217,12 +217,6 @@ export class ProfileManager {
      */
     loadProfileDataIntoForm() {
         const profile = this.state.get('userProfile');
-    
-    /**
-     * Load profile data into form
-     */
-    loadProfileDataIntoForm() {
-        const profile = this.state.get('userProfile');
         
         // Load basic info
         document.getElementById('profileBio').value = profile.bio || '';

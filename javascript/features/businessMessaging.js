@@ -139,12 +139,12 @@ export class BusinessMessagingManager {
                 const data = conversationDoc.data();
                 businessName = data.businessName || data.name || 'Business';
                 
-                // Get avatar from businesses collection
+                   // Get avatar from businesses collection
                 const businessRef = doc(this.db, 'businesses', businessId);
                 const businessDoc = await getDoc(businessRef);
                 if (businessDoc.exists()) {
                     const bizData = businessDoc.data();
-                    avatarUrl = bizData.images?.[0] || bizData.avatar || bizData.profileImage || '';
+                    avatarUrl = bizData.photos?.[0] || bizData.image || '';
                 }
             }
         } catch (error) {

@@ -144,7 +144,7 @@ export class BusinessMessagingManager {
                 const businessDoc = await getDoc(businessRef);
                 if (businessDoc.exists()) {
                     const bizData = businessDoc.data();
-                    avatarUrl = bizData.photos?.[0] || bizData.image || '';
+                    avatarUrl = bizData.photos?.[1] || bizData.photos?.[0] || '';
                 }
             }
         } catch (error) {

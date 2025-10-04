@@ -2332,7 +2332,7 @@ body.business-user #socialScreen {
     font-size: 16px !important;
 }
 
-/* ===== Commented Out
+/* ===================================================== Commented Out
 /* Toggle row for Yes/No buttons */
 .toggle-row {
     display: flex;
@@ -2342,4 +2342,4 @@ body.business-user #socialScreen {
 .toggle-row .choice-btn {
     flex: 1;
 }
- ===== */
+ ===================================================== */

@@ -123,11 +123,14 @@ export class BusinessMessagingManager {
          * Open business chat interface
          * SECURITY: Uses new businessChat overlay, separate from social chat
          */
-        async openBusinessChat(businessId, conversationId) {
-        // Get business data from Firestore conversation document
-        let businessName = 'Business';
-        let avatarUrl = '';
-        
+       async openBusinessChat(businessId, conversationId) {
+            console.log('🔄 Opening chat:', { businessId, conversationId });
+            console.log('🔄 Previous conversation:', this.state.get('currentBusinessConversationId'));
+            
+            // Get business data from Firestore conversation document
+            let businessName = 'Business';
+            let avatarUrl = '';
+                
         try {
             const conversationRef = doc(this.db, 'businessConversations', conversationId);
             const conversationDoc = await getDoc(conversationRef);
@@ -159,6 +162,8 @@ export class BusinessMessagingManager {
         this.state.set('currentChatBusinessId', businessId);
         this.state.set('currentBusinessConversationId', conversationId);
         this.state.set('chatOpenedFromBusinessProfile', true);
+        
+        console.log('✅ Updated conversation state to:', this.state.get('currentBusinessConversationId'));
         
         // Update header name
         const chatName = document.querySelector('#businessChat .chat-header-name');

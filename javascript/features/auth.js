@@ -119,7 +119,7 @@ export class AuthManager {
         }
     }
     
-   /**
+  /**
      * Handle user logout
      */
    handleUserLogout() {
@@ -140,6 +140,15 @@ export class AuthManager {
             this.businessManager.cleanup();
         }
         
+        // CRITICAL: Clear ALL overlays and their content when logging out
+        if (this.navigationManager) {
+            this.navigationManager.clearOverlayStack();
+            this.navigationManager.clearNavigationHistory();
+        }
+        
+        // CRITICAL: Reset overlay content to prevent previous user data showing
+        this.resetOverlayContent();
+        
         // Reset UI to default state
         const mainScreens = document.querySelector('.main-screens');
         const bottomNav = document.querySelector('.bottom-nav');
@@ -157,6 +166,63 @@ export class AuthManager {
         
         // Reset user data
         this.state.reset(['userProfile', 'businessProfile']);
+    }
+    
+    /**
+     * Reset all overlay content to prevent previous user data from showing
+     * SECURITY: Critical for account switching
+     */
+    resetOverlayContent() {
+        console.log('🧹 Resetting overlay content for account switch');
+        
+        // List of overlays that display user-specific content
+        const overlaysToReset = [
+            'userProfileView',
+            'myProfileView',
+            'businessProfile',
+            'profileEditor',
+            'businessProfileEditor',
+            'individualChat',
+            'settingsOverlay'
+        ];
+        
+        overlaysToReset.forEach(overlayId => {
+            const overlay = document.getElementById(overlayId);
+            if (overlay) {
+                // Reset common profile elements
+                const elements = {
+                    name: overlay.querySelector('[id*="Name"]'),
+                    email: overlay.querySelector('[id*="Email"]'),
+                    bio: overlay.querySelector('[id*="Bio"]'),
+                    photos: overlay.querySelector('.profile-photos'),
+                    messages: overlay.querySelector('.chat-messages')
+                };
+                
+                // Clear text content
+                if (elements.name) elements.name.textContent = '';
+                if (elements.email) elements.email.textContent = '';
+                if (elements.bio) elements.bio.textContent = '';
+                
+                // Clear photos
+                if (elements.photos) elements.photos.innerHTML = '';
+                
+                // Clear messages
+                if (elements.messages) elements.messages.innerHTML = '';
+            }
+        });
+        
+        // Clear chat list
+        const chatList = document.getElementById('chatList');
+        if (chatList) chatList.innerHTML = '';
+        
+        // Clear feed content
+        const feedContainers = ['userFeedContent', 'restaurantFeedContent', 'activityFeedContent'];
+        feedContainers.forEach(containerId => {
+            const container = document.getElementById(containerId);
+            if (container) container.innerHTML = '';
+        });
+        
+        console.log('✅ Overlay content reset complete');
     }
     
     /**

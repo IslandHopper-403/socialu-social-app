@@ -1770,11 +1770,25 @@ export class BusinessManager {
         item.className = conv.businessUnread > 0 ? 'message-item unread' : 'message-item';
         item.dataset.conversationId = conv.id;
         
-        // Avatar
+        // Avatar with actual customer photo
         const avatar = document.createElement('div');
         avatar.className = 'customer-avatar';
-        avatar.textContent = '👤';
         
+        // Fetch customer photo
+        if (conv.userId) {
+            this.fetchCustomerPhoto(conv.userId).then(photoUrl => {
+                if (photoUrl) {
+                    avatar.style.backgroundImage = `url('${photoUrl}')`;
+                    avatar.style.backgroundSize = 'cover';
+                    avatar.style.backgroundPosition = 'center';
+                    avatar.textContent = ''; // Clear emoji
+                } else {
+                    avatar.textContent = '👤'; // Fallback
+                }
+            });
+        } else {
+            avatar.textContent = '👤'; // Fallback if no userId
+        }
         // Content container
         const content = document.createElement('div');
         content.className = 'message-content';

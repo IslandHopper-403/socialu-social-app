@@ -288,7 +288,7 @@ showContentSkeleton(containerId, type = 'default') {
     }
     
     
-    showOverlay(overlayId) {
+showOverlay(overlayId) {
         const overlay = document.getElementById(overlayId);
         if (overlay) {
             overlay.classList.add('show');
@@ -299,25 +299,27 @@ showContentSkeleton(containerId, type = 'default') {
                 console.log('📚 Overlay stack:', this.overlayStack);
             }
             
-            // Lock body scroll when first overlay opens
+            // Lock body scroll when first overlay opens (EVENT-BASED, NO POSITION FIXED)
             if (this.overlayStack.length === 1) {
-                // Check if this is a form overlay (needs gentle lock for mobile keyboard)
-                const isFormOverlay = this.formOverlays.includes(overlayId);
+                // Save scroll position for ALL overlays
+                this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
                 
-                if (isFormOverlay) {
-                    // GENTLE LOCK: Just prevent scroll, don't fix position (mobile keyboard friendly)
-                    document.body.style.overflow = 'hidden';
-                    document.body.classList.add('overlay-open', 'form-overlay-open');
-                    console.log('📝 Applied gentle scroll lock for form overlay');
-                } else {
-                    // STRONG LOCK: Save position and fix (for non-form overlays)
-                    this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
-                    document.body.style.position = 'fixed';
-                    document.body.style.top = `-${this.scrollPosition}px`;
-                    document.body.style.width = '100%';
-                    document.body.classList.add('overlay-open');
-                    console.log('🔒 Applied strong scroll lock with position save');
-                }
+                // Apply CSS-only lock (no position tricks)
+                document.body.classList.add('overlay-open');
+                document.body.style.overflow = 'hidden';
+                
+                // Prevent touch scrolling on body with event listener
+                this.preventScroll = (e) => {
+                    // Allow scrolling within overlay content, block body scroll
+                    if (!e.target.closest('.overlay-screen')) {
+                        e.preventDefault();
+                    }
+                };
+                
+                document.body.addEventListener('touchmove', this.preventScroll, { passive: false });
+                document.body.addEventListener('wheel', this.preventScroll, { passive: false });
+                
+                console.log('🔒 Applied event-based scroll lock');
             }
             
             // Update corresponding state
@@ -347,29 +349,26 @@ showContentSkeleton(containerId, type = 'default') {
                 console.log('📚 Overlay stack after close:', this.overlayStack);
             }
             
-            // Unlock body scroll when no overlays remain
+           // Unlock body scroll when no overlays remain
             if (this.overlayStack.length === 0) {
-                // Check if we used gentle or strong lock
-                const wasFormOverlay = document.body.classList.contains('form-overlay-open');
+                // Remove CSS lock
+                document.body.classList.remove('overlay-open');
+                document.body.style.overflow = '';
                 
-                document.body.classList.remove('overlay-open', 'form-overlay-open');
-                
-                if (wasFormOverlay) {
-                    // GENTLE UNLOCK: Just restore overflow
-                    document.body.style.overflow = '';
-                    console.log('📝 Released gentle scroll lock');
-                } else {
-                    // STRONG UNLOCK: Restore position
-                    document.body.style.position = '';
-                    document.body.style.top = '';
-                    document.body.style.width = '';
-                    
-                    if (this.scrollPosition !== undefined) {
-                        window.scrollTo(0, this.scrollPosition);
-                        this.scrollPosition = undefined;
-                    }
-                    console.log('🔓 Released strong scroll lock');
+                // Remove event listeners
+                if (this.preventScroll) {
+                    document.body.removeEventListener('touchmove', this.preventScroll);
+                    document.body.removeEventListener('wheel', this.preventScroll);
+                    this.preventScroll = null;
                 }
+                
+                // Restore scroll position (no delay, no position tricks)
+                if (this.scrollPosition !== undefined) {
+                    window.scrollTo(0, this.scrollPosition);
+                    this.scrollPosition = undefined;
+                }
+                
+                console.log('🔓 Released scroll lock');
             }
             
             // Update corresponding state
@@ -479,17 +478,19 @@ handleOverlayBack(overlayId) {
         // Clear the stack
         this.overlayStack = [];
         
-        // Unlock body scroll and restore position
-        const wasFormOverlay = document.body.classList.contains('form-overlay-open');
-        document.body.classList.remove('overlay-open', 'form-overlay-open');
-        
-        // Clean up all scroll lock styles
+       // Unlock body scroll
+        document.body.classList.remove('overlay-open');
         document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
         
-        if (!wasFormOverlay && this.scrollPosition !== undefined) {
+        // Remove event listeners
+        if (this.preventScroll) {
+            document.body.removeEventListener('touchmove', this.preventScroll);
+            document.body.removeEventListener('wheel', this.preventScroll);
+            this.preventScroll = null;
+        }
+        
+        // Restore scroll position
+        if (this.scrollPosition !== undefined) {
             window.scrollTo(0, this.scrollPosition);
             this.scrollPosition = undefined;
         }

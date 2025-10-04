@@ -63,29 +63,28 @@
 /* Base responsive viewport */
 @media screen and (max-width: 430px) {
     .app-container {
-        max-width: 100vw;
-        width: 100vw;
-        margin: 0;
+        max-width: 430px;
+        width: 100%;
+        margin: 0 auto;
         min-height: 100vh;
         min-height: 100dvh; /* Use dynamic viewport height for mobile */
     }
     
     /* Fix overlay screens for mobile */
     .overlay-screen {
-        max-width: 100vw;
-        width: 100vw;
+        max-width: 430px;
+        width: 100%;
         left: 0;
-        transform: none;
+        right: 0;
+        margin: 0 auto;
         height: 100vh;
         height: 100dvh;
     }
     
     /* Fix bottom navigation for mobile */
     .bottom-nav {
-        max-width: 100vw;
-        width: 100vw;
-        left: 0;
-        transform: none;
+        max-width: 430px;
+        width: 100%;
         padding: 10px 15px;
         /* Account for iPhone home indicator */
         padding-bottom: calc(15px + env(safe-area-inset-bottom));

@@ -300,7 +300,6 @@ export class FeedManager {
         
         snapshot.forEach(doc => {
             const business = doc.data();
-            console.log('📸 Activity photos:', business.name, business.photos);
             activities.push({
                 id: doc.id,
                 name: business.name,

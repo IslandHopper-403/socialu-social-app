@@ -34,9 +34,14 @@ export class BusinessMessagingManager {
      * Start a business conversation
      * SECURITY: Separate from social messaging
      */
-    async startBusinessConversation(businessId) {
+       async startBusinessConversation(businessId) {
+        console.log('🚀 START startBusinessConversation - Line 1');
+        
         const user = this.state.get('currentUser');
+        console.log('🚀 Got user - Line 2');
+        
         const businessData = this.state.get('currentBusiness');
+        console.log('🚀 Got businessData - Line 3');
         
         // Extract business name from various possible properties
         const businessName = businessData?.businessName || businessData?.name || businessData?.title || 'Business';

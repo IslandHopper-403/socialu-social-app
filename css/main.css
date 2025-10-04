@@ -1492,8 +1492,9 @@ input:disabled + .toggle-slider {
 .bottom-nav {
     position: fixed;
     bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
+    right: 0;
+    margin: 0 auto;
     width: 100%;
     max-width: 430px;
     background: rgba(0,0,0,0.95);
@@ -1504,6 +1505,7 @@ input:disabled + .toggle-slider {
     border-top: 1px solid var(--border-light);
     z-index: 150;
 }
+
 .nav-item {
     display: flex;
     flex-direction: column;

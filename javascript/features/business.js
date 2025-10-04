@@ -745,12 +745,37 @@ export class BusinessManager {
             headerTitle.textContent = sanitizeText(business.type || 'Business');
         }
         
-       // Update hero - SAFE (CSS background)
+     // Update hero - SAFE (CSS background) 
         const heroElement = document.getElementById('profileHero');
-        if (heroElement && (business.photos?.[0] || business.image)) {
-            const imageUrl = business.photos?.[0] || business.image;
+        
+        // DEBUG: Log everything
+        console.log('🖼️ === HERO IMAGE DEBUG ===');
+        console.log('Business Name:', business.name);
+        console.log('Business Type:', business.type);
+        console.log('Business ID:', business.id);
+        console.log('Has photos array?', !!business.photos);
+        console.log('Photos array:', business.photos);
+        console.log('Has image field?', !!business.image);
+        console.log('Image field:', business.image);
+        console.log('Has story field?', !!business.story);
+        console.log('Story field:', business.story);
+        console.log('Hero element exists?', !!heroElement);
+        
+        const imageUrl = business.photos?.[0] || business.image || business.story;
+        console.log('Final imageUrl:', imageUrl);
+        
+        if (heroElement && imageUrl) {
             heroElement.style.backgroundImage = `url('${escapeHtml(imageUrl)}')`;
+            heroElement.style.backgroundSize = 'cover';
+            heroElement.style.backgroundPosition = 'center';
+            console.log('✅ Hero image SET successfully');
+        } else {
+            console.error('❌ FAILED to set hero image:', {
+                hasElement: !!heroElement,
+                hasUrl: !!imageUrl
+            });
         }
+        
           // Add photo counter
          this.addPhotoCounter(business);
                 
@@ -903,7 +928,6 @@ export class BusinessManager {
     addPhotoCounter(business) {
         const heroElement = document.getElementById('profileHero');
         if (!heroElement || !business.photos || business.photos.length <= 1) return;
-        
         // Remove existing counter if any
         const existingCounter = heroElement.querySelector('.hero-photo-counter');
         if (existingCounter) existingCounter.remove();

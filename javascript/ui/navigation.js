@@ -299,12 +299,17 @@ showContentSkeleton(containerId, type = 'default') {
                 console.log('📚 Overlay stack:', this.overlayStack);
             }
             
+            // Lock body scroll when first overlay opens
+            if (this.overlayStack.length === 1) {
+                document.body.classList.add('overlay-open');
+            }
+            
             // Update corresponding state
             this.updateOverlayState(overlayId, true);
         }
     }
     
-   /**
+/**
      * Close overlay screen with stack management
      */
     closeOverlay(overlayId) {
@@ -324,6 +329,11 @@ showContentSkeleton(containerId, type = 'default') {
             if (index > -1) {
                 this.overlayStack.splice(index, 1);
                 console.log('📚 Overlay stack after close:', this.overlayStack);
+            }
+            
+            // Unlock body scroll when no overlays remain
+            if (this.overlayStack.length === 0) {
+                document.body.classList.remove('overlay-open');
             }
             
             // Update corresponding state
@@ -418,7 +428,7 @@ handleOverlayBack(overlayId) {
         }
     }
     
-    /**
+   /**
      * Clear overlay stack (use when logging out or switching users)
      */
     clearOverlayStack() {
@@ -432,6 +442,9 @@ handleOverlayBack(overlayId) {
         
         // Clear the stack
         this.overlayStack = [];
+        
+        // Unlock body scroll
+        document.body.classList.remove('overlay-open');
     }
     
     /**

@@ -493,6 +493,7 @@ handleOverlayBack(overlayId) {
             window.scrollTo(0, this.scrollPosition);
             this.scrollPosition = undefined;
         }
+    }
     
     /**
      * Update overlay state

@@ -2105,19 +2105,13 @@ body.business-user #socialScreen {
 
 /* Business Chat Badge */
 .business-badge {
-    background: linear-gradient(135deg, #4A9EFF, #0066CC);
-    color: white;
+    background: rgba(74, 158, 255, 0.2);
+    color: #4A9EFF;
     padding: 2px 6px;
-    border-radius: 8px;
+    border-radius: 4px;
     font-size: 10px;
-    font-weight: 600;
-    margin-left: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.chat-item.business-chat {
-    border-left: 3px solid #4A9EFF;
+    font-weight: 500;
+    margin-left: 4px;
 }
 
 #businessChat #businessChatAvatar {

@@ -462,6 +462,29 @@ export class BusinessMessagingManager {
             chatHeader.textContent = data.userName || 'Customer';
         }
         
+        // Update customer avatar in chat header
+        const chatAvatar = document.querySelector('#businessChat .chat-header-avatar');
+        if (chatAvatar && data.userId) {
+            // Fetch customer photo from users collection
+            try {
+                const userRef = doc(this.db, 'users', data.userId);
+                const userDoc = await getDoc(userRef);
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const customerPhoto = userData.photos?.[0] || userData.photo || '';
+                    
+                    if (customerPhoto) {
+                        chatAvatar.src = customerPhoto;
+                        chatAvatar.alt = data.userName || 'Customer';
+                        console.log('✅ Set customer avatar in chat header');
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching customer avatar:', error);
+            }
+        }
+        
         // Show businessChat overlay
         const chatOverlay = document.getElementById('businessChat');
         if (chatOverlay) {

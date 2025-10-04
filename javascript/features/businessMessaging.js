@@ -109,37 +109,43 @@ export class BusinessMessagingManager {
          * SECURITY: Uses new businessChat overlay, separate from social chat
          */
         openBusinessChat(businessId, conversationId) {
-            const businessData = this.state.get('currentBusiness');
-            const businessName = businessData?.businessName || businessData?.name || businessData?.title || 'Business';
-            
-            console.log('📬 Opening business chat:', { businessId, businessName });
-            
-            // Set state
-            this.state.set('currentChatType', 'business');
-            this.state.set('currentChatBusinessId', businessId);
-            this.state.set('currentBusinessConversationId', conversationId);
-            this.state.set('chatOpenedFromBusinessProfile', true);
-            
-            // Update header name
-            const chatName = document.querySelector('#businessChat .chat-header-name');
-            if (chatName) chatName.textContent = businessName;
-            
-            // Update empty state title
-            const emptyTitle = document.getElementById('emptyStateTitle');
-            if (emptyTitle) {
-                emptyTitle.textContent = `Message ${businessName}`;
-                console.log('✅ Set empty state title:', `Message ${businessName}`);
-            }
-            
-            // Set avatar image
-            const chatAvatar = document.querySelector('#businessChat .chat-header-avatar');
-            if (chatAvatar && businessData) {
-                const avatarUrl = businessData.images?.[0] || businessData.avatar || businessData.profileImage || '';
-                if (avatarUrl) {
-                    chatAvatar.src = avatarUrl;
-                    chatAvatar.alt = businessName;
-                }
-            }
+        // Get business data from DOM (profile overlay is still open)
+        const profileOverlay = document.getElementById('businessProfile');
+        const businessNameEl = profileOverlay?.querySelector('.business-name');
+        const businessImageEl = profileOverlay?.querySelector('.profile-image');
+        
+        const businessName = businessNameEl?.textContent || 'Business';
+        const avatarUrl = businessImageEl?.src || '';
+        
+        console.log('📬 Opening business chat:', { 
+            businessId, 
+            businessName,
+            hasAvatar: !!avatarUrl 
+        });
+        
+        // Set state
+        this.state.set('currentChatType', 'business');
+        this.state.set('currentChatBusinessId', businessId);
+        this.state.set('currentBusinessConversationId', conversationId);
+        this.state.set('chatOpenedFromBusinessProfile', true);
+        
+        // Update header name
+        const chatName = document.querySelector('#businessChat .chat-header-name');
+        if (chatName) chatName.textContent = businessName;
+        
+        // Update empty state title
+        const emptyTitle = document.getElementById('emptyStateTitle');
+        if (emptyTitle) {
+            emptyTitle.textContent = `Message ${businessName}`;
+        }
+        
+        // Set avatar image
+        const chatAvatar = document.querySelector('#businessChat .chat-header-avatar');
+        if (chatAvatar && avatarUrl) {
+            chatAvatar.src = avatarUrl;
+            chatAvatar.alt = businessName;
+            console.log('✅ Set business avatar');
+        }
             
             // Show overlay
             const overlay = document.getElementById('businessChat');

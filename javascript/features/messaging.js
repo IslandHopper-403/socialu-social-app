@@ -824,26 +824,26 @@ export class MessagingManager {
         }
 
 
-    /**
- * Load business conversations for unified inbox
- */
-async loadBusinessConversations(userId) {
-    try {
-        console.log('🏪 Loading business conversations for user:', userId);
-        
-        const businessChatsRef = collection(this.db, 'businessConversations');
-        const q = query(
-            businessChatsRef,
-            where('userId', '==', userId),
-            limit(20)
-        );
-        
-        const snapshot = await getDocs(q);
-        console.log(`📊 Found ${snapshot.size} business conversations`);
-        
-        const businessChats = [];
-        
-        for (const doc of snapshot.docs) {
+            /**
+         * Load business conversations for unified inbox
+         */
+        async loadBusinessConversations(userId) {
+            try {
+                console.log('🏪 Loading business conversations for user:', userId);
+                
+                const businessChatsRef = collection(this.db, 'businessConversations');
+                const q = query(
+                    businessChatsRef,
+                    where('userId', '==', userId),
+                    limit(20)
+                );
+                
+                const snapshot = await getDocs(q);
+                console.log(`📊 Found ${snapshot.size} business conversations`);
+                
+                const businessChats = [];
+                
+               for (const doc of snapshot.docs) {
             const data = doc.data();
             
             // Skip conversations with no messages
@@ -852,12 +852,24 @@ async loadBusinessConversations(userId) {
                 continue;
             }
             
+            // Fetch business avatar from businesses collection
+            let businessAvatar = '';
+            try {
+                const businessDoc = await getDoc(doc(this.db, 'businesses', data.businessId));
+                if (businessDoc.exists()) {
+                    const bizData = businessDoc.data();
+                    businessAvatar = bizData.images?.[0] || bizData.avatar || bizData.profileImage || '';
+                }
+            } catch (error) {
+                console.error('Error fetching business avatar:', error);
+            }
+            
             businessChats.push({
                 id: doc.id,
                 type: 'business',
                 partnerId: data.businessId,
                 partnerName: data.businessName || 'Business',
-                partnerAvatar: '🏪', // Business emoji
+                partnerAvatar: businessAvatar,
                 lastMessage: data.lastMessage || 'Business inquiry',
                 lastMessageTime: data.lastMessageTime,
                 lastMessageSender: data.lastMessageSender,
@@ -888,12 +900,16 @@ displayUnifiedChats(chats) {
         const timeAgo = chat.lastMessageTime ? this.getTimeAgo(chat.lastMessageTime) : 'New';
         const unreadCount = chat.hasUnread ? (chat.unreadCount || 1) : 0;
         
-        if (chat.type === 'business') {
-            // Business chat item
-            return `
-                <div class="chat-item business-chat" data-chat-id="${chat.id}" onclick="window.classifiedApp.managers.messaging.businessMessaging.openBusinessChat('${chat.partnerId}', '${chat.id}')">
-                    <div class="chat-avatar" style="font-size: 28px; display: flex; align-items: center; justify-content: center;">${chat.partnerAvatar}</div>
-                    <div class="chat-info">
+           if (chat.type === 'business') {
+                // Business chat item
+                const avatarStyle = chat.partnerAvatar 
+                    ? `background-image: url('${chat.partnerAvatar}')` 
+                    : `font-size: 24px; display: flex; align-items: center; justify-content: center;`;
+                const avatarContent = chat.partnerAvatar ? '' : '🏪';
+                
+                return `
+                    <div class="chat-item" data-chat-id="${chat.id}" onclick="window.classifiedApp.managers.messaging.businessMessaging.openBusinessChat('${chat.partnerId}', '${chat.id}')">
+                        <div class="chat-avatar" style="${avatarStyle}">${avatarContent}</div>
                         <div class="chat-name">${chat.partnerName} <span class="business-badge">Business</span></div>
                         <div class="chat-message" ${unreadCount > 0 ? 'style="font-weight: 600;"' : ''}>${chat.lastMessage}</div>
                     </div>

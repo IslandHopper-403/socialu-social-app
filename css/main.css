@@ -2279,6 +2279,11 @@ body.business-user #socialScreen {
     font-size: 16px !important;
 }
 
+/* Profile Editor - Choice buttons (Career, Zodiac, What I Like Most, etc.) */
+#profileEditor .choice-btn {
+    font-size: 16px !important;
+}
+
 /* Profile Editor - Career buttons (if they exist with similar naming) */
 #profileEditor .career-btn {
     font-size: 16px !important;

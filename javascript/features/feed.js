@@ -362,6 +362,13 @@ export class FeedManager {
         if (!this.state.get('isAuthenticated')) return;
         
         const container = document.getElementById('userFeedContainer');
+        
+        // CRITICAL: Check if container exists (Social screen might not be active yet)
+        if (!container) {
+            console.warn('⚠️ userFeedContainer not found - Social screen may not be active yet');
+            return;
+        }
+        
         container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
         
         try {
@@ -376,7 +383,7 @@ export class FeedManager {
             
         } catch (error) {
             console.error('❌ Error loading users:', error);
-            this.showUserFeedError(container);
+           this.showUserFeedError(container);
         }
     }
     

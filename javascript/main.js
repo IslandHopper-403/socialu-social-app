@@ -4,6 +4,7 @@
 // Working State with new Business Cards + Business Profile Updated - Gorgoues UI/UX here
 // GOOD WORKING CONDITION - ALL FEATURES AND BUGS WORKED OUT
 // Good Working Condition with All Chat Avatars and Chat Functions Working
+// Good working State - Mostbugs worked out!
 // From this place forward start refactoring Users and Business for seperate UI/UX portals
 
 // BUSINESS WORKFLOW:

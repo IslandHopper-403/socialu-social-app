@@ -693,24 +693,40 @@ export class MessagingManager {
         return matches;
     }
     
-    /**
-     * Load chat list
-     */
-    async loadChats() {
-        const currentUser = this.state.get('currentUser');
-        if (!currentUser) return;
-        
-        try {
-            console.log('💬 Loading chats for user:', currentUser.uid);
+           /**
+         * Load chat list - UNIFIED INBOX (social + business chats)
+         */
+        async loadChats() {
+            const currentUser = this.state.get('currentUser');
+            if (!currentUser) return;
             
-            const chatList = document.getElementById('chatList');
-            if (!chatList) return;
-            
-            // Try to load real chats from Firebase first
-            await this.loadRealChats(currentUser.uid);
-            
-            // Always show demo chats for testing
-            const chats = this.mockData ? this.mockData.getChats() : [];
+            try {
+                console.log('💬 Loading UNIFIED chats for user:', currentUser.uid);
+                
+                const chatList = document.getElementById('chatList');
+                if (!chatList) return;
+                
+                // Load both social and business chats
+                const socialChats = await this.loadRealChats(currentUser.uid);
+                const businessChats = await this.loadBusinessConversations(currentUser.uid);
+                
+                // Merge and sort by time
+                const allChats = [...socialChats, ...businessChats];
+                allChats.sort((a, b) => {
+                    const timeA = a.lastMessageTime?.toDate?.() || new Date(0);
+                    const timeB = b.lastMessageTime?.toDate?.() || new Date(0);
+                    return timeB - timeA;
+                });
+                
+                console.log(`📊 Unified inbox: ${socialChats.length} social + ${businessChats.length} business = ${allChats.length} total`);
+                
+                // Display unified list
+                if (allChats.length > 0) {
+                    this.displayUnifiedChats(allChats);
+                }
+                
+                // Show demo chats if no real chats
+                const chats = this.mockData ?
             
             // Only show demo chats if no real chats exist
             const existingChats = chatList.querySelectorAll('.chat-item');
@@ -796,19 +812,105 @@ export class MessagingManager {
             }
         }
                     
-            // If we have real chats, update the UI
-            if (realChats.length > 0) {
-                console.log(`✅ Updating UI with ${realChats.length} real chats`);
-                this.updateChatList(realChats);
+          return realChats; // CHANGED: Return data instead of updating UI
+        
+            } catch (error) {
+                if (error.code?.includes('permission')) {
+                    handleSecurityError(error);
+                }
+                console.error('❌ Error loading real chats:', error);
+                return []; // Return empty array on error
             }
-            
-              } catch (error) {
-            if (error.code?.includes('permission')) {
-                handleSecurityError(error);
-            }
-            console.error('❌ Error loading real chats:', error);
         }
+
+
+    /**
+ * Load business conversations for unified inbox
+ */
+async loadBusinessConversations(userId) {
+    try {
+        console.log('🏪 Loading business conversations for user:', userId);
+        
+        const businessChatsRef = collection(this.db, 'businessConversations');
+        const q = query(
+            businessChatsRef,
+            where('userId', '==', userId),
+            limit(20)
+        );
+        
+        const snapshot = await getDocs(q);
+        console.log(`📊 Found ${snapshot.size} business conversations`);
+        
+        const businessChats = [];
+        
+        for (const doc of snapshot.docs) {
+            const data = doc.data();
+            
+            businessChats.push({
+                id: doc.id,
+                type: 'business', // Mark as business chat
+                partnerId: data.businessId,
+                partnerName: data.businessName || 'Business',
+                partnerAvatar: '🏪', // Business emoji
+                lastMessage: data.lastMessage || 'Business inquiry',
+                lastMessageTime: data.lastMessageTime,
+                lastMessageSender: data.lastMessageSender,
+                hasUnread: (data.userUnread || 0) > 0,
+                unreadCount: data.userUnread || 0
+            });
+        }
+        
+        return businessChats;
+        
+    } catch (error) {
+        console.error('❌ Error loading business conversations:', error);
+        return [];
     }
+}
+
+
+    /**
+ * Display unified chat list (social + business)
+ */
+displayUnifiedChats(chats) {
+    const chatList = document.getElementById('chatList');
+    if (!chatList) return;
+    
+    console.log('🔄 Displaying', chats.length, 'unified chats');
+    
+    chatList.innerHTML = chats.map(chat => {
+        const timeAgo = chat.lastMessageTime ? this.getTimeAgo(chat.lastMessageTime) : 'New';
+        const unreadCount = chat.hasUnread ? (chat.unreadCount || 1) : 0;
+        
+        if (chat.type === 'business') {
+            // Business chat item
+            return `
+                <div class="chat-item business-chat" data-chat-id="${chat.id}" onclick="window.classifiedApp.managers.messaging.businessMessaging.openBusinessChat('${chat.partnerId}', '${chat.id}')">
+                    <div class="chat-avatar" style="font-size: 28px; display: flex; align-items: center; justify-content: center;">${chat.partnerAvatar}</div>
+                    <div class="chat-info">
+                        <div class="chat-name">${chat.partnerName} <span class="business-badge">Business</span></div>
+                        <div class="chat-message" ${unreadCount > 0 ? 'style="font-weight: 600;"' : ''}>${chat.lastMessage}</div>
+                    </div>
+                    <div class="chat-time">${timeAgo}</div>
+                    ${unreadCount > 0 ? `<div class="chat-unread-count">${unreadCount > 9 ? '9+' : unreadCount}</div>` : ''}
+                </div>
+            `;
+        } else {
+            // Social chat item (existing format)
+            return `
+                <div class="chat-item" data-chat-id="${chat.id}" onclick="CLASSIFIED.openChat('${chat.partnerName}', '${chat.partnerAvatar}', '${chat.partnerId}')">
+                    <div class="chat-avatar" style="background-image: url('${chat.partnerAvatar}')"></div>
+                    <div class="chat-info">
+                        <div class="chat-name">${chat.partnerName}</div>
+                        <div class="chat-message" ${unreadCount > 0 ? 'style="font-weight: 600;"' : ''}>${chat.lastMessage}</div>
+                    </div>
+                    <div class="chat-time">${timeAgo}</div>
+                    ${unreadCount > 0 ? `<div class="chat-unread-count">${unreadCount > 9 ? '9+' : unreadCount}</div>` : ''}
+                </div>
+            `;
+        }
+    }).join('');
+}
     
     /**
      * Update chat list UI

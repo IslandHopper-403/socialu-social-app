@@ -299,8 +299,15 @@ showContentSkeleton(containerId, type = 'default') {
                 console.log('📚 Overlay stack:', this.overlayStack);
             }
             
-            // Lock body scroll when first overlay opens
+            // Lock body scroll when first overlay opens (MOBILE FRIENDLY)
             if (this.overlayStack.length === 1) {
+                // Save current scroll position
+                this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+                
+                // Apply lock with saved position
+                document.body.style.position = 'fixed';
+                document.body.style.top = `-${this.scrollPosition}px`;
+                document.body.style.width = '100%';
                 document.body.classList.add('overlay-open');
             }
             
@@ -331,9 +338,20 @@ showContentSkeleton(containerId, type = 'default') {
                 console.log('📚 Overlay stack after close:', this.overlayStack);
             }
             
-            // Unlock body scroll when no overlays remain
+            // Unlock body scroll when no overlays remain (RESTORE POSITION)
             if (this.overlayStack.length === 0) {
                 document.body.classList.remove('overlay-open');
+                
+                // Remove fixed positioning
+                document.body.style.position = '';
+                document.body.style.top = '';
+                document.body.style.width = '';
+                
+                // Restore scroll position
+                if (this.scrollPosition !== undefined) {
+                    window.scrollTo(0, this.scrollPosition);
+                    this.scrollPosition = undefined;
+                }
             }
             
             // Update corresponding state
@@ -443,8 +461,16 @@ handleOverlayBack(overlayId) {
         // Clear the stack
         this.overlayStack = [];
         
-        // Unlock body scroll
+        // Unlock body scroll and restore position
         document.body.classList.remove('overlay-open');
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        
+        if (this.scrollPosition !== undefined) {
+            window.scrollTo(0, this.scrollPosition);
+            this.scrollPosition = undefined;
+        }
     }
     
     /**

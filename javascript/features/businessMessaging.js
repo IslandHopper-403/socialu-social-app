@@ -288,11 +288,23 @@ export class BusinessMessagingManager {
     /**
      * Set up real-time listener for business messages
      */
-    setupBusinessMessageListener(conversationId) {
+       setupBusinessMessageListener(conversationId) {
+        console.log('👂 Setting up listener for:', conversationId);
+        
         // Clean up existing business listener
         if (this.businessChatListener) {
+            console.log('🧹 Cleaning up old listener');
             this.businessChatListener();
             this.businessChatListener = null;
+        }
+        
+        // CRITICAL: Clear the messages container before setting up new listener
+        const chatMessages = document.getElementById('businessChatMessages');
+        if (chatMessages) {
+            // Keep empty state, remove all message divs
+            const messages = chatMessages.querySelectorAll('.message, .chat-notice');
+            messages.forEach(msg => msg.remove());
+            console.log('🧹 Cleared old messages from DOM');
         }
         
         const messagesRef = collection(this.db, 'businessConversations', conversationId, 'messages');

@@ -2102,6 +2102,24 @@ body.business-user #socialScreen {
 
 /* ===== Business Chat Overlay Styles (User to Business Messaging Overlay) ===== */
 /* Business Chat Overlay Styles */
+
+/* Business Chat Badge */
+.business-badge {
+    background: linear-gradient(135deg, #4A9EFF, #0066CC);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.chat-item.business-chat {
+    border-left: 3px solid #4A9EFF;
+}
+
 #businessChat #businessChatAvatar {
     width: 45px;
     height: 45px;
@@ -2233,3 +2251,6 @@ body.business-user #socialScreen {
 #businessChat .chat-messages {
     padding-bottom: 80px;
 }
+
+
+

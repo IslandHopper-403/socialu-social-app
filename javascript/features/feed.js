@@ -739,7 +739,7 @@ export class FeedManager {
             e.preventDefault();
             currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
             const diff = currentX - startX;
-            imagesWrapper.style.transform = `translateX(${-currentIndex * 100 + (diff / imageContainer.offsetWidth * 100)}%)`;
+            scrollWrapper.style.transform = `translateX(${-currentIndex * 100 + (diff / imageContainer.offsetWidth * 100)}%)`;
         };
         
         const handleEnd = () => {
@@ -757,7 +757,7 @@ export class FeedManager {
             }
             
             // Update position and dots
-            imagesWrapper.style.transform = `translateX(${-currentIndex * 100}%)`;
+            scrollWrapper.style.transform = `translateX(${-currentIndex * 100}%)`;
             dotsContainer.querySelectorAll('.carousel-dot').forEach((dot, i) => {
                 dot.style.background = i === currentIndex ? 'white' : 'rgba(255,255,255,0.5)';
             });

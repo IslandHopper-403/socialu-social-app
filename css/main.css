@@ -727,6 +727,10 @@ body {
     z-index: var(--z-business-profile);
 }
 
+#businessChat.overlay-screen {
+    z-index: 400 !important; /* Above businessProfile (375) */
+}
+
 #userProfileView.overlay-screen,
 #myProfileView.overlay-screen {
     z-index: var(--z-overlay-profile);
@@ -2181,6 +2185,48 @@ body.business-user #socialScreen {
     padding: 12px 15px 30px;
     border-top: 1px solid #2a2a2a;
     z-index: 10;
+}
+
+/* Business Chat Input Styling */
+#businessChat .chat-input {
+    background: var(--border-light);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-pill);
+    padding: 12px 20px;
+    color: white !important; /* FIX: Visible text */
+    font-size: 14px;
+    width: calc(100% - 60px); /* FIX: Full width minus send button */
+    margin-right: 10px;
+}
+
+#businessChat .chat-input::placeholder {
+    color: rgba(255,255,255,0.5);
+}
+
+#businessChat .chat-input:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+}
+
+#businessChat .send-btn {
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-cyan-dark));
+    border: none;
+    border-radius: var(--radius-circle);
+    width: 45px;
+    height: 45px;
+    color: white;
+    cursor: pointer;
+    font-size: 18px;
+    transition: transform 0.2s ease;
+}
+
+#businessChat .send-btn:hover {
+    transform: scale(1.05);
+}
+
+#businessChat .chat-input-container {
+    display: flex;
+    align-items: center;
 }
 
 /* Make messages container leave room for input */

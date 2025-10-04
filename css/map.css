@@ -11,10 +11,14 @@
     height: 100vh;
     background: #1a1a1a;
     z-index: 300;
-    display: flex;
+    display: none;
     flex-direction: column;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
+}
+
+.map-overlay:not(.hidden) {
+    display: flex;
 }
 
 .map-overlay.hidden {
@@ -347,8 +351,12 @@
     z-index: 10;
     max-height: 40vh;
     overflow: hidden;
-    display: flex;
+    display: none;
     flex-direction: column;
+}
+
+.map-overlay:not(.hidden) .map-business-panel {
+    display: flex;
 }
 
 .map-business-panel.active {

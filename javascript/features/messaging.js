@@ -725,10 +725,9 @@ export class MessagingManager {
                     this.displayUnifiedChats(allChats);
                 }
                 
-                // Show demo chats if no real chats
-                const chats = this.mockData ?
-            
-            // Only show demo chats if no real chats exist
+        // Show demo chats if no real chats exist
+        if (allChats.length === 0) {
+            const chats = this.mockData ? this.mockData.getChats() : [];
             const existingChats = chatList.querySelectorAll('.chat-item');
             if (existingChats.length === 0) {
                 console.log('📝 No real chats found, showing demo chats');

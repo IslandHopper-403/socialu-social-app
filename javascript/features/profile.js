@@ -211,7 +211,7 @@ export class ProfileManager {
             zodiacDisplay.textContent = '';
         }
     }
-
+    
     /**
      * Load profile data into form
      */

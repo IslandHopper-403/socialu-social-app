@@ -80,7 +80,7 @@ export class AuthManager {
     /**
      * Handle user login
      */
-       async handleUserLogin(user) {
+      async handleUserLogin(user) {
         this.state.update({
             currentUser: user,
             isAuthenticated: true,
@@ -110,8 +110,8 @@ export class AuthManager {
             this.messagingManager.init();
         }
         
-        // Notify other managers
-        this.notifyLogin(user);
+        // CRITICAL: Await notification to ensure feeds load before UI shows
+        await this.notifyLogin(user);
     
          // Load favorites for logged in user
         if (this.favoritesCarousel) {
@@ -767,15 +767,28 @@ export class AuthManager {
     /**
      * Notify other managers of auth events
      */
-    notifyLogin(user) {
+    async notifyLogin(user) {
+        console.log('📢 Notifying managers of login:', user.email);
+        
         // Notify profile manager
         if (this.profileManager) {
-            this.profileManager.onUserLogin(user);
+            await this.profileManager.onUserLogin(user);
         }
         
-        // Notify feed manager
+        // CRITICAL: Ensure feed manager reloads - this fixes Browse People not populating
         if (this.feedManager) {
-            this.feedManager.onUserLogin(user);
+            console.log('📊 Triggering feed reload for:', user.email);
+            try {
+                await this.feedManager.onUserLogin(user);
+                console.log('✅ Feed reload complete');
+            } catch (error) {
+                console.error('❌ Feed reload failed:', error);
+                // Retry once if failed
+                console.log('🔄 Retrying feed load...');
+                setTimeout(() => {
+                    this.feedManager.onUserLogin(user);
+                }, 1000);
+            }
         }
     }
     

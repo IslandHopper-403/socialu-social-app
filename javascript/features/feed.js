@@ -143,7 +143,7 @@ export class FeedManager {
         }
     }
     
-   /**
+    /**
      * Populate restaurant feed
      */
     async populateRestaurantFeed() {
@@ -151,6 +151,9 @@ export class FeedManager {
         const feedContainer = document.getElementById('restaurantFeed');
         
         try {
+            // Show loading
+            feedContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            
             // Try to fetch from Firebase first
             if (this.state.get('isAuthenticated') && this.db) {
                 const restaurants = await this.fetchRestaurantsFromFirebase();
@@ -249,28 +252,32 @@ export class FeedManager {
         console.log('🍽️ Restaurant feed populated with', restaurants.length, 'businesses');
     }
     
-   /**
-     * Populate user feed
+    /**
+     * Populate activity feed
      */
-    async populateUserFeed() {
-        if (!this.state.get('isAuthenticated')) return;
-        
-        const container = document.getElementById('userFeedContainer');
-        container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    async populateActivityFeed() {
+        const storiesContainer = document.getElementById('activityStories');
+        const feedContainer = document.getElementById('activityFeed');
         
         try {
-            const users = await this.fetchUsersFromFirebase();
+            feedContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
             
-            if (users.length > 0) {
-                this.populateUserFeedWithData(users, container);
-            } else {
-                // Show demo users with encouraging message
-                this.populateDemoUserFeed(container);
+            // Try to fetch from Firebase first
+            if (this.state.get('isAuthenticated') && this.db) {
+                const activities = await this.fetchActivitiesFromFirebase();
+                
+                if (activities.length > 0) {
+                    this.populateActivityFeedWithData(activities, storiesContainer, feedContainer);
+                    return;
+                }
             }
             
+            // Fallback to demo data
+            this.populateActivityFeedWithData(this.mockData.getActivities(), storiesContainer, feedContainer);
+            
         } catch (error) {
-            console.error('❌ Error loading users:', error);
-           this.showUserFeedError(container);
+            console.error('❌ Error loading activities:', error);
+            this.populateActivityFeedWithData(this.mockData.getActivities(), storiesContainer, feedContainer);
         }
     }
     
@@ -349,31 +356,27 @@ export class FeedManager {
     }
     
     /**
-     * Populate user feed - UNIFIED pattern with restaurant/activity feeds
+     * Populate user feed
      */
     async populateUserFeed() {
         if (!this.state.get('isAuthenticated')) return;
         
         const container = document.getElementById('userFeedContainer');
+        container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
         
         try {
-            // Try to fetch from Firebase first (same as restaurants/activities)
-            if (this.state.get('isAuthenticated') && this.db) {
-                const users = await this.fetchUsersFromFirebase();
-                
-                if (users.length > 0) {
-                    this.populateUserFeedWithData(users, container);
-                    return;
-                }
-            }
+            const users = await this.fetchUsersFromFirebase();
             
-            // Fallback to demo data (same as restaurants/activities)
-            this.populateUserFeedWithData(this.mockData.getUsers(), container);
+            if (users.length > 0) {
+                this.populateUserFeedWithData(users, container);
+            } else {
+                // Show demo users with encouraging message
+                this.populateDemoUserFeed(container);
+            }
             
         } catch (error) {
             console.error('❌ Error loading users:', error);
-            // Fallback to demo data (same as restaurants/activities)
-            this.populateUserFeedWithData(this.mockData.getUsers(), container);
+            this.showUserFeedError(container);
         }
     }
     

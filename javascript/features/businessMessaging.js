@@ -123,14 +123,30 @@ export class BusinessMessagingManager {
          * Open business chat interface
          * SECURITY: Uses new businessChat overlay, separate from social chat
          */
-        openBusinessChat(businessId, conversationId) {
-        // Get business data from DOM (profile overlay is still open)
-        const profileOverlay = document.getElementById('businessProfile');
-        const businessNameEl = profileOverlay?.querySelector('.business-name');
-        const businessImageEl = profileOverlay?.querySelector('.profile-image');
+        async openBusinessChat(businessId, conversationId) {
+        // Get business data from Firestore conversation document
+        let businessName = 'Business';
+        let avatarUrl = '';
         
-        const businessName = businessNameEl?.textContent || 'Business';
-        const avatarUrl = businessImageEl?.src || '';
+        try {
+            const conversationRef = doc(this.db, 'businessConversations', conversationId);
+            const conversationDoc = await getDoc(conversationRef);
+            
+            if (conversationDoc.exists()) {
+                const data = conversationDoc.data();
+                businessName = data.businessName || data.name || 'Business';
+                
+                // Get avatar from businesses collection
+                const businessRef = doc(this.db, 'businesses', businessId);
+                const businessDoc = await getDoc(businessRef);
+                if (businessDoc.exists()) {
+                    const bizData = businessDoc.data();
+                    avatarUrl = bizData.images?.[0] || bizData.avatar || bizData.profileImage || '';
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching business data:', error);
+        }
         
         console.log('📬 Opening business chat:', { 
             businessId, 
@@ -397,80 +413,64 @@ export class BusinessMessagingManager {
      * Open business conversation from dashboard
      */
     async openBusinessConversationFromDashboard(conversationId) {
-        try {
-            console.log('📬 Opening conversation from dashboard:', conversationId);
-            
-            const conversationRef = doc(this.db, 'businessConversations', conversationId);
+    try {
+        const user = this.state.get('currentUser');
         
-            console.log('🔍 Attempting to check if conversation exists:', {
-            conversationId,
-            userId: user.uid,
-            businessId: businessId
+        console.log('📬 Opening conversation from dashboard:', conversationId);
+        
+        const conversationRef = doc(this.db, 'businessConversations', conversationId);
+        const conversationDoc = await getDoc(conversationRef);
+        
+        if (!conversationDoc.exists()) {
+            console.error('❌ Conversation not found:', conversationId);
+            return;
+        }
+        
+        const data = conversationDoc.data();
+        
+        console.log('✅ Found conversation data:', {
+            id: conversationId,
+            userName: data.userName,
+            messageCount: data.businessUnread || 0
         });
-
-            const conversationDoc = await getDoc(conversationRef);
-
-            console.log('✅ getDoc succeeded, exists:', conversationDoc.exists());
+        
+        // Set the current business state for the chat context
+        this.state.set('currentChatType', 'business-dashboard');
+        this.state.set('currentBusinessConversationId', conversationId);
+        this.state.set('currentChatBusinessId', data.businessId);
+        
+        // Update businessChat header (NOT individualChat)
+        const chatHeader = document.querySelector('#businessChat .chat-header-name');
+        if (chatHeader) {
+            chatHeader.textContent = data.userName || 'Customer';
+        }
+        
+        // Show businessChat overlay
+        const chatOverlay = document.getElementById('businessChat');
+        if (chatOverlay) {
+            chatOverlay.classList.add('show');
+            console.log('✅ Opened businessChat overlay for dashboard response');
             
-            if (!conversationDoc.exists()) {
-                console.error('❌ Conversation not found:', conversationId);
-                return;
+            // Track in navigation stack
+            if (window.CLASSIFIED?.managers?.navigation) {
+                window.CLASSIFIED.managers.navigation.showOverlay('businessChat');
             }
-            
-            const data = conversationDoc.data();
-            
-            console.log('✅ Found conversation data:', {
-                id: conversationId,
-                userName: data.userName,
-                messageCount: data.businessUnread || 0
-            });
-            
-            // Set the current business state for the chat context
-            this.state.set('currentChatType', 'business');
-            this.state.set('currentBusinessConversationId', conversationId);
-            this.state.set('currentChatBusinessId', data.businessId);
-            
-            // Update chat header with customer name
-            const chatHeader = document.querySelector('#businessChat .chat-header-name');
-            if (chatHeader) {
-                chatHeader.textContent = data.userName || 'Customer';
-            }
-            
-            // Update avatar to show it's a customer chat
-            const chatAvatar = document.querySelector('#businessChat .chat-header-avatar');
-            if (chatAvatar) {
-                chatAvatar.textContent = '👤';
-                chatAvatar.style.fontSize = '24px';
-                chatAvatar.style.display = 'flex';
-                chatAvatar.style.alignItems = 'center';
-                chatAvatar.style.justifyContent = 'center';
-            }
-            
-            // Show business chat overlay
-            const chatOverlay = document.getElementById('businessChat');
-            if (chatOverlay) {
-                chatOverlay.classList.add('show');
-                
-                // Track in overlay stack
-                if (window.CLASSIFIED && window.CLASSIFIED.managers && window.CLASSIFIED.managers.navigation) {
-                    window.CLASSIFIED.managers.navigation.showOverlay('businessChat');
-                }
-            }
-            
-            // Load conversation messages
-            this.loadBusinessMessages(conversationId);
-            
-            // Set up message listener
-            this.setupBusinessMessageListener(conversationId);
-            
-           // Mark messages as read from business perspective
+        }
+        
+        // Load conversation messages
+        this.loadBusinessMessages(conversationId);
+        
+        // Set up message listener
+        this.setupBusinessMessageListener(conversationId);
+        
+        // Mark messages as read from business perspective
         await updateDoc(conversationRef, {
             businessUnread: 0
         });
         
         console.log('✅ Opened conversation with customer:', data.userName);
         
-        // FIXED: Force reload messages after marking as read
+        // Force reload messages after marking as read
         setTimeout(() => {
             this.loadBusinessMessages(conversationId);
         }, 100);

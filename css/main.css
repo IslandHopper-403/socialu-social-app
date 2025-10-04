@@ -2274,19 +2274,24 @@ body.business-user #socialScreen {
     font-size: 16px !important;
 }
 
-/* Profile Editor - Career options */
-#profileEditor .career-option {
+/* Profile Editor - Interest buttons (the actual class name) */
+#profileEditor .interest-btn {
     font-size: 16px !important;
 }
 
-/* Profile Editor - Interest tags */
-#profileEditor .interest-tag {
+/* Profile Editor - Career buttons (if they exist with similar naming) */
+#profileEditor .career-btn {
     font-size: 16px !important;
 }
 
-/* Profile Editor - Priority/Looking for options */
-#profileEditor .priority-option,
-#profileEditor .looking-for-option {
+/* Profile Editor - Priority/Looking for buttons */
+#profileEditor .priority-btn,
+#profileEditor .looking-for-btn {
+    font-size: 16px !important;
+}
+
+/* Profile Editor - Save button */
+#profileEditor .save-profile-btn {
     font-size: 16px !important;
 }
 
@@ -2300,7 +2305,9 @@ body.business-user #socialScreen {
 /* Business Profile Editor - Same treatment */
 #businessProfileEditor input,
 #businessProfileEditor select,
-#businessProfileEditor textarea {
+#businessProfileEditor textarea,
+#businessProfileEditor .interest-btn,
+#businessProfileEditor .save-profile-btn {
     font-size: 16px !important;
 }
 
@@ -2310,13 +2317,7 @@ body.business-user #socialScreen {
 #registerName,
 #registerEmail,
 #registerPassword,
-#registerConfirmPassword,
-#businessLoginEmail,
-#businessLoginPassword,
-#businessSignupName,
-#businessSignupEmail,
-#businessSignupPhone,
-#businessSignupType {
+#registerConfirmPassword {
     font-size: 16px !important;
 }
 

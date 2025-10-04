@@ -9,7 +9,7 @@ import { sanitizeText } from './security.js';
 
 export class ProfileValidator {
     constructor() {
-        // Validation rules
+        // Validation rules - STREAMLINED for signup
         this.rules = {
             name: {
                 required: true,
@@ -20,9 +20,9 @@ export class ProfileValidator {
             },
             bio: {
                 required: true,
-                minLength: 20,
+                minLength: 2,  // CHANGED: 20 → 2
                 maxLength: 500,
-                message: 'Bio must be 20-500 characters'
+                message: 'Bio must be at least 2 characters'  // CHANGED message
             },
             birthday: {
                 required: true,
@@ -31,13 +31,13 @@ export class ProfileValidator {
                 message: 'You must be 18+ years old'
             },
             interests: {
-                required: true,
-                minCount: 3,
+                required: false,  // CHANGED: true → false
+                minCount: 0,  // CHANGED: 3 → 0
                 maxCount: 8,
-                message: 'Select 3-8 interests'
+                message: 'Select up to 8 interests (optional)'  // CHANGED message
             },
             photos: {
-                required: true,
+                required: true,  // KEPT: Still requires 1 photo
                 minCount: 1,
                 maxCount: 4,
                 message: 'Add at least 1 photo (max 4)'
@@ -48,12 +48,12 @@ export class ProfileValidator {
                 message: 'Format: 170cm or 5\'7"'
             },
             career: {
-                required: true,
-                message: 'Please select your career'
+                required: false,  // CHANGED: true → false
+                message: 'Please select your career (optional)'  // CHANGED message
             },
             lookingFor: {
-                required: true,
-                message: 'Please select what you\'re looking for'
+                required: false,  // CHANGED: true → false
+                message: 'Please select what you\'re looking for (optional)'  // CHANGED message
             }
         };
         
@@ -186,12 +186,13 @@ export class ProfileValidator {
     validateInterests(interests) {
         const rule = this.rules.interests;
         
+        // CHANGED: Allow empty interests
         if (!interests || !Array.isArray(interests)) {
-            this.errors.interests = rule.message;
-            return false;
+            return true;  // Valid if empty (optional field)
         }
         
-        if (interests.length < rule.minCount || interests.length > rule.maxCount) {
+        // Only validate count if interests provided
+        if (interests.length > rule.maxCount) {
             this.errors.interests = rule.message;
             return false;
         }
@@ -229,18 +230,18 @@ export class ProfileValidator {
         return true;
     }
     
-    validateCareer(career) {
+   validateCareer(career) {
+        // CHANGED: Career is now optional
         if (!career || career.trim().length === 0) {
-            this.errors.career = this.rules.career.message;
-            return false;
+            return true;  // Valid if empty (optional field)
         }
         return true;
     }
     
     validateLookingFor(lookingFor) {
+        // CHANGED: lookingFor is now optional
         if (!lookingFor || lookingFor.trim().length === 0) {
-            this.errors.lookingFor = this.rules.lookingFor.message;
-            return false;
+            return true;  // Valid if empty (optional field)
         }
         return true;
     }

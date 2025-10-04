@@ -621,17 +621,20 @@ export class BusinessManager {
         }
         
         console.log(`🏢 Opening ${businessType} profile:`, businessId);
-        window.currentBusinessProfileId = businessId;  // Keep this - useful for tracking
+        window.currentBusinessProfileId = businessId;
         
         try {
             this.navigationManager.showLoading();
             
-            // Try to fetch from Firebase first
-            let businessData = await this.fetchBusinessFromFirebase(businessId);
-            
-            // Fallback to mock data
+            // FIXED: Only fetch if we don't already have business data from feed
             if (!businessData) {
-                businessData = this.getBusinessFromMockData(businessId, businessType);
+                // Try to fetch from Firebase first
+                businessData = await this.fetchBusinessFromFirebase(businessId);
+                
+                // Fallback to mock data
+                if (!businessData) {
+                    businessData = this.getBusinessFromMockData(businessId, businessType);
+                }
             }
             
         if (!businessData) {

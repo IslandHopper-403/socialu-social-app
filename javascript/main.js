@@ -683,11 +683,28 @@ loadDemoContent() {
             selectChoice: (type, value, element) => this.managers.profile.selectChoice(type, value, element),
             toggleInterest: (element) => this.managers.profile.toggleInterest(element),
             
-            // Feed refresh methods
+           // Feed refresh methods
             populateUserFeed: () => this.managers.feed.populateUserFeed(),
             populateRestaurantFeed: () => this.managers.feed.populateRestaurantFeed(),
-            populateActivityFeed: () => this.managers.feed.populateActivityFeed(),// Favorites methods
+            populateActivityFeed: () => this.managers.feed.populateActivityFeed(),
             
+            // Horoscope toggle
+            toggleHoroscope: (show) => {
+                const yesBtn = document.getElementById('horoscopeYes');
+                const noBtn = document.getElementById('horoscopeNo');
+                
+                if (show) {
+                    yesBtn?.classList.add('active');
+                    noBtn?.classList.remove('active');
+                } else {
+                    yesBtn?.classList.remove('active');
+                    noBtn?.classList.add('active');
+                }
+                
+                this.managers.profile.updateZodiacDisplay();
+            },
+            
+            // Favorites methods
            // Business Favorites (for business cards)
             toggleBusinessFavorite: async (businessId) => {
                 try {
@@ -994,3 +1011,13 @@ if (document.readyState === 'loading') {
 window.getCurrentBusinessId = function() {
     return window.currentBusinessProfileId || null;
 };
+
+/* Toggle row for Yes/No buttons */
+.toggle-row {
+    display: flex;
+    gap: 12px;
+}
+
+.toggle-row .choice-btn {
+    flex: 1;
+}

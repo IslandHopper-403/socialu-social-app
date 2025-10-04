@@ -722,10 +722,17 @@ body {
     overflow: hidden;
 }
 
-   /* Prevent body scroll when overlay is open */
+  /* Prevent body scroll when overlay is open */
 body.overlay-open {
     overflow: hidden;
     /* Position/top/width set dynamically in JS to preserve scroll position */
+}
+
+/* Gentler scroll lock for form overlays (mobile keyboard friendly) */
+body.form-overlay-open {
+    /* Just hide overflow, don't fix position */
+    /* This allows mobile keyboard to work properly */
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Specific z-index for each overlay type */

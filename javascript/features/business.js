@@ -752,20 +752,22 @@ export class BusinessManager {
         }
     }
     
-    /**
-     * Fetch business from Firebase
-     */
     async fetchBusinessFromFirebase(businessId) {
-        try {
-            const businessDoc = await getDoc(doc(this.db, 'businesses', businessId));
-            if (businessDoc.exists()) {
-                return { id: businessDoc.id, ...businessDoc.data() };
-            }
-        } catch (error) {
-            console.error('Error fetching business:', error);
+    try {
+        console.log('🔥 Fetching from Firebase:', businessId);
+        const businessDoc = await getDoc(doc(this.db, 'businesses', businessId));
+        if (businessDoc.exists()) {
+            const data = { id: businessDoc.id, ...businessDoc.data() };
+            console.log('✅ Found in Firebase:', data.name);
+            return data;
+        } else {
+            console.log('❌ Not found in Firebase');
         }
-        return null;
+    } catch (error) {
+        console.error('❌ Firebase fetch error:', error);
     }
+    return null;
+}
     
    /**
      * Get business from mock data - handles both ID and slug

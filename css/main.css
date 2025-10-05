@@ -39,11 +39,6 @@ body {
     z-index: var(--z-sticky);
     border-bottom: 1px solid var(--border-light);
     height: var(--header-height);
-    width: 100%;
-    max-width: var(--container-max);
-    margin: 0 auto;
-    left: 0;
-    right: 0;
 }
 
 .back-btn,

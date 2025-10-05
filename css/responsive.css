@@ -69,6 +69,19 @@
         min-height: 100vh;
         min-height: 100dvh; /* Use dynamic viewport height for mobile */
     }
+
+   .header {
+        max-width: 100%;
+        width: 100%;
+        left: 0;
+        right: 0;
+    }
+    
+    .feed-container {
+        max-width: 100%;
+        width: 100%;
+        padding: 0 15px 15px 15px;
+    }
     
     /* Fix overlay screens for mobile - EXCLUDE map overlay */
     .overlay-screen:not(#mapOverlay) {

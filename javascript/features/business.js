@@ -583,31 +583,91 @@ export class BusinessManager {
     /**
      * Load business dashboard data
      */
-    async loadBusinessDashboard() {
-        const user = this.state.get('currentUser');
-        if (!user) return;
+       async loadBusinessDashboard() {
+            const user = this.state.get('currentUser');
+            if (!user) return;
+            
+            try {
+                // Get business analytics
+                const analyticsDoc = await getDoc(doc(this.db, 'businessAnalytics', user.uid));
+                if (analyticsDoc.exists()) {
+                    const data = analyticsDoc.data();
+                    this.dashboardData = {
+                        views: data.views || 0,
+                        clicks: data.clicks || 0,
+                        messages: data.messages || 0,
+                        promotions: data.promotions || []
+                    };
+                }
+                
+                console.log('📊 Business dashboard loaded:', this.dashboardData);
+                
+            } catch (error) {
+                console.error('❌ Error loading dashboard:', error);
+            }
+        }
         
-        try {
-            // Get business analytics
-            const analyticsDoc = await getDoc(doc(this.db, 'businessAnalytics', user.uid));
-            if (analyticsDoc.exists()) {
-                const data = analyticsDoc.data();
-                this.dashboardData = {
-                    views: data.views || 0,
-                    clicks: data.clicks || 0,
-                    messages: data.messages || 0,
-                    promotions: data.promotions || []
-                };
+        /**
+         * Open business profile by slug or ID
+         */
+        async openBusinessProfileBySlugOrId(slugOrId, businessType = 'restaurant') {
+            console.log('🔍 Looking up business by slug/ID:', slugOrId);
+            
+            // First, try to find by slug
+            const business = await this.findBusinessBySlug(slugOrId);
+            
+            if (business) {
+                console.log('✅ Found business by slug:', business.name);
+                return this.openBusinessProfile(business, businessType);
             }
             
-            console.log('📊 Business dashboard loaded:', this.dashboardData);
-            
-        } catch (error) {
-            console.error('❌ Error loading dashboard:', error);
+            // Fallback: try as regular ID
+            console.log('🔄 Trying as regular ID...');
+            return this.openBusinessProfile(slugOrId, businessType);
         }
-    }
     
-   async openBusinessProfile(businessDataOrId, businessType) {
+        /**
+         * Find business by slug
+         */
+        async findBusinessBySlug(slug) {
+            // Search in mock data
+            if (window.classifiedApp && window.classifiedApp.mockData) {
+                const mockData = window.classifiedApp.mockData;
+                
+                // Search restaurants
+                const restaurants = mockData.getRestaurants?.() || [];
+                for (const restaurant of restaurants) {
+                    if (this.createBusinessSlug(restaurant) === slug) {
+                        return restaurant;
+                    }
+                }
+                
+                // Search activities
+                const activities = mockData.getActivities?.() || [];
+                for (const activity of activities) {
+                    if (this.createBusinessSlug(activity) === slug) {
+                        return activity;
+                    }
+                }
+            }
+            
+            // Search in Firebase (if needed)
+            try {
+                const snapshot = await getDocs(collection(this.db, 'businesses'));
+                for (const doc of snapshot.docs) {
+                    const business = { id: doc.id, ...doc.data() };
+                    if (this.createBusinessSlug(business) === slug) {
+                        return business;
+                    }
+                }
+            } catch (error) {
+                console.error('Error searching businesses:', error);
+            }
+            
+            return null;
+        }
+        
+       async openBusinessProfile(businessDataOrId, businessType) {
         let businessData;
         let businessId;
         

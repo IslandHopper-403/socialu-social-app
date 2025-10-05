@@ -2167,14 +2167,32 @@ generateQRCodes(businesses) {
         
         // Generate QR code as canvas
         const container = card.querySelector(`.qr-container-${business.id.replace(/[^a-z0-9]/gi, '')}`);
-        new QRCode(container, {
-            text: business.url,
-            width: 200,
-            height: 200,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
+      const qr = new QRCode(container, {
+    text: business.url,
+    width: 256,
+    height: 256,
+    colorDark: "#000000",
+    colorLight: "rgba(0,0,0,0)", // Transparent background
+    correctLevel: QRCode.CorrectLevel.L
+});
+
+// Convert canvas to transparent PNG after generation
+setTimeout(() => {
+    const canvas = container.querySelector('canvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        
+        // Make white pixels transparent
+        for (let i = 0; i < data.length; i += 4) {
+            if (data[i] === 255 && data[i+1] === 255 && data[i+2] === 255) {
+                data[i+3] = 0; // Set alpha to 0 (transparent)
+            }
+        }
+        ctx.putImageData(imageData, 0, 0);
+    }
+}, 100);
     });
     
     console.log(`Generated ${businesses.length} QR codes`);

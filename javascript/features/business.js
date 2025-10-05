@@ -1140,36 +1140,36 @@ export class BusinessManager {
         return slug || business.id;
     }
     
-    /**
+     /**
      * Share business profile
      */
     shareBusinessProfile() {
-    const business = this.state.get('currentBusiness');
-    if (!business) return;
-    
-    // Create clean slug from business name
-    const slug = this.createBusinessSlug(business);
-    
-    // Create direct URL to business profile
-    const businessUrl = `${window.location.origin}${window.location.pathname}#business/${slug}`;
-    const shareText = `Check out ${business.name} on CLASSIFIED Hoi An!`;
-    
-    if (navigator.share) {
-        navigator.share({
-            title: business.name,
-            text: shareText,
-            url: businessUrl
-        }).catch(err => console.log('Share cancelled'));
-    } else {
-        // Copy ONLY the URL, no message
-        navigator.clipboard.writeText(businessUrl).then(() => {
-            alert(`✅ Link copied!\n\n${businessUrl}`);
-        }).catch(err => {
-            console.error('Copy failed:', err);
-            alert('Unable to share. Please copy the URL manually.');
-        });
+        const business = this.state.get('currentBusiness');
+        if (!business) return;
+        
+        // Create clean slug from business name
+        const slug = this.createBusinessSlug(business);
+        
+        // Create direct URL to business profile
+        const businessUrl = `${window.location.origin}${window.location.pathname}#business/${slug}`;
+        
+        if (navigator.share) {
+            // Native share (mobile)
+            navigator.share({
+                title: business.name,
+                text: `Check out ${business.name} on CLASSIFIED Hoi An!`,
+                url: businessUrl
+            }).catch(err => console.log('Share cancelled'));
+        } else {
+            // Clipboard fallback - URL ONLY
+            navigator.clipboard.writeText(businessUrl).then(() => {
+                alert(`✅ Link copied!\n\n${businessUrl}`);
+            }).catch(err => {
+                console.error('Copy failed:', err);
+                alert('Unable to share. Please copy the URL manually.');
+            });
+        }
     }
-}
     
     /**
      * Get directions to business
@@ -2019,14 +2019,15 @@ export class BusinessManager {
             });
         }
         
-        // Also fetch from Firebase if available
+       // Also fetch from Firebase if available
         try {
             const snapshot = await getDocs(collection(this.db, 'businesses'));
             if (!snapshot.empty) {
                 urls.push('\n=== FIREBASE BUSINESSES ===\n');
                 snapshot.forEach(doc => {
-                    const business = doc.data();
-                    const url = this.generateBusinessURL(doc.id);
+                    const business = { id: doc.id, ...doc.data() };
+                    const slug = this.createBusinessSlug(business);
+                    const url = `${window.location.origin}${window.location.pathname}#business/${slug}`;
                     urls.push(`${business.name || 'Unknown'}: ${url}`);
                 });
             }

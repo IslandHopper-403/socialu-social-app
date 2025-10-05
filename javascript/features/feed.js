@@ -1266,20 +1266,32 @@ export class FeedManager {
     }
 
    /**
-     * Toggle story pause on tap
+     * Pause story on hold
      */
-    toggleStoryPause() {
-        this.storyPaused = !this.storyPaused;
+    pauseStory() {
+        if (this.storyPaused) return;
         
-        console.log(`📖 [toggleStoryPause] Story ${this.storyPaused ? 'PAUSED' : 'RESUMED'}`);
+        this.storyPaused = true;
+        console.log('📖 [pauseStory] Story PAUSED (holding)');
         
         const currentProgress = document.getElementById(`storyProgress${this.currentStoryIndex}`);
         if (currentProgress) {
-            if (this.storyPaused) {
-                currentProgress.style.animationPlayState = 'paused';
-            } else {
-                currentProgress.style.animationPlayState = 'running';
-            }
+            currentProgress.style.animationPlayState = 'paused';
+        }
+    }
+    
+    /**
+     * Resume story on release
+     */
+    resumeStory() {
+        if (!this.storyPaused) return;
+        
+        this.storyPaused = false;
+        console.log('📖 [resumeStory] Story RESUMED (released)');
+        
+        const currentProgress = document.getElementById(`storyProgress${this.currentStoryIndex}`);
+        if (currentProgress) {
+            currentProgress.style.animationPlayState = 'running';
         }
     }
       

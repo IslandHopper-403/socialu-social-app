@@ -871,8 +871,8 @@ async initializeManagers() {
         this.managers.profile.openBusinessProfileEditor();
     }
     
-    shareApp() {
-        const shareText = 'Join me on CLASSIFIED - discover Hoi An\'s hidden gems!';
+   shareApp() {
+        const shareText = 'Check out CLASSIFIED Hoi An - Discover restaurants, activities & meet travelers! 🌟';
         const shareUrl = window.location.href;
         
         if (navigator.share) {
@@ -887,7 +887,7 @@ async initializeManagers() {
                 alert('App link copied to clipboard! 📋');
             });
         }
-
+    }
         /**
      * Open business profile (PUBLIC - no auth required)
      */

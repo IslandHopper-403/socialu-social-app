@@ -1009,7 +1009,6 @@ async initializeManagers() {
             }, 500);
         }
     }
-    }
     
     showHelp() {
         alert(`

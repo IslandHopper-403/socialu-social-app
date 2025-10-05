@@ -707,10 +707,17 @@ async initializeManagers() {
             selectChoice: (type, value, element) => this.managers.profile.selectChoice(type, value, element),
             toggleInterest: (element) => this.managers.profile.toggleInterest(element),
             
-           // Feed refresh methods
+            // Feed refresh methods
             populateUserFeed: () => this.managers.feed.populateUserFeed(),
             populateRestaurantFeed: () => this.managers.feed.populateRestaurantFeed(),
             populateActivityFeed: () => this.managers.feed.populateActivityFeed(),
+            
+            // Daily Stories methods
+            openStoryViewer: (feedType, index) => this.managers.feed.openStoryViewer(feedType, index),
+            closeStoryViewer: () => this.managers.feed.closeStoryViewer(),
+            nextStory: () => this.managers.feed.nextStory(),
+            previousStory: () => this.managers.feed.previousStory(),
+            viewFullBusinessProfile: () => this.managers.feed.viewFullBusinessProfile(),
             
             // Horoscope toggle
             toggleHoroscope: (show) => {

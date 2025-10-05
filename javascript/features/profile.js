@@ -446,7 +446,7 @@ export class ProfileManager {
     /**
      * Update my profile view
      */
-    updateMyProfileView() {
+     updateMyProfileView() {
         const profile = this.state.get('userProfile');
         
         // Update profile view with user data
@@ -458,8 +458,18 @@ export class ProfileManager {
         document.getElementById('myProfileAgeDetail').textContent = profile.age || '-';
         document.getElementById('myProfileHeightDetail').textContent = profile.height || '-';
         document.getElementById('myProfileCareerDetail').textContent = profile.career || '-';
-        document.getElementById('myProfileZodiacDetail').textContent = profile.zodiac || '-';
         document.getElementById('myProfileLookingForDetail').textContent = profile.lookingFor || '-';
+        
+        // Show/hide horoscope based on user preference
+        const zodiacItem = document.getElementById('myProfileZodiacItem');
+        if (zodiacItem) {
+            if (profile.showHoroscope && profile.zodiac) {
+                zodiacItem.style.display = 'flex';
+                document.getElementById('myProfileZodiacDetail').textContent = profile.zodiac;
+            } else {
+                zodiacItem.style.display = 'none';
+            }
+        }
         
         // Update interests
         const interestsContainer = document.getElementById('myProfileInterests');

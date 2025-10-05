@@ -1298,7 +1298,7 @@ input:disabled + .toggle-slider {
     padding-bottom: 0;
     border-bottom: none;
 }
-.detail-label {
+..detail-label {
     font-weight: 600;
     opacity: 0.8;
     display: flex;
@@ -1309,6 +1309,18 @@ input:disabled + .toggle-slider {
     color: var(--accent-cyan);
     font-weight: 500;
 }
+
+/* Make address clickable */
+.detail-value.clickable {
+    cursor: pointer;
+    color: #00D4FF;
+    text-decoration: underline;
+    transition: opacity 0.2s;
+}
+.detail-value.clickable:hover {
+    opacity: 0.8;
+}
+
 .current-promo {
     background: linear-gradient(135deg, #FF6B6B, #FF8C42);
     border-radius: var(--radius-lg);

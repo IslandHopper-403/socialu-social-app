@@ -125,10 +125,24 @@ export class FeedManager {
     /**
      * Show demo data for guest mode
      */
-    showDemoData() {
-        console.log('📊 Showing demo data for guest mode');
-        this.populateRestaurantFeedWithData(this.mockData.getRestaurants());
-        this.populateActivityFeedWithData(this.mockData.getActivities());
+    async showDemoData() {
+        console.log('📊 Loading businesses for guest mode...');
+        
+        // Try to fetch real Firebase businesses first (no auth required for reading)
+        try {
+            const restaurants = await this.fetchRestaurantsFromFirebase();
+            const activities = await this.fetchActivitiesFromFirebase();
+            
+            // Use Firebase data if available, otherwise fallback to mock data
+            this.populateRestaurantFeedWithData(restaurants.length > 0 ? restaurants : this.mockData.getRestaurants());
+            this.populateActivityFeedWithData(activities.length > 0 ? activities : this.mockData.getActivities());
+        } catch (error) {
+            console.error('Error loading Firebase data in guest mode:', error);
+            // Fallback to mock data
+            this.populateRestaurantFeedWithData(this.mockData.getRestaurants());
+            this.populateActivityFeedWithData(this.mockData.getActivities());
+        }
+        
         this.populateGuestUserFeed();
          
         // Show full user feed with "Sign up to connect" overlays
@@ -177,43 +191,53 @@ export class FeedManager {
     /**
      * Fetch restaurants from Firebase
      */
-       async fetchRestaurantsFromFirebase() {
+      async fetchRestaurantsFromFirebase() {
             const restaurants = [];
             
-            const q = query(
-                collection(this.db, 'businesses'),
-                where('type', '==', 'restaurant'),
-                where('status', 'in', ['active', 'pending_approval']),
-                orderBy('updatedAt', 'desc'),
-                limit(20)
-            );
-            
-        const snapshot = await getDocs(q);
-        
-        snapshot.forEach(doc => {
-            const business = doc.data();
-            restaurants.push({
-                id: doc.id,
-                name: business.name,
-                type: business.type,
-                image: business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop',
-                logo: business.photos?.[1] || business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop',
-                story: business.photos?.[0] || 'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=150&h=200&fit=crop',
-                promo: business.currentSpecials?.[0] || business.promoTitle || 'Special Offer',
-                details: business.currentSpecials?.[1] || business.promoDetails || 'Ask about our current promotions',
-                description: business.description || 'Great food and atmosphere in Hoi An',
-                location: business.address || 'Hoi An Ancient Town',
-                hours: business.hours || 'Daily 8am-10pm',
-                price: this.formatPriceRange(business.priceRange),
-                contact: business.phone || '+84 123 456 789',
-                rating: business.rating || 4.5,
-                reviewCount: business.reviewCount || 0,
-                photos: business.photos || [business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop']
+            try {
+                const q = query(
+                    collection(this.db, 'businesses'),
+                    where('type', '==', 'restaurant'),
+                    where('status', 'in', ['active', 'pending_approval']),
+                    orderBy('updatedAt', 'desc'),
+                    limit(20)
+                );
+                
+                const snapshot = await getDocs(q);
+                
+                snapshot.forEach(doc => {
+                    const business = doc.data();
+                    restaurants.push({
+                        id: doc.id,
+                        name: business.name,
+                        type: business.type,
+                        image: business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop',
+                        logo: business.photos?.[1] || business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop',
+                        story: business.photos?.[0] || 'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=150&h=200&fit=crop',
+                        promo: business.currentSpecials?.[0] || business.promoTitle || 'Special Offer',
+                        details: business.currentSpecials?.[1] || business.promoDetails || 'Ask about our current promotions',
+                        description: business.description || 'Great food and atmosphere in Hoi An',
+                        location: business.address || 'Hoi An Ancient Town',
+                        hours: business.hours || 'Daily 8am-10pm',
+                        price: this.formatPriceRange(business.priceRange),
+                        contact: business.phone || '+84 123 456 789',
+                        rating: business.rating || 4.5,
+                        reviewCount: business.reviewCount || 0,
+                        photos: business.photos || [business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop'],
+                        cuisine: business.cuisine || business.category,
+                        address: business.address || business.location
+                    });
                 });
-        });
+                
+                console.log(`✅ Fetched ${restaurants.length} restaurants from Firebase`);
+                return restaurants;
+                
+            } catch (error) {
+                console.error('❌ Error fetching restaurants from Firebase:', error);
+                return [];
+            }
+        }
         
-        return restaurants;
-    }
     
     /**
      * Populate restaurant feed with data

@@ -1986,6 +1986,57 @@ export class BusinessManager {
     generateBusinessURL(businessId) {
         return `${window.location.origin}${window.location.pathname}#business/${businessId}`;
     }
+
+    /**
+     * Get business by slug (PUBLIC - works for mock data + Firebase)
+     */
+    async getBusinessBySlug(slug) {
+        console.log('🔍 Looking up business:', slug);
+        
+        // Check mock data first
+        const restaurants = this.mockData?.getRestaurants?.() || [];
+        const activities = this.mockData?.getActivities?.() || [];
+        
+        // Search in restaurants
+        for (const restaurant of restaurants) {
+            const restaurantSlug = this.createBusinessSlug(restaurant);
+            if (restaurantSlug === slug) {
+                return {
+                    ...restaurant,
+                    category: restaurant.cuisine || restaurant.type || 'Restaurant',
+                    type: 'Restaurant'
+                };
+            }
+        }
+        
+        // Search in activities
+        for (const activity of activities) {
+            const activitySlug = this.createBusinessSlug(activity);
+            if (activitySlug === slug) {
+                return {
+                    ...activity,
+                    category: activity.type || 'Activity',
+                    type: 'Activity'
+                };
+            }
+        }
+        
+        // Search Firebase
+        try {
+            const snapshot = await getDocs(collection(this.db, 'businesses'));
+            for (const doc of snapshot.docs) {
+                const business = { id: doc.id, ...doc.data() };
+                const businessSlug = this.createBusinessSlug(business);
+                if (businessSlug === slug) {
+                    return business;
+                }
+            }
+        } catch (error) {
+            console.error('Error searching Firebase:', error);
+        }
+        
+        return null;
+    }
     
     /**
      * Generate business URLs in multiple formats

@@ -602,12 +602,60 @@ handleOverlayBack(overlayId) {
     /**
      * Handle deep links
      */
-    handleDeepLink() {
-        const hash = window.location.hash.slice(1);
-        const validScreens = ['restaurant', 'social', 'activity'];
-        
-        if (validScreens.includes(hash)) {
-            this.showScreen(hash);
+   handleDeepLink() {
+    const hash = window.location.hash.slice(1);
+    const validScreens = ['restaurant', 'social', 'activity'];
+    
+    // Check for business profile deep link format: #business/businessId
+    if (hash.startsWith('business/')) {
+        const businessId = hash.split('/')[1];
+        if (businessId) {
+            this.openBusinessFromURL(businessId);
+            return;
         }
     }
+    
+    if (validScreens.includes(hash)) {
+        this.showScreen(hash);
+    }
+}
+
+/**
+ * Open business profile from URL parameter
+ */
+async openBusinessFromURL(businessId) {
+    console.log('🔗 Opening business from URL:', businessId);
+    
+    // Ensure app is initialized
+    await this.waitForAppReady();
+    
+    // Navigate to restaurant screen first
+    this.showScreen('restaurant', false);
+    
+    // Small delay to ensure feed is loaded
+    setTimeout(() => {
+        // Use business manager to open profile
+        if (window.classifiedApp?.businessManager) {
+            window.classifiedApp.businessManager.openBusinessProfile(businessId, 'restaurant');
+        }
+    }, 500);
+}
+
+/**
+ * Wait for app to be ready
+ */
+waitForAppReady() {
+    return new Promise((resolve) => {
+        if (window.classifiedApp && window.classifiedApp.businessManager) {
+            resolve();
+        } else {
+            const checkInterval = setInterval(() => {
+                if (window.classifiedApp && window.classifiedApp.businessManager) {
+                    clearInterval(checkInterval);
+                    resolve();
+                }
+            }, 100);
+        }
+    });
+}
 }

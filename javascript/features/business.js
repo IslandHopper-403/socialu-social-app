@@ -1992,63 +1992,89 @@ export class BusinessManager {
      * Returns formatted list ready to copy/paste for marketing
      */
     async generateAllBusinessURLs() {
-        console.log('📋 Generating URLs for all businesses...\n');
+        console.log('📋 Generating business URLs CSV...');
         
-        const urls = [];
+        const businesses = [];
         
-        // Get all restaurants from mock data
+        // Collect from mock data
         const restaurants = this.mockData?.getRestaurants?.() || [];
         const activities = this.mockData?.getActivities?.() || [];
         
-        // Generate URLs for restaurants
-        if (restaurants.length > 0) {
-            urls.push('=== RESTAURANT URLS ===\n');
-            restaurants.forEach(restaurant => {
-                const url = this.generateBusinessURL(restaurant.id);
-                urls.push(`${restaurant.name}: ${url}`);
+        restaurants.forEach(r => {
+            const slug = this.createBusinessSlug(r);
+            businesses.push({
+                name: r.name,
+                type: 'Restaurant',
+                category: r.cuisine || 'Restaurant',
+                url: `${window.location.origin}${window.location.pathname}#business/${slug}`,
+                location: r.location || 'Hoi An, Vietnam',
+                id: r.id
             });
-            urls.push(''); // Empty line
-        }
+        });
         
-        // Generate URLs for activities
-        if (activities.length > 0) {
-            urls.push('=== ACTIVITY URLS ===\n');
-            activities.forEach(activity => {
-                const url = this.generateBusinessURL(activity.id);
-                urls.push(`${activity.name}: ${url}`);
+        activities.forEach(a => {
+            const slug = this.createBusinessSlug(a);
+            businesses.push({
+                name: a.name,
+                type: 'Activity',
+                category: a.type || 'Activity',
+                url: `${window.location.origin}${window.location.pathname}#business/${slug}`,
+                location: a.location || 'Hoi An, Vietnam',
+                id: a.id
             });
-        }
+        });
         
-       // Also fetch from Firebase if available
+        // Collect from Firebase
         try {
             const snapshot = await getDocs(collection(this.db, 'businesses'));
-            if (!snapshot.empty) {
-                urls.push('\n=== FIREBASE BUSINESSES ===\n');
-                snapshot.forEach(doc => {
-                    const business = { id: doc.id, ...doc.data() };
-                    const slug = this.createBusinessSlug(business);
-                    const url = `${window.location.origin}${window.location.pathname}#business/${slug}`;
-                    urls.push(`${business.name || 'Unknown'}: ${url}`);
+            snapshot.forEach(doc => {
+                const b = { id: doc.id, ...doc.data() };
+                const slug = this.createBusinessSlug(b);
+                businesses.push({
+                    name: b.name || 'Unknown',
+                    type: b.type || 'Business',
+                    category: b.category || b.cuisine || b.type || 'Other',
+                    url: `${window.location.origin}${window.location.pathname}#business/${slug}`,
+                    location: b.location || b.address || 'Hoi An, Vietnam',
+                    id: doc.id
                 });
-            }
+            });
         } catch (error) {
-            console.log('No Firebase businesses found (using mock data only)');
+            console.log('No Firebase businesses found');
         }
         
-        const output = urls.join('\n');
+        // Create CSV
+        const csvRows = [
+            ['Business Name', 'Type', 'Category', 'Profile URL', 'Location', 'ID'],
+            ...businesses.map(b => [
+                `"${b.name}"`,
+                `"${b.type}"`,
+                `"${b.category}"`,
+                `"${b.url}"`,
+                `"${b.location}"`,
+                `"${b.id}"`
+            ])
+        ];
         
-        // Copy to clipboard
-        try {
-            await navigator.clipboard.writeText(output);
-            console.log('✅ All URLs copied to clipboard!\n');
-            console.log(output);
-            alert('✅ All business URLs copied to clipboard!\n\nCheck console for formatted list.');
-        } catch (err) {
-            console.log(output);
-            alert('URLs generated! Check console to copy.');
-        }
+        const csv = csvRows.map(row => row.join(',')).join('\n');
         
-        return output;
+        // Download CSV file
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        const date = new Date().toISOString().split('T')[0];
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', `socialu-businesses-${date}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log(`✅ CSV downloaded: ${businesses.length} businesses`);
+        alert(`✅ CSV file downloaded!\n\n${businesses.length} businesses with clean URLs`);
+        
+        return csv;
     }
     
 }

@@ -591,20 +591,20 @@
             </div>
         </div>
         
-        <!-- My Profile View Overlay -->
+       <!-- My Profile View Overlay -->
         <div id="myProfileView" class="overlay-screen">
             <div class="header">
                 <button class="back-btn" onclick="CLASSIFIED.closeMyProfile()">←</button>
                 <div class="header-title">My Profile</div>
                 <button class="settings-btn" onclick="CLASSIFIED.openProfileEditor()">✏️</button>
             </div>
-            <div class="profile-hero" id="myProfileHero" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop')">
-                <div class="profile-overlay">
-                    <div class="profile-name" id="myProfileName">Your Name</div>
-                    <div class="profile-type" id="myProfileAge">Age</div>
-                </div>
-            </div>
             <div class="profile-content">
+                <div class="profile-hero" id="myProfileHero" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop')">
+                    <div class="profile-overlay">
+                        <div class="profile-name" id="myProfileName">Your Name</div>
+                        <div class="profile-type" id="myProfileAge">Age</div>
+                    </div>
+                </div>
                 <div class="profile-section">
                     <div class="section-title">About Me</div>
                     <div class="profile-description" id="myProfileBio">
@@ -626,7 +626,7 @@
                             <div class="detail-label">💼 Career</div>
                             <div class="detail-value" id="myProfileCareerDetail">-</div>
                         </div>
-                        <div class="detail-item">
+                        <div class="detail-item" id="myProfileZodiacItem" style="display: none;">
                             <div class="detail-label">⭐ Zodiac</div>
                             <div class="detail-value" id="myProfileZodiacDetail">-</div>
                         </div>

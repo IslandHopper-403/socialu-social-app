@@ -726,8 +726,6 @@ async initializeManagers() {
             toggleHoroscope: (show) => {
                 const yesBtn = document.getElementById('horoscopeYes');
                 const noBtn = document.getElementById('horoscopeNo');
-                pauseStory: () => this.managers.feed.pauseStory(),
-                resumeStory: () => this.managers.feed.resumeStory(),
                 
                 if (show) {
                     yesBtn?.classList.add('active');

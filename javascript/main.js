@@ -653,7 +653,7 @@ async initializeManagers() {
             },
 
             
-           getBusinessDirections: () => {
+          getBusinessDirections: () => {
                 const business = this.state.get('currentBusiness');
                 if (business && business.address) {
                     const encodedAddress = encodeURIComponent(business.address);
@@ -675,7 +675,13 @@ async initializeManagers() {
                 this.managers.map.showMap(category);
             },
             
+            // Business profile sharing
             shareBusinessProfile: () => this.managers.business?.shareBusinessProfile(),
+            
+            // Marketing tools (optional - for bulk URL generation)
+            generateAllBusinessURLs: (format = 'console') => this.managers.business?.generateAllBusinessURLs(format),
+            downloadAllQRCodes: () => this.managers.business?.downloadAllQRCodes(),
+            printQRCodes: () => this.managers.business?.printQRCodes(),
             
             // Photo upload
             triggerPhotoUpload: (slot) => this.managers.photoUpload.triggerPhotoUpload(slot),

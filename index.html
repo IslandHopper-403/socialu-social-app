@@ -662,7 +662,7 @@
            <div class="header">
                <button class="back-btn" id="profileBackBtn" onclick="event.stopPropagation(); CLASSIFIED.closeBusinessProfile(); return false;">←</button>
                 <div class="header-title" id="profileHeaderTitle">Business Profile</div>
-                <button class="settings-btn" onclick="CLASSIFIED.getBusinessDirections()">🗺️</button>
+                <button class="settings-btn" onclick="CLASSIFIED.openMapFromProfile()">🗺️</button>
             </div>
             <div class="profile-content">
                   <div class="profile-hero" id="profileHero">
@@ -702,10 +702,10 @@
                 <div class="profile-section">
                     <div class="section-title">Details</div>
                     <div class="profile-details">
-                        <div class="detail-item">
-                            <div class="detail-label">📍 Location</div>
-                            <div class="detail-value" id="profileLocation">Hoi An Ancient Town</div>
-                        </div>
+                       <div class="detail-item">
+                        <div class="detail-label">📍 Location</div>
+                        <div class="detail-value clickable" id="profileLocation" onclick="CLASSIFIED.getBusinessDirections()">Hoi An Ancient Town</div>
+                    </div>
                         <div class="detail-item">
                             <div class="detail-label">🕒 Hours</div>
                             <div class="detail-value" id="profileHours">5:00 PM - 2:00 AM</div>

@@ -940,22 +940,53 @@ export class FeedManager {
      * Populate stories carousel with businesses
      */
     async populateStories(storiesContainerId, businesses) {
+        console.log('📖 [populateStories] Called with:', {
+            containerId: storiesContainerId,
+            businessCount: businesses?.length || 0,
+            businesses: businesses
+        });
+        
         const container = document.getElementById(storiesContainerId);
-        if (!container || !businesses || businesses.length === 0) {
-            console.log('⚠️ No stories to display');
+        if (!container) {
+            console.error('❌ [populateStories] Container not found:', storiesContainerId);
+            return;
+        }
+        if (!businesses || businesses.length === 0) {
+            console.warn('⚠️ [populateStories] No businesses to display');
             return;
         }
         
-        // Create story items
+        console.log('📖 [populateStories] Creating story items for businesses:', 
+            businesses.map(b => ({ name: b.name, id: b.id, hasPhoto: !!b.photos?.[0] }))
+        );
+        
+       // Create story items
         container.innerHTML = businesses.map((business, index) => {
             const image = business.image || business.photos?.[0] || business.logo || '';
             const name = sanitizeText(business.name || 'Unknown');
             const type = sanitizeText(business.type || business.cuisine || 'Business');
             
+            console.log(`📖 [populateStories] Creating carousel item ${index}:`, {
+                index,
+                businessId: business.id,
+                name: business.name,
+                type: business.type || business.cuisine,
+                imageSource: business.image ? 'business.image' : business.photos?.[0] ? 'business.photos[0]' : business.logo ? 'business.logo' : 'none',
+                imageUrl: image,
+                hasAboutUs: !!business.aboutUs,
+                aboutUsPreview: business.aboutUs?.substring(0, 50),
+                hasDescription: !!business.description,
+                descriptionPreview: business.description?.substring(0, 50),
+                rawBusinessData: business
+            });
+            
             return `
                 <div class="story-item" 
                      style="background-image: url('${escapeHtml(image)}')"
-                     onclick="window.CLASSIFIED.openStoryViewer('${storiesContainerId}', ${index})">
+                     onclick="window.CLASSIFIED.openStoryViewer('${storiesContainerId}', ${index})"
+                     data-business-id="${business.id}"
+                     data-business-name="${escapeHtml(name)}"
+                     data-index="${index}">
                     <div class="story-overlay">
                         <div class="story-title">${name}</div>
                         <div class="story-subtitle">${type}</div>
@@ -971,67 +1002,125 @@ export class FeedManager {
      * Open story viewer
      */
     openStoryViewer(feedType, startIndex) {
+        console.log('📖 [openStoryViewer] Opening story viewer:', {
+            feedType,
+            startIndex,
+            timestamp: new Date().toISOString()
+        });
+        
         const businesses = this.getCurrentBusinesses(feedType);
-        if (!businesses || businesses.length === 0) return;
+        console.log('📖 [openStoryViewer] Retrieved businesses:', {
+            count: businesses?.length || 0,
+            businesses: businesses?.map(b => ({ name: b.name, hasAboutUs: !!b.aboutUs, hasDescription: !!b.description }))
+        });
+        
+        if (!businesses || businesses.length === 0) {
+            console.error('❌ [openStoryViewer] No businesses found for feedType:', feedType);
+            return;
+        }
         
         this.currentStories = businesses;
         this.currentStoryIndex = startIndex;
         
+        console.log('📖 [openStoryViewer] Set current stories:', {
+            totalStories: this.currentStories.length,
+            startingAt: this.currentStoryIndex
+        });
+        
         // Show overlay
         const overlay = document.getElementById('storyViewerOverlay');
         if (!overlay) {
-            console.error('❌ Story viewer overlay not found');
+            console.error('❌ [openStoryViewer] Story viewer overlay not found in DOM');
             return;
         }
         
+        console.log('📖 [openStoryViewer] Showing overlay and initializing viewer');
         overlay.style.display = 'flex';
         
         // Create progress bars
+        console.log('📖 [openStoryViewer] Creating progress bars for', businesses.length, 'stories');
         this.createStoryProgressBars(businesses.length);
         
         // Show first story
+        console.log('📖 [openStoryViewer] About to display story at startIndex:', startIndex);
         this.showStory(startIndex);
         
-        console.log(`📖 Opened story viewer at index ${startIndex}`);
+        console.log('✅ [openStoryViewer] Story viewer opened successfully');
     }
     
     /**
      * Get current businesses based on feed type
      */
     getCurrentBusinesses(feedType) {
+        console.log('📖 [getCurrentBusinesses] Getting businesses for:', feedType);
+        
+        let businesses = [];
         if (feedType === 'restaurantStories') {
-            return this.mockData.getRestaurants();
+            businesses = this.mockData.getRestaurants();
+            console.log('📖 [getCurrentBusinesses] Retrieved restaurants:', businesses.length);
         } else if (feedType === 'activityStories') {
-            return this.mockData.getActivities();
+            businesses = this.mockData.getActivities();
+            console.log('📖 [getCurrentBusinesses] Retrieved activities:', businesses.length);
+        } else {
+            console.warn('⚠️ [getCurrentBusinesses] Unknown feedType:', feedType);
         }
-        return [];
+        
+        return businesses;
     }
     
-    /**
+   /**
      * Create progress bars for stories
      */
     createStoryProgressBars(count) {
+        console.log('📖 [createStoryProgressBars] Creating', count, 'progress bars');
+        
         const container = document.getElementById('storyProgressBars');
-        if (!container) return;
+        if (!container) {
+            console.error('❌ [createStoryProgressBars] Progress bars container not found');
+            return;
+        }
         
         container.innerHTML = Array(count).fill(0).map((_, i) => `
             <div class="story-progress-bar">
                 <div class="story-progress-fill" id="storyProgress${i}"></div>
             </div>
         `).join('');
+        
+        console.log('✅ [createStoryProgressBars] Created progress bars successfully');
     }
     
     /**
      * Show specific story
      */
     showStory(index) {
+        console.log('📖 [showStory] Attempting to show story at index:', index, {
+            hasCurrentStories: !!this.currentStories,
+            totalStories: this.currentStories?.length,
+            isValidIndex: index >= 0 && index < (this.currentStories?.length || 0)
+        });
+        
         if (!this.currentStories || index < 0 || index >= this.currentStories.length) {
+            console.warn('⚠️ [showStory] Invalid index or no stories, closing viewer');
             this.closeStoryViewer();
             return;
         }
         
         const business = this.currentStories[index];
         this.currentStoryIndex = index;
+        
+        console.log('📖 [showStory] Displaying business story:', {
+            index,
+            businessName: business.name,
+            businessId: business.id,
+            hasPhoto: !!business.photos?.[0],
+            photoUrl: business.photos?.[0],
+            hasAboutUs: !!business.aboutUs,
+            aboutUsLength: business.aboutUs?.length || 0,
+            hasDescription: !!business.description,
+            descriptionLength: business.description?.length || 0,
+            hasStory: !!business.story,
+            storyLength: business.story?.length || 0
+        });
         
         // Update progress bars
         for (let i = 0; i < this.currentStories.length; i++) {
@@ -1055,30 +1144,78 @@ export class FeedManager {
             }
         }
         
-        // Update business info (SECURITY: using textContent)
+       // Update business info (SECURITY: using textContent)
         const logo = document.getElementById('storyBusinessLogo');
         const name = document.getElementById('storyBusinessName');
         const type = document.getElementById('storyBusinessType');
         
-        if (logo) logo.src = business.logo || business.photos?.[0] || '';
-        if (name) name.textContent = sanitizeText(business.name || 'Unknown');
-        if (type) type.textContent = sanitizeText(business.type || business.cuisine || 'Business');
+        const logoSrc = business.logo || business.photos?.[0] || '';
+        const displayName = sanitizeText(business.name || 'Unknown');
+        const displayType = sanitizeText(business.type || business.cuisine || 'Business');
+        
+        console.log('📖 [showStory] Setting header info:', {
+            logoSrc,
+            displayName,
+            displayType,
+            logoElement: !!logo,
+            nameElement: !!name,
+            typeElement: !!type
+        });
+        
+        if (logo) logo.src = logoSrc;
+        if (name) name.textContent = displayName;
+        if (type) type.textContent = displayType;
         
         // Update story image
         const storyImage = document.getElementById('storyImage');
+        const imageSrc = business.photos?.[0] || business.image || business.logo || '';
+        
+        console.log('📖 [showStory] Setting story image:', {
+            imageSrc,
+            imageSource: business.photos?.[0] ? 'photos[0]' : business.image ? 'image' : business.logo ? 'logo' : 'none',
+            imageElement: !!storyImage
+        });
+        
         if (storyImage) {
-            storyImage.src = business.photos?.[0] || business.image || business.logo || '';
+            storyImage.src = imageSrc;
+        } else {
+            console.error('❌ [showStory] Story image element not found');
         }
         
         // Update story text (About Us) - SECURITY: using textContent
         const textOverlay = document.getElementById('storyTextOverlay');
         if (textOverlay) {
             const aboutUs = business.aboutUs || business.description || business.story || 'Welcome to our business!';
+            console.log('📖 [showStory] Setting text overlay:', {
+                source: business.aboutUs ? 'aboutUs' : business.description ? 'description' : business.story ? 'story' : 'fallback',
+                textLength: aboutUs.length,
+                preview: aboutUs.substring(0, 100)
+            });
             textOverlay.textContent = sanitizeText(aboutUs);
+        } else {
+            console.error('❌ [showStory] Text overlay element not found');
         }
         
         // Store current business for profile viewing
         window.currentStoryBusiness = business;
+        
+        console.log('📖 [showStory] ===== DATA CONSISTENCY CHECK =====');
+        console.log('📖 [showStory] Carousel showed:', {
+            name: business.name,
+            type: business.type || business.cuisine
+        });
+        console.log('📖 [showStory] Story overlay displays:', {
+            headerName: displayName,
+            headerType: displayType,
+            textContent: textOverlay?.textContent?.substring(0, 100)
+        });
+        console.log('📖 [showStory] Data source mapping:', {
+            nameMatch: business.name === displayName,
+            typeMatch: (business.type || business.cuisine) === displayType,
+            imageSource: business.photos?.[0] ? 'photos[0]' : business.image ? 'image' : 'logo',
+            textSource: business.aboutUs ? 'aboutUs' : business.description ? 'description' : business.story ? 'story' : 'fallback'
+        });
+        console.log('📖 [showStory] ===================================');
         
         // Auto-advance after 5 seconds
         if (this.storyTimeout) clearTimeout(this.storyTimeout);
@@ -1089,13 +1226,20 @@ export class FeedManager {
         console.log(`📖 Showing story ${index + 1} of ${this.currentStories.length}: ${business.name}`);
     }
     
-    /**
+   /**
      * Go to next story
      */
     nextStory() {
+        console.log('📖 [nextStory] Moving to next story:', {
+            currentIndex: this.currentStoryIndex,
+            totalStories: this.currentStories?.length,
+            hasNext: this.currentStoryIndex < (this.currentStories?.length - 1)
+        });
+        
         if (this.currentStoryIndex < this.currentStories.length - 1) {
             this.showStory(this.currentStoryIndex + 1);
         } else {
+            console.log('📖 [nextStory] Reached end of stories, closing viewer');
             this.closeStoryViewer();
         }
     }
@@ -1113,37 +1257,84 @@ export class FeedManager {
      * Close story viewer
      */
     closeStoryViewer() {
+        console.log('📖 [closeStoryViewer] Closing story viewer:', {
+            hadTimeout: !!this.storyTimeout,
+            hadStories: !!this.currentStories,
+            lastIndex: this.currentStoryIndex
+        });
+        
         const overlay = document.getElementById('storyViewerOverlay');
         if (overlay) {
             overlay.style.display = 'none';
+            console.log('✅ [closeStoryViewer] Overlay hidden');
+        } else {
+            console.error('❌ [closeStoryViewer] Overlay element not found');
         }
         
         if (this.storyTimeout) {
             clearTimeout(this.storyTimeout);
             this.storyTimeout = null;
+            console.log('✅ [closeStoryViewer] Timeout cleared');
         }
         
         this.currentStories = null;
         this.currentStoryIndex = 0;
         
-        console.log('📖 Closed story viewer');
+        console.log('📖 [closeStoryViewer] Story viewer closed successfully');
     }
     
-    /**
+  /**
      * View full business profile from story
      */
     viewFullBusinessProfile() {
-        if (window.currentStoryBusiness) {
-            this.closeStoryViewer();
-            
-            // Use existing business profile function
-            if (this.navigationManager && this.navigationManager.businessManager) {
-                this.navigationManager.businessManager.openBusinessProfile(
-                    window.currentStoryBusiness,
-                    window.currentStoryBusiness.type
-                );
-            }
+        console.log('📖 [viewFullBusinessProfile] ===== VIEW PROFILE BUTTON CLICKED =====');
+        console.log('📖 [viewFullBusinessProfile] Current story business:', {
+            exists: !!window.currentStoryBusiness,
+            businessData: window.currentStoryBusiness
+        });
+        
+        if (!window.currentStoryBusiness) {
+            console.error('❌ [viewFullBusinessProfile] No current story business found');
+            return;
         }
+        
+        const business = window.currentStoryBusiness;
+        console.log('📖 [viewFullBusinessProfile] Opening profile for:', {
+            businessId: business.id,
+            businessName: business.name,
+            businessType: business.type,
+            hasNavigationManager: !!this.navigationManager,
+            hasBusinessManager: !!this.navigationManager?.businessManager
+        });
+        
+        // Close story viewer first
+        console.log('📖 [viewFullBusinessProfile] Closing story viewer...');
+        this.closeStoryViewer();
+        
+        // Use existing business profile function
+        if (this.navigationManager && this.navigationManager.businessManager) {
+            console.log('📖 [viewFullBusinessProfile] Calling openBusinessProfile with:', {
+                businessData: business,
+                businessType: business.type
+            });
+            
+            try {
+                this.navigationManager.businessManager.openBusinessProfile(
+                    business,
+                    business.type
+                );
+                console.log('✅ [viewFullBusinessProfile] Successfully opened business profile');
+            } catch (error) {
+                console.error('❌ [viewFullBusinessProfile] Error opening business profile:', error);
+            }
+        } else {
+            console.error('❌ [viewFullBusinessProfile] Navigation or Business manager not available:', {
+                hasNavManager: !!this.navigationManager,
+                hasBusinessManager: !!this.navigationManager?.businessManager
+            });
+        }
+        
+        console.log('📖 [viewFullBusinessProfile] =======================================');
     }
     
     /**

@@ -1202,16 +1202,26 @@ export class FeedManager {
             console.error('❌ [showStory] Story image element not found');
         }
         
-        // Update story text (About Us) - SECURITY: using textContent
+       // Update story text (About Us) - SECURITY: using textContent
         const textOverlay = document.getElementById('storyTextOverlay');
         if (textOverlay) {
             const aboutUs = business.aboutUs || business.description || business.story || 'Welcome to our business!';
+            
+            // Truncate if too long (max 500 characters)
+            const maxLength = 500;
+            const truncatedText = aboutUs.length > maxLength 
+                ? aboutUs.substring(0, maxLength) + '...' 
+                : aboutUs;
+            
             console.log('📖 [showStory] Setting text overlay:', {
                 source: business.aboutUs ? 'aboutUs' : business.description ? 'description' : business.story ? 'story' : 'fallback',
-                textLength: aboutUs.length,
-                preview: aboutUs.substring(0, 100)
+                originalLength: aboutUs.length,
+                truncated: aboutUs.length > maxLength,
+                displayLength: truncatedText.length,
+                preview: truncatedText.substring(0, 100)
             });
-            textOverlay.textContent = sanitizeText(aboutUs);
+            
+            textOverlay.textContent = sanitizeText(truncatedText);
         } else {
             console.error('❌ [showStory] Text overlay element not found');
         }
@@ -1229,11 +1239,13 @@ export class FeedManager {
             headerType: displayType,
             textContent: textOverlay?.textContent?.substring(0, 100)
         });
-        console.log('📖 [showStory] Data source mapping:', {
+       console.log('📖 [showStory] Data source mapping:', {
             nameMatch: business.name === displayName,
             typeMatch: (business.type || business.cuisine) === displayType,
             imageSource: business.photos?.[0] ? 'photos[0]' : business.image ? 'image' : 'logo',
-            textSource: business.aboutUs ? 'aboutUs' : business.description ? 'description' : business.story ? 'story' : 'fallback'
+            textSource: business.aboutUs ? 'aboutUs' : business.description ? 'description' : business.story ? 'story' : 'fallback',
+            hasAboutUs: !!business.aboutUs,
+            aboutUsLength: business.aboutUs?.length || 0
         });
         console.log('📖 [showStory] ===================================');
         
@@ -1323,35 +1335,26 @@ export class FeedManager {
             businessId: business.id,
             businessName: business.name,
             businessType: business.type,
-            hasNavigationManager: !!this.navigationManager,
-            hasBusinessManager: !!this.navigationManager?.businessManager
+            hasWindowCLASSIFIED: !!window.CLASSIFIED,
+            hasOpenBusinessProfile: !!window.CLASSIFIED?.openBusinessProfile
         });
         
         // Close story viewer first
         console.log('📖 [viewFullBusinessProfile] Closing story viewer...');
         this.closeStoryViewer();
         
-        // Use existing business profile function
-        if (this.navigationManager && this.navigationManager.businessManager) {
-            console.log('📖 [viewFullBusinessProfile] Calling openBusinessProfile with:', {
-                businessData: business,
-                businessType: business.type
-            });
+        // Use window.CLASSIFIED.openBusinessProfile (same as clicking business card)
+        if (window.CLASSIFIED && window.CLASSIFIED.openBusinessProfile) {
+            console.log('📖 [viewFullBusinessProfile] Calling window.CLASSIFIED.openBusinessProfile');
             
             try {
-                this.navigationManager.businessManager.openBusinessProfile(
-                    business,
-                    business.type
-                );
+                window.CLASSIFIED.openBusinessProfile(business, business.type);
                 console.log('✅ [viewFullBusinessProfile] Successfully opened business profile');
             } catch (error) {
                 console.error('❌ [viewFullBusinessProfile] Error opening business profile:', error);
             }
         } else {
-            console.error('❌ [viewFullBusinessProfile] Navigation or Business manager not available:', {
-                hasNavManager: !!this.navigationManager,
-                hasBusinessManager: !!this.navigationManager?.businessManager
-            });
+            console.error('❌ [viewFullBusinessProfile] window.CLASSIFIED.openBusinessProfile not available');
         }
         
         console.log('📖 [viewFullBusinessProfile] =======================================');

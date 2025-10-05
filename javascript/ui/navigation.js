@@ -134,7 +134,7 @@ showContentSkeleton(containerId, type = 'default') {
         });
     }
     
-    /**
+  /**
      * Initialize navigation on app start
      */
     initializeNavigation() {
@@ -144,6 +144,14 @@ showContentSkeleton(containerId, type = 'default') {
         
         // Push initial state to history
         history.replaceState({ screen: initialScreen }, '', `#${initialScreen}`);
+        
+        // Handle deep links AFTER initialization
+        this.handleDeepLink();
+        
+        // Listen for hash changes
+        window.addEventListener('hashchange', () => {
+            this.handleDeepLink();
+        });
     }
     
     /**
@@ -646,16 +654,33 @@ async openBusinessFromURL(businessIdOrSlug) {
  */
 waitForAppReady() {
     return new Promise((resolve) => {
-        if (window.classifiedApp && window.classifiedApp.businessManager) {
-            resolve();
-        } else {
-            const checkInterval = setInterval(() => {
-                if (window.classifiedApp && window.classifiedApp.businessManager) {
-                    clearInterval(checkInterval);
-                    resolve();
-                }
-            }, 100);
-        }
+        const maxAttempts = 50; // 5 seconds max
+        let attempts = 0;
+        
+        const checkReady = () => {
+            if (window.classifiedApp && window.classifiedApp.businessManager) {
+                console.log('✅ App ready for deep link');
+                resolve();
+                return true;
+            }
+            
+            attempts++;
+            if (attempts >= maxAttempts) {
+                console.error('⏱️ Timeout waiting for app to initialize');
+                resolve(); // Resolve anyway to prevent hanging
+                return true;
+            }
+            
+            return false;
+        };
+        
+        if (checkReady()) return;
+        
+        const checkInterval = setInterval(() => {
+            if (checkReady()) {
+                clearInterval(checkInterval);
+            }
+        }, 100);
     });
 }
 }

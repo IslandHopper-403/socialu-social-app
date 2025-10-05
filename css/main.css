@@ -547,7 +547,7 @@ body {
     font-size: 16px;
     line-height: 1.6;
     max-height: 40%;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .story-nav-areas {

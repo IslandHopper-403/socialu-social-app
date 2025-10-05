@@ -456,13 +456,12 @@
     }
 }
 
-/* Fix header for mobile */
 @media screen and (max-width: 430px) {
+    /* Fix header width for mobile */
     .header {
-        max-width: 430px;
         width: 100%;
-        left: 0;
-        right: 0;
-        margin: 0 auto;
+        max-width: 430px;
+        left: auto;
+        right: auto;
     }
 }

@@ -1948,7 +1948,7 @@ export class BusinessManager {
     }
     
     
-    /**
+   /**
      * Cleanup business dashboard resources
      */
    cleanup() {
@@ -1979,17 +1979,18 @@ export class BusinessManager {
             promotions: []
         };
     }
-/**
- * Generate direct URL for any business (for outreach/marketing)
- */
-generateBusinessURL(businessId) {
-    return `${window.location.origin}${window.location.pathname}#business/${businessId}`;
-}
-
-/**
- * Bulk generate URLs for all businesses - FOR OUTREACH
- * Returns formatted list ready to copy/paste for marketing
- */
+    
+    /**
+     * Generate direct URL for any business (for outreach/marketing)
+     */
+    generateBusinessURL(businessId) {
+        return `${window.location.origin}${window.location.pathname}#business/${businessId}`;
+    }
+    
+    /**
+     * Bulk generate URLs for all businesses - FOR OUTREACH
+     * Returns formatted list ready to copy/paste for marketing
+     */
     async generateAllBusinessURLs() {
         console.log('📋 Generating URLs for all businesses...\n');
         

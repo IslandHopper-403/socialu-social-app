@@ -168,10 +168,14 @@ loadDemoContent() {
             map: new MapManager(firebaseServices, this.state, this.mockData),
             // ADD THIS LINE for Favorites Carousel Feature
             favoritesCarousel: new FavoritesCarouselManager(firebaseServices, this.state),
-
-
         };
 
+             // Expose individual managers for backwards compatibility
+            this.businessManager = this.managers.business;
+            this.navigationManager = this.managers.navigation;
+            this.authManager = this.managers.auth;
+            this.feedManager = this.managers.feed;
+            
             // Track app lifecycle for notification management
             window.addEventListener('load', () => {
                 localStorage.setItem('appStartTime', Date.now().toString());

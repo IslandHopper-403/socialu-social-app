@@ -455,3 +455,14 @@
         -ms-overflow-style: none;
     }
 }
+
+/* Fix header for mobile */
+@media screen and (max-width: 430px) {
+    .header {
+        max-width: 430px;
+        width: 100%;
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+    }
+}

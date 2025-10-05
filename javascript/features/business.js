@@ -1979,6 +1979,74 @@ export class BusinessManager {
             promotions: []
         };
     }
+/**
+ * Generate direct URL for any business (for outreach/marketing)
+ */
+generateBusinessURL(businessId) {
+    return `${window.location.origin}${window.location.pathname}#business/${businessId}`;
+}
 
+/**
+ * Bulk generate URLs for all businesses - FOR OUTREACH
+ * Returns formatted list ready to copy/paste for marketing
+ */
+    async generateAllBusinessURLs() {
+        console.log('📋 Generating URLs for all businesses...\n');
+        
+        const urls = [];
+        
+        // Get all restaurants from mock data
+        const restaurants = this.mockData?.getRestaurants?.() || [];
+        const activities = this.mockData?.getActivities?.() || [];
+        
+        // Generate URLs for restaurants
+        if (restaurants.length > 0) {
+            urls.push('=== RESTAURANT URLS ===\n');
+            restaurants.forEach(restaurant => {
+                const url = this.generateBusinessURL(restaurant.id);
+                urls.push(`${restaurant.name}: ${url}`);
+            });
+            urls.push(''); // Empty line
+        }
+        
+        // Generate URLs for activities
+        if (activities.length > 0) {
+            urls.push('=== ACTIVITY URLS ===\n');
+            activities.forEach(activity => {
+                const url = this.generateBusinessURL(activity.id);
+                urls.push(`${activity.name}: ${url}`);
+            });
+        }
+        
+        // Also fetch from Firebase if available
+        try {
+            const snapshot = await getDocs(collection(this.db, 'businesses'));
+            if (!snapshot.empty) {
+                urls.push('\n=== FIREBASE BUSINESSES ===\n');
+                snapshot.forEach(doc => {
+                    const business = doc.data();
+                    const url = this.generateBusinessURL(doc.id);
+                    urls.push(`${business.name || 'Unknown'}: ${url}`);
+                });
+            }
+        } catch (error) {
+            console.log('No Firebase businesses found (using mock data only)');
+        }
+        
+        const output = urls.join('\n');
+        
+        // Copy to clipboard
+        try {
+            await navigator.clipboard.writeText(output);
+            console.log('✅ All URLs copied to clipboard!\n');
+            console.log(output);
+            alert('✅ All business URLs copied to clipboard!\n\nCheck console for formatted list.');
+        } catch (err) {
+            console.log(output);
+            alert('URLs generated! Check console to copy.');
+        }
+        
+        return output;
+    }
     
 }

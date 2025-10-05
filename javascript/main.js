@@ -677,16 +677,9 @@ async initializeManagers() {
             
             // Business profile sharing
             shareBusinessProfile: () => this.managers.business?.shareBusinessProfile(),
-
-            // Public business profile viewing (no auth required)
-            openBusinessProfile: (businessSlug) => this.openBusinessProfile(businessSlug),
-            closeBusinessProfile: () => this.closeBusinessProfile(),
-
-            // Deep link handler
-            handleDeepLink: () => this.handleDeepLink(),
-
+            
             // Marketing tools (optional - for bulk URL generation)
-            generateAllBusinessURLs: (format = 'csv', category = 'all') => this.managers.business?.generateAllBusinessURLs(format, category),
+            generateAllBusinessURLs: (format = 'console') => this.managers.business?.generateAllBusinessURLs(format),
             downloadAllQRCodes: () => this.managers.business?.downloadAllQRCodes(),
             printQRCodes: () => this.managers.business?.printQRCodes(),
             
@@ -874,8 +867,8 @@ async initializeManagers() {
         this.managers.profile.openBusinessProfileEditor();
     }
     
-   shareApp() {
-        const shareText = 'Check out CLASSIFIED Hoi An - Discover restaurants, activities & meet travelers! 🌟';
+    shareApp() {
+        const shareText = 'Join me on CLASSIFIED - discover Hoi An\'s hidden gems!';
         const shareUrl = window.location.href;
         
         if (navigator.share) {
@@ -891,136 +884,21 @@ async initializeManagers() {
             });
         }
     }
-        /**
-     * Open business profile (PUBLIC - no auth required)
-     */
-    async openBusinessProfile(businessSlug) {
-        console.log('📱 Opening business profile (public):', businessSlug);
-        
-        const overlay = document.getElementById('businessProfile');
-        if (!overlay) {
-            console.error('❌ Business profile overlay not found');
-            return;
-        }
-        
-        // Show overlay immediately
-        overlay.classList.add('show');
-        
-        // Load business data
-        try {
-            const business = await this.managers.business.getBusinessBySlug(businessSlug);
-            if (business) {
-                this.displayBusinessProfile(business);
-            } else {
-                alert('Business not found');
-                this.closeBusinessProfile();
-            }
-        } catch (error) {
-            console.error('❌ Error loading business:', error);
-            alert('Could not load business profile');
-            this.closeBusinessProfile();
-        }
-    }
-    
-    /**
-     * Close business profile
-     */
-    closeBusinessProfile() {
-        const overlay = document.getElementById('businessProfile');
-        if (overlay) {
-            overlay.classList.remove('show');
-        }
-    }
-    
-    /**
-     * Display business profile data
-     */
-    displayBusinessProfile(business) {
-        // Update header
-        document.getElementById('profileHeaderTitle').textContent = business.name;
-        document.getElementById('profileName').textContent = business.name;
-        document.getElementById('profileType').textContent = business.category || business.type || 'Business';
-        
-        // Update hero image
-        const heroEl = document.getElementById('profileHero');
-        if (business.photos && business.photos[0]) {
-            heroEl.style.backgroundImage = `url(${business.photos[0]})`;
-        } else {
-            heroEl.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        }
-        
-        // Update description
-        document.getElementById('profileDescription').textContent = business.description || 'No description available';
-        
-        // Update details
-        document.getElementById('profileLocation').textContent = business.location || business.address || 'Hoi An, Vietnam';
-        document.getElementById('profileHours').textContent = business.hours || 'Hours not listed';
-        document.getElementById('profilePrice').textContent = business.priceRange || '$$';
-        document.getElementById('profileContact').textContent = business.phone || 'Contact not listed';
-        
-        // Update action buttons with auth gates
-        const messageBtn = document.querySelector('#businessProfile .action-button.primary-btn');
-        const favoriteBtn = document.querySelector('#businessProfile .action-button.secondary-btn');
-        
-        if (messageBtn) {
-            messageBtn.onclick = () => this.requireAuthForAction(() => {
-                this.managers.businessMessaging?.startBusinessConversation(business.id, business);
-            });
-        }
-        
-        if (favoriteBtn) {
-            const isFavorited = this.managers.favorites?.isBusinessFavorited(business.id);
-            favoriteBtn.textContent = isFavorited ? '💖 Favorited' : '🤍 Add to Favorites';
-            favoriteBtn.onclick = () => this.requireAuthForAction(() => {
-                this.managers.favorites?.toggleBusinessFavorite(business);
-            });
-        }
-    }
-    
-    /**
-     * Require authentication for action
-     */
-    requireAuthForAction(callback) {
-        const user = this.state.get('currentUser');
-        const isGuest = this.state.get('isGuestMode');
-        
-        if (!user || isGuest) {
-            const answer = confirm('Sign up to message businesses and save favorites!\n\nCreate account now?');
-            if (answer) {
-                this.closeBusinessProfile();
-                this.showScreen('auth');
-            }
-            return;
-        }
-        
-        callback();
-    }
-    
-    /**
-     * Handle deep link navigation (QR codes, shared URLs)
-     */
-    handleDeepLink() {
-        const hash = window.location.hash;
-        
-        if (hash.startsWith('#business/')) {
-            const businessSlug = hash.replace('#business/', '');
-            console.log('🔗 Deep link detected:', businessSlug);
-            
-            // Give app time to initialize
-            setTimeout(() => {
-                this.openBusinessProfile(businessSlug);
-            }, 500);
-        }
-    }
     
     showHelp() {
         alert(`
 🌟 Welcome to CLASSIFIED!
 
+
+
+
 🔍 Discover: Find the best restaurants and activities
 👥 Connect: Meet travelers and locals
 💬 Chat: Connect with matches
 🏪 Business: Promote your business
+
+
+
 
 Need help? Contact: support@classified.com
         `);
@@ -1135,30 +1013,17 @@ Need help? Contact: support@classified.com
             }
         });
 
-    // Initialize the app when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Initialize ClassifiedApp
-            window.classifiedApp = new ClassifiedApp();
-            
-            // Handle deep links after initialization
-            setTimeout(() => {
-                if (window.classifiedApp && window.CLASSIFIED) {
-                    window.CLASSIFIED.handleDeepLink();
-                }
-            }, 1000);
-        });
-    } else {
-        // DOM already loaded
+// Initialize the app when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Initialize ClassifiedApp
         window.classifiedApp = new ClassifiedApp();
-        
-        // Handle deep links after initialization
-        setTimeout(() => {
-            if (window.classifiedApp && window.CLASSIFIED) {
-                window.CLASSIFIED.handleDeepLink();
-            }
-        }, 1000);
-    }
+    });
+} else {
+    // DOM already loaded
+    window.classifiedApp = new ClassifiedApp();
+}
+
 
 // ADD THIS HERE - after the app initialization:
 window.getCurrentBusinessId = function() {
@@ -1224,4 +1089,3 @@ window.getCurrentBusinessId = function() {
     // Initial check
     resetViewport();
 })();
-

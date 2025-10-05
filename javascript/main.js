@@ -6,6 +6,7 @@
 // Good Working Condition with All Chat Avatars and Chat Functions Working
 // Good working State - Mostbugs worked out!
 // GOOD WORKING CONIDITON NEW URL + QR Code Generator + Social Media Outreach System Ideas
+// GOOD WORKING CONDITION - QR Code Generator Works -  URL Links Work - Guest Mode + Open Business Profile Works
 // From this place forward start refactoring Users and Business for seperate UI/UX portals
 
 // BUSINESS WORKFLOW:

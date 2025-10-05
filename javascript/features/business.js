@@ -2169,8 +2169,8 @@ generateQRCodes(businesses) {
         const container = card.querySelector(`.qr-container-${business.id.replace(/[^a-z0-9]/gi, '')}`);
       const qr = new QRCode(container, {
     text: business.url,
-    width: 256,
-    height: 256,
+    width: 200,
+    height: 200,
     colorDark: "#000000",
     colorLight: "rgba(0,0,0,0)", // Transparent background
     correctLevel: QRCode.CorrectLevel.L

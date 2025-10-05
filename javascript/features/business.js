@@ -1060,6 +1060,25 @@ export class BusinessManager {
         // For now, show the full business auth screen
         this.showBusinessSignup();
     }
+
+    /**
+     * Create clean URL slug from business name
+     */
+    createBusinessSlug(business) {
+        if (!business) return '';
+        
+        // Use business name to create slug
+        const name = business.name || business.businessName || '';
+        
+        // Create clean slug: "Moon Restaurant" → "moonrestaurant"
+        const slug = name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '') // Remove all non-alphanumeric chars
+            .trim();
+        
+        // Fallback to ID if slug is empty
+        return slug || business.id;
+    }
     
     /**
      * Share business profile
@@ -1068,8 +1087,11 @@ export class BusinessManager {
     const business = this.state.get('currentBusiness');
     if (!business) return;
     
+    // Create clean slug from business name
+    const slug = this.createBusinessSlug(business);
+    
     // Create direct URL to business profile
-    const businessUrl = `${window.location.origin}${window.location.pathname}#business/${business.id}`;
+    const businessUrl = `${window.location.origin}${window.location.pathname}#business/${slug}`;
     const shareText = `Check out ${business.name} on CLASSIFIED Hoi An!`;
     
     if (navigator.share) {
@@ -1079,8 +1101,9 @@ export class BusinessManager {
             url: businessUrl
         }).catch(err => console.log('Share cancelled'));
     } else {
+        // Copy ONLY the URL, no message
         navigator.clipboard.writeText(businessUrl).then(() => {
-            alert(`Link copied to clipboard! 📋\n\n${businessUrl}`);
+            alert(`✅ Link copied!\n\n${businessUrl}`);
         }).catch(err => {
             console.error('Copy failed:', err);
             alert('Unable to share. Please copy the URL manually.');

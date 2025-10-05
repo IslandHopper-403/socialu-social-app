@@ -635,7 +635,7 @@ loadDemoContent() {
             },
 
             
-            getBusinessDirections: () => {
+           getBusinessDirections: () => {
                 const business = this.state.get('currentBusiness');
                 if (business && business.address) {
                     const encodedAddress = encodeURIComponent(business.address);
@@ -643,6 +643,18 @@ loadDemoContent() {
                 } else {
                     alert('Address not available for this business');
                 }
+            },
+            
+            openMapFromProfile: () => {
+                const business = this.state.get('currentBusiness');
+                const businessType = business?.type || business?.businessType || 'restaurant';
+                
+                // Close business profile
+                this.managers.business.closeBusinessProfile();
+                
+                // Open map with correct category
+                const category = businessType === 'activity' ? 'activities' : 'restaurants';
+                this.managers.map.showMap(category);
             },
             
             shareBusinessProfile: () => {

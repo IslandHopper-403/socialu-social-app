@@ -1515,15 +1515,15 @@
                 <div class="story-text-overlay" id="storyTextOverlay"></div>
             </div>
             
-            <!-- Story Navigation -->
+          <!-- Story Navigation -->
             <div class="story-nav-areas">
-                <div class="story-nav-left" onclick="window.CLASSIFIED.previousStory()"></div>
-                <div class="story-nav-right" onclick="window.CLASSIFIED.nextStory()"></div>
+                <div class="story-nav-left" onclick="event.stopPropagation(); window.CLASSIFIED.previousStory()"></div>
+                <div class="story-nav-right" onclick="event.stopPropagation(); window.CLASSIFIED.nextStory()"></div>
             </div>
             
             <!-- Story Actions -->
             <div class="story-actions">
-                <button class="story-action-btn" onclick="window.CLASSIFIED.viewFullBusinessProfile()">
+                <button class="story-action-btn" onclick="event.stopPropagation(); window.CLASSIFIED.viewFullBusinessProfile()">
                     View Profile
                 </button>
             </div>

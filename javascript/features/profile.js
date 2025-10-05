@@ -436,9 +436,14 @@ export class ProfileManager {
     /**
      * View my profile
      */
-    viewMyProfile() {
+       viewMyProfile() {
         console.log('👤 Viewing my profile');
+        
+        // Close any open overlays first
         this.closeProfileEditor();
+        this.navigationManager.closeOverlay('settingsOverlay');
+        
+        // Then open profile view
         this.navigationManager.showOverlay('myProfileView');
         this.updateMyProfileView();
     }

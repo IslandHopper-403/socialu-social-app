@@ -18,6 +18,7 @@ body {
 }
 
 .app-container {
+    width: 100%;
     max-width: var(--container-max);
     margin: 0 auto;
     background: var(--bg-card);
@@ -471,10 +472,9 @@ body {
 .feed-container {
     padding: 0 20px 20px 20px;
     width: 100%;
-    max-width: var(--container-max);
-    margin: 0 auto;
     box-sizing: border-box;
 }
+
 .feed-header {
     text-align: center;
     margin-bottom: 20px;

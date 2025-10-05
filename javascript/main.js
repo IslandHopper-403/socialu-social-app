@@ -214,6 +214,24 @@ loadDemoContent() {
             }
         }
     }
+
+    /**
+ * Initialize all managers
+ */
+async initializeManagers() {
+    // Initialize each manager in sequence
+    for (const [name, manager] of Object.entries(this.managers)) {
+        if (manager.init) {
+            await manager.init();
+            console.log(`✓ ${name} manager initialized`);
+        }
+    }
+    
+    // ADDED: Handle deep links after all managers initialized
+    if (this.managers.navigation) {
+        this.managers.navigation.handleDeepLink();
+    }
+}
     
     /**
      * Set up global CLASSIFIED object for backward compatibility

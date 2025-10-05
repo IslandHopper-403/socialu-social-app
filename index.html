@@ -1510,13 +1510,7 @@
             </div>
             
             <!-- Story Content -->
-            <div class="story-content" id="storyContent" 
-                 onmousedown="window.CLASSIFIED.pauseStory()" 
-                 onmouseup="window.CLASSIFIED.resumeStory()" 
-                 onmouseleave="window.CLASSIFIED.resumeStory()"
-                 ontouchstart="window.CLASSIFIED.pauseStory()" 
-                 ontouchend="window.CLASSIFIED.resumeStory()"
-                 ontouchcancel="window.CLASSIFIED.resumeStory()">
+           <div class="story-content" id="storyContent" onclick="window.CLASSIFIED.toggleStoryPause()">
                 <img id="storyImage" class="story-image" src="" alt="Story">
                 <div class="story-text-overlay" id="storyTextOverlay"></div>
             </div>

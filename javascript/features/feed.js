@@ -1227,6 +1227,9 @@ export class FeedManager {
         } else {
             console.error('❌ [showStory] Text overlay element not found');
         }
+
+        // Reset paused state for new story
+        this.storyPaused = false;
         
         // Store current business for profile viewing
         window.currentStoryBusiness = business;
@@ -1251,15 +1254,47 @@ export class FeedManager {
         });
         console.log('📖 [showStory] ===================================');
         
-        // Auto-advance after 5 seconds
+        // Auto-advance after 5 seconds (unless paused)
         if (this.storyTimeout) clearTimeout(this.storyTimeout);
         this.storyTimeout = setTimeout(() => {
-            this.nextStory();
+            if (!this.storyPaused) {
+                this.nextStory();
+            }
         }, 5000);
         
         console.log(`📖 Showing story ${index + 1} of ${this.currentStories.length}: ${business.name}`);
     }
+
+    /**
+     * Pause story on hold
+     */
+    pauseStory() {
+        if (this.storyPaused) return;
+        
+        this.storyPaused = true;
+        console.log('📖 [pauseStory] Story PAUSED (holding)');
+        
+        const currentProgress = document.getElementById(`storyProgress${this.currentStoryIndex}`);
+        if (currentProgress) {
+            currentProgress.style.animationPlayState = 'paused';
+        }
+    }
     
+    /**
+     * Resume story on release
+     */
+    resumeStory() {
+        if (!this.storyPaused) return;
+        
+        this.storyPaused = false;
+        console.log('📖 [resumeStory] Story RESUMED (released)');
+        
+        const currentProgress = document.getElementById(`storyProgress${this.currentStoryIndex}`);
+        if (currentProgress) {
+            currentProgress.style.animationPlayState = 'running';
+        }
+    }
+      
    /**
      * Go to next story
      */

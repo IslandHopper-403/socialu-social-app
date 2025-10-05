@@ -1030,3 +1030,63 @@ window.getCurrentBusinessId = function() {
     return window.currentBusinessProfileId || null;
 };
 
+// Viewport zoom correction - Tinder-style snap back to full width
+(function() {
+    let lastWidth = window.innerWidth;
+    
+    // Reset viewport on any dimension change
+    function resetViewport() {
+        const currentWidth = window.innerWidth;
+        
+        // If width changed significantly (zoom detected), force reset
+        if (Math.abs(currentWidth - lastWidth) > 10) {
+            // Force reflow
+            document.body.offsetHeight;
+            
+            // Reset containers to full width on mobile
+            if (window.innerWidth <= 430) {
+                const containers = document.querySelectorAll('.app-container, .header, .feed-container');
+                containers.forEach(el => {
+                    if (el) {
+                        el.style.width = '100%';
+                        el.style.maxWidth = '100%';
+                        el.style.margin = '0';
+                    }
+                });
+            }
+            
+            lastWidth = currentWidth;
+        }
+    }
+    
+    // Debounced reset
+    let resetTimer;
+    function scheduleReset() {
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(resetViewport, 150);
+    }
+    
+    // Listen for all interaction types
+    window.addEventListener('resize', scheduleReset);
+    window.addEventListener('scroll', scheduleReset, { passive: true });
+    window.addEventListener('orientationchange', () => setTimeout(resetViewport, 300));
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) setTimeout(resetViewport, 100);
+    });
+    
+    // Detect pinch-zoom
+    let touchCount = 0;
+    document.addEventListener('touchstart', (e) => {
+        touchCount = e.touches.length;
+    }, { passive: true });
+    
+    document.addEventListener('touchend', () => {
+        if (touchCount > 1) {
+            setTimeout(resetViewport, 100);
+        }
+    }, { passive: true });
+    
+    // Initial check
+    resetViewport();
+})();
+

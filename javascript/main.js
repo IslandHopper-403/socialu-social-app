@@ -681,7 +681,10 @@ async initializeManagers() {
             // Public business profile viewing (no auth required)
             openBusinessProfile: (businessSlug) => this.openBusinessProfile(businessSlug),
             closeBusinessProfile: () => this.closeBusinessProfile(),
-            
+
+            // Deep link handler
+            handleDeepLink: () => this.handleDeepLink(),
+
             // Marketing tools (optional - for bulk URL generation)
             generateAllBusinessURLs: (format = 'csv', category = 'all') => this.managers.business?.generateAllBusinessURLs(format, category),
             downloadAllQRCodes: () => this.managers.business?.downloadAllQRCodes(),

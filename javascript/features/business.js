@@ -752,50 +752,37 @@ export class BusinessManager {
         }
     }
     
-    async fetchBusinessFromFirebase(businessId) {
-    try {
-        console.log('🔥 Fetching from Firebase:', businessId);
-        const businessDoc = await getDoc(doc(this.db, 'businesses', businessId));
-        if (businessDoc.exists()) {
-            const data = { id: businessDoc.id, ...businessDoc.data() };
-            console.log('✅ Found in Firebase:', data.name);
-            return data;
-        } else {
-            console.log('❌ Not found in Firebase');
-        }
-    } catch (error) {
-        console.error('❌ Firebase fetch error:', error);
-    }
-    return null;
-}
-    
-   /**
-     * Get business from mock data - handles both ID and slug
+    /**
+     * Fetch business from Firebase
      */
-    getBusinessFromMockData(businessId, businessType) {
-        if (!window.classifiedApp?.mockData) return null;
-        
-        const mockData = window.classifiedApp.mockData;
-        
-        // Try direct ID lookup first (faster)
-        const restaurants = mockData.getRestaurants?.() || [];
-        const activities = mockData.getActivities?.() || [];
-        
-        // Search by direct ID match
-        let business = restaurants.find(r => r.id === businessId);
-        if (business) return business;
-        
-        business = activities.find(a => a.id === businessId);
-        if (business) return business;
-        
-        // Fallback: try as slug
-        for (const r of restaurants) {
-            if (this.createBusinessSlug(r) === businessId) return r;
+    async fetchBusinessFromFirebase(businessId) {
+        try {
+            const businessDoc = await getDoc(doc(this.db, 'businesses', businessId));
+            if (businessDoc.exists()) {
+                return { id: businessDoc.id, ...businessDoc.data() };
+            }
+        } catch (error) {
+            console.error('Error fetching business:', error);
         }
-        for (const a of activities) {
-            if (this.createBusinessSlug(a) === businessId) return a;
+        return null;
+    }
+    
+    /**
+     * Get business from mock data
+     */
+      getBusinessFromMockData(businessId, businessType) {
+        // Access mock data through the app instance
+        if (window.classifiedApp && window.classifiedApp.mockData) {
+            const mockData = window.classifiedApp.mockData;
+            
+            // Try to find in restaurants first
+            const restaurant = mockData.getRestaurantById(businessId);
+            if (restaurant) return restaurant;
+            
+            // Then try activities
+            const activity = mockData.getActivityById(businessId);
+            if (activity) return activity;
         }
-        
         return null;
     }
     
@@ -1134,24 +1121,20 @@ export class BusinessManager {
         this.showBusinessSignup();
     }
 
-       createBusinessSlug(business) {
+    /**
+     * Create clean URL slug from business name
+     */
+    createBusinessSlug(business) {
         if (!business) return '';
         
-        // If business.id already looks like a slug (kebab-case), use it directly
-        if (business.id && /^[a-z0-9-]+$/.test(business.id)) {
-            return business.id;
-        }
-        
-        // Otherwise create slug from name
+        // Use business name to create slug
         const name = business.name || business.businessName || '';
         
-        // Create clean slug: "Moon Restaurant" → "moon-restaurant"
+        // Create clean slug: "Moon Restaurant" → "moonrestaurant"
         const slug = name
             .toLowerCase()
-            .trim()
-            .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
-            .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
-            .replace(/-+/g, '-'); // Replace multiple hyphens with single
+            .replace(/[^a-z0-9]+/g, '') // Remove all non-alphanumeric chars
+            .trim();
         
         // Fallback to ID if slug is empty
         return slug || business.id;
@@ -2003,67 +1986,16 @@ export class BusinessManager {
     generateBusinessURL(businessId) {
         return `${window.location.origin}${window.location.pathname}#business/${businessId}`;
     }
-
-    /**
-     * Get business by slug (PUBLIC - works for mock data + Firebase)
-     */
-    async getBusinessBySlug(slug) {
-        console.log('🔍 Looking up business:', slug);
-        
-        // Check mock data first
-        const restaurants = this.mockData?.getRestaurants?.() || [];
-        const activities = this.mockData?.getActivities?.() || [];
-        
-        // Search in restaurants
-        for (const restaurant of restaurants) {
-            const restaurantSlug = this.createBusinessSlug(restaurant);
-            if (restaurantSlug === slug) {
-                return {
-                    ...restaurant,
-                    category: restaurant.cuisine || restaurant.type || 'Restaurant',
-                    type: 'Restaurant'
-                };
-            }
-        }
-        
-        // Search in activities
-        for (const activity of activities) {
-            const activitySlug = this.createBusinessSlug(activity);
-            if (activitySlug === slug) {
-                return {
-                    ...activity,
-                    category: activity.type || 'Activity',
-                    type: 'Activity'
-                };
-            }
-        }
-        
-        // Search Firebase
-        try {
-            const snapshot = await getDocs(collection(this.db, 'businesses'));
-            for (const doc of snapshot.docs) {
-                const business = { id: doc.id, ...doc.data() };
-                const businessSlug = this.createBusinessSlug(business);
-                if (businessSlug === slug) {
-                    return business;
-                }
-            }
-        } catch (error) {
-            console.error('Error searching Firebase:', error);
-        }
-        
-        return null;
-    }
     
     /**
      * Generate business URLs in multiple formats
      * @param {string} format - 'csv', 'qr', 'social', or 'console'
      */
-       async generateAllBusinessURLs(format = 'csv', category = 'all') {
-        console.log(`📋 Generating business URLs (${format} format, ${category})...`);
+    async generateAllBusinessURLs(format = 'csv') {
+        console.log(`📋 Generating business URLs (${format} format)...`);
         
         // Collect all businesses
-        let businesses = [];
+        const businesses = [];
         
         // From mock data
         const restaurants = this.mockData?.getRestaurants?.() || [];
@@ -2116,18 +2048,6 @@ export class BusinessManager {
             });
         } catch (error) {
             console.log('No Firebase businesses found');
-        }
-        
-        // Filter by category if specified
-        if (category !== 'all') {
-            const categoryLower = category.toLowerCase();
-            businesses = businesses.filter(b => {
-                const type = b.type.toLowerCase();
-                const cat = b.category.toLowerCase();
-                return type.includes(categoryLower) || cat.includes(categoryLower);
-            });
-            
-            console.log(`📊 Filtered to ${businesses.length} ${category} businesses`);
         }
         
         // Route to correct format

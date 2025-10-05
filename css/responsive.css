@@ -60,28 +60,25 @@
    MOBILE RESPONSIVENESS FIXES
    ============================================================================= */
 
-/* Base responsive viewport */
-@media screen and (max-width: 430px) {
-    .app-container {
-        max-width: 430px;
-        width: 100%;
-        margin: 0 auto;
-        min-height: 100vh;
-        min-height: 100dvh; /* Use dynamic viewport height for mobile */
-    }
-
-   .header {
-        max-width: 100%;
-        width: 100%;
-        left: 0;
-        right: 0;
-    }
-    
-    .feed-container {
-        max-width: 100%;
-        width: 100%;
-        padding: 0 15px 15px 15px;
-    }
+   /* Base responsive viewport */
+   @media screen and (max-width: 430px) {
+       .app-container {
+           max-width: 100vw;
+           width: 100vw;
+           margin: 0;
+           min-height: 100vh;
+           min-height: 100dvh;
+       }
+       
+       .header {
+           width: 100%;
+           padding: 15px;
+       }
+       
+       .feed-container {
+           width: 100%;
+           padding: 0 15px 15px 15px;
+       }
     
     /* Fix overlay screens for mobile - EXCLUDE map overlay */
     .overlay-screen:not(#mapOverlay) {

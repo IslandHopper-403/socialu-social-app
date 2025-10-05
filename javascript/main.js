@@ -719,10 +719,13 @@ async initializeManagers() {
             previousStory: () => this.managers.feed.previousStory(),
             viewFullBusinessProfile: () => this.managers.feed.viewFullBusinessProfile(),
             
+            
             // Horoscope toggle
             toggleHoroscope: (show) => {
                 const yesBtn = document.getElementById('horoscopeYes');
                 const noBtn = document.getElementById('horoscopeNo');
+                pauseStory: () => this.managers.feed.pauseStory(),
+                resumeStory: () => this.managers.feed.resumeStory(),
                 
                 if (show) {
                     yesBtn?.classList.add('active');

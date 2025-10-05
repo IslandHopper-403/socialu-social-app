@@ -246,16 +246,9 @@ export class FeedManager {
         storiesContainer = storiesContainer || document.getElementById('restaurantStories');
         feedContainer = feedContainer || document.getElementById('restaurantFeed');
         
-        // Populate stories
+       // Populate stories
         if (storiesContainer) {
-            storiesContainer.innerHTML = restaurants.slice(0, 10).map(restaurant => 
-                `<div class="story-item" style="background-image: url('${restaurant.story}')">
-                    <div class="story-overlay">
-                        <div class="story-title">${restaurant.name}</div>
-                        <div class="story-subtitle">${restaurant.type}</div>
-                    </div>
-                </div>`
-            ).join('');
+            this.populateStories('restaurantStories', restaurants);
         }
         
         // Populate feed
@@ -356,14 +349,7 @@ export class FeedManager {
         
         // Populate stories
         if (storiesContainer) {
-            storiesContainer.innerHTML = activities.slice(0, 10).map(activity => 
-                `<div class="story-item" style="background-image: url('${activity.story}')">
-                    <div class="story-overlay">
-                        <div class="story-title">${activity.name}</div>
-                        <div class="story-subtitle">${activity.type}</div>
-                    </div>
-                </div>`
-            ).join('');
+            this.populateStories('activityStories', activities);
         }
         
         // Populate feed
@@ -943,6 +929,228 @@ export class FeedManager {
             container.appendChild(banner);
         }
     }
+
+    /**
+     * ==========================================
+     * DAILY STORIES IMPLEMENTATION
+     * ==========================================
+     */
+    
+    /**
+     * Populate stories carousel with businesses
+     */
+    async populateStories(storiesContainerId, businesses) {
+        const container = document.getElementById(storiesContainerId);
+        if (!container || !businesses || businesses.length === 0) {
+            console.log('⚠️ No stories to display');
+            return;
+        }
+        
+        // Create story items
+        container.innerHTML = businesses.map((business, index) => {
+            const image = business.image || business.photos?.[0] || business.logo || '';
+            const name = sanitizeText(business.name || 'Unknown');
+            const type = sanitizeText(business.type || business.cuisine || 'Business');
+            
+            return `
+                <div class="story-item" 
+                     style="background-image: url('${escapeHtml(image)}')"
+                     onclick="window.CLASSIFIED.openStoryViewer('${storiesContainerId}', ${index})">
+                    <div class="story-overlay">
+                        <div class="story-title">${name}</div>
+                        <div class="story-subtitle">${type}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        console.log(`📖 Populated ${businesses.length} stories in ${storiesContainerId}`);
+    }
+    
+    /**
+     * Open story viewer
+     */
+    openStoryViewer(feedType, startIndex) {
+        const businesses = this.getCurrentBusinesses(feedType);
+        if (!businesses || businesses.length === 0) return;
+        
+        this.currentStories = businesses;
+        this.currentStoryIndex = startIndex;
+        
+        // Show overlay
+        const overlay = document.getElementById('storyViewerOverlay');
+        if (!overlay) {
+            console.error('❌ Story viewer overlay not found');
+            return;
+        }
+        
+        overlay.style.display = 'flex';
+        
+        // Create progress bars
+        this.createStoryProgressBars(businesses.length);
+        
+        // Show first story
+        this.showStory(startIndex);
+        
+        console.log(`📖 Opened story viewer at index ${startIndex}`);
+    }
+    
+    /**
+     * Get current businesses based on feed type
+     */
+    getCurrentBusinesses(feedType) {
+        if (feedType === 'restaurantStories') {
+            return this.mockData.getRestaurants();
+        } else if (feedType === 'activityStories') {
+            return this.mockData.getActivities();
+        }
+        return [];
+    }
+    
+    /**
+     * Create progress bars for stories
+     */
+    createStoryProgressBars(count) {
+        const container = document.getElementById('storyProgressBars');
+        if (!container) return;
+        
+        container.innerHTML = Array(count).fill(0).map((_, i) => `
+            <div class="story-progress-bar">
+                <div class="story-progress-fill" id="storyProgress${i}"></div>
+            </div>
+        `).join('');
+    }
+    
+    /**
+     * Show specific story
+     */
+    showStory(index) {
+        if (!this.currentStories || index < 0 || index >= this.currentStories.length) {
+            this.closeStoryViewer();
+            return;
+        }
+        
+        const business = this.currentStories[index];
+        this.currentStoryIndex = index;
+        
+        // Update progress bars
+        for (let i = 0; i < this.currentStories.length; i++) {
+            const progressFill = document.getElementById(`storyProgress${i}`);
+            if (progressFill) {
+                if (i < index) {
+                    progressFill.style.width = '100%';
+                    progressFill.style.transition = 'none';
+                } else if (i === index) {
+                    progressFill.style.width = '0%';
+                    progressFill.style.transition = 'none';
+                    // Animate current story
+                    setTimeout(() => {
+                        progressFill.style.width = '100%';
+                        progressFill.style.transition = 'width 5s linear';
+                    }, 50);
+                } else {
+                    progressFill.style.width = '0%';
+                    progressFill.style.transition = 'none';
+                }
+            }
+        }
+        
+        // Update business info (SECURITY: using textContent)
+        const logo = document.getElementById('storyBusinessLogo');
+        const name = document.getElementById('storyBusinessName');
+        const type = document.getElementById('storyBusinessType');
+        
+        if (logo) logo.src = business.logo || business.photos?.[0] || '';
+        if (name) name.textContent = sanitizeText(business.name || 'Unknown');
+        if (type) type.textContent = sanitizeText(business.type || business.cuisine || 'Business');
+        
+        // Update story image
+        const storyImage = document.getElementById('storyImage');
+        if (storyImage) {
+            storyImage.src = business.photos?.[0] || business.image || business.logo || '';
+        }
+        
+        // Update story text (About Us) - SECURITY: using textContent
+        const textOverlay = document.getElementById('storyTextOverlay');
+        if (textOverlay) {
+            const aboutUs = business.aboutUs || business.description || business.story || 'Welcome to our business!';
+            textOverlay.textContent = sanitizeText(aboutUs);
+        }
+        
+        // Store current business for profile viewing
+        window.currentStoryBusiness = business;
+        
+        // Auto-advance after 5 seconds
+        if (this.storyTimeout) clearTimeout(this.storyTimeout);
+        this.storyTimeout = setTimeout(() => {
+            this.nextStory();
+        }, 5000);
+        
+        console.log(`📖 Showing story ${index + 1} of ${this.currentStories.length}: ${business.name}`);
+    }
+    
+    /**
+     * Go to next story
+     */
+    nextStory() {
+        if (this.currentStoryIndex < this.currentStories.length - 1) {
+            this.showStory(this.currentStoryIndex + 1);
+        } else {
+            this.closeStoryViewer();
+        }
+    }
+    
+    /**
+     * Go to previous story
+     */
+    previousStory() {
+        if (this.currentStoryIndex > 0) {
+            this.showStory(this.currentStoryIndex - 1);
+        }
+    }
+    
+    /**
+     * Close story viewer
+     */
+    closeStoryViewer() {
+        const overlay = document.getElementById('storyViewerOverlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+        
+        if (this.storyTimeout) {
+            clearTimeout(this.storyTimeout);
+            this.storyTimeout = null;
+        }
+        
+        this.currentStories = null;
+        this.currentStoryIndex = 0;
+        
+        console.log('📖 Closed story viewer');
+    }
+    
+    /**
+     * View full business profile from story
+     */
+    viewFullBusinessProfile() {
+        if (window.currentStoryBusiness) {
+            this.closeStoryViewer();
+            
+            // Use existing business profile function
+            if (this.navigationManager && this.navigationManager.businessManager) {
+                this.navigationManager.businessManager.openBusinessProfile(
+                    window.currentStoryBusiness,
+                    window.currentStoryBusiness.type
+                );
+            }
+        }
+    }
+    
+    /**
+     * ==========================================
+     * END DAILY STORIES IMPLEMENTATION
+     * ==========================================
+     */
     
     /**
      * Add admin notice for pending businesses

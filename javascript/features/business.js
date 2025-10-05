@@ -767,22 +767,33 @@ export class BusinessManager {
         return null;
     }
     
-    /**
-     * Get business from mock data
+   /**
+     * Get business from mock data - handles both ID and slug
      */
-      getBusinessFromMockData(businessId, businessType) {
-        // Access mock data through the app instance
-        if (window.classifiedApp && window.classifiedApp.mockData) {
-            const mockData = window.classifiedApp.mockData;
-            
-            // Try to find in restaurants first
-            const restaurant = mockData.getRestaurantById(businessId);
-            if (restaurant) return restaurant;
-            
-            // Then try activities
-            const activity = mockData.getActivityById(businessId);
-            if (activity) return activity;
+    getBusinessFromMockData(businessId, businessType) {
+        if (!window.classifiedApp?.mockData) return null;
+        
+        const mockData = window.classifiedApp.mockData;
+        
+        // Try direct ID lookup first (faster)
+        const restaurants = mockData.getRestaurants?.() || [];
+        const activities = mockData.getActivities?.() || [];
+        
+        // Search by direct ID match
+        let business = restaurants.find(r => r.id === businessId);
+        if (business) return business;
+        
+        business = activities.find(a => a.id === businessId);
+        if (business) return business;
+        
+        // Fallback: try as slug
+        for (const r of restaurants) {
+            if (this.createBusinessSlug(r) === businessId) return r;
         }
+        for (const a of activities) {
+            if (this.createBusinessSlug(a) === businessId) return a;
+        }
+        
         return null;
     }
     

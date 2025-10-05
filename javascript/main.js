@@ -675,25 +675,7 @@ async initializeManagers() {
                 this.managers.map.showMap(category);
             },
             
-            shareBusinessProfile: () => {
-                const business = this.state.get('currentBusiness');
-                if (!business) return;
-                
-                const shareText = `Check out ${business.name} on CLASSIFIED Hoi An!`;
-                const shareUrl = window.location.href;
-                
-                if (navigator.share) {
-                    navigator.share({
-                        title: business.name,
-                        text: shareText,
-                        url: shareUrl
-                    }).catch(err => console.log('Share cancelled'));
-                } else {
-                    navigator.clipboard.writeText(`${shareText} - ${shareUrl}`).then(() => {
-                        alert('Link copied to clipboard! 📋');
-                    });
-                }
-            },
+            shareBusinessProfile: () => this.managers.business?.shareBusinessProfile(),
             
             // Photo upload
             triggerPhotoUpload: (slot) => this.managers.photoUpload.triggerPhotoUpload(slot),

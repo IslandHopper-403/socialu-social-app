@@ -743,19 +743,19 @@ export class ProfileManager {
     /**
      * Share my profile
      */
-    shareMyProfile() {
-        const profile = this.state.get('userProfile');
-        const shareText = `Check out my profile on CLASSIFIED Hoi An! 🌟`;
+      shareMyProfile() {
+        const profileUrl = window.location.href;
         
         if (navigator.share) {
             navigator.share({
                 title: 'My CLASSIFIED Profile',
-                text: shareText,
-                url: window.location.href
+                text: 'Check out my profile on CLASSIFIED Hoi An! 🌟',
+                url: profileUrl
             });
         } else {
-            navigator.clipboard.writeText(shareText + ' - ' + window.location.href);
-            alert('Profile link copied to clipboard! 📋');
+            // Copy ONLY the URL, no message
+            navigator.clipboard.writeText(profileUrl);
+            alert(`✅ Link copied!\n\n${profileUrl}`);
         }
     }
     

@@ -1265,33 +1265,21 @@ export class FeedManager {
         console.log(`📖 Showing story ${index + 1} of ${this.currentStories.length}: ${business.name}`);
     }
 
-    /**
-     * Pause story on hold
+   /**
+     * Toggle story pause on tap
      */
-    pauseStory() {
-        if (this.storyPaused) return;
+    toggleStoryPause() {
+        this.storyPaused = !this.storyPaused;
         
-        this.storyPaused = true;
-        console.log('📖 [pauseStory] Story PAUSED (holding)');
+        console.log(`📖 [toggleStoryPause] Story ${this.storyPaused ? 'PAUSED' : 'RESUMED'}`);
         
         const currentProgress = document.getElementById(`storyProgress${this.currentStoryIndex}`);
         if (currentProgress) {
-            currentProgress.style.animationPlayState = 'paused';
-        }
-    }
-    
-    /**
-     * Resume story on release
-     */
-    resumeStory() {
-        if (!this.storyPaused) return;
-        
-        this.storyPaused = false;
-        console.log('📖 [resumeStory] Story RESUMED (released)');
-        
-        const currentProgress = document.getElementById(`storyProgress${this.currentStoryIndex}`);
-        if (currentProgress) {
-            currentProgress.style.animationPlayState = 'running';
+            if (this.storyPaused) {
+                currentProgress.style.animationPlayState = 'paused';
+            } else {
+                currentProgress.style.animationPlayState = 'running';
+            }
         }
     }
       

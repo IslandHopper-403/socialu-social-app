@@ -489,44 +489,39 @@ export class ProfileManager {
         this.updateUserProfileView(user);
     }
     
-        /**
-         * Update user profile view
-         */
-        updateUserProfileView(user) {
-        // Populate user profile data
-        document.getElementById('userProfileTitle').textContent = user.name;
-        document.getElementById('userProfileHero').style.backgroundImage = `url('${user.image}')`;
-        document.getElementById('userProfileName').textContent = user.name;
-        document.getElementById('userProfileAge').textContent = `${user.age} years old`;
-        document.getElementById('userProfileMatch').textContent = `${user.matchPercentage}% Match`;
-        document.getElementById('userProfileBio').textContent = user.bio;
-        
-        // Update details
-        document.getElementById('userProfileAgeDetail').textContent = user.age || '-';
-        document.getElementById('userProfileHeightDetail').textContent = user.height || '-';
-        document.getElementById('userProfileCareerDetail').textContent = user.career || '-';
-        document.getElementById('userProfileLookingForDetail').textContent = user.lookingFor || '-';
-        
-        // Show/hide horoscope based on user preference
-        const zodiacItem = document.getElementById('userProfileZodiacItem');
-        if (user.showHoroscope && user.zodiac) {
-            zodiacItem.style.display = 'flex';
-            document.getElementById('userProfileZodiacDetail').textContent = user.zodiac;
-        } else {
-            zodiacItem.style.display = 'none';
-        }
-        
-        // Legacy fields (if still needed elsewhere)
-        document.getElementById('userProfileDistance').textContent = user.distance;
-        document.getElementById('userProfileStatus').textContent = user.isOnline ? 'Online Now' : 'Offline';
-        document.getElementById('userProfileCategory').textContent = user.category === 'nomads' ?
-        
-        // Update interests
-        const interestsContainer = document.getElementById('userProfileInterests');
-        interestsContainer.innerHTML = user.interests.map(interest => 
-            `<span class="interest-tag">${interest}</span>`
-        ).join('');
+       /**
+ * Update user profile view
+ */
+updateUserProfileView(user) {
+    // Populate user profile data
+    document.getElementById('userProfileTitle').textContent = user.name;
+    document.getElementById('userProfileHero').style.backgroundImage = `url('${user.image}')`;
+    document.getElementById('userProfileName').textContent = user.name;
+    document.getElementById('userProfileAge').textContent = `${user.age} years old`;
+    document.getElementById('userProfileMatch').textContent = `${user.matchPercentage}% Match`;
+    document.getElementById('userProfileBio').textContent = user.bio;
+    
+    // Update details
+    document.getElementById('userProfileAgeDetail').textContent = user.age || '-';
+    document.getElementById('userProfileHeightDetail').textContent = user.height || '-';
+    document.getElementById('userProfileCareerDetail').textContent = user.career || '-';
+    document.getElementById('userProfileLookingForDetail').textContent = user.lookingFor || '-';
+    
+    // Show/hide horoscope based on user preference
+    const zodiacItem = document.getElementById('userProfileZodiacItem');
+    if (user.showHoroscope && user.zodiac) {
+        zodiacItem.style.display = 'flex';
+        document.getElementById('userProfileZodiacDetail').textContent = user.zodiac;
+    } else {
+        zodiacItem.style.display = 'none';
     }
+    
+    // Update interests
+    const interestsContainer = document.getElementById('userProfileInterests');
+    interestsContainer.innerHTML = user.interests.map(interest => 
+        `<span class="interest-tag">${interest}</span>`
+    ).join('');
+}
     
     /**
      * Open business profile editor
@@ -593,7 +588,6 @@ export class ProfileManager {
             });
         }
     }
-    
     /**
      * Save business profile
      */

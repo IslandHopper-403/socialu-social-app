@@ -1065,32 +1065,28 @@ export class BusinessManager {
      * Share business profile
      */
     shareBusinessProfile() {
-        const business = this.state.get('currentBusiness');
-        if (!business) return;
-        
-        const shareText = `Check out ${business.name} on CLASSIFIED Hoi An! 🌟`;
-        const shareUrl = `${window.location.origin}/#business/${business.id}`;
-        
-        if (navigator.share) {
-            navigator.share({
-                title: business.name,
-                text: shareText,
-                url: shareUrl
-            }).catch(err => {
-                if (err.name !== 'AbortError') {
-                    console.error('Share failed:', err);
-                }
-            });
-        } else {
-            // Fallback to clipboard
-            navigator.clipboard.writeText(`${shareText} - ${shareUrl}`).then(() => {
-                alert('Business link copied to clipboard! 📋');
-            }).catch(err => {
-                console.error('Copy failed:', err);
-                alert('Unable to share. Please copy the URL manually.');
-            });
-        }
+    const business = this.state.get('currentBusiness');
+    if (!business) return;
+    
+    // Create direct URL to business profile
+    const businessUrl = `${window.location.origin}${window.location.pathname}#business/${business.id}`;
+    const shareText = `Check out ${business.name} on CLASSIFIED Hoi An!`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: business.name,
+            text: shareText,
+            url: businessUrl
+        }).catch(err => console.log('Share cancelled'));
+    } else {
+        navigator.clipboard.writeText(businessUrl).then(() => {
+            alert(`Link copied to clipboard! 📋\n\n${businessUrl}`);
+        }).catch(err => {
+            console.error('Copy failed:', err);
+            alert('Unable to share. Please copy the URL manually.');
+        });
     }
+}
     
     /**
      * Get directions to business

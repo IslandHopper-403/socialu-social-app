@@ -1988,15 +1988,16 @@ export class BusinessManager {
     }
     
     /**
-     * Bulk generate URLs for all businesses - FOR OUTREACH
-     * Returns formatted list ready to copy/paste for marketing
+     * Generate business URLs in multiple formats
+     * @param {string} format - 'csv', 'qr', 'social', or 'console'
      */
-    async generateAllBusinessURLs() {
-        console.log('📋 Generating business URLs CSV...');
+    async generateAllBusinessURLs(format = 'csv') {
+        console.log(`📋 Generating business URLs (${format} format)...`);
         
+        // Collect all businesses
         const businesses = [];
         
-        // Collect from mock data
+        // From mock data
         const restaurants = this.mockData?.getRestaurants?.() || [];
         const activities = this.mockData?.getActivities?.() || [];
         
@@ -2007,7 +2008,9 @@ export class BusinessManager {
                 type: 'Restaurant',
                 category: r.cuisine || 'Restaurant',
                 url: `${window.location.origin}${window.location.pathname}#business/${slug}`,
+                shareUrl: `${window.location.origin}${window.location.pathname}#business/${slug}`,
                 location: r.location || 'Hoi An, Vietnam',
+                description: r.description || '',
                 id: r.id
             });
         });
@@ -2019,12 +2022,14 @@ export class BusinessManager {
                 type: 'Activity',
                 category: a.type || 'Activity',
                 url: `${window.location.origin}${window.location.pathname}#business/${slug}`,
+                shareUrl: `${window.location.origin}${window.location.pathname}#business/${slug}`,
                 location: a.location || 'Hoi An, Vietnam',
+                description: a.description || '',
                 id: a.id
             });
         });
         
-        // Collect from Firebase
+        // From Firebase
         try {
             const snapshot = await getDocs(collection(this.db, 'businesses'));
             snapshot.forEach(doc => {
@@ -2035,7 +2040,9 @@ export class BusinessManager {
                     type: b.type || 'Business',
                     category: b.category || b.cuisine || b.type || 'Other',
                     url: `${window.location.origin}${window.location.pathname}#business/${slug}`,
+                    shareUrl: `${window.location.origin}${window.location.pathname}#business/${slug}`,
                     location: b.location || b.address || 'Hoi An, Vietnam',
+                    description: b.description || '',
                     id: doc.id
                 });
             });
@@ -2043,7 +2050,23 @@ export class BusinessManager {
             console.log('No Firebase businesses found');
         }
         
-        // Create CSV
+        // Route to correct format
+        switch(format) {
+            case 'csv':
+                return this.exportBusinessCSV(businesses);
+            case 'qr':
+                return this.generateQRCodes(businesses);
+            case 'social':
+                return this.generateSocialTemplates(businesses);
+            default:
+                return this.exportBusinessCSV(businesses);
+        }
+    }
+    
+    /**
+     * Export businesses as CSV
+     */
+    exportBusinessCSV(businesses) {
         const csvRows = [
             ['Business Name', 'Type', 'Category', 'Profile URL', 'Location', 'ID'],
             ...businesses.map(b => [
@@ -2058,7 +2081,7 @@ export class BusinessManager {
         
         const csv = csvRows.map(row => row.join(',')).join('\n');
         
-        // Download CSV file
+        // Download CSV
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
@@ -2072,9 +2095,160 @@ export class BusinessManager {
         document.body.removeChild(link);
         
         console.log(`✅ CSV downloaded: ${businesses.length} businesses`);
-        alert(`✅ CSV file downloaded!\n\n${businesses.length} businesses with clean URLs`);
+        alert(`✅ CSV downloaded!\n${businesses.length} businesses exported`);
         
         return csv;
+    }
+    
+    /**
+     * Generate QR codes for all businesses
+     */
+    generateQRCodes(businesses) {
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'qrCodesOverlay';
+        overlay.innerHTML = `
+            <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+                        background: rgba(0,0,0,0.95); z-index: 10000; 
+                        overflow-y: auto; padding: 20px;">
+                <div style="max-width: 1200px; margin: 0 auto; background: white; 
+                            border-radius: 12px; padding: 24px;">
+                    <div style="display: flex; justify-content: space-between; 
+                                align-items: center; margin-bottom: 24px; 
+                                padding-bottom: 16px; border-bottom: 2px solid #eee;">
+                        <h2 style="margin: 0; color: #FF6B6B;">Business QR Codes</h2>
+                        <button onclick="this.closest('#qrCodesOverlay').remove()" 
+                                style="background: none; border: none; font-size: 24px; 
+                                       cursor: pointer; padding: 8px; color: #666;">✕</button>
+                    </div>
+                    <div id="qrGrid" style="display: grid; 
+                                           grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+                                           gap: 20px; margin-bottom: 24px;"></div>
+                    <div style="display: flex; gap: 12px; justify-content: center; 
+                                padding-top: 16px; border-top: 2px solid #eee;">
+                        <button onclick="window.print()" 
+                                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                       color: white; border: none; padding: 12px 24px; 
+                                       border-radius: 8px; font-size: 16px; font-weight: 600; 
+                                       cursor: pointer;">🖨️ Print All</button>
+                        <button onclick="CLASSIFIED.downloadAllQRCodes()" 
+                                style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); 
+                                       color: white; border: none; padding: 12px 24px; 
+                                       border-radius: 8px; font-size: 16px; font-weight: 600; 
+                                       cursor: pointer;">📥 Download All</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        const qrGrid = document.getElementById('qrGrid');
+        
+        // Generate QR codes using Google Charts API
+        businesses.forEach(business => {
+            const qrUrl = `https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(business.url)}&choe=UTF-8`;
+            
+            const card = document.createElement('div');
+            card.className = 'qr-code-card';
+            card.innerHTML = `
+                <div style="border: 2px solid #eee; border-radius: 8px; 
+                            padding: 16px; text-align: center; background: #fafafa;">
+                    <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #333;">${business.name}</h3>
+                    <div style="font-size: 12px; color: #666; margin-bottom: 12px;">${business.type} • ${business.category}</div>
+                    <img src="${qrUrl}" alt="QR Code for ${business.name}" 
+                         style="background: white; padding: 12px; border-radius: 8px; 
+                                width: 200px; height: 200px; margin: 12px 0;" 
+                         data-url="${business.url}">
+                    <div style="font-size: 10px; color: #999; word-break: break-all; margin-top: 8px;">
+                        ${business.url}
+                    </div>
+                </div>
+            `;
+            qrGrid.appendChild(card);
+        });
+        
+        console.log(`✅ Generated ${businesses.length} QR codes`);
+        alert(`✅ QR Codes Generated!\n${businesses.length} codes ready to print/download`);
+    }
+    
+    /**
+     * Download all QR codes as images
+     */
+    downloadAllQRCodes() {
+        const images = document.querySelectorAll('#qrCodesOverlay img');
+        images.forEach((img, index) => {
+            setTimeout(() => {
+                fetch(img.src)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        const businessName = img.alt.replace('QR Code for ', '').replace(/[^a-z0-9]/gi, '_');
+                        link.href = url;
+                        link.download = `QR_${businessName}.png`;
+                        link.click();
+                        URL.revokeObjectURL(url);
+                    });
+            }, index * 100); // Stagger downloads
+        });
+        alert('📥 Downloading all QR codes...');
+    }
+    
+    /**
+     * Generate social media templates
+     */
+    generateSocialTemplates(businesses) {
+        const templates = [];
+        
+        templates.push('=== SOCIAL MEDIA OUTREACH TEMPLATES ===\n');
+        templates.push('Copy & paste for Instagram, Facebook, WhatsApp, Email\n');
+        templates.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n');
+        
+        businesses.forEach((business, index) => {
+            if (index > 0) templates.push('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+            
+            templates.push(`📍 ${business.name.toUpperCase()}\n`);
+            templates.push(`🏷️ ${business.category} | ${business.type}`);
+            templates.push(`📌 ${business.location}\n`);
+            
+            // Instagram/Facebook
+            templates.push(`\n📸 INSTAGRAM/FACEBOOK:`);
+            templates.push(`\n✨ Discover ${business.name} on SocialU! ✨`);
+            templates.push(`\n\n${business.description.substring(0, 150)}...`);
+            templates.push(`\n\n📍 ${business.location}`);
+            templates.push(`\n🔗 ${business.url}`);
+            templates.push(`\n\n#HoiAn #Vietnam #${business.type.replace(' ', '')}`);
+            
+            // WhatsApp
+            templates.push(`\n\n💬 WHATSAPP:`);
+            templates.push(`\nHi! 👋 Check out ${business.name} on SocialU:`);
+            templates.push(`\n${business.url}`);
+            templates.push(`\n\nPerfect for ${business.category.toLowerCase()}! 🌟`);
+            
+            // Email
+            templates.push(`\n\n📧 EMAIL TEMPLATE:`);
+            templates.push(`\nSubject: Your ${business.name} profile on SocialU`);
+            templates.push(`\n\nHi ${business.name} team,`);
+            templates.push(`\n\nWe've created a profile for you on SocialU - Hoi An's social discovery app!`);
+            templates.push(`\n\nView your profile: ${business.url}`);
+            templates.push(`\n\nWould you like to claim and customize it?`);
+            templates.push(`\n\nBest regards,`);
+            templates.push(`\nSocialU Team`);
+        });
+        
+        const output = templates.join('\n');
+        
+        // Copy to clipboard
+        navigator.clipboard.writeText(output).then(() => {
+            console.log('✅ Social templates copied!');
+            console.log(output);
+            alert(`✅ Social Templates Copied!\n\n${businesses.length} business templates ready to paste`);
+        }).catch(() => {
+            console.log(output);
+            alert('Templates generated! Check console to copy.');
+        });
+        
+        return output;
     }
     
 }

@@ -143,27 +143,36 @@ export class FeedManager {
         }
     }
     
-async populateRestaurantFeed() {
-    const storiesContainer = document.getElementById('restaurantStories');
-    const feedContainer = document.getElementById('restaurantFeed');
-    
-    try {
-        feedContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    /**
+     * Populate restaurant feed
+     */
+    async populateRestaurantFeed() {
+        const storiesContainer = document.getElementById('restaurantStories');
+        const feedContainer = document.getElementById('restaurantFeed');
         
-        // ONLY fetch from Firebase - no mock data
-        const restaurants = await this.fetchRestaurantsFromFirebase();
-        
-        if (restaurants.length > 0) {
-            this.populateRestaurantFeedWithData(restaurants, storiesContainer, feedContainer);
-        } else {
-            feedContainer.innerHTML = '<div style="padding: 40px; text-align: center; color: #666;">No businesses yet. Check back soon!</div>';
+        try {
+            // Show loading
+            feedContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            
+            // Try to fetch from Firebase first
+            if (this.state.get('isAuthenticated') && this.db) {
+                const restaurants = await this.fetchRestaurantsFromFirebase();
+                
+                if (restaurants.length > 0) {
+                    this.populateRestaurantFeedWithData(restaurants, storiesContainer, feedContainer);
+                    return;
+                }
+            }
+            
+            // Fallback to demo data
+            this.populateRestaurantFeedWithData(this.mockData.getRestaurants(), storiesContainer, feedContainer);
+            
+        } catch (error) {
+            console.error('❌ Error loading restaurants:', error);
+            // Fallback to demo data
+            this.populateRestaurantFeedWithData(this.mockData.getRestaurants(), storiesContainer, feedContainer);
         }
-        
-    } catch (error) {
-        console.error('Error loading restaurants:', error);
-        feedContainer.innerHTML = '<div style="padding: 40px; text-align: center; color: #666;">Could not load businesses</div>';
     }
-}
     
     /**
      * Fetch restaurants from Firebase

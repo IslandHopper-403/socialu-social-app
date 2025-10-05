@@ -1132,20 +1132,24 @@ export class BusinessManager {
         this.showBusinessSignup();
     }
 
-    /**
-     * Create clean URL slug from business name
-     */
-    createBusinessSlug(business) {
+       createBusinessSlug(business) {
         if (!business) return '';
         
-        // Use business name to create slug
+        // If business.id already looks like a slug (kebab-case), use it directly
+        if (business.id && /^[a-z0-9-]+$/.test(business.id)) {
+            return business.id;
+        }
+        
+        // Otherwise create slug from name
         const name = business.name || business.businessName || '';
         
-        // Create clean slug: "Moon Restaurant" → "moonrestaurant"
+        // Create clean slug: "Moon Restaurant" → "moon-restaurant"
         const slug = name
             .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '') // Remove all non-alphanumeric chars
-            .trim();
+            .trim()
+            .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
+            .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+            .replace(/-+/g, '-'); // Replace multiple hyphens with single
         
         // Fallback to ID if slug is empty
         return slug || business.id;

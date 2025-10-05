@@ -623,8 +623,8 @@ handleOverlayBack(overlayId) {
 /**
  * Open business profile from URL parameter
  */
-async openBusinessFromURL(businessId) {
-    console.log('🔗 Opening business from URL:', businessId);
+async openBusinessFromURL(businessIdOrSlug) {
+    console.log('🔗 Opening business from URL:', businessIdOrSlug);
     
     // Ensure app is initialized
     await this.waitForAppReady();
@@ -634,9 +634,9 @@ async openBusinessFromURL(businessId) {
     
     // Small delay to ensure feed is loaded
     setTimeout(() => {
-        // Use business manager to open profile
+        // Use business manager to open profile (handles both ID and slug)
         if (window.classifiedApp?.businessManager) {
-            window.classifiedApp.businessManager.openBusinessProfile(businessId, 'restaurant');
+            window.classifiedApp.businessManager.openBusinessProfileBySlugOrId(businessIdOrSlug);
         }
     }, 500);
 }

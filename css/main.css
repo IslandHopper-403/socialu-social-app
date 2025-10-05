@@ -528,6 +528,11 @@ body {
     justify-content: center;
     position: relative;
     overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-touch-callout: none;
 }
 
 .story-image {
@@ -548,6 +553,11 @@ body {
     line-height: 1.6;
     max-height: 40%;
     overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-touch-callout: none;
 }
 
 .story-nav-areas {

@@ -457,11 +457,17 @@
 }
 
 @media screen and (max-width: 430px) {
-    /* Fix header width for mobile */
-    .header {
+    /* Fix main screens and feed containers */
+    .screen,
+    .feed-container,
+    .main-screens {
         width: 100%;
         max-width: 430px;
-        left: auto;
-        right: auto;
+        margin: 0 auto;
+    }
+    
+    /* Header inherits proper width from parent */
+    .header {
+        width: 100%;
     }
 }

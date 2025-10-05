@@ -1991,11 +1991,11 @@ export class BusinessManager {
      * Generate business URLs in multiple formats
      * @param {string} format - 'csv', 'qr', 'social', or 'console'
      */
-    async generateAllBusinessURLs(format = 'csv') {
-        console.log(`📋 Generating business URLs (${format} format)...`);
+     async generateAllBusinessURLs(format = 'csv', category = 'all') {
+        console.log(`📋 Generating business URLs (${format} format, ${category})...`);
         
         // Collect all businesses
-        const businesses = [];
+        let businesses = [];
         
         // From mock data
         const restaurants = this.mockData?.getRestaurants?.() || [];
@@ -2048,6 +2048,18 @@ export class BusinessManager {
             });
         } catch (error) {
             console.log('No Firebase businesses found');
+        }
+        
+        // Filter by category if specified
+        if (category !== 'all') {
+            const categoryLower = category.toLowerCase();
+            businesses = businesses.filter(b => {
+                const type = b.type.toLowerCase();
+                const cat = b.category.toLowerCase();
+                return type.includes(categoryLower) || cat.includes(categoryLower);
+            });
+            
+            console.log(`📊 Filtered to ${businesses.length} ${category} businesses`);
         }
         
         // Route to correct format

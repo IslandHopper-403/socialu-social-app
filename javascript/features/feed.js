@@ -246,7 +246,11 @@ export class FeedManager {
         storiesContainer = storiesContainer || document.getElementById('restaurantStories');
         feedContainer = feedContainer || document.getElementById('restaurantFeed');
         
-       // Populate stories
+        // Cache restaurants for story viewer
+        this.cachedRestaurants = restaurants;
+        console.log('💾 Cached', restaurants.length, 'restaurants for story viewer');
+        
+        // Populate stories
         if (storiesContainer) {
             this.populateStories('restaurantStories', restaurants);
         }
@@ -340,12 +344,18 @@ export class FeedManager {
         return activities;
     }
     
-    /**
+   /**
      * Populate activity feed with data
      */
     populateActivityFeedWithData(activities, storiesContainer = null, feedContainer = null) {
         storiesContainer = storiesContainer || document.getElementById('activityStories');
         feedContainer = feedContainer || document.getElementById('activityFeed');
+        
+        console.log('🎯 Populating activity feed with', activities.length, 'activities');
+        
+        // Cache activities for story viewer
+        this.cachedActivities = activities;
+        console.log('💾 Cached', activities.length, 'activities for story viewer');
         
         // Populate stories
         if (storiesContainer) {
@@ -1054,13 +1064,23 @@ export class FeedManager {
     getCurrentBusinesses(feedType) {
         console.log('📖 [getCurrentBusinesses] Getting businesses for:', feedType);
         
+        // Store businesses in memory when populating feeds
         let businesses = [];
+        
         if (feedType === 'restaurantStories') {
-            businesses = this.mockData.getRestaurants();
-            console.log('📖 [getCurrentBusinesses] Retrieved restaurants:', businesses.length);
+            // Use cached Firebase restaurants if available
+            businesses = this.cachedRestaurants || this.mockData.getRestaurants();
+            console.log('📖 [getCurrentBusinesses] Retrieved restaurants:', {
+                count: businesses.length,
+                source: this.cachedRestaurants ? 'Firebase cache' : 'mock data'
+            });
         } else if (feedType === 'activityStories') {
-            businesses = this.mockData.getActivities();
-            console.log('📖 [getCurrentBusinesses] Retrieved activities:', businesses.length);
+            // Use cached Firebase activities if available
+            businesses = this.cachedActivities || this.mockData.getActivities();
+            console.log('📖 [getCurrentBusinesses] Retrieved activities:', {
+                count: businesses.length,
+                source: this.cachedActivities ? 'Firebase cache' : 'mock data'
+            });
         } else {
             console.warn('⚠️ [getCurrentBusinesses] Unknown feedType:', feedType);
         }

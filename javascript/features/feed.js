@@ -415,21 +415,24 @@ export class FeedManager {
                 return;
             }
             
-            users.push({
-                id: doc.id,
-                uid: doc.id,
-                name: userData.name,
-                age: userData.age || 25,
-                image: userData.photos?.[0] || userData.photo || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop',
-                interests: userData.interests || ['Travel', 'Adventure'],
-                bio: userData.bio || 'Exploring Hoi An!',
-                isOnline: userData.isOnline || false,
-                distance: userData.distance || `${Math.floor(Math.random() * 5) + 1} km`,
-                matchPercentage: userData.matchPercentage || Math.floor(Math.random() * 30) + 70,
-                category: userData.category || 'all',
-                career: userData.career,
-                lookingFor: userData.lookingFor
-            });
+        users.push({
+        id: doc.id,
+        uid: doc.id,
+        name: userData.name,
+        age: userData.age || 25,
+        image: userData.photos?.[0] || userData.photo || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop',
+        interests: userData.interests || ['Travel', 'Adventure'],
+        bio: userData.bio || 'Exploring Hoi An!',
+        isOnline: userData.isOnline || false,
+        distance: userData.distance || `${Math.floor(Math.random() * 5) + 1} km`,
+        matchPercentage: userData.matchPercentage || Math.floor(Math.random() * 30) + 70,
+        category: userData.category || 'all',
+        career: userData.career,
+        lookingFor: userData.lookingFor,
+        height: userData.height,
+        zodiac: userData.zodiac,
+        showHoroscope: userData.showHoroscope || false
+    });
         });
         
         return users;

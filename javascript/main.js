@@ -683,7 +683,7 @@ async initializeManagers() {
             closeBusinessProfile: () => this.closeBusinessProfile(),
             
             // Marketing tools (optional - for bulk URL generation)
-            generateAllBusinessURLs: (format = 'console') => this.managers.business?.generateAllBusinessURLs(format),
+            generateAllBusinessURLs: (format = 'csv', category = 'all') => this.managers.business?.generateAllBusinessURLs(format, category),
             downloadAllQRCodes: () => this.managers.business?.downloadAllQRCodes(),
             printQRCodes: () => this.managers.business?.printQRCodes(),
             

@@ -718,6 +718,8 @@ async initializeManagers() {
             nextStory: () => this.managers.feed.nextStory(),
             previousStory: () => this.managers.feed.previousStory(),
             viewFullBusinessProfile: () => this.managers.feed.viewFullBusinessProfile(),
+            pauseStory: () => this.managers.feed.pauseStory(),
+            resumeStory: () => this.managers.feed.resumeStory(),
             
             
             // Horoscope toggle

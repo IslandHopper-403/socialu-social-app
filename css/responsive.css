@@ -455,19 +455,3 @@
         -ms-overflow-style: none;
     }
 }
-
-@media screen and (max-width: 430px) {
-    /* Fix main screens and feed containers */
-    .screen,
-    .feed-container,
-    .main-screens {
-        width: 100%;
-        max-width: 430px;
-        margin: 0 auto;
-    }
-    
-    /* Header inherits proper width from parent */
-    .header {
-        width: 100%;
-    }
-}

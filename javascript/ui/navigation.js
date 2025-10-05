@@ -629,16 +629,49 @@ async openBusinessFromURL(businessIdOrSlug) {
     // Ensure app is initialized
     await this.waitForAppReady();
     
-    // Navigate to restaurant screen first
-    this.showScreen('restaurant', false);
+    // Determine business type first
+    const businessType = this.determineBusinessType(businessIdOrSlug);
+    
+    // Navigate to appropriate screen (restaurant or activity)
+    const targetScreen = businessType === 'activity' ? 'activity' : 'restaurant';
+    this.showScreen(targetScreen, false);
     
     // Small delay to ensure feed is loaded
     setTimeout(() => {
         // Use business manager to open profile (handles both ID and slug)
         if (window.classifiedApp?.businessManager) {
-            window.classifiedApp.businessManager.openBusinessProfileBySlugOrId(businessIdOrSlug);
+            window.classifiedApp.businessManager.openBusinessProfileBySlugOrId(businessIdOrSlug, businessType);
         }
     }, 500);
+}
+
+/**
+ * Determine if business is restaurant or activity
+ */
+determineBusinessType(slugOrId) {
+    if (!window.classifiedApp?.mockData) return 'restaurant';
+    
+    const mockData = window.classifiedApp.mockData;
+    const restaurants = mockData.getRestaurants?.() || [];
+    const activities = mockData.getActivities?.() || [];
+    
+    // Check restaurants first
+    for (const r of restaurants) {
+        if (r.id === slugOrId) return 'restaurant';
+        if (window.classifiedApp.managers?.business?.createBusinessSlug(r) === slugOrId) {
+            return 'restaurant';
+        }
+    }
+    
+    // Check activities
+    for (const a of activities) {
+        if (a.id === slugOrId) return 'activity';
+        if (window.classifiedApp.managers?.business?.createBusinessSlug(a) === slugOrId) {
+            return 'activity';
+        }
+    }
+    
+    return 'restaurant'; // default fallback
 }
 
 /**

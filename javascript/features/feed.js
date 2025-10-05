@@ -1209,8 +1209,8 @@ export class FeedManager {
         if (textOverlay) {
             const aboutUs = business.aboutUs || business.description || business.story || 'Welcome to our business!';
             
-            // Truncate if too long (max 500 characters)
-            const maxLength = 500;
+            // Truncate if too long (max 350 characters)
+            const maxLength = 350;
             const truncatedText = aboutUs.length > maxLength 
                 ? aboutUs.substring(0, maxLength) + '...' 
                 : aboutUs;

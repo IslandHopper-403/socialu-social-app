@@ -1857,6 +1857,21 @@ input:disabled + .toggle-slider {
     to { opacity: 1; transform: translateX(0); }
 }
 
+/* Responsive Design */
+@media (max-width: 430px) {
+    .app-container {
+        max-width: 100vw;
+    }
+    .user-feed-item {
+        margin: 0 10px 20px 10px;
+    }
+    .bottom-nav {
+        max-width: 100vw;
+    }
+    .overlay-screen {
+        max-width: 100vw;
+    }
+}
 
 /* Menu Style for Restaurants */
 

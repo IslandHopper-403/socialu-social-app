@@ -1133,17 +1133,30 @@ Need help? Contact: support@classified.com
             }
         });
 
-// Initialize the app when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', async () => {
-        // Initialize ClassifiedApp
+    // Initialize the app when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Initialize ClassifiedApp
+            window.classifiedApp = new ClassifiedApp();
+            
+            // Handle deep links after initialization
+            setTimeout(() => {
+                if (window.classifiedApp && window.CLASSIFIED) {
+                    window.CLASSIFIED.handleDeepLink();
+                }
+            }, 1000);
+        });
+    } else {
+        // DOM already loaded
         window.classifiedApp = new ClassifiedApp();
-    });
-} else {
-    // DOM already loaded
-    window.classifiedApp = new ClassifiedApp();
-}
-
+        
+        // Handle deep links after initialization
+        setTimeout(() => {
+            if (window.classifiedApp && window.CLASSIFIED) {
+                window.CLASSIFIED.handleDeepLink();
+            }
+        }, 1000);
+    }
 
 // ADD THIS HERE - after the app initialization:
 window.getCurrentBusinessId = function() {

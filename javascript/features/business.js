@@ -2103,96 +2103,71 @@ export class BusinessManager {
     /**
      * Generate QR codes for all businesses
      */
-    generateQRCodes(businesses) {
-        // Create overlay
-        const overlay = document.createElement('div');
-        overlay.id = 'qrCodesOverlay';
-        overlay.innerHTML = `
-            <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-                        background: rgba(0,0,0,0.95); z-index: 10000; 
-                        overflow-y: auto; padding: 20px;">
-                <div style="max-width: 1200px; margin: 0 auto; background: white; 
-                            border-radius: 12px; padding: 24px;">
-                    <div style="display: flex; justify-content: space-between; 
-                                align-items: center; margin-bottom: 24px; 
-                                padding-bottom: 16px; border-bottom: 2px solid #eee;">
-                        <h2 style="margin: 0; color: #FF6B6B;">Business QR Codes</h2>
-                        <button onclick="this.closest('#qrCodesOverlay').remove()" 
-                                style="background: none; border: none; font-size: 24px; 
-                                       cursor: pointer; padding: 8px; color: #666;">✕</button>
-                    </div>
-                    <div id="qrGrid" style="display: grid; 
-                                           grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
-                                           gap: 20px; margin-bottom: 24px;"></div>
-                    <div style="display: flex; gap: 12px; justify-content: center; 
-                                padding-top: 16px; border-top: 2px solid #eee;">
-                        <button onclick="window.print()" 
-                                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                       color: white; border: none; padding: 12px 24px; 
-                                       border-radius: 8px; font-size: 16px; font-weight: 600; 
-                                       cursor: pointer;">🖨️ Print All</button>
-                        <button onclick="CLASSIFIED.downloadAllQRCodes()" 
-                                style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); 
-                                       color: white; border: none; padding: 12px 24px; 
-                                       border-radius: 8px; font-size: 16px; font-weight: 600; 
-                                       cursor: pointer;">📥 Download All</button>
-                    </div>
+generateQRCodes(businesses) {
+    const overlay = document.createElement('div');
+    overlay.id = 'qrCodesOverlay';
+    overlay.innerHTML = `
+        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+                    background: rgba(0,0,0,0.95); z-index: 10000; 
+                    overflow-y: auto; padding: 20px;">
+            <div style="max-width: 1200px; margin: 0 auto; background: white; 
+                        border-radius: 12px; padding: 24px;">
+                <div style="display: flex; justify-content: space-between; 
+                            align-items: center; margin-bottom: 24px; 
+                            padding-bottom: 16px; border-bottom: 2px solid #eee;">
+                    <h2 style="margin: 0; color: #FF6B6B;">Business QR Codes</h2>
+                    <button onclick="this.closest('#qrCodesOverlay').remove()" 
+                            style="background: none; border: none; font-size: 24px; 
+                                   cursor: pointer; padding: 8px; color: #666;">✕</button>
+                </div>
+                <div id="qrGrid" style="display: grid; 
+                                       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+                                       gap: 20px; margin-bottom: 24px;"></div>
+                <div style="text-align: center; padding: 16px; background: #f0f0f0; 
+                            border-radius: 8px; margin-top: 20px;">
+                    <p style="margin: 0; color: #666;">💡 Right-click any QR code and select "Save image as..." to download</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    const qrGrid = document.getElementById('qrGrid');
+    
+    // Generate QR codes using canvas (no CORS issues)
+    businesses.forEach(business => {
+        const card = document.createElement('div');
+        card.innerHTML = `
+            <div style="border: 2px solid #eee; border-radius: 8px; 
+                        padding: 16px; text-align: center; background: #fafafa;">
+                <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #333;">${business.name}</h3>
+                <div style="font-size: 12px; color: #666; margin-bottom: 12px;">${business.type} • ${business.category}</div>
+                <div class="qr-container-${business.id.replace(/[^a-z0-9]/gi, '')}" 
+                     style="background: white; padding: 12px; border-radius: 8px; 
+                            margin: 12px auto; width: 200px; height: 200px; 
+                            display: flex; align-items: center; justify-content: center;"></div>
+                <div style="font-size: 10px; color: #999; word-break: break-all; margin-top: 8px;">
+                    ${business.url}
                 </div>
             </div>
         `;
+        qrGrid.appendChild(card);
         
-        document.body.appendChild(overlay);
-        const qrGrid = document.getElementById('qrGrid');
-        
-        // Generate QR codes using Google Charts API
-        businesses.forEach(business => {
-            const qrUrl = `https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(business.url)}&choe=UTF-8`;
-            
-            const card = document.createElement('div');
-            card.className = 'qr-code-card';
-            card.innerHTML = `
-                <div style="border: 2px solid #eee; border-radius: 8px; 
-                            padding: 16px; text-align: center; background: #fafafa;">
-                    <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #333;">${business.name}</h3>
-                    <div style="font-size: 12px; color: #666; margin-bottom: 12px;">${business.type} • ${business.category}</div>
-                    <img src="${qrUrl}" alt="QR Code for ${business.name}" 
-                         style="background: white; padding: 12px; border-radius: 8px; 
-                                width: 200px; height: 200px; margin: 12px 0;" 
-                         data-url="${business.url}">
-                    <div style="font-size: 10px; color: #999; word-break: break-all; margin-top: 8px;">
-                        ${business.url}
-                    </div>
-                </div>
-            `;
-            qrGrid.appendChild(card);
+        // Generate QR code as canvas
+        const container = card.querySelector(`.qr-container-${business.id.replace(/[^a-z0-9]/gi, '')}`);
+        new QRCode(container, {
+            text: business.url,
+            width: 200,
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
         });
-        
-        console.log(`✅ Generated ${businesses.length} QR codes`);
-        alert(`✅ QR Codes Generated!\n${businesses.length} codes ready to print/download`);
-    }
+    });
     
-    /**
-     * Download all QR codes as images
-     */
-    downloadAllQRCodes() {
-        const images = document.querySelectorAll('#qrCodesOverlay img');
-        images.forEach((img, index) => {
-            setTimeout(() => {
-                fetch(img.src)
-                    .then(res => res.blob())
-                    .then(blob => {
-                        const url = URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        const businessName = img.alt.replace('QR Code for ', '').replace(/[^a-z0-9]/gi, '_');
-                        link.href = url;
-                        link.download = `QR_${businessName}.png`;
-                        link.click();
-                        URL.revokeObjectURL(url);
-                    });
-            }, index * 100); // Stagger downloads
-        });
-        alert('📥 Downloading all QR codes...');
-    }
+    console.log(`Generated ${businesses.length} QR codes`);
+    alert(`QR Codes Generated!\n\n${businesses.length} codes ready.\n\nRight-click any code and "Save image as..." to download.`);
+}
     
     /**
      * Generate social media templates

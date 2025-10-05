@@ -20,12 +20,18 @@ body {
 .app-container {
     width: 100%;
     max-width: var(--container-max);
-    margin: 0 auto;
+    margin: 0;
     background: var(--bg-card);
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
     overflow-y: auto;
+}
+
+@media (min-width: 431px) {
+    .app-container {
+        margin: 0 auto;
+    }
 }
 
 /* ===== HEADER STYLES ===== */
@@ -41,6 +47,8 @@ body {
     z-index: var(--z-sticky);
     border-bottom: 1px solid var(--border-light);
     height: var(--header-height);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .back-btn,
@@ -472,7 +480,9 @@ body {
 .feed-container {
     padding: 0 20px 20px 20px;
     width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
+    margin: 0;
 }
 
 .feed-header {

@@ -406,57 +406,87 @@ export class AuthManager {
         return user;
     }
     
-    /**
-     * Business signup
-     */
-    async businessSignup(businessData) {
-        const { name, email, phone, type } = businessData;
-        
-        if (!name || !email || !phone || !type) {
-            throw new Error('Please fill in all fields');
-        }
-        
-        try {
-            this.showLoading();
-            
-            // Create temporary password
-            const tempPassword = this.generateTempPassword();
-            
-            // Create auth account
-            const userCredential = await createUserWithEmailAndPassword(this.auth, email, tempPassword);
-            const user = userCredential.user;
-            
-            // Update display name
-            await updateProfile(user, { displayName: name });
-            
-            // Create business profile
-            await setDoc(doc(this.db, 'businesses', user.uid), {
-                name: name,
-                email: email,
-                phone: phone,
-                type: type,
-                status: 'pending_approval',
-                uid: user.uid,
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp(),
-                tempPassword: tempPassword,
-                location: 'Hoi An, Vietnam'
-            });
-            
-            this.hideLoading();
-            
-            // Return success info
-            return {
-                user: user,
-                tempPassword: tempPassword
-            };
-            
-        } catch (error) {
-            this.hideLoading();
-            console.error('❌ Business signup error:', error);
-            throw this.formatAuthError(error);
-        }
+   /**
+ * Business signup - supports businesses with OR without email
+ * @param {Object} businessData - { name, email, phone, type, authEmail (optional), location (optional) }
+ */
+async businessSignup(businessData) {
+    const { name, email, phone, type, authEmail, location } = businessData;
+    
+    // Only require name, phone, and type (email is optional now)
+    if (!name || !phone || !type) {
+        throw new Error('Please fill in name, phone, and type fields');
     }
+    
+    // Determine if email is real or needs a fake auth email
+    const hasRealEmail = email && email.includes('@') && !email.includes('noemail') && !email.includes('@business.com');
+    
+    // Generate clean slug from business name for auth email
+    const businessSlug = name.toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')              // Remove special chars
+        .trim()
+        .replace(/\s+/g, '')                       // Remove all spaces
+        .substring(0, 30);                         // Limit length
+    
+    // Create auth email: use provided authEmail, real email, or generate from business name
+    const loginEmail = authEmail || 
+                      (hasRealEmail ? email : null) || 
+                      `${businessSlug}@business.com`;
+    
+    try {
+        this.showLoading();
+        
+        // Create temporary password
+        const tempPassword = this.generateTempPassword();
+        
+        console.log(`📝 Creating business account:`);
+        console.log(`   Name: ${name}`);
+        console.log(`   Login Email: ${loginEmail}`);
+        console.log(`   Contact Email: ${hasRealEmail ? email : 'NONE'}`);
+        console.log(`   Phone: ${phone}`);
+        
+        // Create auth account (may use fake email for login only)
+        const userCredential = await createUserWithEmailAndPassword(this.auth, loginEmail, tempPassword);
+        const user = userCredential.user;
+        
+        // Update display name
+        await updateProfile(user, { displayName: name });
+        
+        // Create business profile in Firestore
+        await setDoc(doc(this.db, 'businesses', user.uid), {
+            name: name,
+            email: hasRealEmail ? email : '',              // BLANK if no real email
+            contactEmail: hasRealEmail ? email : '',        // Separate field for clarity
+            authEmail: loginEmail,                          // Store auth email (may be fake)
+            phone: phone,
+            type: type,
+            status: 'pending_approval',
+            uid: user.uid,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            tempPassword: tempPassword,
+            location: location || 'Hoi An, Vietnam',
+            hasRealEmail: hasRealEmail                      // Flag for CSV export
+        });
+        
+        this.hideLoading();
+        
+        console.log(`✅ Business account created successfully`);
+        
+        // Return success info
+        return {
+            user: user,
+            tempPassword: tempPassword,
+            authEmail: loginEmail,
+            hasRealEmail: hasRealEmail
+        };
+        
+    } catch (error) {
+        this.hideLoading();
+        console.error('❌ Business signup error:', error);
+        throw this.formatAuthError(error);
+    }
+}
     
     /**
      * Logout

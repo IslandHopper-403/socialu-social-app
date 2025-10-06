@@ -85,14 +85,30 @@ showContentSkeleton(containerId, type = 'default') {
     /**
      * Initialize navigation system
      */
-    async init() {
+   async init() {
         console.log('🧭 Initializing navigation manager...');
         
         // Set up event listeners
         this.setupEventListeners();
         
-        // Initialize navigation state
-        this.initializeNavigation();
+        // CRITICAL: Check for deep link BEFORE initializing navigation
+        const hash = window.location.hash.slice(1);
+        const isDeepLink = hash.startsWith('business/') || hash.startsWith('story/');
+        
+        if (isDeepLink) {
+            console.log('🔗 Deep link detected in nav init, handling immediately');
+            
+            // Set up hashchange listener (needed for navigation)
+            window.addEventListener('hashchange', () => {
+                this.handleDeepLink();
+            });
+            
+            // Handle the deep link without overwriting the hash
+            this.handleDeepLink();
+        } else {
+            // Normal initialization for non-deep-link loads
+            this.initializeNavigation();
+        }
     }
 
             /**

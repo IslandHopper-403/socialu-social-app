@@ -2028,7 +2028,7 @@ export class BusinessManager {
             
             const slug = this.createBusinessSlug(b);
             
-            businesses.push({
+           businesses.push({
                 name: b.name,
                 email: b.email,                                    // Real email from signup
                 phone: b.phone || '',                              // Real phone or empty
@@ -2039,6 +2039,8 @@ export class BusinessManager {
                 shareUrl: `${window.location.origin}${window.location.pathname}#business/${slug}`,
                 location: b.location || b.address || 'Hoi An, Vietnam',
                 description: b.description || '',
+                currentSpecials: b.currentSpecials || [],          // ✅ ADD: Promotions array
+                aboutUs: b.aboutUs || b.about || b.description || '', // ✅ ADD: About Us section
                 id: doc.id
             });
         });

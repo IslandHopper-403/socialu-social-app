@@ -2096,24 +2096,26 @@ export class BusinessManager {
 exportBusinessCSV(businesses) {
     // Multi-channel marketing optimized columns
     const csvRows = [
-        [
-            'Email',              // Column A - YAMM email campaigns (REQUIRED)
-            'PhoneNumber',        // Column B - SMS/WhatsApp/Zalo (optional)
-            'WhatsAppNumber',     // Column C - WhatsApp international format (optional)
-            'ZaloID',             // Column D - Zalo messaging (optional)
-            'BusinessName',       // Column E - {{BusinessName}} merge tag
-            'ProfileURL',         // Column F - {{ProfileURL}} merge tag
-            'ShortURL',           // Column G - Short link for SMS
-            'ContactName',        // Column H - Personalization
-            'Category',           // Column I - Segmentation
-            'Type',               // Column J - Segmentation
-            'Location',           // Column K - Geographic targeting
-            'Description',        // Column L - Context for outreach
-            'BusinessId',         // Column M - Tracking
-            'JoinDate',           // Column N - Engagement timing
-            'Status',             // Column O - Campaign filtering
-            'PreferredChannel'    // Column P - Communication preference
-        ],
+    [
+        'Email',              // Column A - YAMM email campaigns (REQUIRED)
+        'PhoneNumber',        // Column B - SMS/WhatsApp/Zalo (optional)
+        'WhatsAppNumber',     // Column C - WhatsApp international format (optional)
+        'ZaloID',             // Column D - Zalo messaging (optional)
+        'BusinessName',       // Column E - {{BusinessName}} merge tag
+        'ProfileURL',         // Column F - {{ProfileURL}} merge tag
+        'ShortURL',           // Column G - Short link for SMS
+        'ContactName',        // Column H - Personalization
+        'Category',           // Column I - Segmentation
+        'Type',               // Column J - Segmentation
+        'Location',           // Column K - Geographic targeting
+        'Description',        // Column L - Context for outreach
+        'BusinessId',         // Column M - Tracking
+        'JoinDate',           // Column N - Engagement timing
+        'Status',             // Column O - Campaign filtering
+        'PreferredChannel',   // Column P - Communication preference
+        'CurrentPromotion',   // Column Q - Promotion for verification
+        'AboutUs'             // Column R - About Us section for verification
+    ],
       ...businesses.map(b => {
             // ONLY use real contact emails (filter out fake auth emails)
             const isFakeEmail = !b.email || 
@@ -2166,6 +2168,16 @@ exportBusinessCSV(businesses) {
                 preferredChannel = 'Email';
             }
             
+         // Get current promotion if exists (check multiple field names)
+            const promoTitle = b.promoTitle || b.promotionTitle || '';
+            const promoDetails = b.promoDetails || b.promotionDetails || '';
+            const currentPromotion = promoTitle ? 
+                `${promoTitle} - ${promoDetails}` : 
+                'No active promotion';
+            
+            // Get About Us section (full description, not truncated)
+            const aboutUs = b.aboutUs || b.about || b.description || 'No description provided';
+            
             return [
                 `"${email}"`,                                    // Email (real)
                 `"${phoneNumber}"`,                              // PhoneNumber (real or empty)
@@ -2182,7 +2194,9 @@ exportBusinessCSV(businesses) {
                 `"${b.id}"`,                                     // BusinessId
                 `"${new Date().toISOString().split('T')[0]}"`,   // JoinDate
                 `"Active"`,                                      // Status
-                `"${preferredChannel}"`                          // PreferredChannel
+                `"${preferredChannel}"`,                         // PreferredChannel
+                `"${currentPromotion.replace(/"/g, '""')}"`,     // CurrentPromotion (CSV-escaped)
+                `"${aboutUs.replace(/"/g, '""')}"`               // AboutUs (CSV-escaped, full text)
             ];
         })
     ];

@@ -2108,13 +2108,15 @@ exportBusinessCSV(businesses) {
         'Category',           // Column I - Segmentation
         'Type',               // Column J - Segmentation
         'Location',           // Column K - Geographic targeting
-        'Description',        // Column L - Context for outreach
-        'BusinessId',         // Column M - Tracking
-        'JoinDate',           // Column N - Engagement timing
-        'Status',             // Column O - Campaign filtering
-        'PreferredChannel',   // Column P - Communication preference
-        'CurrentPromotion',   // Column Q - Promotion for verification
-        'AboutUs'             // Column R - About Us section for verification
+        'Description',        // Column L - Short description for outreach
+        'AboutUs',            // Column M - Full About Us section for verification
+        'Promotion1',         // Column N - First promotion from currentSpecials[0]
+        'Promotion2',         // Column O - Second promotion from currentSpecials[1]
+        'Promotion3',         // Column P - Third promotion from currentSpecials[2]
+        'BusinessId',         // Column Q - Tracking
+        'JoinDate',           // Column R - Engagement timing
+        'Status',             // Column S - Campaign filtering
+        'PreferredChannel'    // Column T - Communication preference
     ],
       ...businesses.map(b => {
             // ONLY use real contact emails (filter out fake auth emails)
@@ -2161,46 +2163,46 @@ exportBusinessCSV(businesses) {
                     b.type.toLowerCase().includes('cafe')) {
                     preferredChannel = 'WhatsApp';
                 }
-            }
-            // Hotels/Resorts always prefer email (formal)
-            if (b.type.toLowerCase().includes('hotel') || 
-                b.type.toLowerCase().includes('resort')) {
-                preferredChannel = 'Email';
-            }
-            
-         // Get current promotion if exists (check multiple field names)
-            const promoTitle = b.promoTitle || b.promotionTitle || '';
-            const promoDetails = b.promoDetails || b.promotionDetails || '';
-            const currentPromotion = promoTitle ? 
-                `${promoTitle} - ${promoDetails}` : 
-                'No active promotion';
-            
-            // Get About Us section (full description, not truncated)
-            const aboutUs = b.aboutUs || b.about || b.description || 'No description provided';
-            
-            return [
-                `"${email}"`,                                    // Email (real)
-                `"${phoneNumber}"`,                              // PhoneNumber (real or empty)
-                `"${whatsAppNumber}"`,                           // WhatsAppNumber (real or empty)
-                `"${zaloID}"`,                                   // ZaloID (real or empty)
-                `"${b.name}"`,                                   // BusinessName
-                `"${b.url}"`,                                    // ProfileURL
-                `"${shortURL}"`,                                 // ShortURL
-                `"${contactName} team"`,                         // ContactName
-                `"${b.category}"`,                               // Category
-                `"${b.type}"`,                                   // Type
-                `"${b.location}"`,                               // Location
-                `"${(b.description || '').substring(0, 150).replace(/"/g, '""')}"`, // Description (CSV-escaped)
-                `"${b.id}"`,                                     // BusinessId
-                `"${new Date().toISOString().split('T')[0]}"`,   // JoinDate
-                `"Active"`,                                      // Status
-                `"${preferredChannel}"`,                         // PreferredChannel
-                `"${currentPromotion.replace(/"/g, '""')}"`,     // CurrentPromotion (CSV-escaped)
-                `"${aboutUs.replace(/"/g, '""')}"`               // AboutUs (CSV-escaped, full text)
-            ];
-        })
-    ];
-    
+   }
+        // Hotels/Resorts always prefer email (formal)
+        if (b.type.toLowerCase().includes('hotel') || 
+            b.type.toLowerCase().includes('resort')) {
+            preferredChannel = 'Email';
+        }
+        
+        // Extract promotions from currentSpecials array (0, 1, 2)
+        const currentSpecials = b.currentSpecials || [];
+        const promotion1 = currentSpecials[0] || 'No promotion';
+        const promotion2 = currentSpecials[1] || '';
+        const promotion3 = currentSpecials[2] || '';
+        
+        // Get About Us section (full description, not truncated)
+        const aboutUs = b.aboutUs || b.about || b.description || 'No description provided';
+        
+        return [
+            `"${email}"`,                                    // Email (real)
+            `"${phoneNumber}"`,                              // PhoneNumber (real or empty)
+            `"${whatsAppNumber}"`,                           // WhatsAppNumber (real or empty)
+            `"${zaloID}"`,                                   // ZaloID (real or empty)
+            `"${b.name}"`,                                   // BusinessName
+            `"${b.url}"`,                                    // ProfileURL
+            `"${shortURL}"`,                                 // ShortURL
+            `"${contactName} team"`,                         // ContactName
+            `"${b.category}"`,                               // Category
+            `"${b.type}"`,                                   // Type
+            `"${b.location}"`,                               // Location
+            `"${(b.description || '').substring(0, 150).replace(/"/g, '""')}"`, // Description (CSV-escaped)
+            `"${aboutUs.replace(/"/g, '""')}"`,              // AboutUs (CSV-escaped, full text)
+            `"${promotion1.replace(/"/g, '""')}"`,           // Promotion1 (CSV-escaped)
+            `"${promotion2.replace(/"/g, '""')}"`,           // Promotion2 (CSV-escaped)
+            `"${promotion3.replace(/"/g, '""')}"`,           // Promotion3 (CSV-escaped)
+            `"${b.id}"`,                                     // BusinessId
+            `"${new Date().toISOString().split('T')[0]}"`,   // JoinDate
+            `"Active"`,                                      // Status
+            `"${preferredChannel}"`                          // PreferredChannel
+        ];
+    })
+];
     const csv = csvRows.map(row => row.join(',')).join('\n');
         
         

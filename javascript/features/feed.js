@@ -1059,6 +1059,38 @@ export class FeedManager {
         
         console.log('✅ [openStoryViewer] Story viewer opened successfully');
     }
+
+    /**
+ * Open story by business ID (for deep linking)
+ */
+openStoryByBusinessId(businessId) {
+    console.log('📖 [openStoryByBusinessId] Opening story for business:', businessId);
+    
+    // Get all businesses from both feeds
+    const restaurants = this.cachedRestaurants || this.mockData.getRestaurants();
+    const activities = this.cachedActivities || this.mockData.getActivities();
+    const allBusinesses = [...restaurants, ...activities];
+    
+    // Find the business
+    const businessIndex = allBusinesses.findIndex(b => b.id === businessId);
+    
+    if (businessIndex === -1) {
+        console.error('❌ Business not found:', businessId);
+        return;
+    }
+    
+    // Set current stories to all businesses
+    this.currentStories = allBusinesses;
+    this.currentStoryIndex = businessIndex;
+    
+    // Show overlay
+    const overlay = document.getElementById('storyViewerOverlay');
+    if (overlay) {
+        overlay.style.display = 'flex';
+        this.createStoryProgressBars(allBusinesses.length);
+        this.showStory(businessIndex);
+    }
+}
     
     /**
      * Get current businesses based on feed type

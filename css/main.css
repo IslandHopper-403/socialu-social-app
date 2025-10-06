@@ -2551,15 +2551,6 @@ body.business-user #socialScreen {
     font-size: 16px !important;
 }
 
-/* Deep link support - business profile on top */
-#businessProfile {
-    z-index: 10000 !important;
-}
-
-#authScreen {
-    z-index: 9000;
-}
-
 /* Settings inputs */
 #settingsOverlay input,
 #settingsOverlay select {

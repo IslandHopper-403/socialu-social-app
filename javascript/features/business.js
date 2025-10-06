@@ -2075,23 +2075,87 @@ export class BusinessManager {
         }
     }
     
-    /**
-     * Export businesses as CSV
-     */
-    exportBusinessCSV(businesses) {
-        const csvRows = [
-            ['Business Name', 'Type', 'Category', 'Profile URL', 'Location', 'ID'],
-            ...businesses.map(b => [
-                `"${b.name}"`,
-                `"${b.type}"`,
-                `"${b.category}"`,
-                `"${b.url}"`,
-                `"${b.location}"`,
-                `"${b.id}"`
-            ])
-        ];
+   /**
+ * Export businesses as CSV optimized for multi-channel marketing
+ * Supports: YAMM (Email), WhatsApp, SMS, Zalo
+ */
+exportBusinessCSV(businesses) {
+    // Multi-channel marketing optimized columns
+    const csvRows = [
+        [
+            'Email',              // Column A - YAMM email campaigns
+            'PhoneNumber',        // Column B - SMS/WhatsApp/Zalo
+            'WhatsAppNumber',     // Column C - WhatsApp (international format)
+            'ZaloID',             // Column D - Zalo messaging
+            'BusinessName',       // Column E - {{BusinessName}} merge tag
+            'ProfileURL',         // Column F - {{ProfileURL}} merge tag
+            'ShortURL',           // Column G - Short link for SMS character limits
+            'ContactName',        // Column H - Personalization
+            'Category',           // Column I - Segmentation
+            'Type',               // Column J - Segmentation
+            'Location',           // Column K - Geographic targeting
+            'Description',        // Column L - Context for outreach
+            'BusinessId',         // Column M - Tracking
+            'JoinDate',           // Column N - Engagement timing
+            'Status',             // Column O - Campaign filtering
+            'PreferredChannel'    // Column P - Communication preference
+        ],
+        ...businesses.map(b => {
+            // Generate contact email from business name or use placeholder
+            const emailSlug = (b.id || b.name.toLowerCase()
+                .replace(/[^a-z0-9]/g, '')
+                .substring(0, 30));
+            const email = b.email || `${emailSlug}@example.com`;
+            
+            // Generate Vietnamese phone number (placeholder format)
+            // Real data should come from Firebase or manual input
+            const phoneNumber = b.phone || '+84 90 123 4567';
+            
+            // WhatsApp uses international format without spaces
+            const whatsAppNumber = (b.phone || phoneNumber).replace(/\s+/g, '');
+            
+            // Zalo ID (often same as phone number in Vietnam)
+            const zaloID = b.zaloId || whatsAppNumber;
+            
+            // Extract contact name from business name (remove "Restaurant", "Hotel", etc.)
+            const contactName = b.name
+                .replace(/\s+(Restaurant|Hotel|Cafe|Bar|Spa|Shop|Store|Gallery|Studio|Team).*$/i, '')
+                .trim();
+            
+            // Create short URL for SMS (you can integrate bit.ly API later)
+            const shortURL = b.url.replace('https://www.socialu.app/#business/', 'socialu.app/b/');
+            
+            // Determine preferred channel based on business type
+            let preferredChannel = 'Email';
+            if (b.type.toLowerCase().includes('restaurant') || b.type.toLowerCase().includes('cafe')) {
+                preferredChannel = 'WhatsApp'; // Restaurants prefer instant messaging
+            } else if (b.type.toLowerCase().includes('hotel') || b.type.toLowerCase().includes('resort')) {
+                preferredChannel = 'Email'; // Hotels prefer formal communication
+            }
+            
+            return [
+                `"${email}"`,                                    // Email
+                `"${phoneNumber}"`,                              // PhoneNumber
+                `"${whatsAppNumber}"`,                           // WhatsAppNumber
+                `"${zaloID}"`,                                   // ZaloID
+                `"${b.name}"`,                                   // BusinessName
+                `"${b.url}"`,                                    // ProfileURL
+                `"${shortURL}"`,                                 // ShortURL
+                `"${contactName} team"`,                         // ContactName
+                `"${b.category}"`,                               // Category
+                `"${b.type}"`,                                   // Type
+                `"${b.location}"`,                               // Location
+                `"${(b.description || '').substring(0, 150).replace(/"/g, '""')}"`, // Description (escaped)
+                `"${b.id}"`,                                     // BusinessId
+                `"${new Date().toISOString().split('T')[0]}"`,   // JoinDate
+                `"Active"`,                                      // Status
+                `"${preferredChannel}"`                          // PreferredChannel
+            ];
+        })
+    ];
+    
+    const csv = csvRows.map(row => row.join(',')).join('\n');
         
-        const csv = csvRows.map(row => row.join(',')).join('\n');
         
         // Download CSV
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

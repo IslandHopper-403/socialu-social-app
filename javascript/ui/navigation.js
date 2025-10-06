@@ -646,6 +646,13 @@ async openBusinessFromURL(businessIdOrSlug) {
     const authScreen = document.getElementById('authScreen');
     if (authScreen) {
         authScreen.style.display = 'none';
+        authScreen.classList.remove('show');
+    }
+    
+    // Ensure business profile has highest z-index
+    const businessProfile = document.getElementById('businessProfile');
+    if (businessProfile) {
+        businessProfile.style.zIndex = '10000';
     }
     
     // Ensure app is initialized

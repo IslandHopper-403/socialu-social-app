@@ -96,16 +96,24 @@ showContentSkeleton(containerId, type = 'default') {
         const isDeepLink = hash.startsWith('business/') || hash.startsWith('story/');
         
         if (isDeepLink) {
-            console.log('🔗 Deep link detected in nav init, handling immediately');
-            
-            // Set up hashchange listener (needed for navigation)
-            window.addEventListener('hashchange', () => {
+                console.log('🔗 Deep link detected in nav init, handling immediately');
+                
+                // Set initial screen to restaurant (but don't change hash yet)
+                const initialScreen = 'restaurant';
+                this.state.set('currentScreen', initialScreen);
+                this.showScreen(initialScreen, false); // false = don't update history
+                
+                console.log('🔗 Initial screen set to:', initialScreen);
+                console.log('🔗 Current hash still:', window.location.hash);
+                
+                // Set up hashchange listener (needed for navigation)
+                window.addEventListener('hashchange', () => {
+                    this.handleDeepLink();
+                });
+                
+                // Handle the deep link without overwriting the hash
                 this.handleDeepLink();
-            });
-            
-            // Handle the deep link without overwriting the hash
-            this.handleDeepLink();
-        } else {
+            }else {
             // Normal initialization for non-deep-link loads
             this.initializeNavigation();
         }

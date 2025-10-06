@@ -681,11 +681,17 @@ export class AuthManager {
     }
     
     showAuthScreen(type) {
-        const screens = {
-            login: 'loginScreen',
-            register: 'registerScreen',
-            businessAuth: 'businessAuthScreen'
-        };
+    // Don't show auth if in deep link mode
+    if (window.__DEEP_LINK_MODE__) {
+        console.log('🔗 Deep link mode active, blocking auth screen');
+        return;
+    }
+    
+    const screens = {
+        login: 'loginScreen',
+        register: 'registerScreen',
+        businessAuth: 'businessAuthScreen'
+    };
         
         // Hide all auth screens
         Object.values(screens).forEach(screenId => {

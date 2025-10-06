@@ -1541,20 +1541,29 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🎯 DOM ready, waiting for app initialization...');
     
+    // Check for deep link IMMEDIATELY
+    const hash = window.location.hash;
+    const isDeepLink = hash.startsWith('#business/');
+    
+    if (isDeepLink) {
+        console.log('🔗 Deep link detected, hiding auth screen');
+        // Hide auth screen immediately for deep links
+        const authScreen = document.getElementById('authScreen');
+        if (authScreen) {
+            authScreen.style.display = 'none';
+        }
+    }
+    
     // Just wait for app to be ready, then show login if not authenticated
     setTimeout(() => {
         if (window.CLASSIFIED && window.classifiedApp) {
             const isAuthenticated = window.classifiedApp.state.get('isAuthenticated');
             
-            // Check if there's a deep link (business profile link)
-            const hash = window.location.hash;
-            const isDeepLink = hash.startsWith('#business/');
-            
             if (!isAuthenticated && !isDeepLink) {
                 console.log('🔑 No user authenticated, showing login screen');
                 window.CLASSIFIED.showLogin();
             } else if (isDeepLink) {
-                console.log('🔗 Deep link detected, skipping login screen');
+                console.log('🔗 Deep link will be handled by navigation manager');
                 // Deep link will be handled by navigation manager
             }
         }

@@ -678,19 +678,17 @@ async openBusinessFromURL(businessIdOrSlug) {
     console.log('🔗 [DEEPLINK-3] Business ID/slug:', businessIdOrSlug);
     
     // Hide auth screens if visible (for deep links)
-    const authScreen = document.getElementById('authScreen');
-    console.log('🔗 [DEEPLINK-3] Auth screen exists?', !!authScreen);
-    console.log('🔗 [DEEPLINK-3] Auth screen visible?', authScreen?.classList.contains('show'));
-    if (authScreen) {
-        authScreen.style.display = 'none';
-        authScreen.classList.remove('show');
-    }
-    
-    // Ensure business profile has highest z-index
-    const businessProfile = document.getElementById('businessProfile');
-    if (businessProfile) {
-        businessProfile.style.zIndex = '10000';
-    }
+            const authScreen = document.getElementById('authScreen');
+            console.log('🔗 [DEEPLINK-3] Auth screen exists?', !!authScreen);
+            console.log('🔗 [DEEPLINK-3] Auth screen visible?', authScreen?.classList.contains('show'));
+            if (authScreen) {
+                authScreen.style.display = 'none';
+                authScreen.classList.remove('show');
+                authScreen.style.zIndex = '-1'; // Push auth screen behind everything
+            }
+            
+            // DON'T override business profile z-index - let CSS handle it
+            // The CSS z-index hierarchy will work correctly: business profile (375) < photo viewer (700)
     
     // Ensure app is initialized
     console.log('🔗 [DEEPLINK-4] Waiting for app ready at:', Date.now());

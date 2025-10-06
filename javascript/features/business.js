@@ -2212,7 +2212,7 @@ setTimeout(() => {
         businesses.forEach((business, index) => {
             if (index > 0) templates.push('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
             
-            templates.push(`📍 ${business.name.toUpperCase()}\n`);
+            templates.push(`📍 **${business.name.toUpperCase()}**\n`);
             templates.push(`🏷️ ${business.category} | ${business.type}`);
             templates.push(`📌 ${business.location}\n`);
             
@@ -2232,6 +2232,7 @@ setTimeout(() => {
             
             // Email
             templates.push(`\n\n📧 EMAIL TEMPLATE:`);
+            templates.push(`\nEmail: ${business.email || 'info@' + business.name.toLowerCase().replace(/\s+/g, '') + '.com'}`);
             templates.push(`\nSubject: Your ${business.name} profile on SocialU`);
             templates.push(`\n\nHi ${business.name} team,`);
             templates.push(`\n\nWe've created a profile for you on SocialU - Hoi An's social discovery app!`);

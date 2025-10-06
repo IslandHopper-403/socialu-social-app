@@ -607,8 +607,12 @@ handleOverlayBack(overlayId) {
         this.navigationHistory = [this.state.get('currentScreen') || 'restaurant'];
     }
     
-   handleDeepLink() {
+  handleDeepLink() {
+    console.log('🔗 [DEEPLINK-1] handleDeepLink() called at:', Date.now());
     const hash = window.location.hash.slice(1);
+    console.log('🔗 [DEEPLINK-1] Hash value:', hash);
+    console.log('🔗 [DEEPLINK-1] Deep link mode flag:', window.__DEEP_LINK_MODE__);
+    
     const validScreens = ['restaurant', 'social', 'activity'];
     
     // Check for story deep link format: #story/slug/businessId
@@ -624,10 +628,16 @@ handleOverlayBack(overlayId) {
     
     // Check for business profile deep link format: #business/businessId
     if (hash.startsWith('business/')) {
+        console.log('🔗 [DEEPLINK-2] Business deep link detected!');
         const businessId = hash.split('/')[1];
+        console.log('🔗 [DEEPLINK-2] Business ID/slug:', businessId);
+        
         if (businessId) {
+            console.log('🔗 [DEEPLINK-2] Calling openBusinessFromURL at:', Date.now());
             this.openBusinessFromURL(businessId);
             return;
+        } else {
+            console.error('🔗 [DEEPLINK-2] No business ID found in hash');
         }
     }
     
@@ -640,10 +650,13 @@ handleOverlayBack(overlayId) {
  * Open business profile from URL parameter
  */
 async openBusinessFromURL(businessIdOrSlug) {
-    console.log('🔗 Opening business from URL:', businessIdOrSlug);
+    console.log('🔗 [DEEPLINK-3] openBusinessFromURL() called at:', Date.now());
+    console.log('🔗 [DEEPLINK-3] Business ID/slug:', businessIdOrSlug);
     
     // Hide auth screens if visible (for deep links)
     const authScreen = document.getElementById('authScreen');
+    console.log('🔗 [DEEPLINK-3] Auth screen exists?', !!authScreen);
+    console.log('🔗 [DEEPLINK-3] Auth screen visible?', authScreen?.classList.contains('show'));
     if (authScreen) {
         authScreen.style.display = 'none';
         authScreen.classList.remove('show');
@@ -656,18 +669,25 @@ async openBusinessFromURL(businessIdOrSlug) {
     }
     
     // Ensure app is initialized
+    console.log('🔗 [DEEPLINK-4] Waiting for app ready at:', Date.now());
     await this.waitForAppReady();
+    console.log('🔗 [DEEPLINK-4] App ready at:', Date.now());
     
     // Navigate to restaurant screen first
+    console.log('🔗 [DEEPLINK-4] Showing restaurant screen');
     this.showScreen('restaurant', false);
     
     // Small delay to ensure feed is loaded
     setTimeout(() => {
+        console.log('🔗 [DEEPLINK-5] 500ms delay elapsed, opening business at:', Date.now());
+        
         // Use business manager to open profile (handles both ID and slug)
         const businessManager = window.classifiedApp?.businessManager || window.classifiedApp?.managers?.business;
         
+        console.log('🔗 [DEEPLINK-5] BusinessManager exists?', !!businessManager);
+        
         if (businessManager) {
-            console.log('✅ BusinessManager found, opening profile...');
+            console.log('🔗 [DEEPLINK-5] Calling openBusinessProfileBySlugOrId');
             businessManager.openBusinessProfileBySlugOrId(businessIdOrSlug);
         } else {
             console.error('❌ BusinessManager not available');

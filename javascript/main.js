@@ -94,26 +94,33 @@ class ClassifiedApp {
      */
     async init() {
         try {
+            console.log('🔗 [INIT-3] ClassifiedApp.init() started at:', Date.now());
+            console.log('🔗 [INIT-3] Deep link mode active?', window.__DEEP_LINK_MODE__);
+            console.log('🔗 [INIT-3] Current hash:', window.location.hash);
+            
             // Step 1: Initialize Firebase
             console.log('🔥 Initializing Firebase...');
             const firebaseServices = await this.firebaseConfig.initialize();
             this.state.set('firebaseReady', true);
             
             // Step 2: Create manager instances
-            console.log('📦 Creating manager instances...');
+            console.log('🔗 [INIT-4] Creating manager instances at:', Date.now());
             await this.createManagers(firebaseServices);
+            console.log('🔗 [INIT-4] Managers created at:', Date.now());
             
             // Step 3: Set up cross-manager references
             console.log('🔗 Setting up manager references...');
             this.setupManagerReferences();
             
-            // Step 4: Initialize managers
-            console.log('🚀 Initializing managers...');
+        // Step 4: Initialize managers
+            console.log('🔗 [INIT-5] Initializing managers at:', Date.now());
             await this.initializeManagers();
+            console.log('🔗 [INIT-5] Managers initialized at:', Date.now());
             
             // Step 5: Set up global API for backward compatibility
-            console.log('🌐 Setting up global API...');
+            console.log('🔗 [INIT-6] Setting up global API at:', Date.now());
             this.setupGlobalAPI();
+            console.log('🔗 [INIT-6] Global API ready at:', Date.now());
             
             // Step 6: Check for existing auth state
             // Commented out this.setupInitialAuthState();
@@ -225,13 +232,21 @@ loadDemoContent() {
  * Initialize all managers
  */
 async initializeManagers() {
+    console.log('🔗 [INIT-7] Starting manager initialization loop at:', Date.now());
+    
     // Initialize each manager in sequence
     for (const [name, manager] of Object.entries(this.managers)) {
         if (manager.init) {
+            console.log(`🔗 [INIT-7] Initializing ${name} at:`, Date.now());
             await manager.init();
-            console.log(`✓ ${name} manager initialized`);
+            console.log(`✓ [INIT-7] ${name} manager initialized at:`, Date.now());
         }
     }
+    
+    console.log('🔗 [INIT-8] All managers initialized, calling handleDeepLink at:', Date.now());
+    console.log('🔗 [INIT-8] Navigation manager exists?', !!this.managers.navigation);
+    console.log('🔗 [INIT-8] Deep link mode still active?', window.__DEEP_LINK_MODE__);
+    console.log('🔗 [INIT-8] Current hash:', window.location.hash);
     
     // ADDED: Handle deep links after all managers initialized
     if (this.managers.navigation) {

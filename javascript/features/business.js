@@ -2019,7 +2019,9 @@ export class BusinessManager {
             
             // DEBUG: Log what data exists (but don't skip if missing)
             console.log(`📱 Business: ${b.name}`);
-            console.log(`   Email: ${b.email || '⚠️ MISSING'}`);
+            console.log(`   Contact Email: ${b.email || '⚠️ NONE'}`);
+            console.log(`   Auth Email: ${b.authEmail || 'N/A'}`);
+            console.log(`   Has Real Email: ${b.hasRealEmail ? 'YES ✅' : 'NO ❌'}`);
             console.log(`   Phone: ${b.phone || '⚠️ NONE'}`);
             console.log(`   ZaloID: ${b.zaloId || '⚠️ NONE'}`);
             console.log(`---`);
@@ -2113,11 +2115,26 @@ exportBusinessCSV(businesses) {
             'PreferredChannel'    // Column P - Communication preference
         ],
       ...businesses.map(b => {
-            // Use real email or leave empty (businesses without email will have blank cell)
-            const email = b.email || '';
+            // ONLY use real contact emails (filter out fake auth emails)
+            const isFakeEmail = !b.email || 
+                               b.email.includes('@business.com') ||     // Our fake domain
+                               b.email.includes('noemail') || 
+                               b.email === '';
+            
+            // Use the hasRealEmail flag if available, otherwise check email format
+            const email = (b.hasRealEmail === false) ? '' : 
+                         (isFakeEmail ? '' : b.email);
+            
+            // Filter out fake/test phone numbers
+            const isFakePhone = b.phone && (
+                b.phone.includes('123 4567') ||     // Common test pattern
+                b.phone === '+84 90 123 4567' ||    // Exact fake number
+                b.phone === '+84 905 123 456' ||    // Another test pattern
+                b.phone.match(/^\+84\s?90[0-9]\s?123\s?456[0-9]$/)  // Pattern: +84 90X 123 456X
+            );
             
             // Use ONLY real phone number or leave empty
-            const phoneNumber = b.phone || '';
+            const phoneNumber = (b.phone && !isFakePhone) ? b.phone : '';
             
             // WhatsApp uses international format without spaces (only if phone exists)
             const whatsAppNumber = phoneNumber ? phoneNumber.replace(/\s+/g, '') : '';
@@ -2336,5 +2353,195 @@ setTimeout(() => {
         
         return output;
     }
+
+    /**
+     * Generate social media templates
+     */
+    generateSocialTemplates(businesses) {
+        const templates = [];
+        
+        templates.push('=== SOCIAL MEDIA OUTREACH TEMPLATES ===\n');
+        templates.push('Copy & paste for Instagram, Facebook, WhatsApp, Email\n');
+        templates.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n');
+        
+        businesses.forEach((business, index) => {
+            if (index > 0) templates.push('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+            
+            templates.push(`📍 **${business.name.toUpperCase()}**\n`);
+            templates.push(`🏷️ ${business.category} | ${business.type}`);
+            templates.push(`📌 ${business.location}\n`);
+            
+            // Instagram/Facebook
+            templates.push(`\n📸 INSTAGRAM/FACEBOOK:`);
+            templates.push(`\n✨ Discover ${business.name} on SocialU! ✨`);
+            templates.push(`\n\n${business.description.substring(0, 150)}...`);
+            templates.push(`\n\n📍 ${business.location}`);
+            templates.push(`\n🔗 ${business.url}`);
+            templates.push(`\n\n#HoiAn #Vietnam #${business.type.replace(' ', '')}`);
+            
+            // WhatsApp
+            templates.push(`\n\n💬 WHATSAPP:`);
+            templates.push(`\nHi! 👋 Check out ${business.name} on SocialU:`);
+            templates.push(`\n${business.url}`);
+            templates.push(`\n\nPerfect for ${business.category.toLowerCase()}! 🌟`);
+            
+            // Email
+            templates.push(`\n\n📧 EMAIL TEMPLATE:`);
+            templates.push(`\nEmail: ${business.email || 'info@' + business.name.toLowerCase().replace(/\s+/g, '') + '.com'}`);
+            templates.push(`\nSubject: Your ${business.name} profile on SocialU`);
+            templates.push(`\n\nHi ${business.name} team,`);
+            templates.push(`\n\nWe've created a profile for you on SocialU - Hoi An's social discovery app!`);
+            templates.push(`\n\nView your profile: ${business.url}`);
+            templates.push(`\n\nWould you like to claim and customize it?`);
+            templates.push(`\n\nBest regards,`);
+            templates.push(`\nSocialU Team`);
+        });
+        
+        const output = templates.join('\n');
+        
+        // Copy to clipboard
+        navigator.clipboard.writeText(output).then(() => {
+            console.log('✅ Social templates copied!');
+            console.log(output);
+            alert(`✅ Social Templates Copied!\n\n${businesses.length} business templates ready to paste`);
+        }).catch(() => {
+            console.log(output);
+            alert('Templates generated! Check console to copy.');
+        });
+        
+        return output;
+    }
+    
+    /**
+     * ADMIN: Mass upload businesses from array
+     * Use for bulk business creation with temp accounts
+     * @param {Array} businessesData - Array of business objects
+     * @example
+     * [
+     *   { name: "Red Dragon", phone: "+84 905 111 222", email: "info@red.com", type: "Restaurant" },
+     *   { name: "Mystery Cafe", phone: "+84 905 333 444", email: "", type: "Cafe" },  // No email
+     * ]
+     */
+    async massUploadBusinesses(businessesData) {
+        if (!Array.isArray(businessesData) || businessesData.length === 0) {
+            alert('❌ Please provide an array of business data');
+            return;
+        }
+        
+        console.log(`📤 Starting mass upload of ${businessesData.length} businesses...`);
+        
+        const results = {
+            success: [],
+            failed: []
+        };
+        
+        for (let i = 0; i < businessesData.length; i++) {
+            const business = businessesData[i];
+            
+            try {
+                // Validate required fields
+                if (!business.name || !business.phone) {
+                    throw new Error('Missing required fields: name or phone');
+                }
+                
+                console.log(`\n📝 [${i + 1}/${businessesData.length}] Processing: ${business.name}`);
+                
+                // Get auth manager reference
+                const authManager = window.classifiedApp?.managers?.auth;
+                if (!authManager) {
+                    throw new Error('Auth manager not available');
+                }
+                
+                // Call businessSignup with the data
+                const result = await authManager.businessSignup({
+                    name: business.name,
+                    email: business.email || '',  // May be empty
+                    phone: business.phone,
+                    type: business.type || 'Business',
+                    location: business.location || 'Hoi An, Vietnam'
+                });
+                
+                results.success.push({
+                    name: business.name,
+                    tempPassword: result.tempPassword,
+                    authEmail: result.authEmail,
+                    contactEmail: business.email || '',
+                    phone: business.phone,
+                    hasRealEmail: result.hasRealEmail
+                });
+                
+                console.log(`✅ Uploaded: ${business.name}`);
+                
+                // Small delay to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+            } catch (error) {
+                console.error(`❌ Failed: ${business.name}`, error);
+                results.failed.push({
+                    name: business.name,
+                    error: error.message
+                });
+            }
+        }
+        
+        console.log(`\n📊 Upload Summary:`);
+        console.log(`   ✅ Success: ${results.success.length}`);
+        console.log(`   ❌ Failed: ${results.failed.length}`);
+        
+        // Download credentials CSV for emailing to businesses
+        if (results.success.length > 0) {
+            this.downloadBusinessCredentials(results.success);
+        }
+        
+        // Show results summary
+        alert(`📊 Mass Upload Complete!\n\n✅ Success: ${results.success.length}\n❌ Failed: ${results.failed.length}\n\nCredentials CSV has been downloaded.`);
+        
+        return results;
+    }
+    
+    /**
+     * Download CSV of business credentials (for emailing to businesses)
+     */
+    downloadBusinessCredentials(businesses) {
+        console.log('📥 Generating credentials CSV...');
+        
+        const csvRows = [
+            [
+                'BusinessName',
+                'LoginEmail',
+                'TempPassword',
+                'ContactEmail',
+                'Phone',
+                'ClaimURL',
+                'HasRealEmail'
+            ],
+            ...businesses.map(b => [
+                `"${b.name}"`,
+                `"${b.authEmail}"`,
+                `"${b.tempPassword}"`,
+                `"${b.contactEmail}"`,
+                `"${b.phone}"`,
+                `"https://www.socialu.app/#business-login"`,
+                `"${b.hasRealEmail ? 'Yes' : 'No'}"`
+            ])
+        ];
+        
+        const csv = csvRows.map(row => row.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        const date = new Date().toISOString().split('T')[0];
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', `business-credentials-${date}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log(`✅ Credentials CSV downloaded: ${businesses.length} businesses`);
+    }
+    
+}
     
 }

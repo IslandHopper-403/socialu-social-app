@@ -642,6 +642,12 @@ handleOverlayBack(overlayId) {
 async openBusinessFromURL(businessIdOrSlug) {
     console.log('🔗 Opening business from URL:', businessIdOrSlug);
     
+    // Hide auth screens if visible (for deep links)
+    const authScreen = document.getElementById('authScreen');
+    if (authScreen) {
+        authScreen.style.display = 'none';
+    }
+    
     // Ensure app is initialized
     await this.waitForAppReady();
     
@@ -651,8 +657,13 @@ async openBusinessFromURL(businessIdOrSlug) {
     // Small delay to ensure feed is loaded
     setTimeout(() => {
         // Use business manager to open profile (handles both ID and slug)
-        if (window.classifiedApp?.businessManager) {
-            window.classifiedApp.businessManager.openBusinessProfileBySlugOrId(businessIdOrSlug);
+        const businessManager = window.classifiedApp?.businessManager || window.classifiedApp?.managers?.business;
+        
+        if (businessManager) {
+            console.log('✅ BusinessManager found, opening profile...');
+            businessManager.openBusinessProfileBySlugOrId(businessIdOrSlug);
+        } else {
+            console.error('❌ BusinessManager not available');
         }
     }, 500);
 }

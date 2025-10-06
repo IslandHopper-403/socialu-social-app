@@ -1555,7 +1555,7 @@
         console.log('🔗 [INIT-0] Deep link mode activated:', hash);
     }
     
-     document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
         console.log('🔗 [INIT-1] DOMContentLoaded fired at:', Date.now());
         console.log('🔗 [INIT-1] Deep link mode?', window.__DEEP_LINK_MODE__);
         
@@ -1570,8 +1570,6 @@
         }
         
         // Just wait for app to be ready, then show login if not authenticated
-        setTimeout(() => {
-            // Just wait for app to be ready, then show login if not authenticated
         setTimeout(() => {
             console.log('🔗 [INIT-2] Auth check timeout fired at:', Date.now());
             console.log('🔗 [INIT-2] CLASSIFIED exists?', !!window.CLASSIFIED);

@@ -697,6 +697,36 @@ async openBusinessFromURL(businessIdOrSlug) {
     await this.waitForAppReady();
     console.log('🔗 [DEEPLINK-4] App ready at:', Date.now());
     
+    // CRITICAL: If no user authenticated, enter guest mode automatically for deep links
+    const isAuthenticated = this.state.get('isAuthenticated');
+    if (!isAuthenticated) {
+        console.log('🔗 [DEEPLINK-4] No user authenticated, entering guest mode');
+        
+        // Enable guest mode
+        this.state.set('isGuestMode', true);
+        this.state.set('isAuthenticated', true); // Guest is considered "authenticated" for UI purposes
+        
+        // Update UI to show guest banner
+        const guestBanner = document.getElementById('guestBanner');
+        if (guestBanner) {
+            guestBanner.style.display = 'flex';
+        }
+        
+        // Show bottom nav
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (bottomNav) {
+            bottomNav.style.display = 'flex';
+        }
+        
+        // Update main screens
+        const mainScreens = document.querySelector('.main-screens');
+        if (mainScreens) {
+            mainScreens.classList.add('authenticated');
+        }
+        
+        console.log('🔗 [DEEPLINK-4] Guest mode activated');
+    }
+    
     // Navigate to restaurant screen first
     console.log('🔗 [DEEPLINK-4] Showing restaurant screen');
     this.showScreen('restaurant', false);

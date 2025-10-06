@@ -243,15 +243,14 @@ async initializeManagers() {
         }
     }
     
-    console.log('🔗 [INIT-8] All managers initialized, calling handleDeepLink at:', Date.now());
+    console.log('🔗 [INIT-8] All managers initialized at:', Date.now());
     console.log('🔗 [INIT-8] Navigation manager exists?', !!this.managers.navigation);
     console.log('🔗 [INIT-8] Deep link mode still active?', window.__DEEP_LINK_MODE__);
     console.log('🔗 [INIT-8] Current hash:', window.location.hash);
     
-    // ADDED: Handle deep links after all managers initialized
-    if (this.managers.navigation) {
-        this.managers.navigation.handleDeepLink();
-    }
+    // REMOVED: Don't call handleDeepLink() here - navigation manager already handled it in init()
+    // Deep links are now processed during navigation.init() to prevent double-processing
+    console.log('🔗 [INIT-8] Skipping handleDeepLink - already processed in navigation.init()');
 }
     
     /**

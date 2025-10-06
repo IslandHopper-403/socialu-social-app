@@ -1987,109 +1987,120 @@ export class BusinessManager {
         return `${window.location.origin}${window.location.pathname}#business/${businessId}`;
     }
     
-    /**
-     * Generate business URLs in multiple formats
-     * @param {string} format - 'csv', 'qr', 'social', or 'console'
-     */
-     async generateAllBusinessURLs(format = 'csv', category = 'all') {
-        console.log(`📋 Generating business URLs (${format} format, ${category})...`);
+/**
+ * Generate business URLs in multiple formats - REAL DATA ONLY
+ * @param {string} format - 'csv', 'qr', 'social', or 'console'
+ * @param {string} category - Category filter ('all', 'restaurant', 'activity')
+ */
+ async generateAllBusinessURLs(format = 'csv', category = 'all') {
+    console.log(`📋 Generating business URLs (${format} format, ${category})...`);
+    console.log('⚠️ REAL DATA ONLY - No mock data, no placeholders');
+    
+    // Collect ONLY real businesses from Firebase
+    let businesses = [];
+    
+    try {
+        const snapshot = await getDocs(collection(this.db, 'businesses'));
         
-        // Collect all businesses
-        let businesses = [];
-        
-        // From mock data
-        const restaurants = this.mockData?.getRestaurants?.() || [];
-        const activities = this.mockData?.getActivities?.() || [];
-        
-        restaurants.forEach(r => {
-            const slug = this.createBusinessSlug(r);
-            businesses.push({
-                name: r.name,
-                type: 'Restaurant',
-                category: r.cuisine || 'Restaurant',
-                url: `${window.location.origin}${window.location.pathname}#business/${slug}`,
-                shareUrl: `${window.location.origin}${window.location.pathname}#business/${slug}`,
-                location: r.location || 'Hoi An, Vietnam',
-                description: r.description || '',
-                id: r.id
-            });
-        });
-        
-        activities.forEach(a => {
-            const slug = this.createBusinessSlug(a);
-            businesses.push({
-                name: a.name,
-                type: 'Activity',
-                category: a.type || 'Activity',
-                url: `${window.location.origin}${window.location.pathname}#business/${slug}`,
-                shareUrl: `${window.location.origin}${window.location.pathname}#business/${slug}`,
-                location: a.location || 'Hoi An, Vietnam',
-                description: a.description || '',
-                id: a.id
-            });
-        });
-        
-        // From Firebase
-        try {
-            const snapshot = await getDocs(collection(this.db, 'businesses'));
-            snapshot.forEach(doc => {
-                const b = { id: doc.id, ...doc.data() };
-                const slug = this.createBusinessSlug(b);
-                businesses.push({
-                    name: b.name || 'Unknown',
-                    type: b.type || 'Business',
-                    category: b.category || b.cuisine || b.type || 'Other',
-                    url: `${window.location.origin}${window.location.pathname}#business/${slug}`,
-                    shareUrl: `${window.location.origin}${window.location.pathname}#business/${slug}`,
-                    location: b.location || b.address || 'Hoi An, Vietnam',
-                    description: b.description || '',
-                    id: doc.id
-                });
-            });
-        } catch (error) {
-            console.log('No Firebase businesses found');
+        if (snapshot.empty) {
+            console.warn('⚠️ No businesses found in Firebase!');
+            alert('❌ No businesses found in database.\n\nBusinesses must sign up first before generating marketing materials.');
+            return;
         }
         
-        // Filter by category if specified
-        if (category !== 'all') {
-            const categoryLower = category.toLowerCase();
-            businesses = businesses.filter(b => {
-                const type = b.type.toLowerCase();
-                const cat = b.category.toLowerCase();
-                return type.includes(categoryLower) || cat.includes(categoryLower);
-            });
+        snapshot.forEach(doc => {
+            const b = doc.data();
             
-            console.log(`📊 Filtered to ${businesses.length} ${category} businesses`);
+            // CRITICAL: Only include businesses with real email addresses
+            if (!b.email) {
+                console.warn(`⚠️ Skipping "${b.name || doc.id}" - missing email address`);
+                return; // Skip this business
+            }
+            
+            // CRITICAL: Only include businesses with names
+            if (!b.name) {
+                console.warn(`⚠️ Skipping business ${doc.id} - missing business name`);
+                return; // Skip this business
+            }
+            
+            const slug = this.createBusinessSlug(b);
+            
+            businesses.push({
+                name: b.name,
+                email: b.email,                                    // Real email from signup
+                phone: b.phone || '',                              // Real phone or empty
+                zaloId: b.zaloId || b.phone || '',                // Real Zalo ID or phone
+                type: b.type || 'Business',
+                category: b.category || b.type || 'General',
+                url: `${window.location.origin}${window.location.pathname}#business/${slug}`,
+                shareUrl: `${window.location.origin}${window.location.pathname}#business/${slug}`,
+                location: b.location || b.address || 'Hoi An, Vietnam',
+                description: b.description || '',
+                id: doc.id
+            });
+        });
+        
+        console.log(`✅ Found ${businesses.length} valid businesses with complete data`);
+        
+        if (businesses.length === 0) {
+            alert('❌ No valid businesses found.\n\nAll businesses must have:\n• Business name\n• Email address\n\nPlease ensure businesses complete their profiles.');
+            return;
         }
         
-        // Route to correct format
-        switch(format) {
-            case 'csv':
-                return this.exportBusinessCSV(businesses);
-            case 'qr':
-                return this.generateQRCodes(businesses);
-            case 'social':
-                return this.generateSocialTemplates(businesses);
-            default:
-                return this.exportBusinessCSV(businesses);
+    } catch (error) {
+        console.error('❌ Failed to fetch businesses from Firebase:', error);
+        alert('Failed to fetch businesses from database: ' + error.message);
+        return;
+    }
+    
+    // Filter by category if specified
+    if (category !== 'all') {
+        const categoryLower = category.toLowerCase();
+        const beforeFilter = businesses.length;
+        
+        businesses = businesses.filter(b => {
+            const type = b.type.toLowerCase();
+            const cat = b.category.toLowerCase();
+            return type.includes(categoryLower) || cat.includes(categoryLower);
+        });
+        
+        console.log(`📊 Filtered from ${beforeFilter} to ${businesses.length} ${category} businesses`);
+        
+        if (businesses.length === 0) {
+            alert(`❌ No businesses found in category: ${category}\n\nTry "all" to see all businesses.`);
+            return;
         }
     }
     
-   /**
+    // Route to correct format
+    switch(format) {
+        case 'csv':
+            return this.exportBusinessCSV(businesses);
+        case 'qr':
+            return this.generateQRCodes(businesses);
+        case 'social':
+            return this.generateSocialTemplates(businesses);
+        default:
+            return this.exportBusinessCSV(businesses);
+    }
+}
+    
+/**
  * Export businesses as CSV optimized for multi-channel marketing
+ * REAL DATA ONLY - No placeholders or generated content
  * Supports: YAMM (Email), WhatsApp, SMS, Zalo
  */
 exportBusinessCSV(businesses) {
     // Multi-channel marketing optimized columns
     const csvRows = [
         [
-            'Email',              // Column A - YAMM email campaigns
-            'PhoneNumber',        // Column B - SMS/WhatsApp/Zalo
-            'WhatsAppNumber',     // Column C - WhatsApp (international format)
-            'ZaloID',             // Column D - Zalo messaging
+            'Email',              // Column A - YAMM email campaigns (REQUIRED)
+            'PhoneNumber',        // Column B - SMS/WhatsApp/Zalo (optional)
+            'WhatsAppNumber',     // Column C - WhatsApp international format (optional)
+            'ZaloID',             // Column D - Zalo messaging (optional)
             'BusinessName',       // Column E - {{BusinessName}} merge tag
             'ProfileURL',         // Column F - {{ProfileURL}} merge tag
-            'ShortURL',           // Column G - Short link for SMS character limits
+            'ShortURL',           // Column G - Short link for SMS
             'ContactName',        // Column H - Personalization
             'Category',           // Column I - Segmentation
             'Type',               // Column J - Segmentation
@@ -2101,43 +2112,47 @@ exportBusinessCSV(businesses) {
             'PreferredChannel'    // Column P - Communication preference
         ],
         ...businesses.map(b => {
-            // Generate contact email from business name or use placeholder
-            const emailSlug = (b.id || b.name.toLowerCase()
-                .replace(/[^a-z0-9]/g, '')
-                .substring(0, 30));
-            const email = b.email || `${emailSlug}@example.com`;
+            // Use ONLY real email (already validated - businesses without email were filtered out)
+            const email = b.email;
             
-            // Generate Vietnamese phone number (placeholder format)
-            // Real data should come from Firebase or manual input
-            const phoneNumber = b.phone || '+84 90 123 4567';
+            // Use ONLY real phone number or leave empty
+            const phoneNumber = b.phone || '';
             
-            // WhatsApp uses international format without spaces
-            const whatsAppNumber = (b.phone || phoneNumber).replace(/\s+/g, '');
+            // WhatsApp uses international format without spaces (only if phone exists)
+            const whatsAppNumber = phoneNumber ? phoneNumber.replace(/\s+/g, '') : '';
             
-            // Zalo ID (often same as phone number in Vietnam)
-            const zaloID = b.zaloId || whatsAppNumber;
+            // Zalo ID - use real data or leave empty
+            const zaloID = b.zaloId || phoneNumber || '';
             
-            // Extract contact name from business name (remove "Restaurant", "Hotel", etc.)
+            // Extract contact name from business name (remove suffixes)
             const contactName = b.name
-                .replace(/\s+(Restaurant|Hotel|Cafe|Bar|Spa|Shop|Store|Gallery|Studio|Team).*$/i, '')
-                .trim();
+                .replace(/\s+(Restaurant|Hotel|Café|Cafe|Bar|Spa|Shop|Store|Gallery|Studio|Team|&.*$).*$/i, '')
+                .trim() || b.name;  // Fallback to full name
             
-            // Create short URL for SMS (you can integrate bit.ly API later)
-            const shortURL = b.url.replace('https://www.socialu.app/#business/', 'socialu.app/b/');
+            // Create short URL for SMS/WhatsApp
+            const shortURL = b.url.replace(`${window.location.origin}${window.location.pathname}#business/`, 'socialu.app/b/');
             
-            // Determine preferred channel based on business type
-            let preferredChannel = 'Email';
-            if (b.type.toLowerCase().includes('restaurant') || b.type.toLowerCase().includes('cafe')) {
-                preferredChannel = 'WhatsApp'; // Restaurants prefer instant messaging
-            } else if (b.type.toLowerCase().includes('hotel') || b.type.toLowerCase().includes('resort')) {
-                preferredChannel = 'Email'; // Hotels prefer formal communication
+            // Determine preferred channel based on business type and available contact methods
+            let preferredChannel = 'Email'; // Default
+            if (phoneNumber) {
+                // If has phone, prefer WhatsApp for restaurants/cafes
+                if (b.type.toLowerCase().includes('restaurant') || 
+                    b.type.toLowerCase().includes('café') || 
+                    b.type.toLowerCase().includes('cafe')) {
+                    preferredChannel = 'WhatsApp';
+                }
+            }
+            // Hotels/Resorts always prefer email (formal)
+            if (b.type.toLowerCase().includes('hotel') || 
+                b.type.toLowerCase().includes('resort')) {
+                preferredChannel = 'Email';
             }
             
             return [
-                `"${email}"`,                                    // Email
-                `"${phoneNumber}"`,                              // PhoneNumber
-                `"${whatsAppNumber}"`,                           // WhatsAppNumber
-                `"${zaloID}"`,                                   // ZaloID
+                `"${email}"`,                                    // Email (real)
+                `"${phoneNumber}"`,                              // PhoneNumber (real or empty)
+                `"${whatsAppNumber}"`,                           // WhatsAppNumber (real or empty)
+                `"${zaloID}"`,                                   // ZaloID (real or empty)
                 `"${b.name}"`,                                   // BusinessName
                 `"${b.url}"`,                                    // ProfileURL
                 `"${shortURL}"`,                                 // ShortURL
@@ -2145,7 +2160,7 @@ exportBusinessCSV(businesses) {
                 `"${b.category}"`,                               // Category
                 `"${b.type}"`,                                   // Type
                 `"${b.location}"`,                               // Location
-                `"${(b.description || '').substring(0, 150).replace(/"/g, '""')}"`, // Description (escaped)
+                `"${(b.description || '').substring(0, 150).replace(/"/g, '""')}"`, // Description (CSV-escaped)
                 `"${b.id}"`,                                     // BusinessId
                 `"${new Date().toISOString().split('T')[0]}"`,   // JoinDate
                 `"Active"`,                                      // Status

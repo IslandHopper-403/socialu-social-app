@@ -714,6 +714,7 @@ async initializeManagers() {
             
             // Daily Stories methods
             openStoryViewer: (feedType, index) => this.managers.feed.openStoryViewer(feedType, index),
+            openStoryByBusinessId: (businessId) => this.managers.feed.openStoryByBusinessId(businessId),
             closeStoryViewer: () => this.managers.feed.closeStoryViewer(),
             nextStory: () => this.managers.feed.nextStory(),
             previousStory: () => this.managers.feed.previousStory(),

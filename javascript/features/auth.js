@@ -509,7 +509,7 @@ async businessSignup(businessData) {
         console.log('👤 Enabling guest mode');
         this.state.update({
             isGuestMode: true,
-            isAuthenticated: false
+            isAuthenticated: true  // Changed: Guest mode IS authenticated for UI purposes
         });
         
         // Hide auth screens

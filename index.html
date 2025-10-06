@@ -1546,12 +1546,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.CLASSIFIED && window.classifiedApp) {
             const isAuthenticated = window.classifiedApp.state.get('isAuthenticated');
             
-            if (!isAuthenticated) {
+            // Check if there's a deep link (business profile link)
+            const hash = window.location.hash;
+            const isDeepLink = hash.startsWith('#business/');
+            
+            if (!isAuthenticated && !isDeepLink) {
                 console.log('🔑 No user authenticated, showing login screen');
                 window.CLASSIFIED.showLogin();
+            } else if (isDeepLink) {
+                console.log('🔗 Deep link detected, skipping login screen');
+                // Deep link will be handled by navigation manager
             }
         }
-    }, 1000); // Shorter wait, just for app readiness
+    }, 1000);
 });
 </script>
     

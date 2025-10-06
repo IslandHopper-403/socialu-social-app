@@ -2093,8 +2093,8 @@ export class BusinessManager {
                     `"${slug}"`,
                     `"${b.location}"`,
                     `"${b.id}"`
-                 ];
-            ])
+               ];
+            })
         ];
         
         const csv = csvRows.map(row => row.join(',')).join('\n');

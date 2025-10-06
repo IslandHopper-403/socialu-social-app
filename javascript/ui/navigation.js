@@ -607,12 +607,20 @@ handleOverlayBack(overlayId) {
         this.navigationHistory = [this.state.get('currentScreen') || 'restaurant'];
     }
     
-    /**
-     * Handle deep links
-     */
    handleDeepLink() {
     const hash = window.location.hash.slice(1);
     const validScreens = ['restaurant', 'social', 'activity'];
+    
+    // Check for story deep link format: #story/slug/businessId
+    if (hash.startsWith('story/')) {
+        const parts = hash.split('/');
+        const slug = parts[1];
+        const businessId = parts[2];
+        if (slug && businessId) {
+            this.openStoryFromURL(slug, businessId);
+            return;
+        }
+    }
     
     // Check for business profile deep link format: #business/businessId
     if (hash.startsWith('business/')) {
@@ -645,6 +653,29 @@ async openBusinessFromURL(businessIdOrSlug) {
         // Use business manager to open profile (handles both ID and slug)
         if (window.classifiedApp?.businessManager) {
             window.classifiedApp.businessManager.openBusinessProfileBySlugOrId(businessIdOrSlug);
+        }
+    }, 500);
+}
+
+/**
+ * Open story viewer from URL parameter
+ */
+async openStoryFromURL(slug, businessId) {
+    console.log('📖 Opening story from URL:', { slug, businessId });
+    
+    // Ensure app is initialized
+    await this.waitForAppReady();
+    
+    // Navigate to restaurant screen first
+    this.showScreen('restaurant', false);
+    
+    // Small delay to ensure feed is loaded
+    setTimeout(() => {
+        // Find and open the story
+        if (window.CLASSIFIED?.openStoryByBusinessId) {
+            window.CLASSIFIED.openStoryByBusinessId(businessId);
+        } else {
+            console.error('❌ Story viewer not available');
         }
     }, 500);
 }

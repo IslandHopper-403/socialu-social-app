@@ -2079,15 +2079,21 @@ export class BusinessManager {
      * Export businesses as CSV
      */
     exportBusinessCSV(businesses) {
-        const csvRows = [
-            ['Business Name', 'Type', 'Category', 'Profile URL', 'Location', 'ID'],
-            ...businesses.map(b => [
-                `"${b.name}"`,
-                `"${b.type}"`,
-                `"${b.category}"`,
-                `"${b.url}"`,
-                `"${b.location}"`,
-                `"${b.id}"`
+       const csvRows = [
+            ['Business Name', 'Type', 'Category', 'Profile URL', 'Story URL', 'Slug', 'Location', 'ID'],
+            ...businesses.map(b => {
+                const slug = this.generateSlug(b.name);
+                const storyUrl = this.generateStoryURL(b.id, slug);
+                return [
+                    `"${b.name}"`,
+                    `"${b.type}"`,
+                    `"${b.category}"`,
+                    `"${b.url}"`,
+                    `"${storyUrl}"`,
+                    `"${slug}"`,
+                    `"${b.location}"`,
+                    `"${b.id}"`
+                 ];
             ])
         ];
         
@@ -2198,6 +2204,26 @@ setTimeout(() => {
     console.log(`Generated ${businesses.length} QR codes`);
     alert(`QR Codes Generated!\n\n${businesses.length} codes ready.\n\nRight-click any code and "Save image as..." to download.`);
 }
+
+    /**
+     * Generate URL-friendly slug from business name
+     */
+    generateSlug(businessName) {
+        return businessName
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+            .trim()
+            .replace(/\s+/g, '-') // Replace spaces with hyphens
+            .replace(/-+/g, '-'); // Replace multiple hyphens with single
+    }
+    
+    /**
+     * Generate story-specific deep link URL
+     */
+    generateStoryURL(businessId, slug) {
+        return `${window.location.origin}${window.location.pathname}#story/${slug}/${businessId}`;
+    }
+
     
     /**
      * Generate social media templates
@@ -2211,6 +2237,10 @@ setTimeout(() => {
         
         businesses.forEach((business, index) => {
             if (index > 0) templates.push('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
+            // Generate slug and story URL for this business
+            const slug = this.generateSlug(business.name);
+            const storyUrl = this.generateStoryURL(business.id, slug);
             
             templates.push(`📍 ${business.name.toUpperCase()}\n`);
             templates.push(`🏷️ ${business.category} | ${business.type}`);
@@ -2222,6 +2252,8 @@ setTimeout(() => {
             templates.push(`\n\n${business.description.substring(0, 150)}...`);
             templates.push(`\n\n📍 ${business.location}`);
             templates.push(`\n🔗 ${business.url}`);
+            templates.push(`\n📖 Story: ${storyUrl}`);
+            templates.push(`\n\n📌 Slug: ${slug}`);
             templates.push(`\n\n#HoiAn #Vietnam #${business.type.replace(' ', '')}`);
             
             // WhatsApp
@@ -2229,6 +2261,11 @@ setTimeout(() => {
             templates.push(`\nHi! 👋 Check out ${business.name} on SocialU:`);
             templates.push(`\n${business.url}`);
             templates.push(`\n\nPerfect for ${business.category.toLowerCase()}! 🌟`);
+
+            // WhatsApp (Story Slug)
+            templates.push(`\n\n💬 WHATSAPP:`);
+            templates.push(`\nHi! 👋 Check out ${business.name} on SocialU:`);
+            templates.push(`\n📖 Story: ${storyUrl}`);
             
             // Email
             templates.push(`\n\n📧 EMAIL TEMPLATE:`);
@@ -2237,6 +2274,20 @@ setTimeout(() => {
             templates.push(`\n\nWe've created a profile for you on SocialU - Hoi An's social discovery app!`);
             templates.push(`\n\nView your profile: ${business.url}`);
             templates.push(`\n\nWould you like to claim and customize it?`);
+            templates.push(`\n\nBest regards,`);
+            templates.push(`\nSocialU Team`);
+
+             // Email 2.0
+            templates.push(`\n\n📧 EMAIL TEMPLATE:`);
+            templates.push(`\nSubject: Your ${business.name} profile on SocialU`);
+            templates.push(`\n\nHi ${business.name} team,`);
+            templates.push(`\n\nWe've created a profile for you on SocialU - Hoi An's social discovery app!`);
+            templates.push(`\n\n📱 QR Code:`);
+            templates.push(`\n🏪 Profile: ${business.url}`);
+            templates.push(`\n\nWould you like to claim and customize it?`);
+            templates.push(`\n\n${business.name}'s About Us Story:`);
+            templates.push(`\n📖 Story: ${storyUrl}`);
+            templates.push(`\n📌 Slug: ${slug}`);
             templates.push(`\n\nBest regards,`);
             templates.push(`\nSocialU Team`);
         });

@@ -2008,20 +2008,21 @@ export class BusinessManager {
             return;
         }
         
-        snapshot.forEach(doc => {
+       snapshot.forEach(doc => {
             const b = doc.data();
             
-            // CRITICAL: Only include businesses with real email addresses
-            if (!b.email) {
-                console.warn(`⚠️ Skipping "${b.name || doc.id}" - missing email address`);
-                return; // Skip this business
-            }
-            
-            // CRITICAL: Only include businesses with names
+            // ONLY skip if completely missing name (can't identify the business)
             if (!b.name) {
                 console.warn(`⚠️ Skipping business ${doc.id} - missing business name`);
                 return; // Skip this business
             }
+            
+            // DEBUG: Log what data exists (but don't skip if missing)
+            console.log(`📱 Business: ${b.name}`);
+            console.log(`   Email: ${b.email || '⚠️ MISSING'}`);
+            console.log(`   Phone: ${b.phone || '⚠️ NONE'}`);
+            console.log(`   ZaloID: ${b.zaloId || '⚠️ NONE'}`);
+            console.log(`---`);
             
             const slug = this.createBusinessSlug(b);
             
@@ -2111,9 +2112,9 @@ exportBusinessCSV(businesses) {
             'Status',             // Column O - Campaign filtering
             'PreferredChannel'    // Column P - Communication preference
         ],
-        ...businesses.map(b => {
-            // Use ONLY real email (already validated - businesses without email were filtered out)
-            const email = b.email;
+      ...businesses.map(b => {
+            // Use real email or leave empty (businesses without email will have blank cell)
+            const email = b.email || '';
             
             // Use ONLY real phone number or leave empty
             const phoneNumber = b.phone || '';

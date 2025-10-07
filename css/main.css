@@ -24,8 +24,9 @@ body {
     background: var(--bg-card);
     min-height: 100vh;
     position: relative;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden; /* Change: Remove overflow-y: auto */
+    display: flex;
+    flex-direction: column;
 }
 
 @media (min-width: 431px) {
@@ -42,12 +43,15 @@ body {
     padding: var(--spacing-lg);
     background: rgba(0,0,0,0.95);
     backdrop-filter: blur(20px);
-    position: fixed;
+    position: fixed; /* Change: Use fixed */
     top: 0;
+    left: 50%; /* Add: Center positioning */
+    transform: translateX(-50%); /* Add: Center positioning */
     z-index: var(--z-sticky);
     border-bottom: 1px solid var(--border-light);
     height: var(--header-height);
     width: 100%;
+    max-width: var(--container-max); /* Add: Match container max-width */
     box-sizing: border-box;
 }
 
@@ -116,15 +120,20 @@ body {
 /* Main Screen Container */
 .main-screens {
     position: relative;
-    min-height: calc(100vh - 140px);
-    padding-bottom: 100px;
+    flex: 1; /* Add: Allow to grow */
+    overflow-y: auto; /* Add: Make this the scroll container */
+    overflow-x: hidden; /* Add: Prevent horizontal scroll */
+    padding-top: var(--header-height); /* Add: Offset for fixed header */
+    padding-bottom: 100px; /* Keep for bottom nav */
+    -webkit-overflow-scrolling: touch; /* Add: Smooth iOS scrolling */
 }
 .screen {
     display: none;
     animation: slideIn 0.3s ease;
     width: 100%;
-    max-width: 430px;
-    margin: 0 auto;
+    max-width: 100%; /* Change: Use full width of container */
+    margin: 0;
+    box-sizing: border-box;
 }
 .screen.active {
     display: block;

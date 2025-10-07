@@ -366,6 +366,7 @@ showOverlay(overlayId) {
         const overlay = document.getElementById(overlayId);
         if (overlay) {
             overlay.classList.remove('show');
+            overlay.style.display = 'none'; // CRITICAL: Force overlay to hide completely
             
             // DYNAMIC Z-INDEX: Reset any dynamic z-index when closing
             if (overlayId === 'individualChat') {

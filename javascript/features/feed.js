@@ -676,7 +676,7 @@ export class FeedManager {
         imageContainer.style.cssText = `
         position: relative;
         overflow: hidden;
-        height: 300px;
+        height: 280px;
         width: 100%;
     `;
         
@@ -691,7 +691,7 @@ export class FeedManager {
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
-        height: 300px;
+        height: 280px;
         width: 100%;
         -ms-overflow-style: none;
     `;

@@ -1510,8 +1510,8 @@ input:disabled + .toggle-slider {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    padding: 3px;
-    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    padding: 2px;
+    background: linear-gradient(45deg, rgba(240, 148, 51, 0.6) 0%, rgba(230, 104, 60, 0.6) 25%, rgba(220, 39, 67, 0.6) 50%, rgba(204, 35, 102, 0.6) 75%, rgba(188, 24, 136, 0.6) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1521,10 +1521,10 @@ input:disabled + .toggle-slider {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    border: 3px solid white;
     background-size: cover;
     background-position: center;
-    background-color: rgba(255,255,255,0.1);
+    background-color: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Also add to business card hero images */

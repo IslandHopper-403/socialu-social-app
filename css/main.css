@@ -1453,7 +1453,6 @@ input:disabled + .toggle-slider {
     flex-shrink: 0; /* Add this line */
 }
 
-
 .profile-overlay {
     position: absolute;
     bottom: 0;
@@ -1488,6 +1487,61 @@ input:disabled + .toggle-slider {
      overflow-x: hidden; /* Add this line */
     -webkit-overflow-scrolling: touch; /* Add this line */
 
+}
+
+/* Story Avatar Button on Hero Image */
+.hero-story-avatar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    transition: transform 0.2s ease;
+}
+
+.hero-story-avatar:hover {
+    transform: scale(1.05);
+}
+
+.hero-story-avatar-ring {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    padding: 3px;
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-story-avatar-image {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid white;
+    background-size: cover;
+    background-position: center;
+    background-color: rgba(255,255,255,0.1);
+}
+
+/* Also add to business card hero images */
+.business-image {
+    width: 100%;
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+/* Smaller version for business cards in feed */
+.business-card .hero-story-avatar {
+    width: 50px;
+    height: 50px;
+    top: 15px;
+    left: 15px;
 }
 
 /* Make hero break out of content padding */

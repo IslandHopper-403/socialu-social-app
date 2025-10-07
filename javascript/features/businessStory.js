@@ -60,6 +60,14 @@ export class BusinessStoryManager {
             return;
         }
         overlay.style.display = 'flex';
+
+        overlay.style.display = 'flex';
+    
+        // Re-enable pointer events when opening
+        const storyContent = overlay.querySelector('.story-content');
+        const navAreas = overlay.querySelector('.story-nav-areas');
+        if (storyContent) storyContent.style.pointerEvents = 'auto';
+        if (navAreas) navAreas.style.pointerEvents = 'auto';
         
         // Create progress bars (one per photo)
         const photos = business.photos || [];
@@ -220,10 +228,16 @@ export class BusinessStoryManager {
      * SECURITY: Cleanup timeouts to prevent memory leaks
      */
     closeSingleBusinessStory() {
-        const overlay = document.getElementById('singleBusinessStory');
-        if (overlay) {
-            overlay.style.display = 'none';
-        }
+    const overlay = document.getElementById('singleBusinessStory');
+    if (overlay) {
+        overlay.style.display = 'none';
+        
+        // CRITICAL: Disable pointer events to prevent blocking interactions when hidden
+        const storyContent = overlay.querySelector('.story-content');
+        const navAreas = overlay.querySelector('.story-nav-areas');
+        if (storyContent) storyContent.style.pointerEvents = 'none';
+        if (navAreas) navAreas.style.pointerEvents = 'none';
+    }
         
         // SECURITY: Clean up timeout
         if (this.singleStoryTimeout) {

@@ -1529,6 +1529,46 @@
             </div>
         </div>
     </div>
+
+
+    <!-- Single Business Story Overlay -->
+    <div id="singleBusinessStory" class="overlay-screen" style="display: none;">
+        <div class="story-viewer-container">
+            <!-- Progress bars (dynamic, one per photo) -->
+            <div class="story-progress-container" id="singleStoryProgress"></div>
+            
+            <!-- Header with business info -->
+            <div class="story-header">
+                <div class="story-business-info">
+                    <img id="singleStoryLogo" class="story-business-logo" src="" alt="Business">
+                    <div class="story-business-details">
+                        <div id="singleStoryName" class="story-business-name"></div>
+                        <div id="singleStoryType" class="story-business-type"></div>
+                    </div>
+                </div>
+                <button class="story-close-btn" onclick="window.CLASSIFIED.closeSingleBusinessStory()">✕</button>
+            </div>
+            
+            <!-- Main photo display -->
+            <div class="story-content" onclick="window.CLASSIFIED.toggleSingleStoryPause()">
+                <img id="singleStoryImage" class="story-image" src="" alt="Story">
+                <div class="story-text-overlay" id="singleStoryText"></div>
+            </div>
+            
+            <!-- Navigation areas (left/right tap zones) -->
+            <div class="story-nav-areas">
+                <div class="story-nav-left" onclick="event.stopPropagation(); window.CLASSIFIED.previousSingleStory()"></div>
+                <div class="story-nav-right" onclick="event.stopPropagation(); window.CLASSIFIED.nextSingleStory()"></div>
+            </div>
+            
+            <!-- View Profile button -->
+            <div class="story-actions">
+                <button class="story-action-btn" onclick="event.stopPropagation(); window.CLASSIFIED.viewProfileFromSingleStory()">
+                    View Profile
+                </button>
+            </div>
+        </div>
+    </div>
     
     
     

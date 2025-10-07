@@ -816,11 +816,11 @@ export class BusinessManager {
             heroElement.style.backgroundPosition = 'center';
         }
         
-        // Add story avatar button to hero
-        this.addStoryAvatarToHero(business, heroElement);
-        
-        // Add photo counter
+        // Add photo counter FIRST
         this.addPhotoCounter(business);
+        
+        // Add story avatar button to hero AFTER photo counter
+        this.addStoryAvatarToHero(business, heroElement);
                 
         // Update basic info - SAFE
         document.getElementById('profileName').textContent = sanitizeText(business.name || 'Business Name');
@@ -1114,9 +1114,13 @@ export class BusinessManager {
         `;
         heroElement.appendChild(counter);
         
-        // Make hero clickable
+        // Make hero clickable (but not the avatar area)
         heroElement.style.cursor = 'pointer';
-        heroElement.onclick = () => {
+        heroElement.onclick = (e) => {
+            // Don't open photo viewer if clicking on story avatar
+            if (e.target.closest('.hero-story-avatar')) {
+                return;
+            }
             const currentBusiness = this.state.get('currentBusiness');
             if (currentBusiness) {
                 this.openPhotoViewer(currentBusiness);

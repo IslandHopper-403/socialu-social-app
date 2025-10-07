@@ -60,14 +60,6 @@ export class BusinessStoryManager {
             return;
         }
         overlay.style.display = 'flex';
-        overlay.style.visibility = 'visible';
-        overlay.style.zIndex = '500';
-    
-        // Re-enable pointer events when opening
-        const storyContent = overlay.querySelector('.story-content');
-        const navAreas = overlay.querySelector('.story-nav-areas');
-        if (storyContent) storyContent.style.pointerEvents = 'auto';
-        if (navAreas) navAreas.style.pointerEvents = 'auto';
         
         // Create progress bars (one per photo)
         const photos = business.photos || [];
@@ -228,18 +220,10 @@ export class BusinessStoryManager {
      * SECURITY: Cleanup timeouts to prevent memory leaks
      */
     closeSingleBusinessStory() {
-    const overlay = document.getElementById('singleBusinessStory');
-    if (overlay) {
-        overlay.style.display = 'none';
-        overlay.style.visibility = 'hidden';
-        overlay.style.zIndex = '-1';
-        
-        // CRITICAL: Disable pointer events to prevent blocking interactions when hidden
-        const storyContent = overlay.querySelector('.story-content');
-        const navAreas = overlay.querySelector('.story-nav-areas');
-        if (storyContent) storyContent.style.pointerEvents = 'none';
-        if (navAreas) navAreas.style.pointerEvents = 'none';
-    }
+        const overlay = document.getElementById('singleBusinessStory');
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
         
         // SECURITY: Clean up timeout
         if (this.singleStoryTimeout) {
@@ -254,22 +238,17 @@ export class BusinessStoryManager {
         console.log('✅ Single business story closed');
     }
     
-   /**
- * View full profile from story
- */
-viewProfileFromSingleStory() {
-    if (this.currentStoryBusiness && this.businessManager) {
-        const business = this.currentStoryBusiness;
-        
-        // CRITICAL: Close story AND ensure scroll is unlocked before opening profile
-        this.closeSingleBusinessStory();
-        
-        // Small delay to ensure overlay is fully closed and scroll unlocked
-        setTimeout(() => {
+    /**
+     * View full profile from story
+     */
+    viewProfileFromSingleStory() {
+        if (this.currentStoryBusiness && this.businessManager) {
+            const business = this.currentStoryBusiness;
+            this.closeSingleBusinessStory();
+            // Open business profile using existing function
             this.businessManager.openBusinessProfile(business.id, business.type);
-        }, 50);
+        }
     }
-}
     
     /**
      * Add story avatar button to profile hero

@@ -29,13 +29,7 @@ body {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 0 40px rgba(0,0,0,0.5); /* Add: Desktop shadow */
-}
-
-@media (max-width: 430px) {
-    .app-container {
-        box-shadow: none; /* Remove shadow on mobile */
-    }
+    box-sizing: border-box;
 }
 
 /* ===== HEADER STYLES ===== */

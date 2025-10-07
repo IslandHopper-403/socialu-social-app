@@ -997,7 +997,7 @@ body {
     flex-direction: column;
     animation: slideUp 0.3s ease;
     overflow: hidden;
-    padding-top: (var(--header-height);
+    padding-top: var(--header-height);
     box-sizing: border-box; /* Add this too */
 
 }

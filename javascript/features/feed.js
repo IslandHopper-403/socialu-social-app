@@ -270,7 +270,10 @@ export class FeedManager {
             }
         }
         
-        console.log('🍽️ Restaurant feed populated with', restaurants.length, 'businesses');
+       console.log('🍽️ Restaurant feed populated with', restaurants.length, 'restaurants');
+        
+        // Set up logo click handlers after feed is rendered
+        setTimeout(() => this.setupLogoClickHandlers(), 100);
     }
     
     /**
@@ -372,7 +375,12 @@ export class FeedManager {
             this.addBusinessSignupBanner(feedContainer);
         }
         
-        console.log('🎯 Activity feed populated with', activities.length, 'businesses');
+        console.log('🎯 Activity feed populated with', activities.length, 'activities');
+        
+       // Set up logo click handlers after feed is rendered
+       setTimeout(() => this.setupLogoClickHandlers(), 100);
+    }
+
     }
     
     /**
@@ -1515,4 +1523,74 @@ openStoryByBusinessId(businessId) {
         console.log('🔄 Refreshing activity feed...');
         await this.populateActivityFeed();
     }
+
+    /**
+     * Set up event listeners for logo clicks (event delegation)
+     * Called from main.js after feed is populated
+     */
+    setupLogoClickHandlers() {
+        console.log('🖱️ Setting up logo click handlers via event delegation');
+        
+        const restaurantFeed = document.getElementById('restaurantFeed');
+        const activityFeed = document.getElementById('activityFeed');
+        
+        [restaurantFeed, activityFeed].forEach(container => {
+            if (!container) return;
+            
+            // Remove existing listener if any
+            if (container._logoClickHandler) {
+                container.removeEventListener('click', container._logoClickHandler);
+            }
+            
+            // Create handler
+            const handler = (e) => {
+                // Check if clicked element is a business logo
+                const logo = e.target.closest('.business-logo');
+                if (logo) {
+                    e.stopPropagation(); // Prevent card click
+                    
+                    // Find the business card
+                    const card = logo.closest('.business-card');
+                    if (card) {
+                        // Extract business ID from card onclick
+                        const onclickAttr = card.getAttribute('onclick');
+                        if (onclickAttr) {
+                            const match = onclickAttr.match(/openBusinessProfile\('([^']+)',\s*'([^']+)'/);
+                            if (match) {
+                                const [, businessId, type] = match;
+                                console.log('📖 Logo clicked for business:', businessId);
+                                
+                                // Get business data and open story
+                                const business = this.getBusinessById(businessId, type);
+                                if (business && window.classifiedApp?.managers?.businessStory) {
+                                    window.classifiedApp.managers.businessStory.showBusinessStory(business);
+                                } else {
+                                    console.warn('⚠️ Could not find business or story manager');
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            
+            // Store reference and attach
+            container._logoClickHandler = handler;
+            container.addEventListener('click', handler);
+        });
+        
+        console.log('✅ Logo click handlers attached');
+    }
+    
+    /**
+     * Get business data by ID
+     */
+    getBusinessById(businessId, type) {
+        const businesses = type === 'restaurant' 
+            ? (this.cachedRestaurants || this.mockData.getRestaurants())
+            : (this.cachedActivities || this.mockData.getActivities());
+        
+        return businesses.find(b => b.id === businessId);
+    }
+}
+    
 }

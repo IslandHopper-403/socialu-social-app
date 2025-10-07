@@ -1012,8 +1012,12 @@ export class BusinessManager {
                 allManagers: window.classifiedApp?.managers ? Object.keys(window.classifiedApp.managers) : []
             });
             
-            if (feedManager && typeof feedManager.showStory === 'function') {
-                console.log('✅ Calling feedManager.showStory directly');
+            if (feedManager && typeof feedManager.openStoryByBusinessId === 'function') {
+                console.log('✅ Calling feedManager.openStoryByBusinessId with:', business.id);
+                feedManager.openStoryByBusinessId(business.id);
+            } else if (feedManager && typeof feedManager.showStory === 'function') {
+                console.log('⚠️ Using fallback showStory method');
+                // This won't work correctly but try anyway
                 feedManager.showStory(business);
             } else {
                 console.error('❌ FeedManager not available:', {
@@ -1058,14 +1062,24 @@ export class BusinessManager {
         const textOverlay = document.getElementById('storyTextOverlay');
         
         if (logo) logo.src = business.logo || business.photos?.[1] || business.photos?.[0] || '';
-        if (name) name.textContent = business.name || 'Business';
-        if (type) type.textContent = business.type || 'Business';
+        if (name) name.textContent = sanitizeText(business.name || 'Business');
+        if (type) type.textContent = sanitizeText(business.type || 'Business');
         if (image) image.src = business.photos?.[0] || business.image || '';
         
         if (textOverlay) {
             const aboutUs = business.aboutUs || business.description || business.story || 'Welcome!';
             const truncated = aboutUs.length > 350 ? aboutUs.substring(0, 350) + '...' : aboutUs;
-            textOverlay.textContent = truncated;
+            textOverlay.textContent = sanitizeText(truncated);
+        }
+        
+        // Create single progress bar for manual viewer
+        const progressContainer = document.getElementById('storyProgressBars');
+        if (progressContainer) {
+            progressContainer.innerHTML = `
+                <div class="story-progress-bar">
+                    <div class="story-progress-fill" style="width: 100%; transition: none;"></div>
+                </div>
+            `;
         }
         
         // Store for profile view button

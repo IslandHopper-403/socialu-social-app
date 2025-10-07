@@ -99,9 +99,6 @@ class ClassifiedApp {
             console.log('🔗 [INIT-3] ClassifiedApp.init() started at:', Date.now());
             console.log('🔗 [INIT-3] Deep link mode active?', window.__DEEP_LINK_MODE__);
             console.log('🔗 [INIT-3] Current hash:', window.location.hash);
-
-             // Step 0: Initialize theme (must be first for instant visual feedback)
-            this.initTheme();
             
             // Step 1: Initialize Firebase
             console.log('🔥 Initializing Firebase...');
@@ -122,10 +119,13 @@ class ClassifiedApp {
             await this.initializeManagers();
             console.log('🔗 [INIT-5] Managers initialized at:', Date.now());
             
-            // Step 5: Set up global API for backward compatibility
+           // Step 5: Set up global API for backward compatibility
             console.log('🔗 [INIT-6] Setting up global API at:', Date.now());
             this.setupGlobalAPI();
             console.log('🔗 [INIT-6] Global API ready at:', Date.now());
+            
+            // Step 5.5: Initialize theme (after global API is set up)
+            window.CLASSIFIED.initTheme();
             
             // Step 6: Check for existing auth state
             // Commented out this.setupInitialAuthState();
@@ -580,9 +580,6 @@ async initializeManagers() {
                 // In a real app, this would send a push notification
                 console.log('🌟 Super like notification sent to user:', userId);
             },
-
-
-
 
             filterUsers: (filter) => this.managers.feed.filterUsers(filter),
             

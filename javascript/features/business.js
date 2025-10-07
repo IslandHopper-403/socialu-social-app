@@ -810,20 +810,17 @@ export class BusinessManager {
             const imageUrl = business.photos?.[0] || business.image || business.story;
             console.log('Final imageUrl:', imageUrl);
             
-          if (heroElement && imageUrl) {
-                heroElement.style.backgroundImage = `url('${escapeHtml(imageUrl)}')`;
-                heroElement.style.backgroundSize = 'cover';
-                heroElement.style.backgroundPosition = 'center';
-            }
-            
-          // Add story avatar button to hero
-         this.addStoryAvatarToHero(business, heroElement);
+         if (heroElement && imageUrl) {
+            heroElement.style.backgroundImage = `url('${escapeHtml(imageUrl)}')`;
+            heroElement.style.backgroundSize = 'cover';
+            heroElement.style.backgroundPosition = 'center';
+        }
         
-          // Add photo counter
-         this.addPhotoCounter(business);
+        // Add story avatar button to hero
+        this.addStoryAvatarToHero(business, heroElement);
         
-          // Add photo counter
-         this.addPhotoCounter(business);
+        // Add photo counter
+        this.addPhotoCounter(business);
                 
         // Update basic info - SAFE
         document.getElementById('profileName').textContent = sanitizeText(business.name || 'Business Name');
@@ -991,8 +988,8 @@ export class BusinessManager {
         const image = document.createElement('div');
         image.className = 'hero-story-avatar-image';
         
-        // Use business logo or first photo
-        const logoUrl = business.logo || business.photos?.[0] || '';
+        // Use business logo or second photo (photos[1]), fallback to first
+        const logoUrl = business.logo || business.photos?.[1] || business.photos?.[0] || '';
         if (logoUrl) {
             image.style.backgroundImage = `url('${escapeHtml(logoUrl)}')`;
         }

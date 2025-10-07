@@ -37,7 +37,8 @@ export class BusinessManager {
         this.navigationManager = null;
         this.profileManager = null;
         this.authManager = null;
-        this.messagingManager = null;  // ADD THIS LINE
+        this.messagingManager = null; 
+        this.storyManager = null;  // Reference to BusinessStoryManager
         
         // Dashboard data
         this.dashboardData = {
@@ -64,7 +65,8 @@ export class BusinessManager {
         this.navigationManager = managers.navigation;
         this.profileManager = managers.profile;
         this.authManager = managers.auth;
-        this.messagingManager = managers.messaging;  // ADD THIS LINE
+        this.messagingManager = managers.messaging; 
+        this.storyManager = managers.businessStory;  // Add story manager reference
         
         // Get mock data reference from the main app
         if (window.classifiedApp && window.classifiedApp.mockData) {

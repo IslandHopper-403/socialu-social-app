@@ -1,6 +1,6 @@
 /* =====================================================
    CLASSIFIED - Main Styles
-   Uses design-system.css variables -
+   Uses design-system.css variables
    ===================================================== */
 
 * {
@@ -22,13 +22,20 @@ body {
 .app-container {
     width: 100%;
     max-width: var(--container-max);
-    margin: 0 auto; /* Change: Always center */
+    margin: 0 auto;
     background: var(--bg-card);
     min-height: 100vh;
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 0 40px rgba(0,0,0,0.5); /* Add: Desktop shadow */
+}
+
+@media (max-width: 430px) {
+    .app-container {
+        box-shadow: none; /* Remove shadow on mobile */
+    }
 }
 
 /* ===== HEADER STYLES ===== */

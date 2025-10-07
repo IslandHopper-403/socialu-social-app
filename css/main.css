@@ -1499,7 +1499,7 @@ input:disabled + .toggle-slider {
     height: 60px;
     border-radius: 50%;
     cursor: pointer;
-    z-index: 10;
+    z-index: 20 !important;  /* Higher than photo counter */
     transition: transform 0.2s ease;
 }
 

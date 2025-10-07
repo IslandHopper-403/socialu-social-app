@@ -1029,14 +1029,11 @@ export class BusinessManager {
             }
         };
         
-        ring.appendChild(image);
+       ring.appendChild(image);
         avatar.appendChild(ring);
         heroElement.appendChild(avatar);
         
         console.log('✅ Story avatar added to hero for:', business.name);
-    }
-
-    console.log('✅ Story avatar added to hero for:', business.name);
     }
     
     /**
@@ -1079,17 +1076,13 @@ export class BusinessManager {
         console.log('✅ Manual story viewer opened');
     }
 
-        // Add photo counter to hero image
-    addPhotoCounter(business) {
-
-        // Add photo counter to hero image
+    // Add photo counter to hero image
     addPhotoCounter(business) {
         const heroElement = document.getElementById('profileHero');
         if (!heroElement || !business.photos || business.photos.length <= 1) return;
         // Remove existing counter if any
         const existingCounter = heroElement.querySelector('.hero-photo-counter');
         if (existingCounter) existingCounter.remove();
-        
         // Add new counter
         const counter = document.createElement('div');
         counter.className = 'hero-photo-counter';

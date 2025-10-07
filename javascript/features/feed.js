@@ -614,8 +614,8 @@ export class FeedManager {
         logo.style.cursor = 'pointer';
         logo.onclick = (e) => {
             e.stopPropagation(); // Prevent card click to profile
-            console.log('🎬 Business card logo clicked, opening story for:', business.name);
-            this.showStory(business);
+            console.log('🎬 Business card logo clicked, opening story for:', business.name, business.id);
+            this.openStoryByBusinessId(business.id);
         };
         
         const info = document.createElement('div');

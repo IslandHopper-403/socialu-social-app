@@ -635,6 +635,52 @@ body {
     to { opacity: 0; }
 }
 
+
+/* ===== SINGLE BUSINESS STORY OVERLAY ===== */
+#singleBusinessStory {
+    z-index: 500 !important;  /* Higher than business profile (375) */
+}
+
+#singleBusinessStory .story-viewer-container {
+    z-index: 500 !important;
+}
+
+/* Avatar button on profile hero */
+.profile-hero-story-avatar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 20 !important;
+    transition: transform 0.2s ease;
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.8) 0%,
+        rgba(255, 140, 140, 0.7) 25%,
+        rgba(255, 255, 255, 0.6) 50%,
+        rgba(255, 140, 140, 0.7) 75%,
+        rgba(255, 107, 107, 0.8) 100%
+    );
+    padding: 2.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-hero-story-avatar:hover {
+    transform: scale(1.05);
+}
+
+.profile-hero-story-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+}
+
 /* ADDED PROMO BANNER CSS - DELETE IF UNWANTED BELOW */
 
    /* ===== PROMOTIONAL BANNER ===== */

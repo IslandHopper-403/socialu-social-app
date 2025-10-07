@@ -99,6 +99,9 @@ class ClassifiedApp {
             console.log('🔗 [INIT-3] ClassifiedApp.init() started at:', Date.now());
             console.log('🔗 [INIT-3] Deep link mode active?', window.__DEEP_LINK_MODE__);
             console.log('🔗 [INIT-3] Current hash:', window.location.hash);
+
+             // Step 0: Initialize theme (must be first for instant visual feedback)
+            this.initTheme();
             
             // Step 1: Initialize Firebase
             console.log('🔥 Initializing Firebase...');
@@ -804,6 +807,44 @@ async initializeManagers() {
             // Keep existing carousel toggle
             toggleFavoritesCarousel: () => this.managers.favoritesCarousel?.toggleCarousel(),
 
+            /**
+             * Toggle between light and dark theme
+             */
+            toggleTheme() {
+                const html = document.documentElement;
+                const currentTheme = html.getAttribute('data-theme') || 'dark';
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                // Apply theme to HTML element
+                html.setAttribute('data-theme', newTheme);
+                
+                // Save preference to localStorage
+                localStorage.setItem('theme', newTheme);
+                
+                // Update toggle checkbox state (checked = dark mode ON)
+                const toggle = document.getElementById('darkModeToggle');
+                if (toggle) {
+                    toggle.checked = newTheme === 'dark';
+                }
+                
+                console.log('🌓 Theme toggled to:', newTheme);
+            },
+            
+            /**
+             * Initialize theme on app load
+             */
+            initTheme() {
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                
+                // Set toggle state on load
+                const toggle = document.getElementById('darkModeToggle');
+                if (toggle) {
+                    toggle.checked = savedTheme === 'dark';
+                }
+                
+                console.log('🌓 Theme initialized:', savedTheme);
+            },
 
         };
         

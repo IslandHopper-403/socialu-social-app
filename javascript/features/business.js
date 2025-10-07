@@ -805,16 +805,22 @@ export class BusinessManager {
             headerTitle.textContent = sanitizeText(business.type || 'Business');
         }
         
-     // Update hero - SAFE (CSS background) 
-        const heroElement = document.getElementById('profileHero');
-        const imageUrl = business.photos?.[0] || business.image || business.story;
-        console.log('Final imageUrl:', imageUrl);
+        // Update hero - SAFE (CSS background) 
+            const heroElement = document.getElementById('profileHero');
+            const imageUrl = business.photos?.[0] || business.image || business.story;
+            console.log('Final imageUrl:', imageUrl);
+            
+          if (heroElement && imageUrl) {
+                heroElement.style.backgroundImage = `url('${escapeHtml(imageUrl)}')`;
+                heroElement.style.backgroundSize = 'cover';
+                heroElement.style.backgroundPosition = 'center';
+            }
+            
+          // Add story avatar button to hero
+         this.addStoryAvatarToHero(business, heroElement);
         
-      if (heroElement && imageUrl) {
-            heroElement.style.backgroundImage = `url('${escapeHtml(imageUrl)}')`;
-            heroElement.style.backgroundSize = 'cover';
-            heroElement.style.backgroundPosition = 'center';
-        }
+          // Add photo counter
+         this.addPhotoCounter(business);
         
           // Add photo counter
          this.addPhotoCounter(business);
@@ -963,6 +969,54 @@ export class BusinessManager {
     }
 
 
+        /**
+         * Add story avatar button to hero image
+         */
+        addStoryAvatarToHero(business, heroElement) {
+            if (!heroElement) return;
+        
+        // Remove existing avatar if present
+        const existingAvatar = heroElement.querySelector('.hero-story-avatar');
+        if (existingAvatar) {
+            existingAvatar.remove();
+        }
+        
+        // Create avatar button
+        const avatar = document.createElement('div');
+        avatar.className = 'hero-story-avatar';
+        
+        const ring = document.createElement('div');
+        ring.className = 'hero-story-avatar-ring';
+        
+        const image = document.createElement('div');
+        image.className = 'hero-story-avatar-image';
+        
+        // Use business logo or first photo
+        const logoUrl = business.logo || business.photos?.[0] || '';
+        if (logoUrl) {
+            image.style.backgroundImage = `url('${escapeHtml(logoUrl)}')`;
+        }
+        
+        // Click handler to open story
+        avatar.onclick = (e) => {
+            e.stopPropagation(); // Prevent profile close
+            console.log('🎬 Story avatar clicked, opening story for:', business.name);
+            
+            // Get feed manager and open story
+            const feedManager = window.classifiedApp?.managers?.feedManager;
+            if (feedManager && typeof feedManager.showStory === 'function') {
+                feedManager.showStory(business);
+            } else {
+                console.error('❌ Feed manager or showStory not available');
+            }
+        };
+        
+        ring.appendChild(image);
+        avatar.appendChild(ring);
+        heroElement.appendChild(avatar);
+        
+        console.log('✅ Story avatar added to hero for:', business.name);
+    }
 
         // Add photo counter to hero image
     addPhotoCounter(business) {

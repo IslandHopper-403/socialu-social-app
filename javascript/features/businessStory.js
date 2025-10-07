@@ -60,6 +60,8 @@ export class BusinessStoryManager {
             return;
         }
         overlay.style.display = 'flex';
+        overlay.style.pointerEvents = 'auto';  // Re-enable when opening
+        
         
         // Create progress bars (one per photo)
         const photos = business.photos || [];
@@ -220,10 +222,11 @@ export class BusinessStoryManager {
      * SECURITY: Cleanup timeouts to prevent memory leaks
      */
     closeSingleBusinessStory() {
-        const overlay = document.getElementById('singleBusinessStory');
-        if (overlay) {
-            overlay.style.display = 'none';
-        }
+    const overlay = document.getElementById('singleBusinessStory');
+    if (overlay) {
+        overlay.style.display = 'none';
+        overlay.style.pointerEvents = 'none';  // CRITICAL FIX!
+    }
         
         // SECURITY: Clean up timeout
         if (this.singleStoryTimeout) {

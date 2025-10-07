@@ -422,10 +422,6 @@ body {
 }
 
 /* ===== DAILY STORY VIEWER ===== */
-#storyViewerOverlay {
-    z-index: 500 !important;  /* Higher than business profile (375) */
-}
-
 .story-viewer-container {
     position: fixed;
     top: 0;
@@ -433,9 +429,20 @@ body {
     right: 0;
     bottom: 0;
     background: #000;
-    z-index: 500 !important;  /* Higher than business profile (375) */
+    z-index: 10000;
     display: flex;
     flex-direction: column;
+}
+
+.story-progress-container {
+    display: flex;
+    gap: 4px;
+    padding: 10px 15px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
 }
 
 .story-progress-bar {
@@ -1446,6 +1453,7 @@ input:disabled + .toggle-slider {
     flex-shrink: 0; /* Add this line */
 }
 
+
 .profile-overlay {
     position: absolute;
     bottom: 0;
@@ -1480,67 +1488,6 @@ input:disabled + .toggle-slider {
      overflow-x: hidden; /* Add this line */
     -webkit-overflow-scrolling: touch; /* Add this line */
 
-}
-
-/* Story Avatar Button on Hero Image */
-.hero-story-avatar {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 20 !important;  /* Higher than photo counter */
-    transition: transform 0.2s ease;
-}
-
-.hero-story-avatar:hover {
-    transform: scale(1.05);
-}
-
-.hero-story-avatar-ring {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    padding: 2.5px;
-    background: linear-gradient(135deg, 
-        rgba(255, 107, 107, 0.8) 0%,    /* Coral from --secondary-red */
-        rgba(255, 140, 140, 0.7) 25%,   /* Lighter coral */
-        rgba(255, 255, 255, 0.6) 50%,   /* White in middle */
-        rgba(255, 140, 140, 0.7) 75%,   /* Lighter coral */
-        rgba(255, 107, 107, 0.8) 100%   /* Coral from --secondary-red */
-    );
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.hero-story-avatar-image {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background-size: cover;
-    background-position: center;
-    background-color: rgba(0, 0, 0, 0.3);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* Also add to business card hero images */
-.business-image {
-    width: 100%;
-    height: 200px;
-    background-size: cover;
-    background-position: center;
-    position: relative;
-}
-
-/* Smaller version for business cards in feed */
-.business-card .hero-story-avatar {
-    width: 50px;
-    height: 50px;
-    top: 15px;
-    left: 15px;
 }
 
 /* Make hero break out of content padding */

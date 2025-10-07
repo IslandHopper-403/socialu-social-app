@@ -238,17 +238,22 @@ export class BusinessStoryManager {
         console.log('✅ Single business story closed');
     }
     
-    /**
-     * View full profile from story
-     */
-    viewProfileFromSingleStory() {
-        if (this.currentStoryBusiness && this.businessManager) {
-            const business = this.currentStoryBusiness;
-            this.closeSingleBusinessStory();
-            // Open business profile using existing function
+   /**
+ * View full profile from story
+ */
+viewProfileFromSingleStory() {
+    if (this.currentStoryBusiness && this.businessManager) {
+        const business = this.currentStoryBusiness;
+        
+        // CRITICAL: Close story AND ensure scroll is unlocked before opening profile
+        this.closeSingleBusinessStory();
+        
+        // Small delay to ensure overlay is fully closed and scroll unlocked
+        setTimeout(() => {
             this.businessManager.openBusinessProfile(business.id, business.type);
-        }
+        }, 50);
     }
+}
     
     /**
      * Add story avatar button to profile hero

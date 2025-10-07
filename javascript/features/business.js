@@ -818,6 +818,11 @@ export class BusinessManager {
             heroElement.style.backgroundPosition = 'center';
         }
         
+        // Add story avatar to hero (delegate to story manager)
+        if (this.storyManager) {
+            this.storyManager.addStoryAvatarToHero(business, heroElement);
+        }
+        
           // Add photo counter
          this.addPhotoCounter(business);
                 

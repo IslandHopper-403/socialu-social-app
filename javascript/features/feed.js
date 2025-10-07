@@ -200,7 +200,6 @@ export class FeedManager {
                     where('type', '==', 'restaurant'),
                     where('status', 'in', ['active', 'pending_approval']),
                     orderBy('updatedAt', 'desc'),
-                    limit(20)
                 );
                 
                 const snapshot = await getDocs(q);
@@ -314,7 +313,6 @@ export class FeedManager {
             where('type', '==', 'activity'),
             where('status', 'in', ['active', 'pending_approval']),
             orderBy('updatedAt', 'desc'),
-            limit(20)
         );
         
         const snapshot = await getDocs(q);
@@ -422,7 +420,6 @@ export class FeedManager {
         const q = query(
             collection(this.db, 'users'),
             orderBy('updatedAt', 'desc'),
-            limit(20)
         );
         
         const snapshot = await getDocs(q);

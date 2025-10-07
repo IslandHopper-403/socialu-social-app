@@ -610,6 +610,14 @@ export class FeedManager {
         const logoUrl = business.logo || business.photos?.[0] || '';
         logo.style.backgroundImage = `url("${logoUrl}")`;  // Use double quotes
         
+        // Make logo clickable to open story - SECURITY: stopPropagation to prevent card click
+        logo.style.cursor = 'pointer';
+        logo.onclick = (e) => {
+            e.stopPropagation(); // Prevent card click to profile
+            console.log('🎬 Business card logo clicked, opening story for:', business.name);
+            this.showStory(business);
+        };
+        
         const info = document.createElement('div');
         info.className = 'business-info';
         

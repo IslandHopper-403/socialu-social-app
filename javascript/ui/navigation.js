@@ -324,6 +324,8 @@ showOverlay(overlayId) {
         const overlay = document.getElementById(overlayId);
         if (overlay) {
             overlay.classList.add('show');
+            overlay.style.pointerEvents = '';  // ADD THIS
+
             
             // SECURITY: Add to overlay stack for navigation
             if (!this.overlayStack.includes(overlayId)) {
@@ -366,6 +368,7 @@ showOverlay(overlayId) {
         const overlay = document.getElementById(overlayId);
         if (overlay) {
             overlay.classList.remove('show');
+            overlay.style.pointerEvents = 'none';  // ADD THIS
             
             // DYNAMIC Z-INDEX: Reset any dynamic z-index when closing
             if (overlayId === 'individualChat') {

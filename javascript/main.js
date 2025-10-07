@@ -797,6 +797,9 @@ async initializeManagers() {
 
         };
         
+        // Debug: Log available managers
+        console.log('📋 Available managers:', Object.keys(this.managers));
+        
         // Also expose some properties for compatibility
         Object.defineProperty(window.CLASSIFIED, 'isAdminUser', {
             value: () => this.managers.auth ? this.managers.auth.isAdminUser() : false

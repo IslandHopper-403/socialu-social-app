@@ -805,22 +805,19 @@ export class BusinessManager {
             headerTitle.textContent = sanitizeText(business.type || 'Business');
         }
         
-        // Update hero - SAFE (CSS background) 
-            const heroElement = document.getElementById('profileHero');
-            const imageUrl = business.photos?.[0] || business.image || business.story;
-            console.log('Final imageUrl:', imageUrl);
-            
-         if (heroElement && imageUrl) {
+     // Update hero - SAFE (CSS background) 
+        const heroElement = document.getElementById('profileHero');
+        const imageUrl = business.photos?.[0] || business.image || business.story;
+        console.log('Final imageUrl:', imageUrl);
+        
+      if (heroElement && imageUrl) {
             heroElement.style.backgroundImage = `url('${escapeHtml(imageUrl)}')`;
             heroElement.style.backgroundSize = 'cover';
             heroElement.style.backgroundPosition = 'center';
         }
         
-        // Add photo counter FIRST
-        this.addPhotoCounter(business);
-        
-        // Add story avatar button to hero AFTER photo counter
-        this.addStoryAvatarToHero(business, heroElement);
+          // Add photo counter
+         this.addPhotoCounter(business);
                 
         // Update basic info - SAFE
         document.getElementById('profileName').textContent = sanitizeText(business.name || 'Business Name');
@@ -966,144 +963,15 @@ export class BusinessManager {
     }
 
 
-        /**
-         * Add story avatar button to hero image
-         */
-        addStoryAvatarToHero(business, heroElement) {
-            if (!heroElement) return;
-        
-        // Remove existing avatar if present
-        const existingAvatar = heroElement.querySelector('.hero-story-avatar');
-        if (existingAvatar) {
-            existingAvatar.remove();
-        }
-        
-        // Create avatar button
-        const avatar = document.createElement('div');
-        avatar.className = 'hero-story-avatar';
-        
-        const ring = document.createElement('div');
-        ring.className = 'hero-story-avatar-ring';
-        
-        const image = document.createElement('div');
-        image.className = 'hero-story-avatar-image';
-        
-        // Use business logo or second photo (photos[1]), fallback to first
-        const logoUrl = business.logo || business.photos?.[1] || business.photos?.[0] || '';
-        if (logoUrl) {
-            image.style.backgroundImage = `url('${escapeHtml(logoUrl)}')`;
-        }
-        
-         // Click handler to open story
-        avatar.onclick = (e) => {
-            e.stopPropagation(); // Prevent profile close
-            console.log('🎬 Profile hero avatar clicked, opening story for:', business.name);
-            
-            // Store business for story viewer
-            window.currentStoryBusiness = business;
-            
-            // Call the FeedManager's showStory method directly
-            const feedManager = window.classifiedApp?.managers?.feedManager || 
-                               window.classifiedApp?.managers?.feed;
-            
-            console.log('🔍 FeedManager lookup:', {
-                hasFeedManager: !!feedManager,
-                hasShowStory: !!(feedManager?.showStory),
-                allManagers: window.classifiedApp?.managers ? Object.keys(window.classifiedApp.managers) : []
-            });
-            
-            if (feedManager && typeof feedManager.openStoryByBusinessId === 'function') {
-                console.log('✅ Calling feedManager.openStoryByBusinessId with:', business.id);
-                feedManager.openStoryByBusinessId(business.id);
-            } else if (feedManager && typeof feedManager.showStory === 'function') {
-                console.log('⚠️ Using fallback showStory method');
-                // This won't work correctly but try anyway
-                feedManager.showStory(business);
-            } else {
-                console.error('❌ FeedManager not available:', {
-                    hasClassifiedApp: !!window.classifiedApp,
-                    hasManagers: !!window.classifiedApp?.managers,
-                    hasFeedManager: !!window.classifiedApp?.managers?.feedManager,
-                    feedManagerType: typeof window.classifiedApp?.managers?.feedManager
-                });
-                
-                // Fallback: Try to manually trigger story viewer
-                console.log('⚠️ Attempting manual story viewer fallback');
-                this.manuallyOpenStoryViewer(business);
-            }
-        };
-        
-       ring.appendChild(image);
-        avatar.appendChild(ring);
-        heroElement.appendChild(avatar);
-        
-        console.log('✅ Story avatar added to hero for:', business.name);
-        console.log('🔍 Avatar element details:', {
-            avatarExists: !!avatar,
-            avatarInDom: document.contains(avatar),
-            heroHasAvatar: !!heroElement.querySelector('.hero-story-avatar'),
-            avatarStyles: avatar.style.cssText,
-            logoUrl: logoUrl
-        });
-    }
-    
-    /**
-     * Manual fallback to open story viewer if feedManager unavailable
-     */
-    manuallyOpenStoryViewer(business) {
-        console.log('🔧 [manuallyOpenStoryViewer] Attempting manual story open');
-        
-        // Set up story data manually
-        const overlay = document.getElementById('storyViewerOverlay');
-        if (!overlay) {
-            console.error('❌ Story viewer overlay not found');
-            alert('Story viewer is not available. Please refresh the page.');
-            return;
-        }
-        
-        // Update story content
-        const logo = document.getElementById('storyBusinessLogo');
-        const name = document.getElementById('storyBusinessName');
-        const type = document.getElementById('storyBusinessType');
-        const image = document.getElementById('storyImage');
-        const textOverlay = document.getElementById('storyTextOverlay');
-        
-        if (logo) logo.src = business.logo || business.photos?.[1] || business.photos?.[0] || '';
-        if (name) name.textContent = sanitizeText(business.name || 'Business');
-        if (type) type.textContent = sanitizeText(business.type || 'Business');
-        if (image) image.src = business.photos?.[0] || business.image || '';
-        
-        if (textOverlay) {
-            const aboutUs = business.aboutUs || business.description || business.story || 'Welcome!';
-            const truncated = aboutUs.length > 350 ? aboutUs.substring(0, 350) + '...' : aboutUs;
-            textOverlay.textContent = sanitizeText(truncated);
-        }
-        
-        // Create single progress bar for manual viewer
-        const progressContainer = document.getElementById('storyProgressBars');
-        if (progressContainer) {
-            progressContainer.innerHTML = `
-                <div class="story-progress-bar">
-                    <div class="story-progress-fill" style="width: 100%; transition: none;"></div>
-                </div>
-            `;
-        }
-        
-        // Store for profile view button
-        window.currentStoryBusiness = business;
-        
-        // Show overlay
-        overlay.style.display = 'flex';
-        console.log('✅ Manual story viewer opened');
-    }
 
-    // Add photo counter to hero image
+        // Add photo counter to hero image
     addPhotoCounter(business) {
         const heroElement = document.getElementById('profileHero');
         if (!heroElement || !business.photos || business.photos.length <= 1) return;
         // Remove existing counter if any
         const existingCounter = heroElement.querySelector('.hero-photo-counter');
         if (existingCounter) existingCounter.remove();
+        
         // Add new counter
         const counter = document.createElement('div');
         counter.className = 'hero-photo-counter';
@@ -1121,13 +989,9 @@ export class BusinessManager {
         `;
         heroElement.appendChild(counter);
         
-        // Make hero clickable (but not the avatar area)
+        // Make hero clickable
         heroElement.style.cursor = 'pointer';
-        heroElement.onclick = (e) => {
-            // Don't open photo viewer if clicking on story avatar
-            if (e.target.closest('.hero-story-avatar')) {
-                return;
-            }
+        heroElement.onclick = () => {
             const currentBusiness = this.state.get('currentBusiness');
             if (currentBusiness) {
                 this.openPhotoViewer(currentBusiness);

@@ -128,8 +128,8 @@ body {
     display: none;
     animation: slideIn 0.3s ease;
     width: 100%;
-    max-width: 100%; /* Change: Use full width of container */
-    margin: 0;
+    max-width: var(--container-max);
+    margin: 0 auto;
     box-sizing: border-box;
 }
 .screen.active {

@@ -1590,5 +1590,3 @@ openStoryByBusinessId(businessId) {
         return businesses.find(b => b.id === businessId);
     }
 }
-    
-}

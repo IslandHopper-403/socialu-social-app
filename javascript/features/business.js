@@ -1038,6 +1038,13 @@ export class BusinessManager {
         heroElement.appendChild(avatar);
         
         console.log('✅ Story avatar added to hero for:', business.name);
+        console.log('🔍 Avatar element details:', {
+            avatarExists: !!avatar,
+            avatarInDom: document.contains(avatar),
+            heroHasAvatar: !!heroElement.querySelector('.hero-story-avatar'),
+            avatarStyles: avatar.style.cssText,
+            logoUrl: logoUrl
+        });
     }
     
     /**

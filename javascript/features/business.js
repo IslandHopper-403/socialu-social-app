@@ -1003,7 +1003,14 @@ export class BusinessManager {
             window.currentStoryBusiness = business;
             
             // Call the FeedManager's showStory method directly
-            const feedManager = window.classifiedApp?.managers?.feedManager;
+            const feedManager = window.classifiedApp?.managers?.feedManager || 
+                               window.classifiedApp?.managers?.feed;
+            
+            console.log('🔍 FeedManager lookup:', {
+                hasFeedManager: !!feedManager,
+                hasShowStory: !!(feedManager?.showStory),
+                allManagers: window.classifiedApp?.managers ? Object.keys(window.classifiedApp.managers) : []
+            });
             
             if (feedManager && typeof feedManager.showStory === 'function') {
                 console.log('✅ Calling feedManager.showStory directly');
@@ -1028,6 +1035,52 @@ export class BusinessManager {
         
         console.log('✅ Story avatar added to hero for:', business.name);
     }
+
+    console.log('✅ Story avatar added to hero for:', business.name);
+    }
+    
+    /**
+     * Manual fallback to open story viewer if feedManager unavailable
+     */
+    manuallyOpenStoryViewer(business) {
+        console.log('🔧 [manuallyOpenStoryViewer] Attempting manual story open');
+        
+        // Set up story data manually
+        const overlay = document.getElementById('storyViewerOverlay');
+        if (!overlay) {
+            console.error('❌ Story viewer overlay not found');
+            alert('Story viewer is not available. Please refresh the page.');
+            return;
+        }
+        
+        // Update story content
+        const logo = document.getElementById('storyBusinessLogo');
+        const name = document.getElementById('storyBusinessName');
+        const type = document.getElementById('storyBusinessType');
+        const image = document.getElementById('storyImage');
+        const textOverlay = document.getElementById('storyTextOverlay');
+        
+        if (logo) logo.src = business.logo || business.photos?.[1] || business.photos?.[0] || '';
+        if (name) name.textContent = business.name || 'Business';
+        if (type) type.textContent = business.type || 'Business';
+        if (image) image.src = business.photos?.[0] || business.image || '';
+        
+        if (textOverlay) {
+            const aboutUs = business.aboutUs || business.description || business.story || 'Welcome!';
+            const truncated = aboutUs.length > 350 ? aboutUs.substring(0, 350) + '...' : aboutUs;
+            textOverlay.textContent = truncated;
+        }
+        
+        // Store for profile view button
+        window.currentStoryBusiness = business;
+        
+        // Show overlay
+        overlay.style.display = 'flex';
+        console.log('✅ Manual story viewer opened');
+    }
+
+        // Add photo counter to hero image
+    addPhotoCounter(business) {
 
         // Add photo counter to hero image
     addPhotoCounter(business) {

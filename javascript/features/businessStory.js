@@ -61,7 +61,19 @@ export class BusinessStoryManager {
         }
         overlay.style.display = 'flex';
         overlay.style.pointerEvents = 'auto';  // Re-enable when opening
-        
+        overlay.style.touchAction = 'auto';  // Re-enable touch!
+    
+        // Re-enable on child elements
+        const storyContent = overlay.querySelector('.story-content');
+        const navAreas = overlay.querySelector('.story-nav-areas');
+        if (storyContent) {
+            storyContent.style.pointerEvents = 'auto';
+            storyContent.style.touchAction = 'auto';
+        }
+        if (navAreas) {
+            navAreas.style.pointerEvents = 'auto';
+            navAreas.style.touchAction = 'auto';
+        }
         
         // Create progress bars (one per photo)
         const photos = business.photos || [];
@@ -221,11 +233,24 @@ export class BusinessStoryManager {
      * Close single business story
      * SECURITY: Cleanup timeouts to prevent memory leaks
      */
-    closeSingleBusinessStory() {
+   closeSingleBusinessStory() {
     const overlay = document.getElementById('singleBusinessStory');
     if (overlay) {
         overlay.style.display = 'none';
-        overlay.style.pointerEvents = 'none';  // CRITICAL FIX!
+        overlay.style.pointerEvents = 'none';
+        overlay.style.touchAction = 'none';  // Disable touch events!
+        
+        // Also disable on child elements
+        const storyContent = overlay.querySelector('.story-content');
+        const navAreas = overlay.querySelector('.story-nav-areas');
+        if (storyContent) {
+            storyContent.style.pointerEvents = 'none';
+            storyContent.style.touchAction = 'none';
+        }
+        if (navAreas) {
+            navAreas.style.pointerEvents = 'none';
+            navAreas.style.touchAction = 'none';
+        }
     }
         
         // SECURITY: Clean up timeout

@@ -60,6 +60,8 @@ export class BusinessStoryManager {
             return;
         }
         overlay.style.display = 'flex';
+        overlay.style.visibility = 'visible';
+        overlay.style.zIndex = '500';
     
         // Re-enable pointer events when opening
         const storyContent = overlay.querySelector('.story-content');
@@ -229,6 +231,8 @@ export class BusinessStoryManager {
     const overlay = document.getElementById('singleBusinessStory');
     if (overlay) {
         overlay.style.display = 'none';
+        overlay.style.visibility = 'hidden';
+        overlay.style.zIndex = '-1';
         
         // CRITICAL: Disable pointer events to prevent blocking interactions when hidden
         const storyContent = overlay.querySelector('.story-content');

@@ -610,6 +610,16 @@ export class FeedManager {
         const logoUrl = business.logo || business.photos?.[0] || '';
         logo.style.backgroundImage = `url("${logoUrl}")`;  // Use double quotes
         
+        // Make logo clickable to open story (SECURITY: stopPropagation)
+        logo.style.cursor = 'pointer';
+        logo.onclick = (e) => {
+            e.stopPropagation(); // Prevent card click
+            const storyManager = window.classifiedApp?.managers?.businessStory;
+            if (storyManager) {
+                storyManager.showBusinessStory(business);
+            }
+        };
+        
         const info = document.createElement('div');
         info.className = 'business-info';
         

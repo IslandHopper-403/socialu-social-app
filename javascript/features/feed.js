@@ -380,8 +380,6 @@ export class FeedManager {
        // Set up logo click handlers after feed is rendered
        setTimeout(() => this.setupLogoClickHandlers(), 100);
     }
-
-    }
     
     /**
      * Populate user feed

@@ -15,24 +15,20 @@ body {
     color: var(--text-primary);
     overflow-x: hidden;
     min-height: 100vh;
+    display: flex; /* Add: Make body flex container */
+    justify-content: center; /* Add: Center children */
 }
 
 .app-container {
     width: 100%;
     max-width: var(--container-max);
-    margin: 0;
+    margin: 0 auto; /* Change: Always center */
     background: var(--bg-card);
     min-height: 100vh;
     position: relative;
-    overflow: hidden; /* Change: Remove overflow-y: auto */
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-}
-
-@media (min-width: 431px) {
-    .app-container {
-        margin: 0 auto;
-    }
 }
 
 /* ===== HEADER STYLES ===== */

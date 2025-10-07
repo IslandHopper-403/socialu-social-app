@@ -72,6 +72,8 @@
     .header {
         width: 100% !important;
         max-width: 100% !important;
+        left: 0 !important; /* Add: Override centering on mobile */
+        transform: none !important; /* Add: Remove transform on mobile */
         padding: 15px;
         margin: 0 !important;
     }

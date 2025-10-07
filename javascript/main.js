@@ -169,6 +169,7 @@ loadDemoContent() {
             messaging: new MessagingManager(firebaseServices, this.state),
             notifications: new NotificationManager(firebaseServices, this.state),
             business: new BusinessManager(firebaseServices, this.state),
+            businessStory: new BusinessStoryManager(firebaseServices, this.state),
             admin: new AdminManager(firebaseServices, this.state),
             referral: new ReferralManager(firebaseServices, this.state),
             photoUpload: new PhotoUploadManager(firebaseServices, this.state),
@@ -735,6 +736,13 @@ async initializeManagers() {
             previousStory: () => this.managers.feed.previousStory(),
             viewFullBusinessProfile: () => this.managers.feed.viewFullBusinessProfile(),
             toggleStoryPause: () => this.managers.feed.toggleStoryPause(),
+
+            // Single Business Story Viewer
+            closeSingleBusinessStory: () => this.managers.businessStory?.closeSingleBusinessStory(),
+            nextSingleStory: () => this.managers.businessStory?.nextSingleStory(),
+            previousSingleStory: () => this.managers.businessStory?.previousSingleStory(),
+            toggleSingleStoryPause: () => this.managers.businessStory?.toggleSingleStoryPause(),
+            viewProfileFromSingleStory: () => this.managers.businessStory?.viewProfileFromSingleStory(),
             
             // Horoscope toggle
             toggleHoroscope: (show) => {

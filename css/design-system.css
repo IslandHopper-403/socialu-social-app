@@ -137,6 +137,67 @@
     --nav-height: 80px;
 }
 
+/* ===== LIGHT MODE THEME - CORAL/SALMON AESTHETIC ===== */
+[data-theme="light"] {
+    /* Primary Coral/Salmon Colors */
+    --primary-coral: #FF8A80;
+    --primary-coral-dark: #FF6B6B;
+    --primary-gradient: linear-gradient(135deg, #FF8A80 0%, #FF6B6B 100%);
+    
+    /* Keep accent colors vibrant */
+    --secondary-red: #FF6B6B;
+    --secondary-red-light: #FF8C8C;
+    --secondary-gradient: linear-gradient(135deg, #FF6B6B, #FF8C8C);
+    
+    --accent-cyan: #00D4FF;
+    --accent-cyan-dark: #0099CC;
+    --accent-gradient: linear-gradient(135deg, #00D4FF, #0099CC);
+    
+    --accent-gold: #FFD700;
+    --accent-gold-dark: #FFA500;
+    --gold-gradient: linear-gradient(135deg, #FFD700, #FFA500);
+    
+    /* Light Backgrounds */
+    --bg-dark: #FFFFFF;           /* Pure white for main background */
+    --bg-darker: #F5F5F5;         /* Very light gray */
+    --bg-card: #FFFFFF;           /* White cards */
+    --bg-elevated: #FAFAFA;       /* Slightly off-white for elevated surfaces */
+    
+    /* Dark Text on Light Background */
+    --text-primary: #1a1a1a;                /* Almost black */
+    --text-secondary: rgba(0, 0, 0, 0.7);   /* 70% black */
+    --text-tertiary: rgba(0, 0, 0, 0.5);    /* 50% black */
+    
+    /* Light Borders */
+    --border-light: rgba(0, 0, 0, 0.08);    /* Very subtle */
+    --border-medium: rgba(0, 0, 0, 0.12);   /* Subtle */
+    --border-heavy: rgba(0, 0, 0, 0.2);     /* More visible */
+    
+    /* Semantic Colors - Adjusted for light mode */
+    --success: #4CAF50;
+    --success-bg: rgba(76, 175, 80, 0.1);
+    --success-border: rgba(76, 175, 80, 0.3);
+    
+    --error: #FF6B6B;
+    --error-bg: rgba(255, 107, 107, 0.1);
+    --error-border: rgba(255, 107, 107, 0.3);
+    
+    --warning: #FFB300;
+    --warning-bg: rgba(255, 179, 0, 0.1);
+    --warning-border: rgba(255, 179, 0, 0.3);
+    
+    --info: #00D4FF;
+    --info-bg: rgba(0, 212, 255, 0.1);
+    --info-border: rgba(0, 212, 255, 0.3);
+    
+    /* Shadows - Darker for visibility on light background */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+    --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.2);
+}
+
 /* ===== UTILITY CLASSES ===== */
 
 /* Spacing Utilities */

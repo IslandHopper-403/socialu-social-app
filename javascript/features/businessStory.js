@@ -60,8 +60,6 @@ export class BusinessStoryManager {
             return;
         }
         overlay.style.display = 'flex';
-
-        overlay.style.display = 'flex';
     
         // Re-enable pointer events when opening
         const storyContent = overlay.querySelector('.story-content');

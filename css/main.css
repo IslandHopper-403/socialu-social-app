@@ -713,7 +713,7 @@ body {
 .business-image-carousel {
     position: relative;
     overflow: hidden;
-    height: 200px;
+    height: 300px;
 }
 
 .carousel-scroll::-webkit-scrollbar {

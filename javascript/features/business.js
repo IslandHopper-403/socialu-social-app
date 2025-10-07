@@ -997,17 +997,31 @@ export class BusinessManager {
             image.style.backgroundImage = `url('${escapeHtml(logoUrl)}')`;
         }
         
-        // Click handler to open story
+         // Click handler to open story
         avatar.onclick = (e) => {
             e.stopPropagation(); // Prevent profile close
-            console.log('🎬 Story avatar clicked, opening story for:', business.name);
+            console.log('🎬 Profile hero avatar clicked, opening story for:', business.name);
             
-            // Get feed manager and open story
+            // Store business for story viewer
+            window.currentStoryBusiness = business;
+            
+            // Call the FeedManager's showStory method directly
             const feedManager = window.classifiedApp?.managers?.feedManager;
+            
             if (feedManager && typeof feedManager.showStory === 'function') {
+                console.log('✅ Calling feedManager.showStory directly');
                 feedManager.showStory(business);
             } else {
-                console.error('❌ Feed manager or showStory not available');
+                console.error('❌ FeedManager not available:', {
+                    hasClassifiedApp: !!window.classifiedApp,
+                    hasManagers: !!window.classifiedApp?.managers,
+                    hasFeedManager: !!window.classifiedApp?.managers?.feedManager,
+                    feedManagerType: typeof window.classifiedApp?.managers?.feedManager
+                });
+                
+                // Fallback: Try to manually trigger story viewer
+                console.log('⚠️ Attempting manual story viewer fallback');
+                this.manuallyOpenStoryViewer(business);
             }
         };
         

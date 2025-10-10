@@ -1740,7 +1740,7 @@ closeChat() {
         }, 500); // Small delay to ensure managers are initialized
     }
 
-        /**
+     /**
          * Save unread state to localStorage
          */
         saveUnreadStateToStorage() {
@@ -1757,8 +1757,15 @@ closeChat() {
                         unreadObject[chatId] = count;
                     }
                 });
+                
+                // CRITICAL LOGGING: Track every save attempt
+                console.log('💾 [MessagingManager] saveUnreadStateToStorage called');
+                console.log('💾 [MessagingManager] Current Map size:', this.unreadMessages.size);
+                console.log('💾 [MessagingManager] Map contents:', Array.from(this.unreadMessages.entries()));
+                console.log('💾 [MessagingManager] Will save:', unreadObject);
+                console.trace('💾 [MessagingManager] Called from:'); // Shows stack trace
+                
                 localStorage.setItem('unreadMessages', JSON.stringify(unreadObject));
-                console.log('💾 Saved unread state to storage');
             } catch (error) {
                 console.error('Error saving unread state:', error);
             }

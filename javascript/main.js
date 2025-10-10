@@ -491,6 +491,25 @@ async initializeManagers() {
                 console.warn('⚠️ Unknown action:', action);
             }
         },
+
+
+            // Handle user actions from profile overlay (gets userId from state)
+            handleUserProfileAction: async (action) => {
+                const viewedUser = this.state.get('currentViewedUser');
+                
+                if (!viewedUser || !viewedUser.uid) {
+                    console.error('❌ No user currently being viewed');
+                    return;
+                }
+                
+                console.log(`🎯 Profile action: ${action} for user ${viewedUser.uid}`);
+                
+                // Close the profile overlay first
+                this.managers.navigation.closeOverlay('userProfileView');
+                
+                // Then handle the action using the same logic
+                await this.handleUserAction(action, viewedUser.uid);
+            },
             
             // NEW: Helper methods for user actions
             async recordPass(fromUserId, toUserId) {

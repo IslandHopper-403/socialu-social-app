@@ -72,14 +72,15 @@ export class MatchingManager {
             const currentUserId = currentUser.uid;
             console.log(`👍 LIKE: ${currentUserId} → ${targetUserId}`);
             
-            // Create like document
+           // Create like document
             const likeId = `${currentUserId}_${targetUserId}`;
             await setDoc(doc(this.db, 'likes', likeId), {
                 fromUserId: currentUserId,
                 toUserId: targetUserId,
-                timestamp: serverTimestamp()
+                timestamp: serverTimestamp(),
+                type: 'like'  // REQUIRED by Firebase Rules
             });
-            
+                        
             console.log('✅ Like saved to Firebase');
             
             // Check for mutual like (match)

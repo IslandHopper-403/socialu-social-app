@@ -203,22 +203,18 @@ export class NotificationManager {
     }
     
     // MOVED from messaging.js - UI notification methods
-    showNotificationDot(count = null) {
+   showNotificationDot(count = null) {
         const notificationDot = document.getElementById('messageNotificationDot');
         const countBadge = document.getElementById('unreadCountBadge');
         
-        // Parse and validate count
         const numCount = parseInt(count) || 0;
         
         if (numCount > 0) {
-            // Show badge with count, hide simple dot
-            if (notificationDot) notificationDot.style.display = 'none';
-            if (countBadge) {
-                countBadge.style.display = 'flex';
-                countBadge.textContent = (numCount > 99 ? '99+' : numCount.toString());
-            }
+            // Show simple red dot only
+            if (notificationDot) notificationDot.style.display = 'block';
+            if (countBadge) countBadge.style.display = 'none';
         } else {
-            // No unread messages - hide everything
+            // Hide everything
             if (notificationDot) notificationDot.style.display = 'none';
             if (countBadge) countBadge.style.display = 'none';
         }

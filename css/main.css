@@ -187,6 +187,12 @@ body {
     z-index: 100 !important;
     pointer-events: none !important;
     box-shadow: 0 2px 8px rgba(255, 68, 68, 0.5) !important;
+    display: none !important;  /* Add this - hidden by default */
+}
+
+/* Add this new rule to show the dot when active */
+.message-notification-dot.show {
+    display: block !important;
 }
 
 .unread-count-badge {
@@ -201,13 +207,18 @@ body {
     padding: 0 6px !important;
     font-size: 11px !important;
     font-weight: 700 !important;
-    display: flex !important;
+    display: none !important;  /* Changed from flex to none by default */
     align-items: center !important;
     justify-content: center !important;
     z-index: 100 !important;
     border: 2px solid rgba(26, 26, 46, 0.95) !important;
     pointer-events: none !important;
     box-shadow: 0 2px 8px rgba(255, 68, 68, 0.5) !important;
+}
+
+/* Add this new rule to show the badge when it has content */
+.unread-count-badge.show {
+    display: flex !important;
 }
 
 /* Chat notification styles */

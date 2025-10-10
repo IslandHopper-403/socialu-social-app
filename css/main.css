@@ -183,7 +183,6 @@ body {
     height: 18px !important;
     background: #FF4444 !important;
     border-radius: 50% !important;
-    animation: pulse 1.5s infinite !important;
     border: 2px solid rgba(26, 26, 46, 0.95) !important;
     z-index: 100 !important;
     pointer-events: none !important;
@@ -209,7 +208,6 @@ body {
     border: 2px solid rgba(26, 26, 46, 0.95) !important;
     pointer-events: none !important;
     box-shadow: 0 2px 8px rgba(255, 68, 68, 0.5) !important;
-    animation: pulse 1.5s infinite !important;
 }
 
 /* Chat notification styles */
@@ -257,6 +255,16 @@ body {
 .social-tab.active .message-notification-dot,
 .social-tab.active .unread-count-badge {
     display: none !important;
+    animation: none !important;
+}
+
+/* Also hide when specifically on messaging tab */
+.social-tab[data-tab="messaging"].active .message-notification-dot,
+.social-tab[data-tab="messaging"].active .unread-count-badge {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    animation: none !important;
 }
 
 /* Enhanced pulse animation - KEEP ONLY THIS ONE */

@@ -819,52 +819,47 @@ body {
     margin-bottom: 18px;
     line-height: 1.5;
 }
+/* ===== LIKE/PASS SYSTEM - 2 BUTTON LAYOUT ===== */
 .user-actions {
     display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 0 5px 5px 5px;
-}
-.action-btn {
-    flex: 1;
-    height: 50px;
-    border-radius: var(--radius-pill);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
     justify-content: center;
-    font-size: 16px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-.action-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-}
-.pass-btn { 
-    background: rgba(255,107,107,0.9);
-    color: white;
-}
-.pass-btn:hover {
-    background: #FF6B6B;
-}
-.chat-btn { 
-    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-cyan-dark));
-    color: white;
-}
-.chat-btn:hover {
-    background: linear-gradient(135deg, var(--accent-cyan-dark), #0066AA);
-}
-.super-btn { 
-    background: linear-gradient(135deg, #FFD93D, #FFC107);
-    color: white;
-}
-.super-btn:hover {
-    background: linear-gradient(135deg, #FFC107, #FF9800);
+    align-items: center;
+    gap: 30px;
+    padding: 20px;
 }
 
+.user-actions .action-btn {
+    width: 85px;
+    height: 85px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.user-actions .action-btn:active {
+    transform: scale(0.92);
+}
+
+.user-actions .pass-btn {
+    background: linear-gradient(135deg, #ff6b6b, #ff8c8c);
+    color: white;
+}
+
+.user-actions .pass-btn:hover {
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+    transform: translateY(-3px);
+}
+
+.user-actions .like-btn {
+    back
+   
 /* Filter Options */
 .filter-options {
     display: flex;

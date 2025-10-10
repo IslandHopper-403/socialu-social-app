@@ -210,29 +210,37 @@ export class NotificationManager {
         const numCount = parseInt(count) || 0;
         
         if (numCount > 0) {
-            // Show simple red dot only
-            if (notificationDot) notificationDot.style.display = 'block';
-            if (countBadge) countBadge.style.display = 'none';
+            // Show simple red dot only using classes
+            if (notificationDot) {
+                notificationDot.classList.add('show');
+            }
+            if (countBadge) {
+                countBadge.classList.remove('show');
+            }
         } else {
-            // Hide everything
-            if (notificationDot) notificationDot.style.display = 'none';
-            if (countBadge) countBadge.style.display = 'none';
+            // Hide everything using classes
+            if (notificationDot) {
+                notificationDot.classList.remove('show');
+            }
+            if (countBadge) {
+                countBadge.classList.remove('show');
+            }
         }
     }
     
     hideNotificationDot() {
-        const notificationDot = document.getElementById('messageNotificationDot');
-        const countBadge = document.getElementById('unreadCountBadge');
-        
-        if (notificationDot) {
-            notificationDot.style.display = 'none';
-            notificationDot.textContent = '';
+            const notificationDot = document.getElementById('messageNotificationDot');
+            const countBadge = document.getElementById('unreadCountBadge');
+            
+            if (notificationDot) {
+                notificationDot.classList.remove('show');
+                notificationDot.textContent = '';
+            }
+            if (countBadge) {
+                countBadge.classList.remove('show');
+                countBadge.textContent = '';
+            }
         }
-        if (countBadge) {
-            countBadge.style.display = 'none';
-            countBadge.textContent = '';
-        }
-    }
     
     // MOVED from messaging.js
     updateUnreadCount(chatId, increment) {

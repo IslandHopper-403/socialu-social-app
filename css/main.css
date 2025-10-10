@@ -255,16 +255,6 @@ body {
 .social-tab.active .message-notification-dot,
 .social-tab.active .unread-count-badge {
     display: none !important;
-    animation: none !important;
-}
-
-/* Also hide when specifically on messaging tab */
-.social-tab[data-tab="messaging"].active .message-notification-dot,
-.social-tab[data-tab="messaging"].active .unread-count-badge {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    animation: none !important;
 }
 
 /* Enhanced pulse animation - KEEP ONLY THIS ONE */

@@ -897,25 +897,26 @@ body {
     display: none !important;
 }
 
-   /* ===== MOBILE OPTIMIZATION ===== */
-   @media (max-width: 430px) {
-       .user-actions {
-           gap: 10px;
-           padding: 0 16px 14px 16px;
-       }
-       
-       .user-actions .action-btn {
-           height: 44px; /* Reduced to match desktop ratio */
-           font-size: 16px;
-           max-width: none;
-           border-radius: 50px; /* Full pill shape like desktop */
-           gap: 8px;
-       }
-       
-       .user-actions .action-btn span {
-           font-size: 18px; /* Adjusted for smaller height */
-       }
-   }
+/* ===== MOBILE OPTIMIZATION ===== */
+@media (max-width: 430px) {
+    .user-actions {
+        gap: 12px;
+        padding: 0 20px 14px 20px; /* Less edge padding for wider buttons */
+    }
+    
+    .user-actions .action-btn {
+        height: 52px; /* Taller for better pill ratio */
+        font-size: 17px;
+        max-width: none;
+        border-radius: 26px; /* Half of height for perfect pill */
+        gap: 8px;
+        padding: 0 28px; /* Extra horizontal padding for width */
+    }
+    
+    .user-actions .action-btn span {
+        font-size: 20px;
+    }
+}
    
    /* Extra small screens */
    @media (max-width: 360px) {

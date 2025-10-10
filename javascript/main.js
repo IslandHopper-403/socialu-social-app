@@ -44,6 +44,7 @@ import { MockData } from './data/mockData.js';
 import { AuthManager } from './features/auth.js';
 import { FeedManager } from './features/feed.js';
 import { ProfileManager } from './features/profile.js';
+import { MatchingManager } from './features/matching.js';
 import { MessagingManager } from './features/messaging.js';
 import { BusinessManager } from './features/business.js';
 import { BusinessStoryManager } from './features/businessStory.js';
@@ -167,6 +168,7 @@ loadDemoContent() {
             auth: new AuthManager(firebaseServices, this.state),
             feed: new FeedManager(firebaseServices, this.state, this.mockData),
             profile: new ProfileManager(firebaseServices, this.state),
+            matching: new MatchingManager(firebaseServices, this.state),
             messaging: new MessagingManager(firebaseServices, this.state),
             notifications: new NotificationManager(firebaseServices, this.state),
             business: new BusinessManager(firebaseServices, this.state),
@@ -461,26 +463,34 @@ async initializeManagers() {
             closeUserProfile: () => this.managers.navigation.closeOverlay('userProfileView'),
       
             // SECURED: Enhanced handleUserAction method with proper validation
-            handleUserAction: async (action, userId) => {
-                // Validate userId
-                if (!userId || userId === 'undefined' || userId === 'null') {
-                    console.error('Invalid userId for action:', action);
-                    return;
-                }
-                
-                // Sanitize userId to prevent injection
-                const safeUserId = userId.replace(/[^a-zA-Z0-9_-]/g, '');
-                console.log(`User action: ${action} on user ${safeUserId}`);
-                
-                const currentUser = this.state.get('currentUser');
-                
-                if (!currentUser) {
-                    alert('Please sign up to connect! 💖');
-                    this.managers.auth.showRegister();
-                    return;
-                }
-                
-                if (action === 'like') {
+               handleUserAction: async (action, userId) => {
+            // Validate userId
+            if (!userId || userId === 'undefined' || userId === 'null') {
+                console.error('Invalid userId for action:', action);
+                return;
+            }
+            
+            // Sanitize userId
+            const safeUserId = userId.replace(/[^a-zA-Z0-9_-]/g, '');
+            console.log(`🎯 User action: ${action} for user ${safeUserId}`);
+            
+            const currentUser = this.state.get('currentUser');
+            
+            if (!currentUser) {
+                alert('Please sign up to connect! 💖');
+                this.managers.auth.showRegister();
+                return;
+            }
+            
+            // Use matching manager for Like/Pass
+            if (action === 'like') {
+                await this.managers.matching.handleLike(safeUserId);
+            } else if (action === 'pass') {
+                await this.managers.matching.handlePass(safeUserId);
+            } else {
+                console.warn('⚠️ Unknown action:', action);
+            }
+        },
                     try {
                         const result = await this.managers.messaging.processLikeAction(
                             currentUser.uid, 

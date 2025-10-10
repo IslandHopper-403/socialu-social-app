@@ -1921,6 +1921,9 @@ closeChat() {
                     return;
                 }
                 
+                // 🎯 TINDER-STYLE: Don't auto-open chat, just add to inbox
+                console.log('✅ Match added to inbox (Tinder-style) - chat will open on first message');
+                
                 // Show match popup
                 if (matchPopup) {
                     matchPopup.classList.add('show');

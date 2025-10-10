@@ -491,51 +491,6 @@ async initializeManagers() {
                 console.warn('⚠️ Unknown action:', action);
             }
         },
-                    try {
-                        const result = await this.managers.messaging.processLikeAction(
-                            currentUser.uid, 
-                            safeUserId
-                        );
-                        
-                        if (result.alreadyLiked) {
-                            console.log('Already liked this user');
-                            return;
-                        }
-                        
-                        if (result.isMatch) {
-                            console.log('🎉 It\'s a match!');
-                            this.managers.feed.switchSocialTab('messaging');
-                        } else {
-                            window.CLASSIFIED.showLikeConfirmation();
-                        }
-                    } catch (err) {
-                        console.error('Error handling like:', err);
-                        window.CLASSIFIED.showLikeConfirmation();
-                    }
-                } else if (action === 'pass') {
-                    window.CLASSIFIED.recordPass(currentUser?.uid, safeUserId);
-                    window.CLASSIFIED.removeUserFromFeed(safeUserId);
-                } else if (action === 'superlike') {
-                    try {
-                        const result = await this.managers.messaging.processLikeAction(
-                            currentUser.uid, 
-                            safeUserId, 
-                            'superlike'
-                        );
-                        
-                        if (result.isMatch) {
-                            console.log('🎉 Super like match!');
-                            this.managers.feed.switchSocialTab('messaging');
-                        } else {
-                            alert(`Super like sent! 🌟 They'll be notified!`);
-                            window.CLASSIFIED.sendSuperLikeNotification(safeUserId);
-                        }
-                    } catch (err) {
-                        console.error('Error handling super like:', err);
-                        alert(`Super like sent! 🌟`);
-                    }
-                }
-            },
             
             // NEW: Helper methods for user actions
             async recordPass(fromUserId, toUserId) {

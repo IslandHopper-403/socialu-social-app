@@ -858,7 +858,39 @@ body {
 }
 
 .user-actions .like-btn {
-    back
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+.user-actions .like-btn:hover {
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    transform: translateY(-3px);
+}
+
+/* Hide old button styles */
+.chat-btn,
+.super-btn {
+    display: none !important;
+}
+
+/* Button content spacing */
+.user-actions .action-btn span {
+    display: block;
+    line-height: 1;
+}
+
+/* Mobile optimization */
+@media (max-width: 430px) {
+    .user-actions {
+        gap: 25px;
+        padding: 15px;
+    }
+    
+    .user-actions .action-btn {
+        width: 75px;
+        height: 75px;
+    }
+}
    
 /* Filter Options */
 .filter-options {

@@ -879,6 +879,7 @@ export class FeedManager {
         feedItem.className = 'user-feed-item';
         feedItem.style.animationDelay = `${index * 0.1}s`;
         feedItem.style.cursor = 'pointer';
+        feedItem.dataset.userId = userId; // ADD THIS LINE - for removal/reordering
         
         // Sanitize user data
         const safeName = sanitizeText(user.name || 'User');
@@ -921,10 +922,15 @@ export class FeedManager {
                         `<span class="interest-tag">${escapeHtml(sanitizeText(interest))}</span>`
                     ).join('')}
                 </div>
-                <div class="user-actions">
-                    <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${userId}')">✕ Pass</button>
-                    <button class="action-btn chat-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${userId}')">💬 Chat</button>
-                    <button class="action-btn super-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('superlike', '${userId}')">⭐ Super</button>
+              <div class="user-actions">
+                    <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${userId}')">
+                        <span style="font-size: 24px;">✕</span>
+                        <span style="font-size: 12px; margin-top: 4px;">Pass</span>
+                    </button>
+                    <button class="action-btn like-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${userId}')">
+                        <span style="font-size: 24px;">⭐️</span>
+                        <span style="font-size: 12px; margin-top: 4px;">Like</span>
+                    </button>
                 </div>
             </div>
         `;

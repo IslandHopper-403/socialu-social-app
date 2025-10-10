@@ -806,6 +806,7 @@ body {
 }
 .user-info {
     padding: var(--spacing-lg);
+    padding-bottom: 0; /* Remove bottom padding since buttons have their own */
 }
 .user-name {
     font-size: 28px;
@@ -820,63 +821,74 @@ body {
     line-height: 1.5;
 }
 
-/* ===== LIKE/PASS SYSTEM - PILL BUTTONS WITH ICONS ===== */
+/* ===== LIKE/PASS SYSTEM - OPTIMIZED FOR MOBILE ===== */
 .user-actions {
     display: flex;
     justify-content: space-between;
     gap: 12px;
-    padding: 0 15px 20px 15px;
+    padding: 0 20px 20px 20px;
+    margin-top: auto; /* Push to bottom if using flexbox parent */
 }
 
 .user-actions .action-btn {
     flex: 1;
-    height: 56px;
-    border-radius: 50px; /* Extra rounded pill shape */
+    height: 54px;
+    max-width: 180px; /* Prevent buttons from being too wide on larger screens */
+    border-radius: 50px;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
     font-weight: 700;
-    font-size: 18px;
+    font-size: 17px;
     letter-spacing: 0.3px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
 }
 
-.user-actions .action-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+/* Hover states - only for non-touch devices */
+@media (hover: hover) and (pointer: fine) {
+    .user-actions .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    }
 }
 
+/* Active state for all devices */
 .user-actions .action-btn:active {
-    transform: translateY(0);
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+/* Pass Button Styling */
 .user-actions .pass-btn {
     background: linear-gradient(135deg, #FF6B84, #FF8FA3);
     color: white;
 }
 
-.user-actions .pass-btn:hover {
+.user-actions .pass-btn:active {
     background: linear-gradient(135deg, #FF5A73, #FF7E92);
 }
 
+/* Like/Chat Button Styling */
 .user-actions .like-btn {
     background: linear-gradient(135deg, #00D4FF, #00B8E6);
     color: white;
 }
 
-.user-actions .like-btn:hover {
+.user-actions .like-btn:active {
     background: linear-gradient(135deg, #00C2ED, #00A6D4);
 }
 
 /* Icon styling */
 .user-actions .action-btn span {
-    font-size: 22px;
+    font-size: 20px;
     display: inline-flex;
     align-items: center;
+    line-height: 1;
 }
 
 /* Hide old button styles */
@@ -885,20 +897,39 @@ body {
     display: none !important;
 }
 
-/* Mobile optimization */
+/* ===== MOBILE OPTIMIZATION ===== */
 @media (max-width: 430px) {
     .user-actions {
         gap: 10px;
-        padding: 0 12px 18px 12px;
+        padding: 0 16px 16px 16px;
     }
     
     .user-actions .action-btn {
         height: 52px;
         font-size: 16px;
+        max-width: none; /* Allow full width on mobile */
     }
     
     .user-actions .action-btn span {
-        font-size: 20px;
+        font-size: 19px;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 360px) {
+    .user-actions {
+        gap: 8px;
+        padding: 0 12px 14px 12px;
+    }
+    
+    .user-actions .action-btn {
+        height: 48px;
+        font-size: 15px;
+        gap: 6px;
+    }
+    
+    .user-actions .action-btn span {
+        font-size: 18px;
     }
 }
 

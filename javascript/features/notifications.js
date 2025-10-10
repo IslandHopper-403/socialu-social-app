@@ -207,15 +207,19 @@ export class NotificationManager {
         const notificationDot = document.getElementById('messageNotificationDot');
         const countBadge = document.getElementById('unreadCountBadge');
         
-        if (count && count > 0) {
+        // Parse and validate count
+        const numCount = parseInt(count) || 0;
+        
+        if (numCount > 0) {
+            // Show badge with count, hide simple dot
             if (notificationDot) notificationDot.style.display = 'none';
             if (countBadge) {
                 countBadge.style.display = 'flex';
-                // SECURITY: Ensure count is a number
-                countBadge.textContent = (parseInt(count) > 99 ? '99+' : count.toString());
+                countBadge.textContent = (numCount > 99 ? '99+' : numCount.toString());
             }
         } else {
-            if (notificationDot) notificationDot.style.display = 'block';
+            // No unread messages - hide everything
+            if (notificationDot) notificationDot.style.display = 'none';
             if (countBadge) countBadge.style.display = 'none';
         }
     }
@@ -223,8 +227,15 @@ export class NotificationManager {
     hideNotificationDot() {
         const notificationDot = document.getElementById('messageNotificationDot');
         const countBadge = document.getElementById('unreadCountBadge');
-        if (notificationDot) notificationDot.style.display = 'none';
-        if (countBadge) countBadge.style.display = 'none';
+        
+        if (notificationDot) {
+            notificationDot.style.display = 'none';
+            notificationDot.textContent = '';
+        }
+        if (countBadge) {
+            countBadge.style.display = 'none';
+            countBadge.textContent = '0';
+        }
     }
     
     // MOVED from messaging.js

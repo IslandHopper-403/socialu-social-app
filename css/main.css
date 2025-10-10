@@ -910,7 +910,7 @@ body {
            max-width: none !important;
            border-radius: 50px !important; /* Force pill */
            gap: 8px;
-           padding: 0 42px !important; /* Force wider */
+           padding: 0 46px !important; /* Force wider */
        }
        
        .user-actions .action-btn span {

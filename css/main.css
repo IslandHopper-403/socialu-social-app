@@ -176,39 +176,40 @@ body {
 
 /* Message Notification Dot */
 .message-notification-dot {
-    position: absolute;
-    top: -12px;
-    right: 0px;
-    width: 24px;
-    height: 24px;
-    background: #FD493F;
-    border-radius: var(--radius-circle);
-   /* animation: pulse 1.5s infinite; */ 
-    border: 2px solid rgba(255, 68, 68, 0.3);
-    z-index: 10;  /* Changed from 10 to 100 */
-    pointer-events: none;  /* Add this to prevent blocking clicks */
-    /* NO display: none here - let JavaScript control visibility */
+    position: absolute !important;
+    top: -8px !important;
+    right: -8px !important;
+    width: 18px !important;
+    height: 18px !important;
+    background: #FF4444 !important;
+    border-radius: 50% !important;
+    animation: pulse 1.5s infinite !important;
+    border: 2px solid rgba(26, 26, 46, 0.95) !important;
+    z-index: 100 !important;
+    pointer-events: none !important;
+    box-shadow: 0 2px 8px rgba(255, 68, 68, 0.5) !important;
 }
 
 .unread-count-badge {
-    position: absolute;
-    top: -12px;
-    right: 0px;
-    background: #FFFFFF;
-    color: white;
-    border-radius: var(--radius-circle);
-    min-width: 20px;  /* Changed from width: 18px to min-width: 20px */
-    height: 20px;  /* Changed from 18px to 20px */
-    padding: 0 4px;  /* Added padding */
-    font-size: 24px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;  /* Changed from 10 to 100 */
-    border: 2px solid var(--bg-dark);
-    pointer-events: none;  /* Add this */
-    /* NO display: none here - let JavaScript control visibility */
+    position: absolute !important;
+    top: -10px !important;
+    right: -10px !important;
+    background: #FF4444 !important;
+    color: #FFFFFF !important;
+    border-radius: 12px !important;
+    min-width: 22px !important;
+    height: 22px !important;
+    padding: 0 6px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 100 !important;
+    border: 2px solid rgba(26, 26, 46, 0.95) !important;
+    pointer-events: none !important;
+    box-shadow: 0 2px 8px rgba(255, 68, 68, 0.5) !important;
+    animation: pulse 1.5s infinite !important;
 }
 
 /* Chat notification styles */

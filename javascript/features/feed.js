@@ -1540,6 +1540,18 @@ openStoryByBusinessId(businessId) {
             content.classList.remove('active');
         });
         document.getElementById(`${tabType}Content`)?.classList.add('active');
+        
+        // FIXED: Hide notifications when switching to messaging tab
+        if (tabType === 'messaging') {
+            const notificationManager = window.classifiedApp?.managers?.notifications;
+            if (notificationManager) {
+                // Force hide the badges (CSS should handle this, but ensure it)
+                const notificationDot = document.getElementById('messageNotificationDot');
+                const countBadge = document.getElementById('unreadCountBadge');
+                if (notificationDot) notificationDot.style.display = 'none';
+                if (countBadge) countBadge.style.display = 'none';
+            }
+        }
     }
     
     /**

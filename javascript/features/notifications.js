@@ -89,8 +89,9 @@ export class NotificationManager {
         }
     }
     
-        shouldShowNotification(message, chatId) {
+       shouldShowNotification(message, chatId) {
         const currentUser = this.state.get('currentUser');
+        const messagingManager = window.classifiedApp?.managers?.messaging;
         
         // Never notify for own messages
         if (message.senderId === currentUser?.uid) {
@@ -105,7 +106,13 @@ export class NotificationManager {
             return false;
         }
         
-        // FIX: Get message timestamp properly
+        // Don't notify if this chat is currently open AND visible
+        if (messagingManager?.currentChatId === chatId && messagingManager?.isChatVisible) {
+            console.log('🔕 Chat is open, skipping notification');
+            return false;
+        }
+        
+        // Get message timestamp properly
         const messageTime = message.timestamp?.toMillis?.() || 
                            message.timestamp?.seconds ? (message.timestamp.seconds * 1000) : 
                            Date.now();
@@ -118,33 +125,32 @@ export class NotificationManager {
             return false;
         }
         
-        // FIX: Check against last app close time from localStorage
-        const lastAppClose = parseInt(localStorage.getItem('lastAppClose') || '0', 10);
-        const appStartTime = parseInt(localStorage.getItem('appStartTime') || Date.now().toString(), 10);
+        // FIXED: Check against session start time (not app close)
+        // Messages arriving AFTER this session started should notify
+        const sessionStart = this.sessionStartTime;
         
-        // Only notify for messages that arrived while app was closed
-        const shouldNotify = messageTime > lastAppClose && messageTime < appStartTime;
-        
-        if (shouldNotify) {
-            // Check cooldown
-            const lastNotificationTime = this.lastNotificationTimes.get(chatId) || 0;
-            if (Date.now() - lastNotificationTime < 5000) { // 5 second cooldown
-                return false;
-            }
-            
-            // Mark as processed
+        // Only notify for messages that arrived after this session started
+        if (messageTime < sessionStart) {
+            console.log('🔕 Message from before session, skipping notification');
             this.processedMessages.add(messageId);
             this.saveProcessedMessages();
-            this.lastNotificationTimes.set(chatId, Date.now());
-            
-            return true;
+            return false;
         }
         
-        // Always mark as processed to prevent future notifications
+        // Check cooldown (prevent spam)
+        const lastNotificationTime = this.lastNotificationTimes.get(chatId) || 0;
+        if (Date.now() - lastNotificationTime < 3000) { // 3 second cooldown
+            console.log('🔕 Cooldown active, skipping notification');
+            return false;
+        }
+        
+        // Mark as processed and update cooldown
         this.processedMessages.add(messageId);
         this.saveProcessedMessages();
+        this.lastNotificationTimes.set(chatId, Date.now());
         
-        return false;
+        console.log('🔔 Showing notification for message:', messageId);
+        return true;
     }
         
     showNotification(message, chatId, partnerInfo) {

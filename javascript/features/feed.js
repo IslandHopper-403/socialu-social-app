@@ -429,16 +429,24 @@ export class FeedManager {
         );
         
         const snapshot = await getDocs(q);
-        
+            
         snapshot.forEach(doc => {
-            const userData = doc.data();
-            // Skip current user and incomplete profiles
-            if (doc.id === currentUserId || 
-                !userData.name || 
-                !userData.bio || 
-                !userData.interests?.length) {
-                return;
-            }
+        const userData = doc.data();
+        const docId = doc.id;
+        
+        // Get liked/passed users from localStorage
+        const likedUsers = this.getLikedUsers();
+        const passedUsers = this.getPassedUsers();
+        
+        // Skip current user, incomplete profiles, AND already actioned users
+        if (docId === currentUserId || 
+            !userData.name || 
+            !userData.bio || 
+            !userData.interests?.length ||
+            likedUsers.has(docId) ||
+            passedUsers.has(docId)) {
+            return;
+        }
             
         users.push({
         id: doc.id,
@@ -461,6 +469,31 @@ export class FeedManager {
         });
         
         return users;
+    }
+
+    
+        /**
+     * Get liked users from localStorage
+     */
+    getLikedUsers() {
+        try {
+            const stored = localStorage.getItem('likedUsers');
+            return stored ? new Set(JSON.parse(stored)) : new Set();
+        } catch (error) {
+            return new Set();
+        }
+    }
+    
+    /**
+     * Get passed users from localStorage  
+     */
+    getPassedUsers() {
+        try {
+            const stored = localStorage.getItem('passedUsers');
+            return stored ? new Set(JSON.parse(stored)) : new Set();
+        } catch (error) {
+            return new Set();
+        }
     }
     
     /**

@@ -158,42 +158,6 @@ body {
     display: block;
 }
 
-/* Message Notification Dot */
-.message-notification-dot {
-    position: absolute;
-    top: -12px;
-    right: 0px;
-    width: 24px;
-    height: 24px;
-    background: #FD493F;
-    border-radius: var(--radius-circle);
-   /* animation: pulse 1.5s infinite; */ 
-    border: 2px solid rgba(255, 68, 68, 0.3);
-    z-index: 10;  /* Changed from 10 to 100 */
-    pointer-events: none;  /* Add this to prevent blocking clicks */
-    /* NO display: none here - let JavaScript control visibility */
-}
-
-.unread-count-badge {
-    position: absolute;
-    top: -12px;
-    right: 0px;
-    background: #FFFFFF;
-    color: white;
-    border-radius: var(--radius-circle);
-    min-width: 20px;  /* Changed from width: 18px to min-width: 20px */
-    height: 20px;  /* Changed from 18px to 20px */
-    padding: 0 4px;  /* Added padding */
-    font-size: 24px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;  /* Changed from 10 to 100 */
-    border: 2px solid var(--bg-dark);
-    pointer-events: none;  /* Add this */
-    /* NO display: none here - let JavaScript control visibility */
-}
 
 /* Chat notification styles */
 /* Ensure social tab has proper positioning context */

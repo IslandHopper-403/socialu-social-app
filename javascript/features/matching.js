@@ -60,40 +60,56 @@ export class MatchingManager {
     /**
      * Handle Like action
      */
-    async handleLike(targetUserId) {
-        try {
-            const currentUser = this.auth.currentUser;
-            if (!currentUser) {
-                console.error('❌ No authenticated user');
-                window.CLASSIFIED.showLogin();
-                return;
-            }
-            
-            const currentUserId = currentUser.uid;
-            console.log(`👍 LIKE: ${currentUserId} → ${targetUserId}`);
-            
-      // Create like document
+  async handleLike(targetUserId) {
+    try {
+        const currentUser = this.auth.currentUser;
+        if (!currentUser) {
+            console.error('❌ No authenticated user');
+            window.CLASSIFIED.showLogin();
+            return;
+        }
+        
+        const currentUserId = currentUser.uid;
+        console.log(`👍 LIKE: ${currentUserId} → ${targetUserId}`);
+        
+        // Create like document
         const likeId = `${currentUserId}_${targetUserId}`;
-        
-        // CRITICAL: Verify document ID matches the pattern
-        console.log('Creating like:', {
-            likeId,
-            currentUserId,
-            targetUserId,
-            matches: likeId === `${currentUserId}_${targetUserId}`
-        });
-        
-        await setDoc(doc(this.db, 'likes', likeId), {
+        const likeData = {
             fromUserId: currentUserId,
             toUserId: targetUserId,
             timestamp: serverTimestamp()
+        };
+        
+        // DEBUG: Comprehensive logging
+        console.log('🔍 Like Document Debug:', {
+            likeId,
+            expectedPattern: `${currentUserId}_${targetUserId}`,
+            patternMatches: likeId === `${currentUserId}_${targetUserId}`,
+            data: {
+                fromUserId: currentUserId,
+                toUserId: targetUserId,
+                timestamp: 'serverTimestamp()'
+            },
+            authCheck: {
+                authenticated: !!currentUser,
+                uid: currentUser.uid,
+                matchesFromUserId: currentUser.uid === currentUserId
+            }
         });
-                                
-            console.log('✅ Like saved to Firebase');
-            
-            // Check for mutual like (match)
-            const reverseLikeId = `${targetUserId}_${currentUserId}`;
-            const reverseLikeDoc = await getDoc(doc(this.db, 'likes', reverseLikeId));
+        
+        // Attempt to create like document
+        console.log('📝 Writing to Firebase likes collection...');
+        await setDoc(doc(this.db, 'likes', likeId), likeData);
+        console.log('✅ Like saved to Firebase successfully');
+        
+        // Check for mutual like (match)
+        console.log('🔍 Checking for mutual like...');
+        const reverseLikeId = `${targetUserId}_${currentUserId}`;
+        const reverseLikeDoc = await getDoc(doc(this.db, 'likes', reverseLikeId));
+        console.log('📊 Mutual like check:', {
+            reverseLikeId,
+            exists: reverseLikeDoc.exists()
+        });
             
             if (reverseLikeDoc.exists()) {
                 // IT'S A MATCH! 🎉
@@ -136,34 +152,47 @@ export class MatchingManager {
     /**
      * Handle Pass action
      */
-    async handlePass(targetUserId) {
-        try {
-            const currentUser = this.auth.currentUser;
-            if (!currentUser) {
-                console.error('❌ No authenticated user');
-                window.CLASSIFIED.showLogin();
-                return;
-            }
-            
-            const currentUserId = currentUser.uid;
-            console.log(`👎 PASS: ${currentUserId} → ${targetUserId}`);
-            
-            // Create pass document
-            const passId = `${currentUserId}_${targetUserId}`;
-            
-            console.log('Creating pass:', {
-                passId,
-                currentUserId,
-                targetUserId
-            });
-            
-            await setDoc(doc(this.db, 'passes', passId), {
+   async handlePass(targetUserId) {
+    try {
+        const currentUser = this.auth.currentUser;
+        if (!currentUser) {
+            console.error('❌ No authenticated user');
+            window.CLASSIFIED.showLogin();
+            return;
+        }
+        
+        const currentUserId = currentUser.uid;
+        console.log(`👎 PASS: ${currentUserId} → ${targetUserId}`);
+        
+        // Create pass document
+        const passId = `${currentUserId}_${targetUserId}`;
+        const passData = {
+            fromUserId: currentUserId,
+            toUserId: targetUserId,
+            timestamp: serverTimestamp()
+        };
+        
+        // DEBUG: Comprehensive logging
+        console.log('🔍 Pass Document Debug:', {
+            passId,
+            expectedPattern: `${currentUserId}_${targetUserId}`,
+            patternMatches: passId === `${currentUserId}_${targetUserId}`,
+            data: {
                 fromUserId: currentUserId,
                 toUserId: targetUserId,
-                timestamp: serverTimestamp()
-            });
-            
-            console.log('✅ Pass saved to Firebase');
+                timestamp: 'serverTimestamp()'
+            },
+            authCheck: {
+                authenticated: !!currentUser,
+                uid: currentUser.uid,
+                matchesFromUserId: currentUser.uid === currentUserId
+            }
+        });
+        
+        // Attempt to create pass document
+        console.log('📝 Writing to Firebase passes collection...');
+        await setDoc(doc(this.db, 'passes', passId), passData);
+        console.log('✅ Pass saved to Firebase successfully');
             
             // Track passed user
             this.passedUsers.add(targetUserId);

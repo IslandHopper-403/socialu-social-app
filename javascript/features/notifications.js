@@ -50,7 +50,7 @@ export class NotificationManager {
             console.error('Error loading unread state:', error);
         }
     }
-    
+
    // MOVED from messaging.js
     saveUnreadStateToStorage() {
         try {
@@ -67,7 +67,13 @@ export class NotificationManager {
                 }
             });
             
-            console.log('💾 Saving unread state:', unreadObject);
+            // CRITICAL LOGGING: Track every save attempt
+            console.log('💾 [NotificationManager] saveUnreadStateToStorage called');
+            console.log('💾 [NotificationManager] Current Map size:', this.unreadMessages.size);
+            console.log('💾 [NotificationManager] Map contents:', Array.from(this.unreadMessages.entries()));
+            console.log('💾 [NotificationManager] Will save:', unreadObject);
+            console.trace('💾 [NotificationManager] Called from:'); // Shows stack trace
+            
             localStorage.setItem('unreadMessages', JSON.stringify(unreadObject));
         } catch (error) {
             console.error('Error saving unread state:', error);

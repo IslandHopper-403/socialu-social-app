@@ -874,19 +874,22 @@ export class FeedManager {
     /**
      * Create user feed item
      */
-      createUserFeedItem(user, index) {
-        const feedItem = document.createElement('div');
-        feedItem.className = 'user-feed-item';
-        feedItem.style.animationDelay = `${index * 0.1}s`;
-        feedItem.style.cursor = 'pointer';
-        feedItem.dataset.userId = userId; // ADD THIS LINE - for removal/reordering
-        
-        // Sanitize user data
-        const safeName = sanitizeText(user.name || 'User');
-        const safeBio = sanitizeText(user.bio || 'No bio');
-        const safeAge = parseInt(user.age) || 25;
-        
-        const userId = user.uid || user.id || `demo_${safeName.toLowerCase().replace(/\s/g, '_')}`;
+    
+ createUserFeedItem(user, index) {
+    // Sanitize user data FIRST
+    const safeName = sanitizeText(user.name || 'User');
+    const safeBio = sanitizeText(user.bio || 'No bio');
+    const safeAge = parseInt(user.age) || 25;
+    
+    // Define userId BEFORE using it
+    const userId = user.uid || user.id || `demo_${safeName.toLowerCase().replace(/\s/g, '_')}`;
+    
+    // Now create the element with userId available
+    const feedItem = document.createElement('div');
+    feedItem.className = 'user-feed-item';
+    feedItem.style.animationDelay = `${index * 0.1}s`;
+    feedItem.style.cursor = 'pointer';
+    feedItem.dataset.userId = userId; // Now this works!
         
         const userWithId = {
             ...user,

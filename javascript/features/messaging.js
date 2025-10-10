@@ -31,7 +31,7 @@ import { BusinessMessagingManager } from './businessMessaging.js';
  * Handles all messaging and chat functionality
  */
 export class MessagingManager {
-   constructor(firebaseServices, appState) {
+  constructor(firebaseServices, appState) {
     this.auth = firebaseServices.auth;
     this.db = firebaseServices.db;
     this.state = appState;
@@ -54,9 +54,15 @@ export class MessagingManager {
     this.currentChatId = null;
     this.currentChatPartner = null;
     
+    // CRITICAL: Track initialization state
+    this.isInitialized = false;
+    
   // Keep unread messages for UI display only
     this.unreadMessages = new Map();
     this.loadUnreadStateFromStorage();
+    
+    // Mark as initialized BEFORE restoring notification state
+    this.isInitialized = true;
     
     // FIXED: Restore notification dot on page load
     this.restoreNotificationState();
@@ -1739,6 +1745,12 @@ closeChat() {
          */
         saveUnreadStateToStorage() {
             try {
+                // CRITICAL: Don't wipe localStorage during initialization
+                if (!this.isInitialized) {
+                    console.log('⏸️ MessagingManager: Skipping save during initialization');
+                    return;
+                }
+                
                 const unreadObject = {};
                 this.unreadMessages.forEach((count, chatId) => {
                     if (count > 0) {

@@ -54,9 +54,13 @@ export class MessagingManager {
     this.currentChatId = null;
     this.currentChatPartner = null;
     
-   // Keep unread messages for UI display only
+  // Keep unread messages for UI display only
     this.unreadMessages = new Map();
     this.loadUnreadStateFromStorage();
+    
+    // FIXED: Restore notification dot on page load
+    this.restoreNotificationState();
+    
     this.isAppVisible = !document.hidden;
     this.isChatVisible = false; // Track if chat overlay is actually visible
 
@@ -1698,6 +1702,37 @@ closeChat() {
             }
         }
 
+    /**
+     * Restore notification state on page load
+     */
+    restoreNotificationState() {
+        // Wait for notification manager to be ready
+        setTimeout(() => {
+            const notificationManager = window.classifiedApp?.managers?.notifications;
+            if (!notificationManager) {
+                console.warn('⚠️ Notification manager not ready yet');
+                return;
+            }
+            
+            // Calculate total unread from localStorage
+            const totalUnread = Array.from(this.unreadMessages.values())
+                .reduce((sum, count) => sum + count, 0);
+            
+            if (totalUnread > 0) {
+                console.log(`🔔 Restoring ${totalUnread} unread messages on page load`);
+                notificationManager.showNotificationDot(totalUnread);
+                
+                // Also sync the unread map to notification manager
+                this.unreadMessages.forEach((count, chatId) => {
+                    notificationManager.unreadMessages.set(chatId, count);
+                });
+                notificationManager.saveUnreadStateToStorage();
+            } else {
+                console.log('✅ No unread messages to restore');
+                notificationManager.hideNotificationDot();
+            }
+        }, 500); // Small delay to ensure managers are initialized
+    }
 
         /**
          * Save unread state to localStorage
@@ -2464,6 +2499,13 @@ updateUnreadCount(chatId, increment) {
     // FIXED: Save immediately after every update
     this.saveUnreadStateToStorage();
     
+    // FIXED: Sync to notification manager
+    const notificationManager = window.classifiedApp?.managers?.notifications;
+    if (notificationManager) {
+        notificationManager.unreadMessages.set(chatId, newCount);
+        notificationManager.saveUnreadStateToStorage();
+    }
+    
     // Calculate total unread
     const totalUnread = Array.from(this.unreadMessages.values()).reduce((sum, count) => sum + count, 0);
     
@@ -2511,9 +2553,15 @@ async markChatAsRead(chatId) {
     // FIXED: Save immediately
     this.saveUnreadStateToStorage();
     
+    // FIXED: Sync to notification manager
+    const notificationManager = window.classifiedApp?.managers?.notifications;
+    if (notificationManager) {
+        notificationManager.unreadMessages.set(chatId, 0);
+        notificationManager.saveUnreadStateToStorage();
+    }
+    
     // FIXED: Also save timestamp of when we last read this chat
     localStorage.setItem(`lastRead_${chatId}`, Date.now().toString());
-    localStorage.setItem(`seen_${chatId}_${this.state.get('currentUser').uid}`, Date.now().toString());
     
     // Update total unread count
     const totalUnread = Array.from(this.unreadMessages.values()).reduce((sum, count) => sum + count, 0);

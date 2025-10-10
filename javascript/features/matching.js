@@ -1,1 +1,291 @@
+// javascript/features/matching.js
 
+import {
+    collection,
+    doc,
+    setDoc,
+    getDoc,
+    serverTimestamp,
+    addDoc
+} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+/**
+ * Matching Manager
+ * Handles Like/Pass system and match detection
+ */
+export class MatchingManager {
+    constructor(firebaseServices, appState) {
+        this.auth = firebaseServices.auth;
+        this.db = firebaseServices.db;
+        this.state = appState;
+        
+        // Track passed users to move them to bottom of feed
+        this.passedUsers = new Set();
+    }
+    
+    /**
+     * Initialize matching system
+     */
+    async init() {
+        console.log('💕 Initializing matching manager...');
+        
+        // Load passed users from localStorage
+        this.loadPassedUsers();
+    }
+    
+    /**
+     * Load passed users from localStorage
+     */
+    loadPassedUsers() {
+        try {
+            const stored = localStorage.getItem('passedUsers');
+            if (stored) {
+                this.passedUsers = new Set(JSON.parse(stored));
+                console.log('📦 Loaded', this.passedUsers.size, 'passed users from storage');
+            }
+        } catch (error) {
+            console.error('Error loading passed users:', error);
+        }
+    }
+    
+    /**
+     * Save passed users to localStorage
+     */
+    savePassedUsers() {
+        try {
+            localStorage.setItem('passedUsers', JSON.stringify([...this.passedUsers]));
+        } catch (error) {
+            console.error('Error saving passed users:', error);
+        }
+    }
+    
+    /**
+     * Handle Like action
+     */
+    async handleLike(targetUserId) {
+        try {
+            const currentUser = this.auth.currentUser;
+            if (!currentUser) {
+                console.error('❌ No authenticated user');
+                window.CLASSIFIED.showLogin();
+                return;
+            }
+            
+            const currentUserId = currentUser.uid;
+            
+            console.log(`👍 LIKE: ${currentUserId} → ${targetUserId}`);
+            
+            // Create like document
+            const likeId = `${currentUserId}_${targetUserId}`;
+            await setDoc(doc(this.db, 'likes', likeId), {
+                fromUserId: currentUserId,
+                toUserId: targetUserId,
+                timestamp: serverTimestamp()
+            });
+            
+            console.log('✅ Like saved to Firebase');
+            
+            // Check for mutual like (match)
+            const reverseLikeId = `${targetUserId}_${currentUserId}`;
+            const reverseLikeDoc = await getDoc(doc(this.db, 'likes', reverseLikeId));
+            
+            if (reverseLikeDoc.exists()) {
+                // IT'S A MATCH! 🎉
+                console.log('🎉 MATCH DETECTED!');
+                await this.createMatch(currentUserId, targetUserId);
+                
+                // Get target user data for popup
+                const targetUserDoc = await getDoc(doc(this.db, 'users', targetUserId));
+                const targetUserData = targetUserDoc.data();
+                
+                // Show match popup
+                window.CLASSIFIED.showMatchPopup({
+                    uid: targetUserId,
+                    name: targetUserData?.name || 'User',
+                    image: targetUserData?.photos?.[0] || targetUserData?.photo || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop'
+                });
+            } else {
+                // No match yet, send like notification
+                await this.sendLikeNotification(targetUserId, currentUser);
+                
+                // Show success feedback
+                window.CLASSIFIED.showSuccess('Like sent! 💕');
+            }
+            
+            // Remove from feed (if in feed view)
+            this.removeUserFromFeed(targetUserId);
+            
+        } catch (error) {
+            console.error('❌ Error handling like:', error);
+            window.CLASSIFIED.showError('Failed to send like');
+        }
+    }
+    
+    /**
+     * Handle Pass action
+     */
+    async handlePass(targetUserId) {
+        try {
+            const currentUser = this.auth.currentUser;
+            if (!currentUser) {
+                console.error('❌ No authenticated user');
+                window.CLASSIFIED.showLogin();
+                return;
+            }
+            
+            const currentUserId = currentUser.uid;
+            
+            console.log(`👎 PASS: ${currentUserId} → ${targetUserId}`);
+            
+            // Create pass document
+            const passId = `${currentUserId}_${targetUserId}`;
+            await setDoc(doc(this.db, 'passes', passId), {
+                fromUserId: currentUserId,
+                toUserId: targetUserId,
+                timestamp: serverTimestamp()
+            });
+            
+            console.log('✅ Pass saved to Firebase');
+            
+            // Add to passed users set
+            this.passedUsers.add(targetUserId);
+            this.savePassedUsers();
+            
+            // Move user to bottom of feed (don't remove)
+            this.moveUserToBottomOfFeed(targetUserId);
+            
+        } catch (error) {
+            console.error('❌ Error handling pass:', error);
+            window.CLASSIFIED.showError('Failed to pass user');
+        }
+    }
+    
+    /**
+     * Create match between two users
+     */
+    async createMatch(userId1, userId2) {
+        try {
+            // Sort user IDs alphabetically for consistent match ID
+            const matchId = [userId1, userId2].sort().join('_');
+            
+            await setDoc(doc(this.db, 'matches', matchId), {
+                users: [userId1, userId2],
+                timestamp: serverTimestamp(),
+                status: 'active'
+            });
+            
+            console.log('✅ Match created:', matchId);
+            
+            // Send match notification to both users
+            await this.sendMatchNotification(userId1, userId2);
+            await this.sendMatchNotification(userId2, userId1);
+            
+        } catch (error) {
+            console.error('❌ Error creating match:', error);
+        }
+    }
+    
+    /**
+     * Send like notification
+     */
+    async sendLikeNotification(toUserId, fromUser) {
+        try {
+            await addDoc(collection(this.db, 'notifications'), {
+                userId: toUserId,
+                title: 'New Like! 💕',
+                message: `${fromUser.displayName || 'Someone'} liked you`,
+                type: 'like',
+                fromUserId: fromUser.uid,
+                timestamp: serverTimestamp(),
+                read: false
+            });
+            
+            console.log('📬 Like notification sent to:', toUserId);
+        } catch (error) {
+            console.error('❌ Error sending like notification:', error);
+        }
+    }
+    
+    /**
+     * Send match notification
+     */
+    async sendMatchNotification(toUserId, matchedWithUserId) {
+        try {
+            // Get matched user data
+            const userDoc = await getDoc(doc(this.db, 'users', matchedWithUserId));
+            const userData = userDoc.data();
+            
+            await addDoc(collection(this.db, 'notifications'), {
+                userId: toUserId,
+                title: "It's a Match! 🎉",
+                message: `You matched with ${userData?.name || 'someone'}`,
+                type: 'match',
+                fromUserId: matchedWithUserId,
+                timestamp: serverTimestamp(),
+                read: false
+            });
+            
+            console.log('🎉 Match notification sent to:', toUserId);
+        } catch (error) {
+            console.error('❌ Error sending match notification:', error);
+        }
+    }
+    
+    /**
+     * Remove user from feed (immediate)
+     */
+    removeUserFromFeed(userId) {
+        const feedItem = document.querySelector(`[data-user-id="${userId}"]`);
+        if (feedItem) {
+            feedItem.style.transition = 'opacity 0.3s, transform 0.3s';
+            feedItem.style.opacity = '0';
+            feedItem.style.transform = 'scale(0.8)';
+            
+            setTimeout(() => {
+                feedItem.remove();
+            }, 300);
+        }
+    }
+    
+    /**
+     * Move user to bottom of feed (for Pass)
+     */
+    moveUserToBottomOfFeed(userId) {
+        const container = document.getElementById('userFeedContainer');
+        const feedItem = document.querySelector(`[data-user-id="${userId}"]`);
+        
+        if (container && feedItem) {
+            // Animate out
+            feedItem.style.transition = 'opacity 0.3s, transform 0.3s';
+            feedItem.style.opacity = '0';
+            feedItem.style.transform = 'translateX(-100%)';
+            
+            setTimeout(() => {
+                // Move to bottom
+                container.appendChild(feedItem);
+                
+                // Animate back in
+                setTimeout(() => {
+                    feedItem.style.opacity = '1';
+                    feedItem.style.transform = 'translateX(0)';
+                }, 50);
+            }, 300);
+        }
+    }
+    
+    /**
+     * Check if user was passed
+     */
+    isUserPassed(userId) {
+        return this.passedUsers.has(userId);
+    }
+    
+    /**
+     * Clear passed users (for testing/reset)
+     */
+    clearPassedUsers() {
+        this.passedUsers.clear();
+        this.savePassedUsers();
+        console.log('🗑️ Cleared all passed users');
+    }
+}

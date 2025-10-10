@@ -72,15 +72,23 @@ export class MatchingManager {
             const currentUserId = currentUser.uid;
             console.log(`👍 LIKE: ${currentUserId} → ${targetUserId}`);
             
-           // Create like document
-            const likeId = `${currentUserId}_${targetUserId}`;
-            await setDoc(doc(this.db, 'likes', likeId), {
-                fromUserId: currentUserId,
-                toUserId: targetUserId,
-                timestamp: serverTimestamp(),
-                type: 'like'  // REQUIRED by Firebase Rules
-            });
-                        
+      // Create like document
+        const likeId = `${currentUserId}_${targetUserId}`;
+        
+        // CRITICAL: Verify document ID matches the pattern
+        console.log('Creating like:', {
+            likeId,
+            currentUserId,
+            targetUserId,
+            matches: likeId === `${currentUserId}_${targetUserId}`
+        });
+        
+        await setDoc(doc(this.db, 'likes', likeId), {
+            fromUserId: currentUserId,
+            toUserId: targetUserId,
+            timestamp: serverTimestamp()
+        });
+                                
             console.log('✅ Like saved to Firebase');
             
             // Check for mutual like (match)
@@ -142,6 +150,13 @@ export class MatchingManager {
             
             // Create pass document
             const passId = `${currentUserId}_${targetUserId}`;
+            
+            console.log('Creating pass:', {
+                passId,
+                currentUserId,
+                targetUserId
+            });
+            
             await setDoc(doc(this.db, 'passes', passId), {
                 fromUserId: currentUserId,
                 toUserId: targetUserId,

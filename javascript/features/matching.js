@@ -143,8 +143,13 @@ export class MatchingManager {
             // Remove from feed
             this.removeUserFromFeed(targetUserId);
             
-        } catch (error) {
+            } catch (error) {
             console.error('❌ Error handling like:', error);
+            console.error('🔍 Full error details:', {
+                code: error.code,
+                message: error.message,
+                stack: error.stack
+            });
             alert('Failed to send like. Please try again.');
         }
     }

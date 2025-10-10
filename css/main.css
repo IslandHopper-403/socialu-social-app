@@ -819,52 +819,57 @@ body {
     margin-bottom: 18px;
     line-height: 1.5;
 }
-/* ===== LIKE/PASS SYSTEM - 2 BUTTON LAYOUT ===== */
+
+/* ===== LIKE/PASS SYSTEM - MATCHES PROFILE STYLE ===== */
 .user-actions {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 30px;
-    padding: 20px;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 20px 20px 20px;
 }
 
 .user-actions .action-btn {
-    width: 85px;
-    height: 85px;
-    border-radius: 50%;
+    flex: 1;
+    padding: 14px 20px;
+    border-radius: var(--radius-pill);
     border: none;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-size: 14px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.user-actions .action-btn:hover {
+    transform: translateY(-2px);
 }
 
 .user-actions .action-btn:active {
-    transform: scale(0.92);
+    transform: translateY(0);
 }
 
 .user-actions .pass-btn {
-    background: linear-gradient(135deg, #ff6b6b, #ff8c8c);
+    background: var(--border-light);
     color: white;
+    border: 1px solid var(--border-medium);
 }
 
 .user-actions .pass-btn:hover {
-    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
-    transform: translateY(-3px);
+    background: var(--border-medium);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
 
 .user-actions .like-btn {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-cyan-dark));
     color: white;
 }
 
 .user-actions .like-btn:hover {
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,212,255,0.3);
 }
 
 /* Hide old button styles */

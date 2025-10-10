@@ -97,10 +97,22 @@ export class MatchingManager {
             }
         });
         
-        // Attempt to create like document
+       // Attempt to create like document
         console.log('📝 Writing to Firebase likes collection...');
         await setDoc(doc(this.db, 'likes', likeId), likeData);
         console.log('✅ Like saved to Firebase successfully');
+        
+        // Track liked user in localStorage to filter from feed
+        if (!this.likedUsers) {
+            this.likedUsers = new Set();
+        }
+        this.likedUsers.add(targetUserId);
+        try {
+            localStorage.setItem('likedUsers', JSON.stringify([...this.likedUsers]));
+            console.log('💾 Saved liked user to localStorage');
+        } catch (error) {
+            console.error('Error saving liked user:', error);
+        }
         
         // Check for mutual like (match)
         console.log('🔍 Checking for mutual like...');
@@ -111,23 +123,36 @@ export class MatchingManager {
             exists: reverseLikeDoc.exists()
         });
             
-            if (reverseLikeDoc.exists()) {
-                // IT'S A MATCH! 🎉
-                console.log('🎉 MATCH DETECTED!');
-                await this.createMatch(currentUserId, targetUserId);
-                
-                // Get target user data
-                const targetUserDoc = await getDoc(doc(this.db, 'users', targetUserId));
-                const targetUserData = targetUserDoc.data();
-                
-                // Show match popup
-                if (window.CLASSIFIED.showMatchPopup) {
-                    window.CLASSIFIED.showMatchPopup({
-                        uid: targetUserId,
-                        name: targetUserData?.name || 'User',
-                        image: targetUserData?.photos?.[0] || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop'
-                    });
-                }
+       if (reverseLikeDoc.exists()) {
+        // IT'S A MATCH! 🎉
+        console.log('🎉 MATCH DETECTED!');
+        
+        // Create match with timestamp
+        const matchTimestamp = Date.now();
+        await this.createMatch(currentUserId, targetUserId);
+        
+        // Only show popup if match is fresh (less than 30 seconds old)
+        const now = Date.now();
+        const thirtySecondsAgo = now - 30000;
+        
+        if (matchTimestamp > thirtySecondsAgo) {
+            console.log('✅ Fresh match - showing popup');
+            
+            // Get target user data
+            const targetUserDoc = await getDoc(doc(this.db, 'users', targetUserId));
+            const targetUserData = targetUserDoc.data();
+            
+            // Show match popup
+            if (window.CLASSIFIED.showMatchPopup) {
+                window.CLASSIFIED.showMatchPopup({
+                    uid: targetUserId,
+                    name: targetUserData?.name || 'User',
+                    image: targetUserData?.photos?.[0] || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop'
+                });
+            }
+        } else {
+            console.log('⏰ Old match - skipping popup');
+        }
             } else {
                 // Send like notification
                 await this.sendLikeNotification(targetUserId, currentUser);
@@ -219,17 +244,18 @@ export class MatchingManager {
             // Sort IDs alphabetically for consistent match ID
             const matchId = [userId1, userId2].sort().join('_');
             
-            await setDoc(doc(this.db, 'matches', matchId), {
-                users: [userId1, userId2],
-                timestamp: serverTimestamp(),
-                status: 'active'
-            });
-            
-            console.log('✅ Match created:', matchId);
-            
-            // Send match notifications
-            await this.sendMatchNotification(userId1, userId2);
-            await this.sendMatchNotification(userId2, userId1);
+           await setDoc(doc(this.db, 'matches', matchId), {
+            users: [userId1, userId2],
+            timestamp: serverTimestamp(),
+            status: 'active',
+            createdAt: Date.now() // Add client timestamp for popup check
+        });
+        
+        console.log('✅ Match created:', matchId);
+        
+        // Send match notifications
+        await this.sendMatchNotification(userId1, userId2);
+        await this.sendMatchNotification(userId2, userId1);
             
         } catch (error) {
             console.error('❌ Error creating match:', error);

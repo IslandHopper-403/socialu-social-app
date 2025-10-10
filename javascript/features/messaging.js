@@ -1814,10 +1814,11 @@ closeChat() {
                                 }
                             }
                         }
-                    });
+                   });
                     
                     isInitialLoad = false;
-                    this.saveUnreadStateToStorage();
+                    // CRITICAL: Don't save during initial load - we already have correct data from localStorage
+                    // this.saveUnreadStateToStorage(); ← REMOVED - This was wiping data!
                     this.updateTotalUnreadCount();
                     await this.loadChats();
                     return;
@@ -1835,12 +1836,13 @@ closeChat() {
                             
                             const messageTime = chatData.lastMessageTime.toMillis();
                             
-                            if (messageTime > this.lastAppActive) {
+                           if (messageTime > this.lastAppActive) {
                                 const currentUnread = this.unreadMessages.get(chatId) || 0;
                                 this.unreadMessages.set(chatId, currentUnread + 1);
                             }
                         }
-                        this.saveUnreadStateToStorage();
+                        // Don't save here - let updateTotalUnreadCount handle it
+                        // this.saveUnreadStateToStorage();
                     }
                 }
                 

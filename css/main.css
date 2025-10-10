@@ -905,12 +905,12 @@ body {
     }
     
     .user-actions .action-btn {
-        height: 42px; /* ACTUALLY SHORTER NOW */
+        height: 36px; /* ACTUALLY SHORTER NOW */
         font-size: 16px;
         max-width: none;
         border-radius: 50px; /* KEEP THE PILL */
         gap: 8px;
-        padding: 0 32px; /* WIDER */
+        padding: 0 24px; /* WIDER */
     }
     
     .user-actions .action-btn span {

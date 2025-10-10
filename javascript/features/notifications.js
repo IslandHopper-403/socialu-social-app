@@ -230,7 +230,7 @@ export class NotificationManager {
         }
         if (countBadge) {
             countBadge.style.display = 'none';
-            countBadge.textContent = '0';
+            countBadge.textContent = '';
         }
     }
     

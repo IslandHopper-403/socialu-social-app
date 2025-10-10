@@ -925,17 +925,15 @@ export class FeedManager {
                         `<span class="interest-tag">${escapeHtml(sanitizeText(interest))}</span>`
                     ).join('')}
                 </div>
-              <div class="user-actions">
-                    <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${userId}')">
-                        <span style="font-size: 24px;">✕</span>
-                        <span style="font-size: 12px; margin-top: 4px;">Pass</span>
-                    </button>
-                    <button class="action-btn like-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${userId}')">
-                        <span style="font-size: 24px;">⭐️</span>
-                        <span style="font-size: 12px; margin-top: 4px;">Like</span>
-                    </button>
-                </div>
+           <div class="user-actions">
+                <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${userId}')">
+                    <span>✕</span> Pass
+                </button>
+                <button class="action-btn like-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${userId}')">
+                    <span>💬</span> Chat
+                </button>
             </div>
+        </div>
         `;
         
         return feedItem;

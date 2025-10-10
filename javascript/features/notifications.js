@@ -16,9 +16,15 @@ export class NotificationManager {
         this.unreadMessages = new Map(); // MOVED from messaging.js
         this.lastNotificationTimes = new Map(); // MOVED from messaging.js
         
+        // CRITICAL: Track if we've fully initialized to prevent wiping data
+        this.isInitialized = false;
+        
         // Load state
         this.loadProcessedMessages();
         this.loadUnreadStateFromStorage(); // MOVED from messaging.js
+        
+        // Mark as initialized after loading from storage
+        this.isInitialized = true;
         
         // Sound & cleanup
         this.notificationSound = null;
@@ -45,15 +51,23 @@ export class NotificationManager {
         }
     }
     
-    // MOVED from messaging.js
+   // MOVED from messaging.js
     saveUnreadStateToStorage() {
         try {
+            // CRITICAL: Don't wipe localStorage during initialization
+            if (!this.isInitialized) {
+                console.log('⏸️ Skipping save during initialization');
+                return;
+            }
+            
             const unreadObject = {};
             this.unreadMessages.forEach((count, chatId) => {
                 if (count > 0) {
                     unreadObject[chatId] = count;
                 }
             });
+            
+            console.log('💾 Saving unread state:', unreadObject);
             localStorage.setItem('unreadMessages', JSON.stringify(unreadObject));
         } catch (error) {
             console.error('Error saving unread state:', error);

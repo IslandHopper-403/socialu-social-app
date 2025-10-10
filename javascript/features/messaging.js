@@ -1925,9 +1925,8 @@ closeChat() {
                 console.log('✅ Match added to inbox (Tinder-style) - chat will open on first message');
                 
                 // Show match popup
+              // 🎯 TINDER-STYLE: Show match popup but DON'T auto-open chat
                 if (matchPopup) {
-                    matchPopup.classList.add('show');
-                    
                     // Update match popup content
                     const currentUser = this.state.get('currentUser');
                     const partnerId = matchData.users.find(id => id !== currentUser.uid);
@@ -1947,16 +1946,28 @@ closeChat() {
                             if (popupText) {
                                 popupText.textContent = `You and ${partnerData.name} both liked each other`;
                             }
+                            
+                            // Setup button click handlers for Tinder-style behavior
+                            this.setupMatchPopupButtons(matchPopup);
                         }
                     }
                     
-                    // Auto-close after 10 seconds if user doesn't interact
+                    // Show the popup
+                    matchPopup.classList.add('show');
+                    
+                    // Play notification sound
+                    const notificationManager = window.classifiedApp?.managers?.notifications;
+                    if (notificationManager) {
+                        notificationManager.playSound();
+                    }
+                    
+                    // Auto-close after 15 seconds if user doesn't interact
                     setTimeout(() => {
                         if (matchPopup.classList.contains('show')) {
                             matchPopup.classList.remove('show');
-                            console.log('🕐 Match popup auto-closed after 10 seconds');
+                            console.log('✅ Match saved to inbox - will appear when first message sent');
                         }
-                    }, 10000);
+                    }, 15000);
                 }
             } catch (error) {
                 console.error('Error handling new match:', error);
@@ -1991,6 +2002,29 @@ closeChat() {
         } else {
             console.error('No matched user found');
             alert('Unable to start chat. Please try again.');
+        }
+    }
+
+    /**
+     * 🎯 TINDER-STYLE: Setup match popup button handlers
+     */
+    setupMatchPopupButtons(matchPopup) {
+        const keepSwipingBtn = matchPopup.querySelector('.keep-swiping-btn');
+        const sendMessageBtn = matchPopup.querySelector('.send-message-btn');
+        
+        // TINDER-STYLE: "Keep Swiping" just closes popup - match saved silently
+        if (keepSwipingBtn) {
+            keepSwipingBtn.onclick = () => {
+                matchPopup.classList.remove('show');
+                console.log('✅ Match saved to inbox - will appear when first message sent');
+            };
+        }
+        
+        // TINDER-STYLE: "Send Message" opens chat immediately
+        if (sendMessageBtn) {
+            sendMessageBtn.onclick = () => {
+                this.startChatFromMatch();
+            };
         }
     }
     

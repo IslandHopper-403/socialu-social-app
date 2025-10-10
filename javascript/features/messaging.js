@@ -2534,14 +2534,14 @@ updateTotalUnreadCount() {
         }
     });
     
-    // Update the notification badge
+    // Update the notification badge - ONLY if there are unread messages
     if (totalUnread > 0) {
         this.showNotificationDot(totalUnread);
+        console.log(`📊 Total unread messages: ${totalUnread}`);
     } else {
         this.hideNotificationDot();
+        console.log(`✅ No unread messages`);
     }
-    
-    console.log(`📊 Total unread messages: ${totalUnread}`);
 }
     
 /**

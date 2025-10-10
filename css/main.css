@@ -905,7 +905,7 @@ body {
        }
        
        .user-actions .action-btn {
-           height: 48px !important; /* Force shorter */
+           height: 60px !important; /* Force shorter */
            font-size: 16px;
            max-width: none !important;
            border-radius: 50px !important; /* Force pill */

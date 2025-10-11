@@ -488,3 +488,75 @@
         -ms-overflow-style: none;
     }
 }
+
+
+/* ===== MOBILE FORM FIX - Prevent iOS Auto-Zoom ===== */
+/* All interactive form elements must be 16px minimum to prevent auto-zoom */
+
+/* Profile Editor - All inputs and selects */
+#profileEditor input[type="text"],
+#profileEditor input[type="email"],
+#profileEditor input[type="date"],
+#profileEditor input[type="number"],
+#profileEditor select,
+#profileEditor textarea {
+    font-size: 16px !important;
+}
+
+/* Profile Editor - Interest buttons (the actual class name) */
+#profileEditor .interest-btn {
+    font-size: 16px !important;
+}
+
+/* Profile Editor - Choice buttons (Career, Zodiac, What I Like Most, etc.) */
+#profileEditor .choice-btn {
+    font-size: 16px !important;
+}
+
+/* Profile Editor - Career buttons (if they exist with similar naming) */
+#profileEditor .career-btn {
+    font-size: 16px !important;
+}
+
+/* Profile Editor - Priority/Looking for buttons */
+#profileEditor .priority-btn,
+#profileEditor .looking-for-btn {
+    font-size: 16px !important;
+}
+
+/* Profile Editor - Save button */
+#profileEditor .save-profile-btn {
+    font-size: 16px !important;
+}
+
+/* Height, Zodiac, Birthday dropdowns */
+#profileHeight,
+#profileBirthday,
+#profileZodiac {
+    font-size: 16px !important;
+}
+
+/* Business Profile Editor - Same treatment */
+#businessProfileEditor input,
+#businessProfileEditor select,
+#businessProfileEditor textarea,
+#businessProfileEditor .interest-btn,
+#businessProfileEditor .save-profile-btn {
+    font-size: 16px !important;
+}
+
+/* Login/Register screens */
+#loginEmail,
+#loginPassword,
+#registerName,
+#registerEmail,
+#registerPassword,
+#registerConfirmPassword {
+    font-size: 16px !important;
+}
+
+/* Settings inputs */
+#settingsOverlay input,
+#settingsOverlay select {
+    font-size: 16px !important;
+}

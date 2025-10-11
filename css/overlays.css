@@ -1034,3 +1034,82 @@ body.form-overlay-open {
 #businessChat .chat-messages {
     padding-bottom: 80px;
 }
+
+
+/* Chat Styles */
+.chat-header {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-lg);
+    background: rgba(0,0,0,0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-light);
+}
+.chat-header-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-circle);
+    background-size: cover;
+    background-position: center;
+    margin: 0 15px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+.chat-header-avatar:hover {
+    transform: scale(1.05);
+}
+.chat-header-info {
+    flex: 1;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+.chat-header-info:hover {
+    background: var(--border-light);
+}
+.chat-header-info:hover .chat-header-name {
+    color: var(--accent-cyan);
+}
+.chat-header-name {
+    font-weight: 600;
+    margin-bottom: 2px;
+    transition: color 0.2s ease;
+}
+.chat-status {
+    font-size: 12px;
+    opacity: 0.7;
+}
+.chat-messages {
+    flex: 1;
+    padding: var(--spacing-lg);
+    overflow-y: auto;
+}
+.message {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-end;
+    animation: messageAppear 0.3s ease;
+}
+.message.sent {
+    justify-content: flex-end;
+}
+@keyframes messageAppear {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.message-bubble {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+.message.received .message-bubble {
+    background: var(--border-light);
+    color: white;
+}
+.message.sent .message-bubble {
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-cyan-dark));
+    color: white;
+}

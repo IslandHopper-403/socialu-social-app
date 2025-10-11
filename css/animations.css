@@ -3,14 +3,15 @@
    All keyframes and animation utilities
    ===================================================== */
 
-/* ===== ENTRANCE ANIMATIONS ===== */
-
+/* =====================================================
+   Entrance Animations
+   ===================================================== */
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
 }
 
-@keyframes slideUp {
+@keyframes fadeInUp {
     from { 
         opacity: 0; 
         transform: translateY(20px); 
@@ -21,7 +22,7 @@
     }
 }
 
-@keyframes slideDown {
+@keyframes fadeInDown {
     from { 
         opacity: 0; 
         transform: translateY(-20px); 
@@ -32,15 +33,32 @@
     }
 }
 
-@keyframes popIn {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+@keyframes slideUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(100%); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+@keyframes slideDown {
+    from { 
+        opacity: 0; 
+        transform: translateY(-100%); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
 }
 
 @keyframes slideInRight {
     from { 
         opacity: 0; 
-        transform: translateX(100%); 
+        transform: translateX(100px); 
     }
     to { 
         opacity: 1; 
@@ -48,39 +66,141 @@
     }
 }
 
-@keyframes slideIn {
-    from { opacity: 0; transform: translateX(20px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-/* ===== EXIT ANIMATIONS ===== */
-
-@keyframes fadeOut {
-    from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY(-20px); }
-}
-
-/* ===== ATTENTION ANIMATIONS ===== */
-
-@keyframes pulse {
-    0%, 100% { 
+@keyframes slideInLeft {
+    from { 
+        opacity: 0; 
+        transform: translateX(-100px); 
+    }
+    to { 
         opacity: 1; 
-        transform: scale(1);
+        transform: translateX(0); 
+    }
+}
+
+@keyframes popIn {
+    from { 
+        transform: scale(0.8); 
+        opacity: 0; 
+    }
+    to { 
+        transform: scale(1); 
+        opacity: 1; 
+    }
+}
+
+@keyframes messageAppear {
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+/* =====================================================
+   Exit Animations
+   ===================================================== */
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes fadeOutUp {
+    from { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+    to { 
+        opacity: 0; 
+        transform: translateY(-20px); 
+    }
+}
+
+@keyframes fadeOutDown {
+    from { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+    to { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+}
+
+@keyframes slideOutRight {
+    from { 
+        opacity: 1; 
+        transform: translateX(0); 
+    }
+    to { 
+        opacity: 0; 
+        transform: translateX(100px); 
+    }
+}
+
+@keyframes slideOutLeft {
+    from { 
+        opacity: 1; 
+        transform: translateX(0); 
+    }
+    to { 
+        opacity: 0; 
+        transform: translateX(-100px); 
+    }
+}
+
+@keyframes popOut {
+    from { 
+        transform: scale(1); 
+        opacity: 1; 
+    }
+    to { 
+        transform: scale(0.8); 
+        opacity: 0; 
+    }
+}
+
+/* =====================================================
+   Attention Animations
+   ===================================================== */
+@keyframes pulse {
+    0% { 
+        transform: scale(1); 
+        opacity: 1; 
+        box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7);
     }
     50% { 
-        opacity: 0.8; 
-        transform: scale(1.05);
+        transform: scale(1.2); 
+        opacity: 0.8;
+        box-shadow: 0 0 0 5px rgba(255, 68, 68, 0);
+    }
+    100% { 
+        transform: scale(1); 
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(255, 68, 68, 0);
     }
 }
 
-/* ===== NOTIFICATION ANIMATIONS ===== */
-
-@keyframes slideDownCenter {
-    from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
 }
 
-/* ===== LOADING ANIMATIONS ===== */
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* =====================================================
+   Loading Animations
+   ===================================================== */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 
 @keyframes skeletonPulse {
     0%, 100% { opacity: 0.4; }
@@ -92,13 +212,115 @@
     100% { background-position: -200% 0; }
 }
 
-/* ===== ANIMATION UTILITY CLASSES ===== */
+@keyframes loading {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
 
+/* =====================================================
+   Notification Animations
+   ===================================================== */
+@keyframes slideDownCenter {
+    from { 
+        opacity: 0; 
+        transform: translateX(-50%) translateY(-20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateX(-50%) translateY(0); 
+    }
+}
+
+@keyframes notificationSlide {
+    0% { 
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    10% { 
+        transform: translateX(0);
+        opacity: 1;
+    }
+    90% { 
+        transform: translateX(0);
+        opacity: 1;
+    }
+    100% { 
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* =====================================================
+   Special Effects
+   ===================================================== */
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 5px rgba(0, 212, 255, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.8); }
+}
+
+/* =====================================================
+   Animation Utility Classes
+   ===================================================== */
+
+/* Entrance */
 .animate-fadeIn { animation: fadeIn var(--transition-slow) ease; }
+.animate-fadeInUp { animation: fadeInUp var(--transition-slow) ease; }
+.animate-fadeInDown { animation: fadeInDown var(--transition-slow) ease; }
 .animate-slideUp { animation: slideUp var(--transition-slow) ease; }
 .animate-slideDown { animation: slideDown var(--transition-slow) ease; }
-.animate-pulse { animation: pulse 2s ease-in-out infinite; }
+.animate-slideInRight { animation: slideInRight var(--transition-slow) ease; }
+.animate-slideInLeft { animation: slideInLeft var(--transition-slow) ease; }
+.animate-popIn { animation: popIn var(--transition-slow) ease; }
 
+/* Exit */
+.animate-fadeOut { animation: fadeOut var(--transition-slow) ease; }
+.animate-fadeOutUp { animation: fadeOutUp var(--transition-slow) ease; }
+.animate-fadeOutDown { animation: fadeOutDown var(--transition-slow) ease; }
+.animate-slideOutRight { animation: slideOutRight var(--transition-slow) ease; }
+.animate-slideOutLeft { animation: slideOutLeft var(--transition-slow) ease; }
+.animate-popOut { animation: popOut var(--transition-slow) ease; }
+
+/* Attention */
+.animate-pulse { animation: pulse 2s ease-in-out infinite; }
+.animate-shake { animation: shake 0.5s ease-in-out; }
+.animate-bounce { animation: bounce 1s ease-in-out infinite; }
+
+/* Loading */
+.animate-spin { animation: spin 1s linear infinite; }
+.animate-skeleton { animation: skeletonPulse 2s ease-in-out infinite; }
+.animate-shimmer { animation: shimmer 2s linear infinite; }
+
+/* Special */
+.animate-glow { animation: glow 2s ease-in-out infinite; }
+
+/* Notification specific */
 .like-notification {
     animation: slideDownCenter 0.3s ease !important;
 }
+
+.chat-notification-animate {
+    animation: slideInRight 0.3s ease !important;
+}
+
+/* Animation delays */
+.animation-delay-100 { animation-delay: 100ms; }
+.animation-delay-200 { animation-delay: 200ms; }
+.animation-delay-300 { animation-delay: 300ms; }
+.animation-delay-500 { animation-delay: 500ms; }
+
+/* Animation durations */
+.animation-fast { animation-duration: 0.15s; }
+.animation-base { animation-duration: 0.2s; }
+.animation-slow { animation-duration: 0.3s; }
+.animation-slower { animation-duration: 0.5s; }

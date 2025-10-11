@@ -11,7 +11,7 @@ import { MatchingManager } from './features/matching.js';
 import { FeedManager } from './features/feed.js';
 import { ProfileManager } from './features/profile.js';
 import { NavigationManager } from './ui/navigation.js';
-import FavoritesCarousel from './features/favoritesCarousel.js';
+import { FavoritesCarousel } from './features/favoritesCarousel.js';
 import { BusinessManager } from './features/business.js';
 import { AdminManager } from './features/admin.js';
 

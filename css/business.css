@@ -507,3 +507,47 @@ body.business-user #socialScreen {
         height: 120px;
     }
 }
+
+/* ===== BUSINESS PROFILE SPECIFIC ===== */
+.business-header-section {
+    background: rgba(255,255,255,0.05);
+    border-radius: var(--radius-lg);
+    margin: 0 var(--spacing-lg) var(--spacing-lg);
+    padding: var(--spacing-lg);
+}
+
+.business-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--success-bg);
+    color: var(--success);
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+}
+
+.business-status-badge.closed {
+    background: var(--error-bg);
+    color: var(--error);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--success);
+    border-radius: var(--radius-circle);
+    animation: pulse 1.5s infinite;
+}
+
+.business-status-badge.closed .status-dot {
+    background: var(--error);
+    animation: none;
+}
+
+/* ===== HIDE NAVIGATION FOR BUSINESS DASHBOARD ===== */
+body.business-user .bottom-nav {
+    display: none !important;
+}

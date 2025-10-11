@@ -1,23 +1,12 @@
 /* ===== SKELETON LOADING ANIMATIONS ===== */
 
-/* Base skeleton animations */
-@keyframes pulse {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 0.8; }
-}
-
-@keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
 /* User card skeleton */
 .skeleton-user-card {
     display: flex;
     padding: 20px;
     gap: 15px;
     max-width: 100%;
-    animation: pulse 1.5s infinite;
+    animation: skeletonPulse 1.5s infinite;
     border-radius: 20px;
     background: rgba(255,255,255,0.02);
     margin-bottom: 20px;
@@ -82,7 +71,7 @@
     margin-bottom: 20px;
     overflow: hidden;
     border: 1px solid rgba(255,255,255,0.1);
-    animation: pulse 1.5s infinite;
+    animation: skeletonPulse 1.5s infinite;
     max-width: 100%;
 }
 
@@ -120,7 +109,7 @@
     border-radius: 15px;
     padding: 20px;
     margin-bottom: 20px;
-    animation: pulse 1.5s infinite;
+    animation: skeletonPulse 1.5s infinite;
     max-width: 100%;
     border: 1px solid rgba(255,255,255,0.05);
 }

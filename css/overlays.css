@@ -360,3 +360,131 @@ input:disabled + .toggle-slider {
 .toggle-switch.active::after {
     transform: translateX(30px);
 }
+
+/* ===== BUSINESS DASHBOARD OVERLAY ===== */
+#businessDashboard {
+    background: var(--bg-dark, #1a1a1a);
+}
+
+#businessDashboard.show {
+    display: flex !important;
+}
+
+.dashboard-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 100px;
+    background: var(--bg-dark, #1a1a1a);
+}
+
+/* Business Header Section */
+.business-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg);
+    background: rgba(255,255,255,0.05);
+    border-radius: var(--radius-lg);
+    margin: var(--spacing-lg);
+}
+
+.business-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.business-header-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.greeting {
+    font-size: var(--text-sm);
+    opacity: 0.7;
+    margin-bottom: 4px;
+}
+
+.business-name {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.notification-bell {
+    position: relative;
+    font-size: 24px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.notification-bell:hover {
+    transform: scale(1.1);
+}
+
+.notification-dot {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: var(--error);
+    border-radius: var(--radius-circle);
+    animation: pulse 1.5s infinite;
+}
+
+/* Status Toggle */
+.status-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255,255,255,0.05);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin: 0 var(--spacing-lg) var(--spacing-lg);
+}
+
+.status-info {
+    flex: 1;
+}
+
+.status-title {
+    font-size: var(--text-sm);
+    opacity: 0.7;
+    margin-bottom: 4px;
+}
+
+.status-message {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.toggle-switch {
+    width: 60px;
+    height: 30px;
+    background: var(--border-medium);
+    border-radius: var(--radius-pill);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.toggle-switch.active {
+    background: var(--success);
+}
+
+.toggle-switch::after {
+    content: '';
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    background: white;
+    border-radius: var(--radius-circle);
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+}
+
+.toggle-switch.active::after {
+    transform: translateX(30px);
+}
+

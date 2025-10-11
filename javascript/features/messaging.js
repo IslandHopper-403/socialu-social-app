@@ -121,37 +121,7 @@ export class MessagingManager {
     }, 300000); // 5 minutes
 }
 
-/**
-     * Load last seen timestamps from localStorage
-     */
-    loadLastSeenTimestamps() {
-        try {
-            const saved = localStorage.getItem('lastSeenTimestamps');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                Object.entries(parsed).forEach(([chatId, timestamp]) => {
-                    this.lastSeenTimestamps.set(chatId, timestamp);
-                });
-            }
-        } catch (error) {
-            console.error('Error loading last seen timestamps:', error);
-        }
-    }
 
-    /**
-     * Save last seen timestamps to localStorage
-     */
-    saveLastSeenTimestamps() {
-        try {
-            const toSave = {};
-            this.lastSeenTimestamps.forEach((timestamp, chatId) => {
-                toSave[chatId] = timestamp;
-            });
-            localStorage.setItem('lastSeenTimestamps', JSON.stringify(toSave));
-        } catch (error) {
-            console.error('Error saving last seen timestamps:', error);
-        }
-    }
     
     /**
      * Load message read states from localStorage
@@ -1690,24 +1660,7 @@ closeChat() {
             localStorage.setItem('seenMatches', JSON.stringify(Array.from(this.seenMatches)));
         }
     }
-            /**
-         * Load unread state from localStorage
-         */
-        loadUnreadStateFromStorage() {
-            try {
-                const savedUnreadState = localStorage.getItem('unreadMessages');
-                if (savedUnreadState) {
-                    const parsed = JSON.parse(savedUnreadState);
-                    Object.entries(parsed).forEach(([chatId, count]) => {
-                        this.unreadMessages.set(chatId, count);
-                    });
-                    console.log('📚 Loaded unread state from storage:', this.unreadMessages.size, 'chats');
-                }
-            } catch (error) {
-                console.error('Error loading unread state:', error);
-            }
-        }
-
+       
     /**
      * Restore notification state on page load
      */
@@ -1739,38 +1692,6 @@ closeChat() {
             }
         }, 500); // Small delay to ensure managers are initialized
     }
-
-     /**
-         * Save unread state to localStorage
-         */
-        saveUnreadStateToStorage() {
-            try {
-                // CRITICAL: Don't wipe localStorage during initialization
-                if (!this.isInitialized) {
-                    console.log('⏸️ MessagingManager: Skipping save during initialization');
-                    return;
-                }
-                
-                const unreadObject = {};
-                this.unreadMessages.forEach((count, chatId) => {
-                    if (count > 0) {
-                        unreadObject[chatId] = count;
-                    }
-                });
-                
-                // CRITICAL LOGGING: Track every save attempt
-                console.log('💾 [MessagingManager] saveUnreadStateToStorage called');
-                console.log('💾 [MessagingManager] Current Map size:', this.unreadMessages.size);
-                console.log('💾 [MessagingManager] Map contents:', Array.from(this.unreadMessages.entries()));
-                console.log('💾 [MessagingManager] Will save:', unreadObject);
-                console.trace('💾 [MessagingManager] Called from:'); // Shows stack trace
-                
-                localStorage.setItem('unreadMessages', JSON.stringify(unreadObject));
-            } catch (error) {
-                console.error('Error saving unread state:', error);
-            }
-        }
-    
     
     /**
      * Listen for chat updates
@@ -1906,47 +1827,6 @@ closeChat() {
         }
     }
 
-
-    /**
-     * Show in-app notification
-     */
-        showInAppNotification(chatData) {
-            // Don't show notification if chat is currently open
-            if (this.currentChatId && this.currentChatId.includes(chatData.lastMessageSender)) {
-                return;
-            }
-            
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.className = 'social-proof-notification';
-            notification.textContent = `💬 New message: ${chatData.lastMessage}`;
-            
-            document.body.appendChild(notification);
-            // Show notification dot
-            this.showNotificationDot();
-            
-            // Play sound
-            if (this.notificationSound) {
-                this.notificationSound.play().catch(e => console.log('Could not play sound:', e));
-            }
-            
-            // Show browser notification if permission granted
-            try {
-                if (Notification.permission === 'granted') {
-                    new Notification('New message', {
-                        body: chatData.lastMessage,
-                        icon: '/path/to/icon.png' // Add your app icon
-                    });
-                }
-            } catch (error) {
-                console.log('Could not show browser notification:', error);
-            }
-            
-            // Remove after 3 seconds
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
         
         /**
          * Handle new match
@@ -2509,91 +2389,6 @@ async openChatFromNotification(chatId, partnerInfo) {
 
 
 /**
- * NEW: Unread message tracking
- */
-updateUnreadCount(chatId, increment) {
-    const current = this.unreadMessages.get(chatId) || 0;
-    const newCount = Math.max(0, current + increment);
-    
-    this.unreadMessages.set(chatId, newCount);
-    
-    // FIXED: Save immediately after every update
-    this.saveUnreadStateToStorage();
-    
-    // FIXED: Sync to notification manager
-    const notificationManager = window.classifiedApp?.managers?.notifications;
-    if (notificationManager) {
-        notificationManager.unreadMessages.set(chatId, newCount);
-        notificationManager.saveUnreadStateToStorage();
-    }
-    
-    // Calculate total unread
-    const totalUnread = Array.from(this.unreadMessages.values()).reduce((sum, count) => sum + count, 0);
-    
-    // Always show notification if there are unread messages
-    if (totalUnread > 0) {
-        this.showNotificationDot(totalUnread);
-    } else {
-        this.hideNotificationDot();
-    }
-    
-    // Update chat list UI with unread indicators
-    this.updateChatListUnreadIndicators();
-}
-
-
-    /**
- * Update total unread count from all chats
- */
-updateTotalUnreadCount() {
-    // Calculate total unread from all chats
-    let totalUnread = 0;
-    this.unreadMessages.forEach((count, chatId) => {
-        // Only count chats that are not currently open
-        if (chatId !== this.currentChatId) {
-            totalUnread += count;
-        }
-    });
-    
-    // Update the notification badge - ONLY if there are unread messages
-    if (totalUnread > 0) {
-        this.showNotificationDot(totalUnread);
-        console.log(`📊 Total unread messages: ${totalUnread}`);
-    } else {
-        this.hideNotificationDot();
-        console.log(`✅ No unread messages`);
-    }
-}
-    
-/**
- * NEW: Mark chat as read
- */
-async markChatAsRead(chatId) {
-    this.unreadMessages.set(chatId, 0);
-    
-    // FIXED: Save immediately
-    this.saveUnreadStateToStorage();
-    
-    // FIXED: Sync to notification manager
-    const notificationManager = window.classifiedApp?.managers?.notifications;
-    if (notificationManager) {
-        notificationManager.unreadMessages.set(chatId, 0);
-        notificationManager.saveUnreadStateToStorage();
-    }
-    
-    // FIXED: Also save timestamp of when we last read this chat
-    localStorage.setItem(`lastRead_${chatId}`, Date.now().toString());
-    
-    // Update total unread count
-    const totalUnread = Array.from(this.unreadMessages.values()).reduce((sum, count) => sum + count, 0);
-    if (totalUnread === 0) {
-        this.hideNotificationDot();
-    } else {
-        this.showNotificationDot(totalUnread);
-    }
-}
-
-/**
  * NEW: Mark current chat as read when app becomes visible
  */
 markCurrentChatAsRead() {
@@ -2703,32 +2498,6 @@ updateChatListUnreadIndicators() {
     });
 }
 
-
-/**
- * NEW: Batch notification updates
- */
-updateNotificationState() {
-    const totalUnread = Array.from(this.unreadMessages.values())
-        .reduce((sum, count) => sum + count, 0);
-    
-    if (totalUnread > 0) {
-        this.showNotificationDot(totalUnread);
-        
-        // Update document title
-        document.title = `(${totalUnread}) CLASSIFIED - Hoi An Social Discovery`;
-        
-        // Update favicon if available
-        this.updateFaviconWithCount(totalUnread);
-    } else {
-        this.hideNotificationDot();
-        document.title = 'CLASSIFIED - Hoi An Social Discovery';
-        this.resetFavicon();
-    }
-    
-    // Update chat list
-    this.updateChatListUnreadIndicators();
-}
-
      /**
      * Clean up stale listeners (older than 10 minutes)
      */
@@ -2759,10 +2528,8 @@ updateNotificationState() {
         
         // Save state first
         try {
-            this.saveUnreadStateToStorage();
             this.saveSeenMatches();
             this.saveLastSeenTimestamps();
-            this.saveMessageReadStates();
         } catch (error) {
             console.error('Error saving messaging state:', error);
         }
@@ -2899,25 +2666,6 @@ updateNotificationState() {
         };
     }
     
-    /**
-     * Show notification dot (delegates to NotificationManager)
-     */
-    showNotificationDot(count = null) {
-        const notificationManager = window.classifiedApp?.managers?.notifications;
-        if (notificationManager) {
-            notificationManager.showNotificationDot(count);
-        }
-    }
-    
-    /**
-     * Hide notification dot (delegates to NotificationManager)
-     */
-    hideNotificationDot() {
-        const notificationManager = window.classifiedApp?.managers?.notifications;
-        if (notificationManager) {
-            notificationManager.hideNotificationDot();
-        }
-    }
 
 
 /**

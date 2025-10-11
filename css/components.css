@@ -150,6 +150,311 @@
 }
 
 
+/* ===== GENERIC SECTION HEADERS ===== */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.view-all {
+    color: var(--accent-cyan);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    transition: opacity 0.2s;
+}
+
+.view-all:hover {
+    opacity: 0.8;
+}
+
+/* ===== GENERIC MESSAGE STYLES ===== */
+.message-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.message-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-md);
+    background: rgba(255,255,255,0.03);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.message-item:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateX(4px);
+}
+
+.message-item.unread {
+    background: rgba(0,212,255,0.1);
+    border-left: 3px solid var(--accent-cyan);
+}
+
+.message-content {
+    flex: 1;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.message-time {
+    font-size: var(--text-xs);
+    opacity: 0.5;
+}
+
+/* ===== GENERIC STATS GRID ===== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+    padding: 0 var(--spacing-lg) var(--spacing-lg);
+}
+
+.stat-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    text-align: center;
+    border: 1px solid var(--border-light);
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    margin-bottom: 8px;
+}
+
+.stat-label {
+    font-size: var(--text-sm);
+    opacity: 0.7;
+}
+
+/* ===== ACTIONS GRID ===== */
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+    padding: 0 var(--spacing-lg) var(--spacing-lg);
+}
+
+.action-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    border: 1px solid var(--border-light);
+}
+
+.action-card:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ===== GENERIC SECTIONS ===== */
+.messages-section,
+.promotions-section,
+.insights-section {
+    background: rgba(255,255,255,0.05);
+    border-radius: var(--radius-lg);
+    margin: 0 var(--spacing-lg) var(--spacing-lg);
+    padding: var(--spacing-lg);
+}
+
+.promotions-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+}
+
+.insight-item {
+    text-align: center;
+}
+
+.insight-label {
+    font-size: var(--text-sm);
+    opacity: 0.7;
+    margin-bottom: 4px;
+}
+
+.insight-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--accent-cyan);
+}
+
+/* ===== EMPTY STATES ===== */
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    opacity: 0.7;
+}
+
+/* ===== FLOATING ACTION BUTTON ===== */
+.fab-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-circle);
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-cyan-dark));
+    border: none;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,212,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    z-index: 100;
+}
+
+.fab-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0,212,255,0.4);
+}
+
+/* ===== FORM ELEMENTS ===== */
+.promotion-form {
+    background: rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.form-section {
+    margin-bottom: 20px;
+}
+
+.form-section label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.form-section input,
+.form-section textarea {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+}
+
+.char-count {
+    text-align: right;
+    font-size: 12px;
+    opacity: 0.5;
+    margin-top: 4px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+/* ===== CHART STYLES ===== */
+.chart-card {
+    background: rgba(255,255,255,0.05);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    margin-bottom: 20px;
+}
+
+.chart-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: white;
+}
+
+/* ===== INSIGHTS CARD ===== */
+.insights-card {
+    background: linear-gradient(135deg, rgba(0,212,255,0.1) 0%, rgba(139,92,246,0.1) 100%);
+    border: 1px solid rgba(0,212,255,0.3);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.insights-title {
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--accent-cyan);
+    font-size: 16px;
+}
+
+.insights-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.analytics-footer {
+    display: flex;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.analytics-footer .btn {
+    flex: 1;
+}
+
+/* ===== CARD UTILITIES ===== */
+.card-label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 8px;
+}
+
+.card-value {
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+
+
 /* BUSINESS */
 
 /* ===== BUSINESS CARDS ===== */

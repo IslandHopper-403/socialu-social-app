@@ -3,13 +3,37 @@
    User feed, user profiles, user-only components
    ===================================================== */
 
-/* ===== USER FEED ===== */
+/* =====================================================
+   User Feed Container
+   ===================================================== */
 .user-feed-container {
     height: calc(100vh - 280px);
     overflow-y: auto;
     padding: 0 var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
 }
 
+.feed-container {
+    padding: 0 20px 20px 20px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+}
+
+.feed-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.feed-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+/* =====================================================
+   User Feed Items
+   ===================================================== */
 .user-feed-item {
     background: linear-gradient(135deg, #2a2a2a 0%, var(--bg-dark) 100%);
     border-radius: var(--radius-xl);
@@ -28,7 +52,50 @@
     border-color: var(--info-border);
 }
 
-/* ===== USER PROFILE VIEW ===== */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.user-image {
+    width: 100%;
+    height: 400px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.user-image-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.9));
+    padding: 30px 20px 20px;
+}
+
+.user-info {
+    padding: var(--spacing-lg);
+    padding-bottom: 0;
+}
+
+.user-name {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: white;
+}
+
+.user-bio {
+    font-size: 15px;
+    opacity: 0.9;
+    margin-bottom: 18px;
+    line-height: 1.5;
+}
+
+/* =====================================================
+   User Status & Badges
+   ===================================================== */
 .user-status-badges {
     position: absolute;
     top: var(--spacing-md);
@@ -49,6 +116,244 @@
     border: 1px solid var(--border-medium);
 }
 
+.status-online {
+    color: #4CAF50;
+    border-color: rgba(76,175,80,0.3);
+}
+
+.status-distance {
+    color: var(--accent-cyan);
+    border-color: rgba(0,212,255,0.3);
+}
+
+.status-match {
+    color: var(--accent-gold);
+    border-color: rgba(255,215,0,0.3);
+}
+
+/* =====================================================
+   User Actions (Like/Pass System)
+   ===================================================== */
+.user-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 20px 20px 20px;
+    margin-top: auto;
+}
+
+.user-actions .action-btn {
+    flex: 1;
+    height: 54px;
+    max-width: 180px;
+    border-radius: 50px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.user-actions .pass-btn {
+    background: linear-gradient(135deg, #FF6B84, #FF8FA3);
+    color: white;
+}
+
+.user-actions .pass-btn:active {
+    background: linear-gradient(135deg, #FF5A73, #FF7E92);
+}
+
+.user-actions .like-btn {
+    background: linear-gradient(135deg, #00D4FF, #00B8E6);
+    color: white;
+}
+
+.user-actions .like-btn:active {
+    background: linear-gradient(135deg, #00C2ED, #00A6D4);
+}
+
+.user-actions .action-btn span {
+    font-size: 20px;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+
+/* Hover states - only for non-touch devices */
+@media (hover: hover) and (pointer: fine) {
+    .user-actions .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    }
+}
+
+.user-actions .action-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Hide deprecated button styles */
+.chat-btn,
+.super-btn {
+    display: none !important;
+}
+
+/* =====================================================
+   Profile View Styles
+   ===================================================== */
+.profile-hero {
+    height: 350px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.profile-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.9));
+    padding: 30px 20px 20px;
+}
+
+.profile-name {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.profile-content {
+    flex: 1;
+    padding: var(--spacing-lg);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+.profile-content .profile-hero {
+    margin: -20px -20px 16px -20px;
+    height: 350px;
+    width: calc(100% + 40px);
+    position: relative;
+    z-index: 2;
+    padding: 0;
+}
+
+.profile-rating {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stars {
+    color: var(--accent-gold);
+    font-size: 16px;
+}
+
+.profile-description {
+    line-height: 1.6;
+    opacity: 0.9;
+    margin-bottom: 15px;
+}
+
+.profile-details {
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    padding: var(--spacing-md);
+    margin-bottom: 15px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.detail-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 600;
+    opacity: 0.8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.detail-value {
+    color: var(--accent-cyan);
+    font-weight: 500;
+}
+
+.current-promo {
+    background: linear-gradient(135deg, #FF6B6B, #FF8C42);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    text-align: center;
+}
+
+.promo-badge {
+    background: var(--border-medium);
+    padding: 5px 10px;
+    border-radius: var(--radius-xl);
+    font-size: 12px;
+    display: inline-block;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    padding: var(--spacing-lg);
+    background: rgba(0,0,0,0.9);
+    border-top: 1px solid var(--border-light);
+}
+
+.action-button {
+    flex: 1;
+    padding: var(--spacing-md);
+    border: none;
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.action-button:hover {
+    transform: translateY(-2px);
+}
+
+.primary-btn {
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-cyan-dark));
+    color: white;
+}
+
+.secondary-btn {
+    background: var(--border-light);
+    color: white;
+    border: 1px solid var(--border-medium);
+}
+
+/* =====================================================
+   User Interests & Tags
+   ===================================================== */
 .user-interests {
     display: flex;
     flex-wrap: wrap;
@@ -66,7 +371,203 @@
     font-weight: var(--weight-medium);
 }
 
-/* ===== MATCH POPUP ===== */
+.interests-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.interest-btn {
+    background: var(--border-light);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-xl);
+    padding: 10px 15px;
+    color: white;
+    cursor: pointer;
+    font-size: 13px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.interest-btn.active {
+    background: rgba(0, 212, 255, 0.2);
+    color: var(--accent-cyan);
+    border-color: rgba(0, 212, 255, 0.3);
+}
+
+/* =====================================================
+   Social Tabs & Messaging
+   ===================================================== */
+.social-tabs {
+    display: flex;
+    background: rgba(255,255,255,0.05);
+    margin: var(--spacing-lg);
+    border-radius: var(--radius-pill);
+    padding: 4px;
+    border: 1px solid var(--border-light);
+}
+
+.social-tab {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    border-radius: var(--radius-xl);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 600;
+    position: relative;
+}
+
+.social-tab.active {
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-cyan-dark));
+    color: white;
+    transform: scale(1.02);
+}
+
+.social-content {
+    display: none;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.social-content.active {
+    display: block;
+}
+
+/* Message Notification Indicators */
+.message-notification-dot {
+    position: absolute !important;
+    top: -8px !important;
+    right: -8px !important;
+    width: 18px !important;
+    height: 18px !important;
+    background: #FF4444 !important;
+    border-radius: 50% !important;
+    border: 2px solid rgba(26, 26, 46, 0.95) !important;
+    z-index: 100 !important;
+    pointer-events: none !important;
+    box-shadow: 0 2px 8px rgba(255, 68, 68, 0.5) !important;
+    display: none !important;
+}
+
+.message-notification-dot.show {
+    display: block !important;
+}
+
+.unread-count-badge {
+    position: absolute !important;
+    top: -10px !important;
+    right: -10px !important;
+    background: #FF4444 !important;
+    color: #FFFFFF !important;
+    border-radius: 12px !important;
+    min-width: 22px !important;
+    height: 22px !important;
+    padding: 0 6px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    display: none !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 100 !important;
+    border: 2px solid rgba(26, 26, 46, 0.95) !important;
+    pointer-events: none !important;
+    box-shadow: 0 2px 8px rgba(255, 68, 68, 0.5) !important;
+}
+
+.unread-count-badge.show {
+    display: flex !important;
+}
+
+.chat-item {
+    position: relative !important;
+}
+
+/* =====================================================
+   Photo Upload Section
+   ===================================================== */
+.photo-upload-section {
+    background: rgba(255,255,255,0.05);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    border: 2px dashed var(--border-medium);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.photo-upload-section:hover {
+    border-color: var(--accent-cyan);
+    background: rgba(0,212,255,0.1);
+}
+
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.photo-slot {
+    aspect-ratio: 1;
+    background: var(--border-light);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px dashed var(--border-medium);
+    position: relative;
+}
+
+.photo-slot:hover {
+    border-color: var(--accent-cyan);
+    background: rgba(0,212,255,0.1);
+}
+
+.photo-slot.filled {
+    background-size: cover;
+    background-position: center;
+    border: 2px solid var(--accent-cyan);
+}
+
+.photo-slot.uploading {
+    border-color: var(--accent-gold);
+    background: rgba(255,215,0,0.1);
+}
+
+.photo-slot .upload-progress {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    right: 5px;
+    height: 4px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.photo-slot .upload-progress-bar {
+    height: 100%;
+    background: var(--accent-cyan);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.star-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: var(--accent-gold);
+    font-size: 20px;
+}
+
+/* =====================================================
+   Match Popup
+   ===================================================== */
 .match-popup {
     position: fixed;
     top: 0;
@@ -117,187 +618,19 @@
     transform: scale(1.1);
 }
 
-/* Social Tabs */
-.social-tabs {
-    display: flex;
-    background: rgba(255,255,255,0.05);
-    margin: var(--spacing-lg);
-    border-radius: var(--radius-pill);
-    padding: 4px;
-    border: 1px solid var(--border-light);
-}
-.social-tab {
-    flex: 1;
-    padding: 12px;
-    text-align: center;
-    border-radius: var(--radius-xl);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 14px;
-    font-weight: 600;
-}
-.social-tab.active {
-    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-cyan-dark));
-    color: white;
-    transform: scale(1.02);
-}
-.social-content {
-    display: none;
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-}
-.social-content.active {
-    display: block;
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
-
-/* Message Notification Dot */
-.message-notification-dot {
-    position: absolute !important;
-    top: -8px !important;
-    right: -8px !important;
-    width: 18px !important;
-    height: 18px !important;
-    background: #FF4444 !important;
-    border-radius: 50% !important;
-    border: 2px solid rgba(26, 26, 46, 0.95) !important;
-    z-index: 100 !important;
-    pointer-events: none !important;
-    box-shadow: 0 2px 8px rgba(255, 68, 68, 0.5) !important;
-    display: none !important;  /* Add this - hidden by default */
+@keyframes popIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
-/* Add this new rule to show the dot when active */
-.message-notification-dot.show {
-    display: block !important;
-}
-
-.unread-count-badge {
-    position: absolute !important;
-    top: -10px !important;
-    right: -10px !important;
-    background: #FF4444 !important;
-    color: #FFFFFF !important;
-    border-radius: 12px !important;
-    min-width: 22px !important;
-    height: 22px !important;
-    padding: 0 6px !important;
-    font-size: 11px !important;
-    font-weight: 700 !important;
-    display: none !important;  /* Changed from flex to none by default */
-    align-items: center !important;
-    justify-content: center !important;
-    z-index: 100 !important;
-    border: 2px solid rgba(26, 26, 46, 0.95) !important;
-    pointer-events: none !important;
-    box-shadow: 0 2px 8px rgba(255, 68, 68, 0.5) !important;
-}
-
-/* Add this new rule to show the badge when it has content */
-.unread-count-badge.show {
-    display: flex !important;
-}
-
-/* Chat notification styles */
-/* Ensure social tab has proper positioning context */
-.social-tab {
-    position: relative !important;
-}
-
-/* Individual chat item unread indicators */
-.chat-item {
-    position: relative !important;
-}
-
-.photo-upload-section {
-    background: rgba(255,255,255,0.05);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
-    border: 2px dashed var(--border-medium);
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-.photo-upload-section:hover {
-    border-color: var(--accent-cyan);
-    background: rgba(0,212,255,0.1);
-}
-.photo-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin-top: 15px;
-}
-.photo-slot {
-    aspect-ratio: 1;
-    background: var(--border-light);
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px dashed var(--border-medium);
-    position: relative;
-}
-.photo-slot:hover {
-    border-color: var(--accent-cyan);
-    background: rgba(0,212,255,0.1);
-}
-.photo-slot.filled {
-    background-size: cover;
-    background-position: center;
-    border: 2px solid var(--accent-cyan);
-}
-.photo-slot.uploading {
-    border-color: var(--accent-gold);
-    background: rgba(255,215,0,0.1);
-}
-.photo-slot .upload-progress {
-    position: absolute;
-    bottom: 5px;
-    left: 5px;
-    right: 5px;
-    height: 4px;
-    background: rgba(0,0,0,0.3);
-    border-radius: 2px;
-    overflow: hidden;
-}
-.photo-slot .upload-progress-bar {
-    height: 100%;
-    background: var(--accent-cyan);
-    width: 0%;
-    transition: width 0.3s ease;
-}
-.star-icon {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    color: var(--accent-gold);
-    font-size: 20px;
-}
-.interests-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 10px;
-}
-.interest-btn {
-    background: var(--border-light);
-    border: 1px solid var(--border-medium);
-    border-radius: var(--radius-xl);
-    padding: 10px 15px;
-    color: white;
-    cursor: pointer;
-    font-size: 13px;
-    text-align: center;
-    transition: all 0.3s ease;
-}
-.interest-btn.active {
-    background: rgba(0, 212, 255, 0.2);
-    color: var(--accent-cyan);
-    border-color: rgba(0, 212, 255, 0.3);
-}
+/* =====================================================
+   Profile Save Button
+   ===================================================== */
 .save-profile-btn {
     width: 100%;
     background: linear-gradient(135deg, var(--accent-cyan), var(--accent-cyan-dark));
@@ -311,254 +644,49 @@
     transition: all 0.3s ease;
     margin-top: 20px;
 }
+
 .save-profile-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0,212,255,0.3);
 }
 
-/* Profile View Styles */
-.profile-hero {
-    height: 350px;
-    background-size: cover;
-    background-position: center;
-    position: relative;
-    flex-shrink: 0; /* Add this line */
-}
-.profile-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.9));
-    padding: 30px 20px 20px;
-}
-.profile-name {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 5px;
-}
-
-
-
-/* Promo banner - MOVED TO components.css */
-
-/* Feed Container */
-.feed-container {
-    padding: 0 20px 20px 20px;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    margin: 0;
-}
-
-.feed-header {
-    text-align: center;
-    margin-bottom: 20px;
-}
-.feed-header h3 {
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 1px;
-}
-
-/* Business Cards */
-
-.business-image-carousel {
-    position: relative;
-    overflow: hidden;
-    height: 280px;
-}
-
-.carousel-scroll::-webkit-scrollbar {
-    display: none;
-}
-
-/* User Feed Styles */
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.status-online {
-    color: #4CAF50;
-    border-color: rgba(76,175,80,0.3);
-}
-.status-distance {
-    color: var(--accent-cyan);
-    border-color: rgba(0,212,255,0.3);
-}
-.status-match {
-    color: var(--accent-gold);
-    border-color: rgba(255,215,0,0.3);
-}
-.user-image {
-    width: 100%;
-    height: 400px;
-    background-size: cover;
-    background-position: center;
-    position: relative;
-}
-.user-image-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.9));
-    padding: 30px 20px 20px;
-}
-.user-info {
-    padding: var(--spacing-lg);
-    padding-bottom: 0; /* Remove bottom padding since buttons have their own */
-}
-.user-name {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 12px;
-    color: white;
-}
-.user-bio {
-    font-size: 15px;
-    opacity: 0.9;
-    margin-bottom: 18px;
-    line-height: 1.5;
-}
-
-/* ===== LIKE/PASS SYSTEM - OPTIMIZED FOR MOBILE ===== */
-.user-actions {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 0 20px 20px 20px;
-    margin-top: auto; /* Push to bottom if using flexbox parent */
-}
-
-.user-actions .action-btn {
-    flex: 1;
-    height: 54px;
-    max-width: 180px; /* Prevent buttons from being too wide on larger screens */
-    border-radius: 50px;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-weight: 700;
-    font-size: 17px;
-    letter-spacing: 0.3px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
-}
-
-/* Hover states - only for non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-    .user-actions .action-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-    }
-}
-
-/* Active state for all devices */
-.user-actions .action-btn:active {
-    transform: scale(0.95);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* Pass Button Styling */
-.user-actions .pass-btn {
-    background: linear-gradient(135deg, #FF6B84, #FF8FA3);
-    color: white;
-}
-
-.user-actions .pass-btn:active {
-    background: linear-gradient(135deg, #FF5A73, #FF7E92);
-}
-
-/* Like/Chat Button Styling */
-.user-actions .like-btn {
-    background: linear-gradient(135deg, #00D4FF, #00B8E6);
-    color: white;
-}
-
-.user-actions .like-btn:active {
-    background: linear-gradient(135deg, #00C2ED, #00A6D4);
-}
-
-/* Icon styling */
-.user-actions .action-btn span {
-    font-size: 20px;
-    display: inline-flex;
-    align-items: center;
-    line-height: 1;
-}
-
-/* Hide old button styles */
-.chat-btn,
-.super-btn {
-    display: none !important;
-}
-
-   /* ===== MOBILE OPTIMIZATION - v2.0 ===== */
-   @media (max-width: 430px) {
-       .user-actions {
-           gap: 14px;
-           padding: 0 10px 14px 10px !important; /* Force less edge padding */
-       }
-       
-       .user-actions .action-btn {
-           height: 60px !important; /* Force shorter */
-           font-size: 16px;
-           max-width: none !important;
-           border-radius: 50px !important; /* Force pill */
-           gap: 8px;
-           padding: 0 46px !important; /* Force wider */
-       }
-       
-       .user-actions .action-btn span {
-           font-size: 18px;
-       }
-   }
-   
-   /* Extra small screens */
-   @media (max-width: 360px) {
-       .user-actions {
-           gap: 8px;
-           padding: 0 14px 12px 14px;
-       }
-       
-       .user-actions .action-btn {
-           height: 42px; /* Slightly smaller for tiny screens */
-           font-size: 15px;
-           border-radius: 50px;
-           gap: 6px;
-       }
-       
-       .user-actions .action-btn span {
-           font-size: 17px;
-       }
-   }
-
-/* Hide old button styles */
-.chat-btn,
-.super-btn {
-    display: none !important;
-}
-
-/* Button content spacing */
-.user-actions .action-btn span {
-    display: block;
-    line-height: 1;
-}
-
-/* Mobile optimization */
+/* =====================================================
+   Mobile Responsive
+   ===================================================== */
 @media (max-width: 430px) {
     .user-actions {
-        gap: 25px;
-        padding: 15px;
+        gap: 14px;
+        padding: 0 10px 14px 10px !important;
     }
     
     .user-actions .action-btn {
-        width: 75px;
-        height: 75px;
+        height: 60px !important;
+        font-size: 16px;
+        max-width: none !important;
+        border-radius: 50px !important;
+        gap: 8px;
+        padding: 0 46px !important;
+    }
+    
+    .user-actions .action-btn span {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 360px) {
+    .user-actions {
+        gap: 8px;
+        padding: 0 14px 12px 14px;
+    }
+    
+    .user-actions .action-btn {
+        height: 42px;
+        font-size: 15px;
+        border-radius: 50px;
+        gap: 6px;
+    }
+    
+    .user-actions .action-btn span {
+        font-size: 17px;
     }
 }

@@ -2,3 +2,98 @@
    CLASSIFIED - Animations & Transitions
    All keyframes and animation utilities
    ===================================================== */
+
+/* ===== ENTRANCE ANIMATIONS ===== */
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+@keyframes slideDown {
+    from { 
+        opacity: 0; 
+        transform: translateY(-20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+@keyframes popIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideInRight {
+    from { 
+        opacity: 0; 
+        transform: translateX(100%); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateX(0); 
+    }
+}
+
+/* ===== EXIT ANIMATIONS ===== */
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); }
+}
+
+/* ===== ATTENTION ANIMATIONS ===== */
+
+@keyframes pulse {
+    0%, 100% { 
+        opacity: 1; 
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.8; 
+        transform: scale(1.05);
+    }
+}
+
+/* ===== NOTIFICATION ANIMATIONS ===== */
+
+@keyframes slideDownCenter {
+    from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ===== LOADING ANIMATIONS ===== */
+
+@keyframes skeletonPulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ===== ANIMATION UTILITY CLASSES ===== */
+
+.animate-fadeIn { animation: fadeIn var(--transition-slow) ease; }
+.animate-slideUp { animation: slideUp var(--transition-slow) ease; }
+.animate-slideDown { animation: slideDown var(--transition-slow) ease; }
+.animate-pulse { animation: pulse 2s ease-in-out infinite; }
+
+.like-notification {
+    animation: slideDownCenter 0.3s ease !important;
+}

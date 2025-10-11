@@ -1593,17 +1593,6 @@ body.form-overlay-open {
     border-color: var(--accent-cyan);
 }
 
-@keyframes popIn {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
 
 
 .loading-overlay.show {
@@ -1696,20 +1685,7 @@ body.form-overlay-open {
     background: rgba(255,255,255,0.3);
 }
 
-/* Social Proof Notification */
-.social-proof-notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: rgba(0,212,255,0.9);
-    color: white;
-    padding: 12px 16px;
-    border-radius: var(--radius-pill);
-    font-size: 14px;
-    font-weight: 600;
-    z-index: 999;
-    animation: slideInRight 0.3s ease;
-}
+
 @keyframes slideInRight {
     from { opacity: 0; transform: translateX(100px); }
     to { opacity: 1; transform: translateX(0); }
@@ -1732,20 +1708,7 @@ body.form-overlay-open {
 }
 
 
-/* User action animations */
-@keyframes fadeOut {
-    from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY(-20px); }
-}
 
-@keyframes slideDown {
-    from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
-
-.like-notification {
-    animation: slideDown 0.3s ease !important;
-}
 
 /* Auto-response message styling */
 .message:has([data-is-auto="true"]) .message-bubble,

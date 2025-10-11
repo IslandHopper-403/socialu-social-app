@@ -3,7 +3,37 @@
    Business dashboard, analytics, business-only components
    ===================================================== */
 
-/* ===== BUSINESS SIGNUP BANNER ===== */
+/* =====================================================
+   Business Feed & Display
+   ===================================================== */
+.business-image-carousel {
+    position: relative;
+    overflow: hidden;
+    height: 280px;
+}
+
+.carousel-scroll {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+}
+
+.carousel-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.carousel-image {
+    min-width: 100%;
+    height: 280px;
+    object-fit: cover;
+    scroll-snap-align: start;
+}
+
+/* =====================================================
+   Business Signup Banner
+   ===================================================== */
 .business-signup-banner {
     background: var(--gold-gradient);
     border-radius: var(--radius-lg);
@@ -11,6 +41,7 @@
     margin: var(--spacing-lg);
     text-align: center;
     box-shadow: 0 4px 15px rgba(255,215,0,0.3);
+    transition: all var(--transition-slow);
 }
 
 .business-signup-banner:hover {
@@ -56,7 +87,53 @@
     box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
 
-/* ===== BUSINESS DASHBOARD STATS ===== */
+/* =====================================================
+   Business Dashboard Header
+   ===================================================== */
+.business-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255,255,255,0.05);
+    border-radius: var(--radius-lg);
+    margin: 0 var(--spacing-lg) var(--spacing-lg);
+    padding: var(--spacing-lg);
+}
+
+.business-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--success-bg);
+    color: var(--success);
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+}
+
+.business-status-badge.closed {
+    background: var(--error-bg);
+    color: var(--error);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--success);
+    border-radius: var(--radius-circle);
+    animation: pulse 1.5s infinite;
+}
+
+.business-status-badge.closed .status-dot {
+    background: var(--error);
+    animation: none;
+}
+
+/* =====================================================
+   Business Stats Grid
+   ===================================================== */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -70,6 +147,12 @@
     padding: var(--spacing-lg);
     text-align: center;
     border: 1px solid var(--border-light);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-2px);
 }
 
 .stat-value {
@@ -84,35 +167,9 @@
     opacity: 0.7;
 }
 
-/* ===== BUSINESS MESSAGES SECTION ===== */
-.messages-section {
-    background: rgba(255,255,255,0.05);
-    border-radius: var(--radius-lg);
-    margin: 0 var(--spacing-lg) var(--spacing-lg);
-    padding: var(--spacing-lg);
-}
-
-.customer-avatar {
-    width: 45px;
-    height: 45px;
-    background: var(--border-light);
-    border-radius: var(--radius-circle);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: var(--spacing-md);
-    font-size: 20px;
-}
-
-.message-preview {
-    font-size: var(--text-sm);
-    opacity: 0.7;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* ===== BUSINESS ACTIONS GRID ===== */
+/* =====================================================
+   Business Actions Grid
+   ===================================================== */
 .actions-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -174,7 +231,39 @@
     opacity: 0.7;
 }
 
-/* ===== BUSINESS PROMOTIONS ===== */
+/* =====================================================
+   Business Messages Section
+   ===================================================== */
+.messages-section {
+    background: rgba(255,255,255,0.05);
+    border-radius: var(--radius-lg);
+    margin: 0 var(--spacing-lg) var(--spacing-lg);
+    padding: var(--spacing-lg);
+}
+
+.customer-avatar {
+    width: 45px;
+    height: 45px;
+    background: var(--border-light);
+    border-radius: var(--radius-circle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--spacing-md);
+    font-size: 20px;
+}
+
+.message-preview {
+    font-size: var(--text-sm);
+    opacity: 0.7;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* =====================================================
+   Business Promotions
+   ===================================================== */
 .promotions-section {
     background: rgba(255,255,255,0.05);
     border-radius: var(--radius-lg);
@@ -190,6 +279,7 @@
     background: linear-gradient(135deg, rgba(255,107,107,0.1), rgba(255,140,66,0.1));
     border-radius: var(--radius-md);
     border: 1px solid rgba(255,107,107,0.3);
+    margin-bottom: var(--spacing-sm);
 }
 
 .promo-stats {
@@ -215,7 +305,9 @@
     background: var(--accent-cyan);
 }
 
-/* ===== BUSINESS INSIGHTS ===== */
+/* =====================================================
+   Business Insights
+   ===================================================== */
 .insights-section {
     background: rgba(255,255,255,0.05);
     border-radius: var(--radius-lg);
@@ -245,7 +337,9 @@
     color: var(--accent-cyan);
 }
 
-/* ===== ANALYTICS OVERLAY ===== */
+/* =====================================================
+   Analytics Overlay
+   ===================================================== */
 .analytics-content {
     flex: 1;
     overflow-y: auto;
@@ -260,6 +354,7 @@
     background: rgba(255,255,255,0.05);
     padding: 4px;
     border-radius: 12px;
+    margin-bottom: 20px;
 }
 
 .time-btn {
@@ -279,27 +374,6 @@
     border-color: transparent;
 }
 
-.photo-performance-grid {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-}
-
-.perf-photo-item {
-    min-width: 100px;
-    text-align: center;
-}
-
-.perf-photo-image {
-    width: 100px;
-    height: 100px;
-    border-radius: 8px;
-    background-size: cover;
-    background-position: center;
-    margin-bottom: 8px;
-}
-
-/* ===== ANALYTICS SUMMARY CARDS ===== */
 .summary-cards {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -342,7 +416,9 @@
     content: '↓ ';
 }
 
-/* ===== ANALYTICS CHARTS ===== */
+/* =====================================================
+   Analytics Charts
+   ===================================================== */
 .bar-chart {
     display: flex;
     align-items: flex-end;
@@ -382,7 +458,46 @@
     white-space: nowrap;
 }
 
-/* ===== PROMOTIONS MANAGER ===== */
+.photo-performance-grid {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+}
+
+.perf-photo-item {
+    min-width: 100px;
+    text-align: center;
+}
+
+.perf-photo-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 8px;
+}
+
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-top: 15px;
+}
+
+.heatmap-cell {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* =====================================================
+   Promotions Manager
+   ===================================================== */
 .promotions-content {
     flex: 1;
     overflow-y: auto;
@@ -419,6 +534,7 @@
 .promo-type-selector {
     display: flex;
     gap: 10px;
+    margin-bottom: 20px;
 }
 
 .type-btn {
@@ -437,7 +553,9 @@
     border-color: var(--accent-cyan);
 }
 
-/* ===== BUSINESS-SPECIFIC OVERLAYS ===== */
+/* =====================================================
+   Performance Score
+   ===================================================== */
 .performance-score-card {
     background: linear-gradient(135deg, var(--accent-cyan), var(--accent-cyan-dark));
     border-radius: 20px;
@@ -459,33 +577,25 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    margin-bottom: 10px;
 }
 
-.heatmap-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-    margin-top: 15px;
-}
-
-.heatmap-cell {
-    aspect-ratio: 1;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    font-weight: 600;
-}
-
-/* ===== HIDE SOCIAL FOR BUSINESS ===== */
+/* =====================================================
+   Business User UI Modifications
+   ===================================================== */
 body.business-user .social-tabs,
 body.business-user .social-content,
 body.business-user #socialScreen {
     display: none !important;
 }
 
-/* ===== RESPONSIVE BUSINESS STYLES ===== */
+body.business-user .bottom-nav {
+    display: none !important;
+}
+
+/* =====================================================
+   Business Mobile Responsive
+   ===================================================== */
 @media (max-width: 430px) {
     .stats-grid,
     .actions-grid {
@@ -500,54 +610,38 @@ body.business-user #socialScreen {
     }
     
     .summary-cards {
-        padding: 0 10px;
+        grid-template-columns: 1fr;
     }
     
     .bar-chart {
         height: 120px;
     }
+    
+    .insights-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .business-signup-banner {
+        margin: var(--spacing-md);
+        padding: 20px var(--spacing-md);
+    }
+    
+    .business-signup-banner h3 {
+        font-size: 20px;
+    }
+    
+    .business-signup-banner p {
+        font-size: 14px;
+    }
 }
 
-/* ===== BUSINESS PROFILE SPECIFIC ===== */
-.business-header-section {
-    background: rgba(255,255,255,0.05);
-    border-radius: var(--radius-lg);
-    margin: 0 var(--spacing-lg) var(--spacing-lg);
-    padding: var(--spacing-lg);
-}
-
-.business-status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--success-bg);
-    color: var(--success);
-    padding: 8px 16px;
-    border-radius: var(--radius-pill);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    margin-bottom: var(--spacing-md);
-}
-
-.business-status-badge.closed {
-    background: var(--error-bg);
-    color: var(--error);
-}
-
-.status-dot {
-    width: 8px;
-    height: 8px;
-    background: var(--success);
-    border-radius: var(--radius-circle);
-    animation: pulse 1.5s infinite;
-}
-
-.business-status-badge.closed .status-dot {
-    background: var(--error);
-    animation: none;
-}
-
-/* ===== HIDE NAVIGATION FOR BUSINESS DASHBOARD ===== */
-body.business-user .bottom-nav {
-    display: none !important;
+@media (max-width: 360px) {
+    .stats-grid,
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .bar-chart {
+        height: 100px;
+    }
 }

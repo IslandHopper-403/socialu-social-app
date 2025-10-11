@@ -253,15 +253,7 @@ export class MatchingManager {
         
         console.log('✅ Match created:', matchId);
         
-        // Send match notifications
-        await this.sendMatchNotification(userId1, userId2);
-        await this.sendMatchNotification(userId2, userId1);
-            
-        } catch (error) {
-            console.error('❌ Error creating match:', error);
-        }
-    }
-    
+
     /**
      * Send like notification
      */
@@ -280,30 +272,6 @@ export class MatchingManager {
             console.log('📬 Like notification sent');
         } catch (error) {
             console.error('❌ Error sending notification:', error);
-        }
-    }
-    
-    /**
-     * Send match notification
-     */
-    async sendMatchNotification(toUserId, matchedWithUserId) {
-        try {
-            const userDoc = await getDoc(doc(this.db, 'users', matchedWithUserId));
-            const userData = userDoc.data();
-            
-            await addDoc(collection(this.db, 'notifications'), {
-                userId: toUserId,
-                title: "It's a Match! 🎉",
-                message: `You matched with ${userData?.name || 'someone'}`,
-                type: 'match',
-                fromUserId: matchedWithUserId,
-                timestamp: serverTimestamp(),
-                read: false
-            });
-            
-            console.log('🎉 Match notification sent');
-        } catch (error) {
-            console.error('❌ Error sending match notification:', error);
         }
     }
     

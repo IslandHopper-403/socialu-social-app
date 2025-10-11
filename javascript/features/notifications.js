@@ -1,64 +1,150 @@
 // javascript/features/notifications.js
 
+import { 
+    collection, 
+    addDoc, 
+    doc, 
+    getDoc,
+    serverTimestamp,
+    query,
+    where,
+    onSnapshot,
+    orderBy,
+    limit
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
 import { sanitizeText } from '../utils/security.js';
 
 /**
- * Dedicated Notification Manager with Security
+ * COMPLETE Notification Manager - Single Source of Truth
+ * Handles all notifications: messages, matches, likes, and UI updates
  */
 export class NotificationManager {
     constructor(firebaseServices, appState) {
+        console.log('🔔 Initializing NotificationManager...');
+        
         this.db = firebaseServices.db;
         this.state = appState;
         
-        // Notification state
+        // Core notification state
         this.processedMessages = new Set();
-        this.sessionStartTime = Date.now();
-        this.unreadMessages = new Map(); // MOVED from messaging.js
-        this.lastNotificationTimes = new Map(); // MOVED from messaging.js
+        this.processedMatches = new Set();
+        this.unreadMessages = new Map();
+        this.lastSeenTimestamps = new Map();
+        this.lastNotificationTimes = new Map();
+        this.notificationQueue = [];
         
-        // CRITICAL: Track if we've fully initialized to prevent wiping data
+        // Track initialization to prevent data loss
         this.isInitialized = false;
         
-        // Load state
-        this.loadProcessedMessages();
-        this.loadUnreadStateFromStorage(); // MOVED from messaging.js
-        
-        // Mark as initialized after loading from storage
-        this.isInitialized = true;
-        
-        // Sound & cleanup
+        // Notification sound
         this.notificationSound = null;
+        
+        // Cleanup interval
         this.cleanupInterval = null;
-        this.setupSound();
-        this.setupNotificationCleanup(); // MOVED from messaging.js
+        
+        // Active listeners
+        this.notificationListener = null;
+        
+        // Initialize
+        this.init();
     }
     
-    // MOVED from messaging.js
+    /**
+     * Initialize notification system
+     */
+    init() {
+        console.log('🔔 [STEP-1] NotificationManager init at:', Date.now());
+        
+        // Load persisted state
+        this.loadProcessedMessages();
+        this.loadUnreadStateFromStorage();
+        this.loadLastSeenTimestamps();
+        
+        // Setup sound
+        this.setupSound();
+        
+        // Setup cleanup
+        this.setupNotificationCleanup();
+        
+        // Mark as initialized
+        this.isInitialized = true;
+        
+        // Restore notification dot on page load
+        this.restoreNotificationDot();
+        
+        console.log('✅ NotificationManager initialized');
+    }
+    
+    // ==================== PERSISTENCE METHODS ====================
+    
+    /**
+     * Load processed messages from storage
+     */
+    loadProcessedMessages() {
+        try {
+            const saved = localStorage.getItem('processedNotifications');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                // Only load messages from current session (last 24 hours)
+                const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+                parsed.forEach(id => {
+                    if (id.includes('_')) {
+                        const parts = id.split('_');
+                        const timestamp = parseInt(parts[parts.length - 1]);
+                        if (timestamp > oneDayAgo) {
+                            this.processedMessages.add(id);
+                        }
+                    }
+                });
+                console.log(`📦 Loaded ${this.processedMessages.size} processed messages`);
+            }
+        } catch (error) {
+            console.error('Error loading processed messages:', error);
+        }
+    }
+    
+    /**
+     * Save processed messages to storage
+     */
+    saveProcessedMessages() {
+        try {
+            if (!this.isInitialized) return;
+            
+            const toSave = Array.from(this.processedMessages).slice(-100);
+            localStorage.setItem('processedNotifications', JSON.stringify(toSave));
+        } catch (error) {
+            console.error('Error saving processed messages:', error);
+        }
+    }
+    
+    /**
+     * Load unread counts from storage
+     */
     loadUnreadStateFromStorage() {
         try {
-            const savedUnreadState = localStorage.getItem('unreadMessages');
-            if (savedUnreadState) {
-                const parsed = JSON.parse(savedUnreadState);
+            const saved = localStorage.getItem('unreadMessages');
+            if (saved) {
+                const parsed = JSON.parse(saved);
                 Object.entries(parsed).forEach(([chatId, count]) => {
-                    // SECURITY: Validate chatId format (should be userId1_userId2)
+                    // SECURITY: Validate chatId format
                     if (chatId.match(/^[a-zA-Z0-9]+_[a-zA-Z0-9]+$/)) {
                         this.unreadMessages.set(chatId, parseInt(count) || 0);
                     }
                 });
+                console.log(`📦 Loaded unread counts for ${this.unreadMessages.size} chats`);
             }
         } catch (error) {
             console.error('Error loading unread state:', error);
         }
     }
-
-   // MOVED from messaging.js
+    
+    /**
+     * Save unread counts to storage
+     */
     saveUnreadStateToStorage() {
         try {
-            // CRITICAL: Don't wipe localStorage during initialization
-            if (!this.isInitialized) {
-                console.log('⏸️ Skipping save during initialization');
-                return;
-            }
+            if (!this.isInitialized) return;
             
             const unreadObject = {};
             this.unreadMessages.forEach((count, chatId) => {
@@ -67,225 +153,272 @@ export class NotificationManager {
                 }
             });
             
-            // CRITICAL LOGGING: Track every save attempt
-            console.log('💾 [NotificationManager] saveUnreadStateToStorage called');
-            console.log('💾 [NotificationManager] Current Map size:', this.unreadMessages.size);
-            console.log('💾 [NotificationManager] Map contents:', Array.from(this.unreadMessages.entries()));
-            console.log('💾 [NotificationManager] Will save:', unreadObject);
-            console.trace('💾 [NotificationManager] Called from:'); // Shows stack trace
-            
             localStorage.setItem('unreadMessages', JSON.stringify(unreadObject));
         } catch (error) {
             console.error('Error saving unread state:', error);
         }
     }
     
-    loadProcessedMessages() {
+    /**
+     * Load last seen timestamps
+     */
+    loadLastSeenTimestamps() {
         try {
-            const saved = localStorage.getItem('processedMessages');
+            const saved = localStorage.getItem('lastSeenTimestamps');
             if (saved) {
                 const parsed = JSON.parse(saved);
-                const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
-                parsed.forEach(item => {
-                    if (item.timestamp > oneDayAgo) {
-                        this.processedMessages.add(item.id);
-                    }
+                Object.entries(parsed).forEach(([chatId, timestamp]) => {
+                    this.lastSeenTimestamps.set(chatId, timestamp);
                 });
+                console.log(`📦 Loaded ${this.lastSeenTimestamps.size} last seen timestamps`);
             }
         } catch (error) {
-            console.error('Error loading processed messages:', error);
+            console.error('Error loading last seen timestamps:', error);
         }
     }
     
-    saveProcessedMessages() {
+    /**
+     * Save last seen timestamps
+     */
+    saveLastSeenTimestamps() {
         try {
-            const toSave = Array.from(this.processedMessages).map(id => ({
-                id,
-                timestamp: Date.now()
-            }));
-            localStorage.setItem('processedMessages', JSON.stringify(toSave));
+            if (!this.isInitialized) return;
+            
+            const timestamps = {};
+            this.lastSeenTimestamps.forEach((time, chatId) => {
+                timestamps[chatId] = time;
+            });
+            
+            localStorage.setItem('lastSeenTimestamps', JSON.stringify(timestamps));
         } catch (error) {
-            console.error('Error saving processed messages:', error);
+            console.error('Error saving last seen timestamps:', error);
         }
     }
     
-       shouldShowNotification(message, chatId) {
-        const currentUser = this.state.get('currentUser');
-        const messagingManager = window.classifiedApp?.managers?.messaging;
+    // ==================== CORE NOTIFICATION METHODS ====================
+    
+    /**
+     * Main notification dispatch method
+     */
+    async showNotification(type, data) {
+        console.log(`🔔 Showing ${type} notification:`, data);
         
-        // Never notify for own messages
-        if (message.senderId === currentUser?.uid) {
-            return false;
+        switch(type) {
+            case 'message':
+                await this.showMessageNotification(data);
+                break;
+            case 'match':
+                await this.showMatchNotification(data);
+                break;
+            case 'like':
+                await this.showLikeNotification(data);
+                break;
+            default:
+                console.warn(`Unknown notification type: ${type}`);
+        }
+    }
+    
+    /**
+     * Show message notification
+     */
+    async showMessageNotification(data) {
+        const { message, chatId, partnerInfo } = data;
+        
+        // Check if we should show notification
+        if (!this.shouldShowNotification(message, chatId)) {
+            return;
         }
         
-        // SECURITY: Ensure chat ID is properly sorted
-        const participants = chatId.split('_');
-        const sortedChatId = participants.sort().join('_');
-        if (chatId !== sortedChatId) {
-            console.error('Chat ID not sorted:', chatId);
-            return false;
-        }
-        
-        // Don't notify if this chat is currently open AND visible
-        if (messagingManager?.currentChatId === chatId && messagingManager?.isChatVisible) {
-            console.log('🔕 Chat is open, skipping notification');
-            return false;
-        }
-        
-        // Get message timestamp properly
-        const messageTime = message.timestamp?.toMillis?.() || 
-                           message.timestamp?.seconds ? (message.timestamp.seconds * 1000) : 
-                           Date.now();
-        
-        // Create unique message ID
-        const messageId = `${chatId}_${messageTime}_${message.senderId}`;
-        
-        // Check if already processed
-        if (this.processedMessages.has(messageId)) {
-            return false;
-        }
-        
-        // FIXED: Check against session start time (not app close)
-        // Messages arriving AFTER this session started should notify
-        const sessionStart = this.sessionStartTime;
-        
-        // Only notify for messages that arrived after this session started
-        if (messageTime < sessionStart) {
-            console.log('🔕 Message from before session, skipping notification');
-            this.processedMessages.add(messageId);
-            this.saveProcessedMessages();
-            return false;
-        }
-        
-        // Check cooldown (prevent spam)
-        const lastNotificationTime = this.lastNotificationTimes.get(chatId) || 0;
-        if (Date.now() - lastNotificationTime < 3000) { // 3 second cooldown
-            console.log('🔕 Cooldown active, skipping notification');
-            return false;
-        }
-        
-        // Mark as processed and update cooldown
+        // Mark as processed
+        const messageId = `${chatId}_${message.timestamp}_${message.senderId}`;
         this.processedMessages.add(messageId);
         this.saveProcessedMessages();
-        this.lastNotificationTimes.set(chatId, Date.now());
-        
-        console.log('🔔 Showing notification for message:', messageId);
-        return true;
-    }
-        
-    showNotification(message, chatId, partnerInfo) {
-        // SECURITY: Sanitize all text before display
-        const safeText = sanitizeText(message.text);
-        const safeName = sanitizeText(partnerInfo.name);
         
         // Play sound
         this.playSound();
         
+        // Sanitize content for security
+        const safeName = sanitizeText(partnerInfo?.name || 'Someone');
+        const safeText = sanitizeText(message.text || '');
+        
         // Show browser notification if permitted
         if (Notification.permission === 'granted') {
-            new Notification(`New message from ${safeName}`, {
-                body: safeText.substring(0, 100), // Limit length
-                icon: partnerInfo.avatar || '/favicon.ico',
-                tag: chatId,
-                requireInteraction: false
-            });
+            try {
+                new Notification(`New message from ${safeName}`, {
+                    body: safeText.substring(0, 100),
+                    icon: partnerInfo?.avatar || '/favicon.ico',
+                    tag: chatId,
+                    requireInteraction: false
+                });
+            } catch (error) {
+                console.log('Browser notification failed:', error);
+            }
         }
         
         // Show in-app toast
         this.showToast(`💬 ${safeName}: ${safeText}`);
+        
+        // Update unread count
+        this.updateUnreadCount(chatId, 1);
     }
     
-    playSound() {
-        if (this.notificationSound) {
-            this.notificationSound.currentTime = 0;
-            this.notificationSound.play().catch(() => {});
+    /**
+     * Show match notification and popup
+     */
+    async showMatchNotification(data) {
+        console.log('🎉 Showing match notification:', data);
+        
+        const { matchId, partnerId, partnerName, partnerPhoto } = data;
+        
+        // Check if already shown
+        if (this.processedMatches.has(matchId)) {
+            console.log('Match already processed:', matchId);
+            return;
         }
+        
+        // Mark as processed
+        this.processedMatches.add(matchId);
+        
+        // Play sound
+        this.playSound();
+        
+        // Show browser notification
+        if (Notification.permission === 'granted') {
+            try {
+                new Notification("It's a Match! 🎉", {
+                    body: `You and ${partnerName} liked each other!`,
+                    icon: partnerPhoto || '/favicon.ico',
+                    tag: `match_${matchId}`,
+                    requireInteraction: false
+                });
+            } catch (error) {
+                console.log('Browser notification failed:', error);
+            }
+        }
+        
+        // Show match popup
+        this.showMatchPopup({
+            uid: partnerId,
+            name: partnerName,
+            image: partnerPhoto
+        });
+        
+        // Show in-app toast
+        this.showToast(`🎉 It's a match with ${partnerName}!`);
     }
     
-    showToast(text) {
-        const existing = document.querySelector('.notification-toast');
-        if (existing) existing.remove();
+    /**
+     * Show like notification
+     */
+    async showLikeNotification(data) {
+        const { fromUser, likeId } = data;
         
-        const toast = document.createElement('div');
-        toast.className = 'notification-toast';
-        // SECURITY: Use textContent, not innerHTML
-        toast.textContent = text;
-        toast.style.cssText = `
-            position: fixed; top: 20px; right: 20px;
-            background: rgba(0,212,255,0.95); color: white;
-            padding: 12px 20px; border-radius: 8px;
-            max-width: 300px; z-index: 9999;
-            animation: slideInRight 0.3s ease;
-        `;
-        document.body.appendChild(toast);
+        // Check if already processed
+        if (this.processedMessages.has(likeId)) {
+            return;
+        }
         
-        setTimeout(() => toast.remove(), 4000);
+        this.processedMessages.add(likeId);
+        this.saveProcessedMessages();
+        
+        // Play sound
+        this.playSound();
+        
+        // Show toast
+        const safeName = sanitizeText(fromUser?.name || 'Someone');
+        this.showToast(`💕 ${safeName} liked you!`);
     }
     
-    // MOVED from messaging.js - UI notification methods
-   showNotificationDot(count = null) {
+    // ==================== UI UPDATE METHODS ====================
+    
+    /**
+     * Show notification dot with optional count
+     */
+    showNotificationDot(count = null) {
         const notificationDot = document.getElementById('messageNotificationDot');
         const countBadge = document.getElementById('unreadCountBadge');
         
         const numCount = parseInt(count) || 0;
         
+        console.log(`🔴 Showing notification dot with count: ${numCount}`);
+        
         if (numCount > 0) {
-            // Show simple red dot only using classes
+            // Show the red dot
             if (notificationDot) {
                 notificationDot.classList.add('show');
             }
+            
+            // Show count badge if it exists
             if (countBadge) {
-                countBadge.classList.remove('show');
+                countBadge.textContent = numCount > 99 ? '99+' : numCount.toString();
+                countBadge.classList.add('show');
             }
-        } else {
-            // Hide everything using classes
-            if (notificationDot) {
-                notificationDot.classList.remove('show');
-            }
-            if (countBadge) {
-                countBadge.classList.remove('show');
-            }
+            
+            // Update document title
+            document.title = `(${numCount}) CLASSIFIED - Hoi An Social Discovery`;
         }
     }
     
+    /**
+     * Hide notification dot
+     */
     hideNotificationDot() {
-            const notificationDot = document.getElementById('messageNotificationDot');
-            const countBadge = document.getElementById('unreadCountBadge');
-            
-            if (notificationDot) {
-                notificationDot.classList.remove('show');
-                notificationDot.textContent = '';
-            }
-            if (countBadge) {
-                countBadge.classList.remove('show');
-                countBadge.textContent = '';
-            }
+        console.log('⚪ Hiding notification dot');
+        
+        const notificationDot = document.getElementById('messageNotificationDot');
+        const countBadge = document.getElementById('unreadCountBadge');
+        
+        if (notificationDot) {
+            notificationDot.classList.remove('show');
         }
+        
+        if (countBadge) {
+            countBadge.classList.remove('show');
+            countBadge.textContent = '';
+        }
+        
+        // Reset document title
+        document.title = 'CLASSIFIED - Hoi An Social Discovery';
+    }
     
-    // MOVED from messaging.js
-    updateUnreadCount(chatId, increment) {
+    /**
+     * Update unread count for a chat
+     */
+    updateUnreadCount(chatId, delta) {
         const current = this.unreadMessages.get(chatId) || 0;
-        const newCount = Math.max(0, current + increment);
+        const newCount = Math.max(0, current + delta);
+        
+        console.log(`📊 Updating unread for ${chatId}: ${current} → ${newCount}`);
         
         this.unreadMessages.set(chatId, newCount);
         this.saveUnreadStateToStorage();
         
-        // Calculate total
-        const totalUnread = Array.from(this.unreadMessages.values()).reduce((sum, count) => sum + count, 0);
+        // Update total
+        const totalUnread = this.getTotalUnread();
         
         if (totalUnread > 0) {
             this.showNotificationDot(totalUnread);
         } else {
             this.hideNotificationDot();
         }
+        
+        return newCount;
     }
     
-    // MOVED from messaging.js
+    /**
+     * Mark chat as read
+     */
     markChatAsRead(chatId) {
-        this.unreadMessages.set(chatId, 0);
-        this.saveUnreadStateToStorage();
+        console.log(`✅ Marking chat ${chatId} as read`);
         
-        const totalUnread = Array.from(this.unreadMessages.values()).reduce((sum, count) => sum + count, 0);
+        this.unreadMessages.set(chatId, 0);
+        this.lastSeenTimestamps.set(chatId, Date.now());
+        
+        this.saveUnreadStateToStorage();
+        this.saveLastSeenTimestamps();
+        
+        // Update UI
+        const totalUnread = this.getTotalUnread();
         if (totalUnread === 0) {
             this.hideNotificationDot();
         } else {
@@ -293,48 +426,382 @@ export class NotificationManager {
         }
     }
     
-    // MOVED from messaging.js
+    /**
+     * Get total unread count
+     */
+    getTotalUnread() {
+        let total = 0;
+        this.unreadMessages.forEach(count => {
+            total += count;
+        });
+        return total;
+    }
+    
+    /**
+     * Restore notification dot on page load
+     */
+    restoreNotificationDot() {
+        setTimeout(() => {
+            const totalUnread = this.getTotalUnread();
+            
+            if (totalUnread > 0) {
+                console.log(`🔔 Restoring ${totalUnread} unread on page load`);
+                this.showNotificationDot(totalUnread);
+            }
+        }, 500);
+    }
+    
+    // ==================== MATCH POPUP METHODS ====================
+    
+    /**
+     * Show match popup (extracted from matching.js)
+     */
+    showMatchPopup(userData) {
+        console.log('🎉 Showing match popup for:', userData);
+        
+        const matchPopup = document.getElementById('matchPopup');
+        if (!matchPopup) {
+            console.error('Match popup element not found');
+            return;
+        }
+        
+        // Prevent duplicate popups
+        if (matchPopup.classList.contains('show')) {
+            console.log('Match popup already showing');
+            return;
+        }
+        
+        // Update popup content
+        const popupImage = matchPopup.querySelector('.match-popup-image');
+        const popupText = matchPopup.querySelector('p');
+        const startChatBtn = matchPopup.querySelector('#startChatBtn');
+        const keepSwipingBtn = matchPopup.querySelector('#keepSwipingBtn');
+        
+        if (popupImage) {
+            popupImage.src = userData.image || 'https://via.placeholder.com/100';
+            popupImage.alt = userData.name;
+        }
+        
+        if (popupText) {
+            const safeName = sanitizeText(userData.name);
+            popupText.textContent = `You and ${safeName} both liked each other!`;
+        }
+        
+        // Store match data for chat button
+        this.state.set('lastMatchedUser', userData);
+        
+        // Setup button handlers
+        if (startChatBtn) {
+            startChatBtn.onclick = () => {
+                matchPopup.classList.remove('show');
+                this.startChatFromMatch();
+            };
+        }
+        
+        if (keepSwipingBtn) {
+            keepSwipingBtn.onclick = () => {
+                matchPopup.classList.remove('show');
+                console.log('✅ Match saved to inbox');
+            };
+        }
+        
+        // Show popup
+        matchPopup.classList.add('show');
+        
+        // Auto-close after 15 seconds
+        setTimeout(() => {
+            if (matchPopup.classList.contains('show')) {
+                matchPopup.classList.remove('show');
+                console.log('✅ Match popup auto-closed');
+            }
+        }, 15000);
+    }
+    
+    /**
+     * Start chat from match (delegates to messaging manager)
+     */
+    startChatFromMatch() {
+        const matchedUser = this.state.get('lastMatchedUser');
+        if (!matchedUser) {
+            console.error('No matched user found');
+            return;
+        }
+        
+        console.log('🚀 Starting chat with:', matchedUser.name);
+        
+        // Switch to messaging tab
+        const feedManager = window.classifiedApp?.managers?.feed;
+        if (feedManager) {
+            feedManager.switchSocialTab('messaging');
+        }
+        
+        // Open chat after UI updates
+        setTimeout(() => {
+            const messagingManager = window.classifiedApp?.managers?.messaging;
+            if (messagingManager) {
+                messagingManager.openChat(
+                    matchedUser.name,
+                    matchedUser.image,
+                    matchedUser.uid
+                );
+            }
+        }, 300);
+    }
+    
+    // ==================== TOAST & SOUND METHODS ====================
+    
+    /**
+     * Show in-app toast notification
+     */
+    showToast(text, duration = 4000) {
+        // Remove existing toast
+        const existing = document.querySelector('.notification-toast');
+        if (existing) {
+            existing.remove();
+        }
+        
+        // Create new toast
+        const toast = document.createElement('div');
+        toast.className = 'notification-toast';
+        
+        // SECURITY: Use textContent not innerHTML
+        toast.textContent = text;
+        
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 212, 255, 0.95);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            max-width: 300px;
+            z-index: 9999;
+            animation: slideInRight 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Auto remove
+        setTimeout(() => toast.remove(), duration);
+    }
+    
+    /**
+     * Setup notification sound
+     */
+    setupSound() {
+        try {
+            // Create notification sound (base64 encoded beep)
+            this.notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUYrTp66hVFApGn+DyvmEaAzqM0+/ReigGHXM=');
+            this.notificationSound.volume = 0.3;
+            console.log('🔊 Notification sound ready');
+        } catch (error) {
+            console.error('Failed to setup notification sound:', error);
+        }
+    }
+    
+    /**
+     * Play notification sound
+     */
+    playSound() {
+        if (this.notificationSound) {
+            this.notificationSound.currentTime = 0;
+            this.notificationSound.play().catch(error => {
+                console.log('Sound play failed:', error);
+            });
+        }
+    }
+    
+    // ==================== FIREBASE NOTIFICATION METHODS ====================
+    
+    /**
+     * Send match notification to Firebase
+     */
+    async sendMatchNotification(toUserId, matchedWithUserId) {
+        try {
+            const userDoc = await getDoc(doc(this.db, 'users', matchedWithUserId));
+            const userData = userDoc.data();
+            
+            await addDoc(collection(this.db, 'notifications'), {
+                userId: toUserId,
+                type: 'match',
+                title: "It's a Match! 🎉",
+                message: `You and ${userData?.name || 'someone'} liked each other!`,
+                matchId: [toUserId, matchedWithUserId].sort().join('_'),
+                partnerId: matchedWithUserId,
+                partnerName: userData?.name,
+                partnerPhoto: userData?.photos?.[0] || userData?.photo,
+                timestamp: serverTimestamp(),
+                read: false
+            });
+            
+            console.log('📬 Match notification sent to Firebase');
+        } catch (error) {
+            console.error('Error sending match notification:', error);
+        }
+    }
+    
+    /**
+     * Send like notification to Firebase
+     */
+    async sendLikeNotification(toUserId, fromUser) {
+        try {
+            await addDoc(collection(this.db, 'notifications'), {
+                userId: toUserId,
+                type: 'like',
+                title: 'New Like! 💕',
+                message: `${fromUser.displayName || 'Someone'} liked you`,
+                fromUserId: fromUser.uid,
+                timestamp: serverTimestamp(),
+                read: false
+            });
+            
+            console.log('📬 Like notification sent to Firebase');
+        } catch (error) {
+            console.error('Error sending like notification:', error);
+        }
+    }
+    
+    /**
+     * Listen for notifications from Firebase
+     */
+    listenForNotifications(userId) {
+        console.log('👂 Setting up notification listener for:', userId);
+        
+        // Clean up existing listener
+        if (this.notificationListener) {
+            this.notificationListener();
+            this.notificationListener = null;
+        }
+        
+        try {
+            const notificationsRef = collection(this.db, 'notifications');
+            const q = query(
+                notificationsRef,
+                where('userId', '==', userId),
+                where('read', '==', false),
+                orderBy('timestamp', 'desc'),
+                limit(10)
+            );
+            
+            this.notificationListener = onSnapshot(q, (snapshot) => {
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        const data = change.doc.data();
+                        console.log('📬 New notification received:', data);
+                        
+                        // Process based on type
+                        if (data.type === 'match') {
+                            this.showMatchNotification(data);
+                        } else if (data.type === 'like') {
+                            this.showLikeNotification(data);
+                        }
+                    }
+                });
+            }, (error) => {
+                console.error('Error in notification listener:', error);
+            });
+            
+        } catch (error) {
+            console.error('Error setting up notification listener:', error);
+        }
+    }
+    
+    // ==================== UTILITY METHODS ====================
+    
+    /**
+     * Check if we should show a notification
+     */
+    shouldShowNotification(message, chatId) {
+        // Don't show for old messages
+        const messageTime = message.timestamp || 0;
+        const tenSecondsAgo = Date.now() - 10000;
+        
+        if (messageTime < tenSecondsAgo) {
+            return false;
+        }
+        
+        // Check if already processed
+        const messageId = `${chatId}_${message.timestamp}_${message.senderId}`;
+        if (this.processedMessages.has(messageId)) {
+            return false;
+        }
+        
+        // Check if chat is currently open
+        const messagingManager = window.classifiedApp?.managers?.messaging;
+        if (messagingManager && messagingManager.currentChatId === chatId) {
+            return false;
+        }
+        
+        // Check rate limiting
+        const lastNotificationTime = this.lastNotificationTimes.get(chatId) || 0;
+        const timeSinceLastNotification = Date.now() - lastNotificationTime;
+        
+        if (timeSinceLastNotification < 2000) {
+            return false;
+        }
+        
+        this.lastNotificationTimes.set(chatId, Date.now());
+        return true;
+    }
+    
+    /**
+     * Setup periodic cleanup
+     */
     setupNotificationCleanup() {
         this.cleanupInterval = setInterval(() => {
             // Clean up old processed messages
             const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
             const newProcessed = new Set();
+            
             this.processedMessages.forEach(id => {
-                // Extract timestamp from ID format: chatId_timestamp_senderId
-                const parts = id.split('_');
-                if (parts.length >= 3) {
-                    const timestamp = parseInt(parts[parts.length - 2]);
+                if (id.includes('_')) {
+                    const parts = id.split('_');
+                    const timestamp = parseInt(parts[parts.length - 1]);
                     if (timestamp > oneDayAgo) {
                         newProcessed.add(id);
                     }
                 }
             });
+            
             this.processedMessages = newProcessed;
             
-            // Clean up old in-app notifications
+            // Clean up old toasts
             document.querySelectorAll('.notification-toast').forEach(toast => {
                 toast.remove();
             });
+            
+            console.log('🧹 Cleaned up old notifications');
         }, 60000); // Every minute
     }
     
-    setupSound() {
-        this.notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUYrTp66hVFApGn+DyvmEaAzqM0+/ReigGHXM=');
-        this.notificationSound.volume = 0.3;
-    }
-    
+    /**
+     * Cleanup on destroy
+     */
     cleanup() {
-        // SECURITY: Clean up listeners and intervals
+        console.log('🧹 Cleaning up NotificationManager...');
+        
+        // Clear interval
         if (this.cleanupInterval) {
             clearInterval(this.cleanupInterval);
             this.cleanupInterval = null;
         }
         
+        // Remove listener
+        if (this.notificationListener) {
+            this.notificationListener();
+            this.notificationListener = null;
+        }
+        
         // Save state
         this.saveProcessedMessages();
         this.saveUnreadStateToStorage();
+        this.saveLastSeenTimestamps();
         
-        // Remove any lingering notifications
+        // Remove any lingering toasts
         document.querySelectorAll('.notification-toast').forEach(el => el.remove());
+        
+        console.log('✅ NotificationManager cleanup complete');
     }
 }

@@ -3,138 +3,9 @@
    Uses design-system.css variables
    ===================================================== */
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 
-body {
-    font-family: var(--font-body);
-    background: var(--bg-dark);
-    color: var(--text-primary);
-    overflow-x: hidden;
-    min-height: 100vh;
-    display: flex; /* Add: Make body flex container */
-    justify-content: center; /* Add: Center children */
-}
 
-.app-container {
-    width: 100%;
-    max-width: var(--container-max);
-    margin: 0 auto;
-    background: var(--bg-card);
-    min-height: 100vh;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-}
 
-/* ===== HEADER STYLES ===== */
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-lg);
-    background: rgba(0,0,0,0.95);
-    backdrop-filter: blur(20px);
-    position: fixed; /* Change: Use fixed */
-    top: 0;
-    left: 50%; /* Add: Center positioning */
-    transform: translateX(-50%); /* Add: Center positioning */
-    z-index: var(--z-sticky);
-    border-bottom: 1px solid var(--border-light);
-    height: var(--header-height);
-    width: 100%;
-    max-width: var(--container-max); /* Add: Match container max-width */
-    box-sizing: border-box;
-}
-
-.back-btn,
-.settings-btn,
-.map-trigger-btn {
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    font-size: var(--text-xl);
-    cursor: pointer;
-    padding: var(--spacing-xs);
-    border-radius: var(--radius-circle);
-    transition: all var(--transition-base);
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.back-btn {
-    color: var(--accent-gold);
-}
-
-.back-btn:hover {
-    background: rgba(255,215,0,0.1);
-}
-
-.settings-btn:hover,
-.map-trigger-btn:hover {
-    background: var(--border-light);
-}
-
-.header-title {
-    font-size: var(--text-lg);
-    font-weight: var(--weight-semibold);
-    text-align: center;
-    flex: 1;
-}
-
-.match-badge {
-    background: var(--info-bg);
-    color: var(--info);
-    padding: 6px var(--spacing-sm);
-    border-radius: var(--radius-pill);
-    font-size: var(--text-sm);
-    border: 1px solid var(--info-border);
-    font-weight: var(--weight-semibold);
-}
-
-/* Guest Mode Banner */
-.guest-banner {
-    background: linear-gradient(135deg, var(--accent-gold), #FF6B6B);
-    padding: 12px 20px;
-    text-align: center;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-.guest-banner:hover {
-    background: linear-gradient(135deg, #FF6B6B, var(--accent-gold));
-}
-
-/* Main Screen Container */
-.main-screens {
-    position: relative;
-    flex: 1; /* Add: Allow to grow */
-    overflow-y: auto; /* Add: Make this the scroll container */
-    overflow-x: hidden; /* Add: Prevent horizontal scroll */
-    padding-top: var(--header-height); /* Add: Offset for fixed header */
-    padding-bottom: 100px; /* Keep for bottom nav */
-    -webkit-overflow-scrolling: touch; /* Add: Smooth iOS scrolling */
-}
-.screen {
-    display: none;
-    animation: slideIn 0.3s ease;
-    width: 100%;
-    max-width: var(--container-max);
-    margin: 0 auto;
-    box-sizing: border-box;
-}
-.screen.active {
-    display: block;
-}
 @keyframes slideIn {
     from { opacity: 0; transform: translateX(20px); }
     to { opacity: 1; transform: translateX(0); }
@@ -1891,52 +1762,6 @@ input:disabled + .toggle-slider {
     transform: scale(1.05);
 }
 
-/* Bottom Navigation */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: 0 auto;
-    width: 100%;
-    max-width: 430px;
-    background: rgba(0,0,0,0.95);
-    backdrop-filter: blur(20px);
-    padding: var(--spacing-md) 20px;
-    display: flex;
-    justify-content: space-around;
-    border-top: 1px solid var(--border-light);
-    z-index: 150;
-}
-
-.nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: var(--radius-md);
-    transition: all 0.3s ease;
-    min-width: 70px;
-}
-.nav-item:hover {
-    background: var(--border-light);
-    transform: translateY(-2px);
-}
-.nav-item.active {
-    background: linear-gradient(135deg, #FF6B6B, #FF8C42);
-    transform: translateY(-2px);
-}
-.nav-icon {
-    font-size: 20px;
-    margin-bottom: 4px;
-}
-.nav-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
 
 @keyframes popIn {
     from { transform: scale(0.8); opacity: 0; }
@@ -2331,10 +2156,7 @@ input:disabled + .toggle-slider {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
 }
-/* Force navigation to always show */
-.bottom-nav {
-    display: flex !important;
-}
+
 
 /* User action animations */
 @keyframes fadeOut {

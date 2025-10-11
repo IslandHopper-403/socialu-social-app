@@ -1502,13 +1502,6 @@ body.form-overlay-open {
 
 
 
-/* ===== Hide Social Elements for Business Users ===== */
-/* Hide social elements for business users */
-body.business-user .social-tabs,
-body.business-user .social-content,
-body.business-user #socialScreen {
-    display: none !important;
-}
 
 
 /* ===== Restaurant Profile Hero Photo Viewer Overlay Expand ===== */

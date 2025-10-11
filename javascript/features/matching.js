@@ -5,13 +5,14 @@ import {
     doc,
     setDoc,
     getDoc,
-    addDoc,
+    updateDoc,
     serverTimestamp
-} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 /**
  * Matching Manager - Simple Like/Pass System
  * Handles user likes, passes, and match detection
+ * All notifications delegated to NotificationManager
  */
 export class MatchingManager {
     constructor(firebaseServices, appState) {
@@ -21,6 +22,9 @@ export class MatchingManager {
         
         // Track passed users (moved to bottom of feed)
         this.passedUsers = new Set();
+        
+        // Track liked users to filter from feed
+        this.likedUsers = new Set();
     }
     
     /**
@@ -28,7 +32,12 @@ export class MatchingManager {
      */
     async init() {
         console.log('💕 Initializing matching manager...');
+        console.log('💕 [STEP-1] MatchingManager init at:', Date.now());
+        
         this.loadPassedUsers();
+        this.loadLikedUsers();
+        
+        console.log('✅ MatchingManager initialized');
     }
     
     /**
@@ -58,117 +67,149 @@ export class MatchingManager {
     }
     
     /**
-     * Handle Like action
+     * Load liked users from localStorage
      */
-  async handleLike(targetUserId) {
-    try {
-        const currentUser = this.auth.currentUser;
-        if (!currentUser) {
-            console.error('❌ No authenticated user');
-            window.CLASSIFIED.showLogin();
-            return;
-        }
-        
-        const currentUserId = currentUser.uid;
-        console.log(`👍 LIKE: ${currentUserId} → ${targetUserId}`);
-        
-        // Create like document
-        const likeId = `${currentUserId}_${targetUserId}`;
-        const likeData = {
-            fromUserId: currentUserId,
-            toUserId: targetUserId,
-            timestamp: serverTimestamp()
-        };
-        
-        // DEBUG: Comprehensive logging
-        console.log('🔍 Like Document Debug:', {
-            likeId,
-            expectedPattern: `${currentUserId}_${targetUserId}`,
-            patternMatches: likeId === `${currentUserId}_${targetUserId}`,
-            data: {
-                fromUserId: currentUserId,
-                toUserId: targetUserId,
-                timestamp: 'serverTimestamp()'
-            },
-            authCheck: {
-                authenticated: !!currentUser,
-                uid: currentUser.uid,
-                matchesFromUserId: currentUser.uid === currentUserId
+    loadLikedUsers() {
+        try {
+            const stored = localStorage.getItem('likedUsers');
+            if (stored) {
+                this.likedUsers = new Set(JSON.parse(stored));
+                console.log('📦 Loaded', this.likedUsers.size, 'liked users');
             }
-        });
-        
-       // Attempt to create like document
-        console.log('📝 Writing to Firebase likes collection...');
-        await setDoc(doc(this.db, 'likes', likeId), likeData);
-        console.log('✅ Like saved to Firebase successfully');
-        
-        // Track liked user in localStorage to filter from feed
-        if (!this.likedUsers) {
-            this.likedUsers = new Set();
+        } catch (error) {
+            console.error('Error loading liked users:', error);
         }
-        this.likedUsers.add(targetUserId);
+    }
+    
+    /**
+     * Save liked users to localStorage
+     */
+    saveLikedUsers() {
         try {
             localStorage.setItem('likedUsers', JSON.stringify([...this.likedUsers]));
-            console.log('💾 Saved liked user to localStorage');
         } catch (error) {
-            console.error('Error saving liked user:', error);
+            console.error('Error saving liked users:', error);
         }
-        
-        // Check for mutual like (match)
-        console.log('🔍 Checking for mutual like...');
-        const reverseLikeId = `${targetUserId}_${currentUserId}`;
-        const reverseLikeDoc = await getDoc(doc(this.db, 'likes', reverseLikeId));
-        console.log('📊 Mutual like check:', {
-            reverseLikeId,
-            exists: reverseLikeDoc.exists()
-        });
-            
-       if (reverseLikeDoc.exists()) {
-        // IT'S A MATCH! 🎉
-        console.log('🎉 MATCH DETECTED!');
-        
-        // Create match with timestamp
-        const matchTimestamp = Date.now();
-        await this.createMatch(currentUserId, targetUserId);
-        
-        // Only show popup if match is fresh (less than 30 seconds old)
-        const now = Date.now();
-        const thirtySecondsAgo = now - 30000;
-        
-        if (matchTimestamp > thirtySecondsAgo) {
-            console.log('✅ Fresh match - showing popup');
-            
-            // Get target user data
-            const targetUserDoc = await getDoc(doc(this.db, 'users', targetUserId));
-            const targetUserData = targetUserDoc.data();
-            
-            // Show match popup
-            if (window.CLASSIFIED.showMatchPopup) {
-                window.CLASSIFIED.showMatchPopup({
-                    uid: targetUserId,
-                    name: targetUserData?.name || 'User',
-                    image: targetUserData?.photos?.[0] || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop'
-                });
+    }
+    
+    /**
+     * Handle Like action
+     */
+    async handleLike(targetUserId) {
+        try {
+            const currentUser = this.auth.currentUser;
+            if (!currentUser) {
+                console.error('❌ No authenticated user');
+                window.CLASSIFIED.showLogin();
+                return;
             }
-        } else {
-            console.log('⏰ Old match - skipping popup');
-        }
+            
+            const currentUserId = currentUser.uid;
+            console.log(`👍 LIKE: ${currentUserId} → ${targetUserId}`);
+            console.log('💕 [STEP-2] Like initiated at:', Date.now());
+            
+            // Create like document
+            const likeId = `${currentUserId}_${targetUserId}`;
+            const likeData = {
+                fromUserId: currentUserId,
+                toUserId: targetUserId,
+                timestamp: serverTimestamp()
+            };
+            
+            // DEBUG: Comprehensive logging
+            console.log('🔍 Like Document Debug:', {
+                likeId,
+                expectedPattern: `${currentUserId}_${targetUserId}`,
+                patternMatches: likeId === `${currentUserId}_${targetUserId}`,
+                data: likeData,
+                authCheck: {
+                    authenticated: !!currentUser,
+                    uid: currentUser.uid,
+                    matchesFromUserId: currentUser.uid === currentUserId
+                }
+            });
+            
+            // Save like to Firebase
+            console.log('📝 Writing to Firebase likes collection...');
+            await setDoc(doc(this.db, 'likes', likeId), likeData);
+            console.log('✅ Like saved to Firebase successfully');
+            
+            // Track liked user locally
+            this.likedUsers.add(targetUserId);
+            this.saveLikedUsers();
+            console.log('💾 Saved liked user to localStorage');
+            
+            // Check for mutual like (match)
+            console.log('🔍 Checking for mutual like...');
+            const reverseLikeId = `${targetUserId}_${currentUserId}`;
+            const reverseLikeDoc = await getDoc(doc(this.db, 'likes', reverseLikeId));
+            
+            console.log('📊 Mutual like check:', {
+                reverseLikeId,
+                exists: reverseLikeDoc.exists()
+            });
+            
+            if (reverseLikeDoc.exists()) {
+                // IT'S A MATCH! 🎉
+                console.log('🎉 MATCH DETECTED!');
+                console.log('💕 [STEP-3] Match detected at:', Date.now());
+                
+                // Create match and chat
+                const matchId = await this.createMatch(currentUserId, targetUserId);
+                
+                // Get target user data for notification
+                const targetUserDoc = await getDoc(doc(this.db, 'users', targetUserId));
+                const targetUserData = targetUserDoc.data();
+                
+                // Delegate all notifications to NotificationManager
+                const notificationManager = window.classifiedApp?.managers?.notifications;
+                if (notificationManager) {
+                    console.log('💕 [STEP-4] Sending match notifications at:', Date.now());
+                    
+                    // Send match notifications to both users via Firebase
+                    await notificationManager.sendMatchNotification(currentUserId, targetUserId);
+                    await notificationManager.sendMatchNotification(targetUserId, currentUserId);
+                    
+                    // Show match popup for current user
+                    notificationManager.showNotification('match', {
+                        matchId,
+                        partnerId: targetUserId,
+                        partnerName: targetUserData?.name || 'User',
+                        partnerPhoto: targetUserData?.photos?.[0] || 'https://via.placeholder.com/100'
+                    });
+                    
+                    console.log('✅ Match notifications sent');
+                } else {
+                    console.warn('⚠️ NotificationManager not available');
+                }
             } else {
-                // Send like notification
-                await this.sendLikeNotification(targetUserId, currentUser);
+                // Not a match yet, just a like
+                console.log('💕 Like sent, waiting for match...');
+                
+                // Send like notification via NotificationManager
+                const notificationManager = window.classifiedApp?.managers?.notifications;
+                if (notificationManager) {
+                    const currentUserData = {
+                        uid: currentUser.uid,
+                        displayName: currentUser.displayName || 'Someone'
+                    };
+                    await notificationManager.sendLikeNotification(targetUserId, currentUserData);
+                    console.log('📬 Like notification sent');
+                }
                 
                 // Show success feedback
-                if (window.CLASSIFIED.showLikeConfirmation) {
+                if (window.CLASSIFIED?.showLikeConfirmation) {
                     window.CLASSIFIED.showLikeConfirmation();
                 } else {
-                    alert('Like sent! 💕');
+                    // Simple feedback if no UI method available
+                    console.log('💕 Like sent successfully!');
                 }
             }
             
-            // Remove from feed
+            // Remove user from feed after like
             this.removeUserFromFeed(targetUserId);
             
-            } catch (error) {
+        } catch (error) {
             console.error('❌ Error handling like:', error);
             console.error('🔍 Full error details:', {
                 code: error.code,
@@ -182,101 +223,131 @@ export class MatchingManager {
     /**
      * Handle Pass action
      */
-   async handlePass(targetUserId) {
-    try {
-        const currentUser = this.auth.currentUser;
-        if (!currentUser) {
-            console.error('❌ No authenticated user');
-            window.CLASSIFIED.showLogin();
-            return;
-        }
-        
-        const currentUserId = currentUser.uid;
-        console.log(`👎 PASS: ${currentUserId} → ${targetUserId}`);
-        
-        // Create pass document
-        const passId = `${currentUserId}_${targetUserId}`;
-        const passData = {
-            fromUserId: currentUserId,
-            toUserId: targetUserId,
-            timestamp: serverTimestamp()
-        };
-        
-        // DEBUG: Comprehensive logging
-        console.log('🔍 Pass Document Debug:', {
-            passId,
-            expectedPattern: `${currentUserId}_${targetUserId}`,
-            patternMatches: passId === `${currentUserId}_${targetUserId}`,
-            data: {
+    async handlePass(targetUserId) {
+        try {
+            const currentUser = this.auth.currentUser;
+            if (!currentUser) {
+                console.error('❌ No authenticated user');
+                window.CLASSIFIED.showLogin();
+                return;
+            }
+            
+            const currentUserId = currentUser.uid;
+            console.log(`👎 PASS: ${currentUserId} → ${targetUserId}`);
+            
+            // Create pass document
+            const passId = `${currentUserId}_${targetUserId}`;
+            const passData = {
                 fromUserId: currentUserId,
                 toUserId: targetUserId,
-                timestamp: 'serverTimestamp()'
-            },
-            authCheck: {
-                authenticated: !!currentUser,
-                uid: currentUser.uid,
-                matchesFromUserId: currentUser.uid === currentUserId
-            }
-        });
-        
-        // Attempt to create pass document
-        console.log('📝 Writing to Firebase passes collection...');
-        await setDoc(doc(this.db, 'passes', passId), passData);
-        console.log('✅ Pass saved to Firebase successfully');
+                timestamp: serverTimestamp()
+            };
             
-            // Track passed user
+            // DEBUG: Comprehensive logging
+            console.log('🔍 Pass Document Debug:', {
+                passId,
+                expectedPattern: `${currentUserId}_${targetUserId}`,
+                data: passData,
+                authCheck: {
+                    authenticated: !!currentUser,
+                    uid: currentUser.uid
+                }
+            });
+            
+            // Save pass to Firebase
+            console.log('📝 Writing to Firebase passes collection...');
+            await setDoc(doc(this.db, 'passes', passId), passData);
+            console.log('✅ Pass saved to Firebase successfully');
+            
+            // Track passed user locally
             this.passedUsers.add(targetUserId);
             this.savePassedUsers();
             
-            // Move to bottom of feed
+            // Move user to bottom of feed instead of removing
             this.moveUserToBottomOfFeed(targetUserId);
+            
+            console.log('👎 Pass completed successfully');
             
         } catch (error) {
             console.error('❌ Error handling pass:', error);
+            alert('Failed to pass. Please try again.');
         }
     }
     
     /**
-     * Create match between two users
+     * Create match between two users (including chat setup)
      */
     async createMatch(userId1, userId2) {
         try {
+            // SECURITY: Validate user IDs
+            if (!userId1 || !userId2 || userId1 === userId2) {
+                throw new Error('Invalid user IDs for match creation');
+            }
+            
+            console.log('🎉 Creating match between', userId1, 'and', userId2);
+            
             // Sort IDs alphabetically for consistent match ID
             const matchId = [userId1, userId2].sort().join('_');
             
-           await setDoc(doc(this.db, 'matches', matchId), {
-            users: [userId1, userId2],
-            timestamp: serverTimestamp(),
-            status: 'active',
-            createdAt: Date.now() // Add client timestamp for popup check
-        });
-        
-        console.log('✅ Match created:', matchId);
-        
-
-    /**
-     * Send like notification
-     */
-    async sendLikeNotification(toUserId, fromUser) {
-        try {
-            await addDoc(collection(this.db, 'notifications'), {
-                userId: toUserId,
-                title: 'New Like! 💕',
-                message: `${fromUser.displayName || 'Someone'} liked you`,
-                type: 'like',
-                fromUserId: fromUser.uid,
+            // Create match document with all required fields
+            const matchData = {
+                users: [userId1, userId2].sort(),
                 timestamp: serverTimestamp(),
-                read: false
+                createdTimestamp: Date.now(), // For immediate validation
+                status: 'active',
+                createdBy: 'system',
+                chatCreated: false
+            };
+            
+            console.log('📝 Creating match document:', matchId);
+            await setDoc(doc(this.db, 'matches', matchId), matchData);
+            
+            // Create corresponding chat document for the match
+            const chatId = matchId; // Use same ID for consistency
+            const chatData = {
+                participants: [userId1, userId2].sort(),
+                createdAt: serverTimestamp(),
+                lastMessage: '',
+                lastMessageTime: serverTimestamp(),
+                lastMessageSender: null,
+                matchId: matchId,
+                type: 'match_chat'
+            };
+            
+            console.log('💬 Creating chat document:', chatId);
+            await setDoc(doc(this.db, 'chats', chatId), chatData);
+            
+            // Update match to indicate chat was created
+            await updateDoc(doc(this.db, 'matches', matchId), {
+                chatCreated: true,
+                chatId: chatId
             });
             
-            console.log('📬 Like notification sent');
+            console.log('✅ Match and chat created successfully:', matchId);
+            return matchId;
+            
         } catch (error) {
-            console.error('❌ Error sending notification:', error);
+            console.error('❌ Error creating match:', error);
+            throw error;
         }
     }
     
     /**
-     * Remove user from feed (immediate)
+     * Check if users have already matched
+     */
+    async checkExistingMatch(userId1, userId2) {
+        try {
+            const matchId = [userId1, userId2].sort().join('_');
+            const matchDoc = await getDoc(doc(this.db, 'matches', matchId));
+            return matchDoc.exists();
+        } catch (error) {
+            console.error('Error checking existing match:', error);
+            return false;
+        }
+    }
+    
+    /**
+     * Remove user from feed (immediate removal with animation)
      */
     removeUserFromFeed(userId) {
         const feedItem = document.querySelector(`.user-feed-item[data-user-id="${userId}"]`);
@@ -285,36 +356,98 @@ export class MatchingManager {
             feedItem.style.opacity = '0';
             feedItem.style.transform = 'scale(0.8)';
             
-            setTimeout(() => feedItem.remove(), 300);
+            setTimeout(() => {
+                feedItem.remove();
+                console.log(`🗑️ Removed user ${userId} from feed`);
+            }, 300);
         }
     }
     
     /**
-     * Move user to bottom of feed
+     * Move user to bottom of feed (for passes)
      */
     moveUserToBottomOfFeed(userId) {
         const container = document.getElementById('userFeedContainer');
         const feedItem = document.querySelector(`.user-feed-item[data-user-id="${userId}"]`);
         
         if (container && feedItem) {
+            // Animate out
             feedItem.style.transition = 'opacity 0.3s, transform 0.3s';
             feedItem.style.opacity = '0';
             feedItem.style.transform = 'translateX(-100%)';
             
             setTimeout(() => {
+                // Move to bottom
                 container.appendChild(feedItem);
+                
+                // Animate back in
                 setTimeout(() => {
                     feedItem.style.opacity = '1';
                     feedItem.style.transform = 'translateX(0)';
+                    console.log(`📍 Moved user ${userId} to bottom of feed`);
                 }, 50);
             }, 300);
         }
     }
     
     /**
-     * Cleanup
+     * Get user's likes (for profile or analytics)
+     */
+    async getUserLikes(userId) {
+        try {
+            const likes = [];
+            // This would query Firebase for all likes from this user
+            // Implementation depends on your Firebase structure
+            return likes;
+        } catch (error) {
+            console.error('Error getting user likes:', error);
+            return [];
+        }
+    }
+    
+    /**
+     * Get user's matches (for messaging list)
+     */
+    async getUserMatches(userId) {
+        try {
+            const matches = [];
+            // This would query Firebase for all matches involving this user
+            // Implementation depends on your Firebase structure
+            return matches;
+        } catch (error) {
+            console.error('Error getting user matches:', error);
+            return [];
+        }
+    }
+    
+    /**
+     * Check if user has been liked or passed
+     */
+    hasUserBeenActioned(userId) {
+        return this.likedUsers.has(userId) || this.passedUsers.has(userId);
+    }
+    
+    /**
+     * Reset all local data (for testing or user logout)
+     */
+    resetLocalData() {
+        this.likedUsers.clear();
+        this.passedUsers.clear();
+        this.saveLikedUsers();
+        this.savePassedUsers();
+        console.log('🔄 Reset all matching data');
+    }
+    
+    /**
+     * Cleanup on destroy
      */
     cleanup() {
+        console.log('🧹 Cleaning up MatchingManager...');
+        
+        // Save current state
         this.savePassedUsers();
+        this.saveLikedUsers();
+        
+        console.log('✅ MatchingManager cleanup complete');
     }
 }

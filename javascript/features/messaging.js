@@ -2200,12 +2200,12 @@ updateChatListUnreadIndicators() {
     /**
      * ENHANCED: Cleanup on destroy with better resource management
      */
-   cleanup() {
+  cleanup() {
         console.log('🧹 [MESSAGING] Cleaning up messaging resources');
         
         // Save state first
         try {
-            this.saveUnreadStateToStorage();
+            // Note: unreadMessages now managed by NotificationManager
             this.saveSeenMatches();
             this.saveLastSeenTimestamps();
             this.saveMessageReadStates();

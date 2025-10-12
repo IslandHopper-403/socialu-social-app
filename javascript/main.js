@@ -48,7 +48,6 @@ import { FeedManager } from './features/feed.js';
 import { ProfileManager } from './features/profile.js';
 import { MatchingManager } from './features/matching.js';
 import { MessagingManager } from './features/messaging.js';
-import { NotificationManager } from './features/notifications.js';
 import { BusinessManager } from './features/business.js';
 import { BusinessStoryManager } from './features/businessStory.js';
 import { PhotoUploadManager } from './features/photoUpload.js';

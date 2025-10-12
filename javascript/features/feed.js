@@ -29,9 +29,6 @@ export class FeedManager {
         // References to other managers (set later)
         this.uiComponents = null;
         this.adminManager = null;
-        
-        // Current filters
-        this.currentUserFilter = 'all';
     }
     
     /**
@@ -79,22 +76,13 @@ export class FeedManager {
     /**
      * Set up event listeners for feed interactions
      */
-    setupEventListeners() {
+      setupEventListeners() {
         // Social tab listeners - Remove existing onclick handlers first
         document.querySelectorAll('.social-tab').forEach(tab => {
             tab.onclick = null;
             tab.addEventListener('click', (e) => {
                 const tabType = tab.dataset.tab;
                 this.switchSocialTab(tabType);
-            });
-        });
-        
-        // Filter chip listeners - Remove existing onclick handlers first
-        document.querySelectorAll('.filter-chip').forEach(chip => {
-            chip.onclick = null;
-            chip.addEventListener('click', (e) => {
-                const filter = chip.dataset.filter;
-                this.filterUsers(filter);
             });
         });
     }
@@ -106,8 +94,7 @@ export class FeedManager {
         if (this.state.get('isAuthenticated')) {
             await Promise.all([
                 this.populateRestaurantFeed(),
-                this.populateActivityFeed(),
-                this.populateUserFeed()
+                this.populateActivityFeed()
             ]);
         } else if (this.state.get('isGuestMode')) {
             this.showDemoData();
@@ -141,19 +128,6 @@ export class FeedManager {
             // Fallback to mock data
             this.populateRestaurantFeedWithData(this.mockData.getRestaurants());
             this.populateActivityFeedWithData(this.mockData.getActivities());
-        }
-        
-        this.populateGuestUserFeed();
-         
-        // Show full user feed with "Sign up to connect" overlays
-        const users = this.mockData.getUsers();
-        const container = document.getElementById('userFeedContainer');
-        if (container) {
-            container.innerHTML = '';
-            users.forEach((user, index) => {
-                const feedItem = this.createUserFeedItem(user, index);
-                container.appendChild(feedItem);
-            });
         }
     }
     
@@ -379,251 +353,6 @@ export class FeedManager {
         
        // Set up logo click handlers after feed is rendered
        setTimeout(() => this.setupLogoClickHandlers(), 100);
-    }
-    
-    /**
-     * Populate user feed
-     */
-    async populateUserFeed() {
-        if (!this.state.get('isAuthenticated')) return;
-        
-        const container = document.getElementById('userFeedContainer');
-        
-        // CRITICAL: Check if container exists (Social screen might not be active yet)
-        if (!container) {
-            console.warn('⚠️ userFeedContainer not found - Social screen may not be active yet');
-            return;
-        }
-        
-        container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-        
-        try {
-            const users = await this.fetchUsersFromFirebase();
-            
-            if (users.length > 0) {
-                this.populateUserFeedWithData(users, container);
-            } else {
-                // Show demo users with encouraging message
-                this.populateDemoUserFeed(container);
-            }
-            
-        } catch (error) {
-            console.error('❌ Error loading users:', error);
-           this.showUserFeedError(container);
-        }
-    }
-    
-    /**
-     * Fetch users from Firebase
-     */
-    async fetchUsersFromFirebase() {
-        const users = [];
-        const currentUserId = this.state.get('currentUser')?.uid;
-        
-        if (!currentUserId) return users;
-        
-        // Create query that excludes current user
-        const q = query(
-            collection(this.db, 'users'),
-            orderBy('updatedAt', 'desc'),
-        );
-        
-        const snapshot = await getDocs(q);
-            
-        snapshot.forEach(doc => {
-        const userData = doc.data();
-        const docId = doc.id;
-        
-        // Get liked/passed users from localStorage
-        const likedUsers = this.getLikedUsers();
-        const passedUsers = this.getPassedUsers();
-        
-        // Skip current user, incomplete profiles, AND already actioned users
-        if (docId === currentUserId || 
-            !userData.name || 
-            !userData.bio || 
-            !userData.interests?.length ||
-            likedUsers.has(docId) ||
-            passedUsers.has(docId)) {
-            return;
-        }
-            
-        users.push({
-        id: doc.id,
-        uid: doc.id,
-        name: userData.name,
-        age: userData.age || 25,
-        image: userData.photos?.[0] || userData.photo || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop',
-        interests: userData.interests || ['Travel', 'Adventure'],
-        bio: userData.bio || 'Exploring Hoi An!',
-        isOnline: userData.isOnline || false,
-        distance: userData.distance || `${Math.floor(Math.random() * 5) + 1} km`,
-        matchPercentage: userData.matchPercentage || Math.floor(Math.random() * 30) + 70,
-        category: userData.category || 'all',
-        career: userData.career,
-        lookingFor: userData.lookingFor,
-        height: userData.height,
-        zodiac: userData.zodiac,
-        showHoroscope: userData.showHoroscope || false
-    });
-        });
-        
-        return users;
-    }
-
-    
-        /**
-     * Get liked users from localStorage
-     */
-    getLikedUsers() {
-        try {
-            const stored = localStorage.getItem('likedUsers');
-            return stored ? new Set(JSON.parse(stored)) : new Set();
-        } catch (error) {
-            return new Set();
-        }
-    }
-    
-    /**
-     * Get passed users from localStorage  
-     */
-    getPassedUsers() {
-        try {
-            const stored = localStorage.getItem('passedUsers');
-            return stored ? new Set(JSON.parse(stored)) : new Set();
-        } catch (error) {
-            return new Set();
-        }
-    }
-    
-    /**
-     * Populate user feed with data
-     */
-    populateUserFeedWithData(users, container) {
-        container.innerHTML = '';
-        
-        users.forEach((user, index) => {
-            const feedItem = this.createUserFeedItem(user, index);
-            container.appendChild(feedItem);
-        });
-        
-        // Add activity indicator
-        const activityIndicator = document.createElement('div');
-        activityIndicator.innerHTML = `
-            <div style="text-align: center; padding: 20px; background: rgba(0,212,255,0.1); margin: 20px 0; border-radius: 15px;">
-                <h3>🔥 ${users.length} travelers active in Hoi An</h3>
-                <p>Join the community and start connecting!</p>
-            </div>
-        `;
-        container.appendChild(activityIndicator);
-    }
-    
-    /**
-     * Populate demo user feed
-     */
-    populateDemoUserFeed(container) {
-        const demoUsers = this.mockData.getUsers();
-        
-        container.innerHTML = '';
-        demoUsers.forEach((user, index) => {
-            const feedItem = this.createUserFeedItem(user, index);
-            container.appendChild(feedItem);
-        });
-        
-        // Show encouraging message
-        const encourageMessage = document.createElement('div');
-        encourageMessage.innerHTML = `
-            <div style="text-align: center; padding: 40px; opacity: 0.9;">
-                <div style="font-size: 48px; margin-bottom: 20px;">🚀</div>
-                <div style="font-size: 20px; margin-bottom: 15px; color: #00D4FF;">You're among the first!</div>
-                <div style="font-size: 16px; margin-bottom: 10px;">These are demo profiles. Complete your profile and invite friends to start real connections!</div>
-                <button onclick="CLASSIFIED.shareApp()" style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; border-radius: 25px; color: white; font-weight: 600; cursor: pointer;">
-                    Share CLASSIFIED 🚀
-                </button>
-            </div>
-        `;
-        container.appendChild(encourageMessage);
-    }
-    
-    /**
-     * Populate guest user feed
-     */
-    populateGuestUserFeed() {
-        const container = document.getElementById('userFeedContainer');
-        container.innerHTML = '';
-        
-        // Show first 3 users to guests
-        const guestUsers = this.mockData.getUsers().slice(0, 3);
-        guestUsers.forEach((user, index) => {
-            const feedItem = this.createUserFeedItem(user, index);
-            
-            // Add guest overlay
-            const overlay = document.createElement('div');
-            overlay.innerHTML = `
-                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; border-radius: 20px; z-index: 10;">
-                    <div style="text-align: center; padding: 20px;">
-                        <h3 style="color: #FFD700; margin-bottom: 10px;">🔒 Sign up to connect!</h3>
-                        <button onclick="CLASSIFIED.showRegister()" style="background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; padding: 10px 20px; border-radius: 20px; color: white; font-weight: 600; cursor: pointer;">
-                            Create Account
-                        </button>
-                    </div>
-                </div>
-            `;
-            overlay.style.position = 'relative';
-            feedItem.appendChild(overlay);
-            
-            container.appendChild(feedItem);
-        });
-        
-        // Add signup encouragement
-        const signupCard = document.createElement('div');
-        signupCard.innerHTML = `
-            <div style="background: linear-gradient(135deg, #FFD700, #FF6B6B); padding: 30px; border-radius: 20px; text-align: center; margin: 20px 0;">
-                <h3 style="margin: 0 0 15px 0; font-size: 20px;">🚀 Ready to connect?</h3>
-                <p style="margin: 0 0 20px 0; opacity: 0.9;">Join ${this.mockData.getUsers().length}+ travelers already using CLASSIFIED</p>
-                <button onclick="CLASSIFIED.showRegister()" style="background: rgba(255,255,255,0.2); border: none; padding: 12px 24px; border-radius: 25px; color: white; font-weight: 600; cursor: pointer; margin-right: 10px;">
-                    Sign Up Free
-                </button>
-                <button onclick="CLASSIFIED.showLogin()" style="background: transparent; border: 2px solid rgba(255,255,255,0.3); padding: 10px 22px; border-radius: 25px; color: white; font-weight: 600; cursor: pointer;">
-                    Login
-                </button>
-            </div>
-        `;
-        container.appendChild(signupCard);
-    }
-    
-    /**
-     * Filter users
-     */
-    filterUsers(filter) {
-        console.log(`🔍 Filtering users by: ${filter}`);
-        this.currentUserFilter = filter;
-        
-        // Update active filter chip
-        document.querySelectorAll('.filter-chip').forEach(chip => {
-            chip.classList.remove('active');
-        });
-        document.querySelector(`[data-filter="${filter}"]`)?.classList.add('active');
-        
-        // Get appropriate users based on filter
-        let filteredUsers;
-        if (filter === 'online') {
-            filteredUsers = this.mockData.getOnlineUsers();
-        } else if (filter === 'nearby') {
-            filteredUsers = this.mockData.getNearbyUsers();
-        } else if (filter === 'nomads') {
-            filteredUsers = this.mockData.getUsersByCategory('nomads');
-        } else {
-            filteredUsers = this.mockData.getUsers();
-        }
-        
-        // Re-populate feed
-        const container = document.getElementById('userFeedContainer');
-        container.innerHTML = '';
-        filteredUsers.forEach((user, index) => {
-            const feedItem = this.createUserFeedItem(user, index);
-            container.appendChild(feedItem);
-        });
     }
     
  
@@ -904,73 +633,6 @@ export class FeedManager {
         
     }
     
-    /**
-     * Create user feed item
-     */
-    
- createUserFeedItem(user, index) {
-    // Sanitize user data FIRST
-    const safeName = sanitizeText(user.name || 'User');
-    const safeBio = sanitizeText(user.bio || 'No bio');
-    const safeAge = parseInt(user.age) || 25;
-    
-    // Define userId BEFORE using it
-    const userId = user.uid || user.id || `demo_${safeName.toLowerCase().replace(/\s/g, '_')}`;
-    
-    // Now create the element with userId available
-    const feedItem = document.createElement('div');
-    feedItem.className = 'user-feed-item';
-    feedItem.style.animationDelay = `${index * 0.1}s`;
-    feedItem.style.cursor = 'pointer';
-    feedItem.dataset.userId = userId; // Now this works!
-        
-        const userWithId = {
-            ...user,
-            uid: userId,
-            id: userId,
-            name: safeName,
-            bio: safeBio,
-            age: safeAge
-        };
-        
-        feedItem.addEventListener('click', (e) => {
-            if (!e.target.closest('.user-actions')) {
-                window.CLASSIFIED.openUserProfile(userWithId);
-            }
-        });
-        
-        // Build HTML safely - only using sanitized data
-        feedItem.innerHTML = `
-            <div class="user-status-badges">
-                ${user.isOnline ? '<div class="status-badge status-online">🟢 Online</div>' : ''}
-                <div class="status-badge status-distance">📍 ${escapeHtml(user.distance)}</div>
-                <div class="status-badge status-match">🔥 ${parseInt(user.matchPercentage) || 75}% Match</div>
-            </div>
-            <div class="user-image" style="background-image: url('${escapeHtml(user.image)}')">
-                <div class="user-image-overlay">
-                    <div class="user-name">${escapeHtml(safeName)}, ${safeAge}</div>
-                </div>
-            </div>
-            <div class="user-info">
-                <div class="user-bio">${escapeHtml(safeBio)}</div>
-                <div class="user-interests">
-                    ${(user.interests || []).map(interest => 
-                        `<span class="interest-tag">${escapeHtml(sanitizeText(interest))}</span>`
-                    ).join('')}
-                </div>
-           <div class="user-actions">
-                <button class="action-btn pass-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('pass', '${userId}')">
-                    <span>✕</span> Pass
-                </button>
-                <button class="action-btn like-btn" onclick="event.stopPropagation(); CLASSIFIED.handleUserAction('like', '${userId}')">
-                    <span>💬</span> Chat
-                </button>
-            </div>
-        </div>
-        `;
-        
-        return feedItem;
-    }
 
     /**
      * Add business signup banner
@@ -1504,22 +1166,6 @@ openStoryByBusinessId(businessId) {
         } catch (error) {
             console.error('Error checking pending businesses:', error);
         }
-    }
-    
-    /**
-     * Show user feed error
-     */
-    showUserFeedError(container) {
-        container.innerHTML = `
-            <div style="text-align: center; padding: 40px; opacity: 0.7;">
-                <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
-                <div style="font-size: 18px; margin-bottom: 10px;">Unable to load users</div>
-                <div style="font-size: 14px;">Please check your internet connection and try again.</div>
-                <button onclick="CLASSIFIED.populateUserFeed()" style="margin-top: 20px; padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 25px; color: white; cursor: pointer;">
-                    Try Again
-                </button>
-            </div>
-        `;
     }
     
     /**

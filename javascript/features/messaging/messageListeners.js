@@ -1,1 +1,629 @@
+// javascript/features/messaging/messageListeners.js - COMPLETE VERSION 1.0
+// Real-time listener management for messaging system
 
+import {
+    collection,
+    query,
+    where,
+    orderBy,
+    onSnapshot,
+    getDocs,
+    getDoc,
+    doc
+} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+/**
+ * MessageListenersManager
+ * Handles ALL real-time Firebase listeners for messaging
+ * Extracted from messaging.js to separate concerns
+ */
+export class MessageListenersManager {
+    constructor(firebaseServices, appState, messagingManager) {
+        console.log('🎧 Initializing MessageListenersManager...');
+        
+        // Core dependencies
+        this.auth = firebaseServices.auth;
+        this.db = firebaseServices.db;
+        this.state = appState;
+        this.messaging = messagingManager; // Reference back to parent
+        
+        // Listener tracking
+        this.activeListeners = new Map(); // id -> {unsubscribe, type, createdAt}
+        
+        // Cleanup interval
+        this.listenerCleanupInterval = null;
+        
+        // Start automatic stale listener cleanup
+        this.startCleanupInterval();
+        
+        console.log('✅ MessageListenersManager initialized');
+    }
+    
+    /**
+     * Start automatic cleanup of stale listeners
+     */
+    startCleanupInterval() {
+        // Clean up stale listeners every 5 minutes
+        this.listenerCleanupInterval = setInterval(() => {
+            console.log('🧹 [LISTENERS] Running automatic stale listener cleanup');
+            this.cleanupStaleListeners();
+        }, 300000); // 5 minutes
+        
+        console.log('⏰ [LISTENERS] Cleanup interval started (5 min)');
+    }
+    
+    /**
+     * Register a listener with tracking
+     */
+    registerListener(id, unsubscribe, type = 'generic') {
+        console.log(`📌 [LISTENERS] Registering listener: ${id} (type: ${type})`);
+        
+        if (this.activeListeners.has(id)) {
+            console.warn(`⚠️ [LISTENERS] Replacing existing listener: ${id}`);
+            const existing = this.activeListeners.get(id);
+            try {
+                existing.unsubscribe();
+            } catch (error) {
+                console.error(`Error unsubscribing old listener ${id}:`, error);
+            }
+        }
+        
+        this.activeListeners.set(id, {
+            unsubscribe,
+            type,
+            createdAt: Date.now()
+        });
+        
+        console.log(`✅ [LISTENERS] Registered: ${id} | Total active: ${this.activeListeners.size}`);
+    }
+    
+    /**
+     * Unregister a specific listener
+     */
+    unregisterListener(id) {
+        console.log(`🗑️ [LISTENERS] Unregistering listener: ${id}`);
+        
+        const listener = this.activeListeners.get(id);
+        if (listener) {
+            try {
+                listener.unsubscribe();
+                this.activeListeners.delete(id);
+                console.log(`✅ [LISTENERS] Unregistered: ${id} | Remaining: ${this.activeListeners.size}`);
+            } catch (error) {
+                console.error(`❌ [LISTENERS] Error unregistering ${id}:`, error);
+            }
+        } else {
+            console.warn(`⚠️ [LISTENERS] Listener not found: ${id}`);
+        }
+    }
+    
+    /**
+     * Clean up stale listeners (older than 10 minutes, excluding active chats)
+     */
+    cleanupStaleListeners() {
+        const tenMinutesAgo = Date.now() - (10 * 60 * 1000);
+        const staleListeners = [];
+        
+        console.log(`🔍 [LISTENERS] Scanning for stale listeners (older than 10min)...`);
+        
+        this.activeListeners.forEach((listener, id) => {
+            const age = Date.now() - listener.createdAt;
+            const ageMinutes = Math.floor(age / 60000);
+            
+            // Don't auto-cleanup active chat listeners
+            if (listener.createdAt < tenMinutesAgo && !id.startsWith('chat_')) {
+                console.log(`🗑️ [LISTENERS] Found stale listener: ${id} (${ageMinutes} min old)`);
+                staleListeners.push(id);
+            }
+        });
+        
+        if (staleListeners.length > 0) {
+            console.log(`🧹 [LISTENERS] Cleaning up ${staleListeners.length} stale listeners`);
+            staleListeners.forEach(id => {
+                this.unregisterListener(id);
+            });
+        } else {
+            console.log(`✅ [LISTENERS] No stale listeners found`);
+        }
+    }
+    
+    /**
+     * Set up all real-time listeners for a user
+     */
+    setupRealtimeListeners(userId) {
+        if (!userId) {
+            console.error('❌ [LISTENERS] Cannot setup listeners without userId');
+            return;
+        }
+        
+        console.log(`👂 [LISTENERS] Setting up real-time listeners for user: ${userId}`);
+        
+        try {
+            // Listen for new matches
+            this.listenForMatches(userId);
+            
+            // Listen for chat list updates
+            this.listenForChatUpdates(userId);
+            
+            // Listen for new messages globally (for notifications)
+            this.listenForNewMessages(userId);
+            
+            console.log(`✅ [LISTENERS] All real-time listeners active for: ${userId}`);
+        } catch (error) {
+            console.error('❌ [LISTENERS] Error setting up real-time listeners:', error);
+        }
+    }
+    
+    /**
+     * Listen to messages in a specific chat
+     */
+    listenToChatMessages(chatId) {
+        if (!chatId) {
+            console.error('❌ [LISTENERS] Cannot listen to chat without chatId');
+            return;
+        }
+        
+        console.log(`💬 [LISTENERS] Setting up listener for chat: ${chatId}`);
+        
+        // Remove existing listener for this chat first
+        this.unregisterListener(`chat_${chatId}`);
+        
+        const currentUser = this.state.get('currentUser');
+        if (!currentUser) {
+            console.error('❌ [LISTENERS] No current user for chat listener');
+            return;
+        }
+        
+        const messagesRef = collection(this.db, 'chats', chatId, 'messages');
+        const q = query(messagesRef, orderBy('timestamp', 'asc'));
+        
+        // Track if this is the first snapshot for THIS chat
+        let isInitialLoad = true;
+        const lastSeen = this.messaging.lastSeenTimestamps.get(chatId) || this.messaging.lastAppActive;
+        
+        try {
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                console.log(`📨 [LISTENERS] Chat ${chatId} snapshot received (${snapshot.size} messages)`);
+                
+                const messages = [];
+                snapshot.forEach(messageDoc => {
+                    messages.push({ id: messageDoc.id, ...messageDoc.data() });
+                });
+                
+                // Only process notifications AFTER initial load
+                if (!isInitialLoad) {
+                    console.log(`🔔 [LISTENERS] Processing ${snapshot.docChanges().length} changes for notifications`);
+                    
+                    snapshot.docChanges().forEach(change => {
+                        if (change.type === 'added') {
+                            const message = change.doc.data();
+                            
+                            if (message.senderId !== currentUser.uid) {
+                                console.log(`🆕 [LISTENERS] New message from other user in chat ${chatId}`);
+                                
+                                // Get notification manager safely
+                                const notificationManager = window.classifiedApp?.managers?.notifications;
+                                if (notificationManager && notificationManager.shouldShowNotification(message, chatId)) {
+                                    console.log(`🔔 [LISTENERS] Triggering notification for message`);
+                                    this.messaging.handleMessageNotification(message, chatId);
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    console.log(`📋 [LISTENERS] Initial load complete for chat ${chatId}`);
+                }
+                
+                // Display messages via messaging manager
+                this.messaging.displayMessages(messages, currentUser.uid);
+                
+                // Update last seen timestamp if chat is active
+                if (this.messaging.currentChatId === chatId && this.messaging.isAppVisible) {
+                    console.log(`✅ [LISTENERS] Updating last seen for chat ${chatId}`);
+                    this.messaging.lastSeenTimestamps.set(chatId, Date.now());
+                    this.messaging.saveLastSeenTimestamps();
+                }
+                
+                isInitialLoad = false;
+                
+            }, (error) => {
+                console.error(`❌ [LISTENERS] Error in chat listener for ${chatId}:`, error);
+                this.unregisterListener(`chat_${chatId}`);
+            });
+            
+            this.registerListener(`chat_${chatId}`, unsubscribe, 'chat');
+            console.log(`✅ [LISTENERS] Chat listener registered: ${chatId}`);
+            
+        } catch (error) {
+            console.error(`❌ [LISTENERS] Error setting up chat listener:`, error);
+        }
+    }
+    
+    /**
+     * Listen for new matches - FIXED to prevent showing old matches
+     */
+    listenForMatches(userId) {
+        if (!userId) {
+            console.error('❌ [LISTENERS] Cannot listen for matches without userId');
+            return;
+        }
+        
+        console.log(`🎉 [LISTENERS] Setting up match listener for user: ${userId}`);
+        
+        // Remove existing listener
+        this.unregisterListener('matches_global');
+        
+        try {
+            const matchesRef = collection(this.db, 'matches');
+            const q = query(
+                matchesRef,
+                where('users', 'array-contains', userId)
+            );
+            
+            // Track initial load and session start time
+            let isInitialLoad = true;
+            const sessionStartTime = Date.now();
+            const thirtySecondsAgo = Date.now() - 30000; // 30 second window
+            
+            // Load seen matches from localStorage
+            if (!this.messaging.seenMatches) {
+                this.messaging.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
+            }
+            
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                console.log(`🎯 [LISTENERS] Match snapshot received (${snapshot.size} total matches)`);
+                
+                if (isInitialLoad) {
+                    console.log(`📋 [LISTENERS] Initial match load - marking ${snapshot.size} existing matches as seen`);
+                    
+                    // Mark ALL existing matches as seen (no popups for old matches)
+                    snapshot.forEach(doc => {
+                        const matchId = doc.id;
+                        const matchData = doc.data();
+                        
+                        this.messaging.seenMatches.add(matchId);
+                        
+                        // Store match timestamp for future validation
+                        const matchTime = matchData.timestamp?.toDate?.()?.getTime() || 0;
+                        localStorage.setItem(`match_time_${matchId}`, matchTime.toString());
+                    });
+                    
+                    // Save to localStorage
+                    this.messaging.saveSeenMatches();
+                    isInitialLoad = false;
+                    console.log(`✅ [LISTENERS] Initial match load complete, marked all as seen`);
+                    return;
+                }
+                
+                // Process changes ONLY after initial load
+                console.log(`🔍 [LISTENERS] Processing ${snapshot.docChanges().length} match changes`);
+                
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        const matchId = change.doc.id;
+                        const matchData = change.doc.data();
+                        
+                        console.log(`🆕 [LISTENERS] New match detected: ${matchId}`);
+                        
+                        // Skip if already seen
+                        if (this.messaging.seenMatches.has(matchId)) {
+                            console.log(`⏭️ [LISTENERS] Skipping already seen match: ${matchId}`);
+                            return;
+                        }
+                        
+                        // Get match timestamp
+                        const matchTime = matchData.timestamp?.toDate?.() || new Date();
+                        const matchTimeMs = matchTime.getTime();
+                        
+                        // THREE validation checks for match popup
+                        
+                        // 1. Must be created AFTER this session started
+                        if (matchTimeMs < sessionStartTime) {
+                            console.log(`⏭️ [LISTENERS] Match ${matchId} is from before session (age: ${Math.round((Date.now() - matchTimeMs) / 1000)}s)`);
+                            this.messaging.seenMatches.add(matchId);
+                            localStorage.setItem(`match_time_${matchId}`, matchTimeMs.toString());
+                            this.messaging.saveSeenMatches();
+                            return;
+                        }
+                        
+                        // 2. Must be less than 30 seconds old
+                        const timeDiff = Date.now() - matchTimeMs;
+                        if (timeDiff > 30000) {
+                            console.log(`⏭️ [LISTENERS] Match ${matchId} is too old (${Math.round(timeDiff / 1000)}s)`);
+                            this.messaging.seenMatches.add(matchId);
+                            localStorage.setItem(`match_time_${matchId}`, matchTimeMs.toString());
+                            this.messaging.saveSeenMatches();
+                            return;
+                        }
+                        
+                        // 3. Must be created after the 30-second window started
+                        if (matchTimeMs < thirtySecondsAgo) {
+                            console.log(`⏭️ [LISTENERS] Match ${matchId} outside 30s window`);
+                            this.messaging.seenMatches.add(matchId);
+                            localStorage.setItem(`match_time_${matchId}`, matchTimeMs.toString());
+                            this.messaging.saveSeenMatches();
+                            return;
+                        }
+                        
+                        // This is a genuinely NEW, RECENT match!
+                        console.log(`🎉 [LISTENERS] GENUINE NEW MATCH: ${matchId} (age: ${Math.round(timeDiff / 1000)}s)`);
+                        this.messaging.seenMatches.add(matchId);
+                        this.messaging.saveSeenMatches();
+                        this.messaging.handleNewMatch(matchData);
+                    }
+                });
+                
+            }, (error) => {
+                console.error('❌ [LISTENERS] Error in match listener:', error);
+                this.unregisterListener('matches_global');
+            });
+            
+            this.registerListener('matches_global', unsubscribe, 'match');
+            console.log(`✅ [LISTENERS] Match listener registered for user: ${userId}`);
+            
+        } catch (error) {
+            console.error('❌ [LISTENERS] Error setting up match listener:', error);
+        }
+    }
+    
+    /**
+     * Listen for chat list updates (unread counts, new chats)
+     */
+    listenForChatUpdates(userId) {
+        if (!userId) {
+            console.error('❌ [LISTENERS] Cannot listen for chat updates without userId');
+            return;
+        }
+        
+        console.log(`💬 [LISTENERS] Setting up chat updates listener for user: ${userId}`);
+        
+        // Remove existing listener
+        this.unregisterListener('chat_updates_global');
+        
+        try {
+            const chatsRef = collection(this.db, 'chats');
+            const q = query(
+                chatsRef,
+                where('participants', 'array-contains', userId)
+            );
+            
+            let isInitialLoad = true;
+            
+            const unsubscribe = onSnapshot(q, async (snapshot) => {
+                console.log(`📊 [LISTENERS] Chat updates snapshot (${snapshot.size} chats)`);
+                
+                if (isInitialLoad) {
+                    console.log(`📋 [LISTENERS] Initial chat load - processing unread counts`);
+                    
+                    snapshot.forEach(doc => {
+                        const chatData = doc.data();
+                        const chatId = doc.id;
+                        
+                        if (chatData.lastMessageSender && 
+                            chatData.lastMessageSender !== userId &&
+                            chatData.lastMessageTime) {
+                            
+                            const messageTime = chatData.lastMessageTime.toMillis ? 
+                                chatData.lastMessageTime.toMillis() : 0;
+                            
+                            // On initial load, only count as unread if newer than last session
+                            if (messageTime > this.messaging.lastAppActive) {
+                                console.log(`🔔 [LISTENERS] Found unread chat on init: ${chatId}`);
+                                const notificationManager = window.classifiedApp?.managers?.notifications;
+                                if (notificationManager) {
+                                    const currentUnread = notificationManager.unreadMessages.get(chatId) || 0;
+                                    if (!notificationManager.unreadMessages.has(chatId) || 
+                                        notificationManager.unreadMessages.get(chatId) > 0) {
+                                        notificationManager.updateUnreadCount(chatId, 1);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    
+                    isInitialLoad = false;
+                    
+                    // Update total unread count
+                    const notificationManager = window.classifiedApp?.managers?.notifications;
+                    if (notificationManager) {
+                        const total = notificationManager.getTotalUnread();
+                        if (total > 0) {
+                            console.log(`🔔 [LISTENERS] Total unread on init: ${total}`);
+                            notificationManager.showNotificationDot(total);
+                        }
+                    }
+                    
+                    // Reload chat list
+                    await this.messaging.loadChats();
+                    console.log(`✅ [LISTENERS] Initial chat load complete`);
+                    return;
+                }
+                
+                // Process changes after initial load
+                console.log(`🔍 [LISTENERS] Processing ${snapshot.docChanges().length} chat changes`);
+                
+                for (const change of snapshot.docChanges()) {
+                    if (change.type === 'modified') {
+                        const chatData = change.doc.data();
+                        const chatId = change.doc.id;
+                        
+                        if (chatData.lastMessageSender && 
+                            chatData.lastMessageSender !== userId &&
+                            this.messaging.currentChatId !== chatId &&
+                            chatData.lastMessageTime) {
+                            
+                            const messageTime = chatData.lastMessageTime.toMillis();
+                            
+                            if (messageTime > this.messaging.lastAppActive) {
+                                console.log(`🆕 [LISTENERS] New message in chat: ${chatId}`);
+                                const notificationManager = window.classifiedApp?.managers?.notifications;
+                                if (notificationManager) {
+                                    notificationManager.updateUnreadCount(chatId, 1);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Reload chat list to reflect changes
+                await this.messaging.loadChats();
+                
+            }, (error) => {
+                console.error('❌ [LISTENERS] Error in chat updates listener:', error);
+                this.unregisterListener('chat_updates_global');
+            });
+            
+            this.registerListener('chat_updates_global', unsubscribe, 'chat_update');
+            console.log(`✅ [LISTENERS] Chat updates listener registered for user: ${userId}`);
+            
+        } catch (error) {
+            console.error('❌ [LISTENERS] Error setting up chat updates listener:', error);
+        }
+    }
+    
+    /**
+     * Listen for new messages globally (for notifications when not in chat)
+     */
+    listenForNewMessages(userId) {
+        if (!userId) {
+            console.error('❌ [LISTENERS] Cannot listen for new messages without userId');
+            return;
+        }
+        
+        console.log(`📬 [LISTENERS] Setting up global message listener for user: ${userId}`);
+        
+        // Remove existing listener
+        this.unregisterListener('messages_global');
+        
+        try {
+            const chatsRef = collection(this.db, 'chats');
+            const q = query(
+                chatsRef,
+                where('participants', 'array-contains', userId)
+            );
+            
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                console.log(`📨 [LISTENERS] Global messages snapshot (${snapshot.docChanges().length} changes)`);
+                
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'modified') {
+                        const chatData = change.doc.data();
+                        const chatId = change.doc.id;
+                        
+                        if (chatData.lastMessageSender && chatData.lastMessageSender !== userId) {
+                            if (this.messaging.currentChatId !== chatId) {
+                                console.log(`🔔 [LISTENERS] New message notification for chat: ${chatId}`);
+                                
+                                // Delegate to NotificationManager
+                                const notificationManager = window.classifiedApp?.managers?.notifications;
+                                if (notificationManager) {
+                                    notificationManager.showNotification('message', {
+                                        message: { 
+                                            text: chatData.lastMessage, 
+                                            senderId: chatData.lastMessageSender 
+                                        },
+                                        chatId: chatId,
+                                        partnerInfo: { name: 'User' }
+                                    });
+                                    notificationManager.updateUnreadCount(chatId, 1);
+                                }
+                            }
+                        }
+                    }
+                });
+            }, (error) => {
+                console.error('❌ [LISTENERS] Error in global message listener:', error);
+                this.unregisterListener('messages_global');
+            });
+            
+            this.registerListener('messages_global', unsubscribe, 'message');
+            console.log(`✅ [LISTENERS] Global message listener registered for user: ${userId}`);
+            
+        } catch (error) {
+            console.error('❌ [LISTENERS] Error setting up global message listener:', error);
+        }
+    }
+    
+    /**
+     * Diagnostic method to check active listeners
+     * Usage: window.classifiedApp.managers.messaging.listeners.diagnosticListeners()
+     */
+    diagnosticListeners() {
+        console.log('🔍 LISTENER DIAGNOSTIC REPORT');
+        console.log('================================');
+        console.log(`Total active listeners: ${this.activeListeners.size}`);
+        
+        const byType = {};
+        const listenerDetails = [];
+        
+        this.activeListeners.forEach((listener, id) => {
+            byType[listener.type] = (byType[listener.type] || 0) + 1;
+            const age = ((Date.now() - listener.createdAt) / 1000).toFixed(1);
+            listenerDetails.push({
+                id,
+                type: listener.type,
+                age: `${age}s`,
+                created: new Date(listener.createdAt).toISOString()
+            });
+        });
+        
+        console.log('\nActive Listeners:');
+        console.table(listenerDetails);
+        
+        console.log('\nBreakdown by type:');
+        Object.entries(byType).forEach(([type, count]) => {
+            console.log(`  ${type}: ${count}`);
+        });
+        
+        // Check for potential leaks
+        const potentialLeaks = [];
+        this.activeListeners.forEach((listener, id) => {
+            const age = (Date.now() - listener.createdAt) / 1000;
+            if (age > 300) { // Older than 5 minutes
+                potentialLeaks.push(id);
+            }
+        });
+        
+        if (potentialLeaks.length > 0) {
+            console.warn('\n⚠️ Potential memory leaks (listeners >5 min old):');
+            potentialLeaks.forEach(id => console.warn(`  - ${id}`));
+        }
+        
+        console.log('================================');
+        
+        return {
+            total: this.activeListeners.size,
+            byType,
+            potentialLeaks: potentialLeaks.length
+        };
+    }
+    
+    /**
+     * Clean up ALL listeners and resources
+     */
+    cleanupAll() {
+        console.log('🧹 [LISTENERS] Cleaning up ALL listeners and resources');
+        console.log(`📊 [LISTENERS] Active listeners before cleanup: ${this.activeListeners.size}`);
+        
+        // Stop cleanup interval
+        if (this.listenerCleanupInterval) {
+            clearInterval(this.listenerCleanupInterval);
+            this.listenerCleanupInterval = null;
+            console.log('⏰ [LISTENERS] Cleanup interval stopped');
+        }
+        
+        // Unsubscribe from all tracked listeners
+        this.activeListeners.forEach((listener, id) => {
+            try {
+                listener.unsubscribe();
+                console.log(`✓ [LISTENERS] Cleaned up: ${id} (${listener.type})`);
+            } catch (error) {
+                console.error(`❌ [LISTENERS] Error cleaning up ${id}:`, error);
+            }
+        });
+        
+        this.activeListeners.clear();
+        
+        console.log(`✅ [LISTENERS] Cleanup complete. Remaining listeners: ${this.activeListeners.size}`);
+    }
+}

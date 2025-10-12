@@ -25,6 +25,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 import { BusinessMessagingManager } from './businessMessaging.js';
+import { MessageListenersManager } from './messaging/messageListeners.js';
 
 /**
  * Messaging Manager - COMPLETE VERSION
@@ -41,14 +42,14 @@ export class MessagingManager {
     this.profileManager = null;
     this.mockData = null;
     
-    // Real-time listeners
-    this.activeListeners = new Map(); // Track ALL listeners with metadata
+    // Real-time listeners - DELEGATED to MessageListenersManager
+    this.listeners = new MessageListenersManager(firebaseServices, appState, this);
+    
+    // Legacy references for backwards compatibility (can be removed later)
+    this.activeListeners = this.listeners.activeListeners; // Reference to listeners' Map
+    
     // Business messaging handler
     this.businessMessaging = new BusinessMessagingManager(firebaseServices, appState, this);
-    this.chatListeners = new Map();
-    this.matchListener = null;
-    this.notificationListener = null;
-    this.globalMessageListener = null;
     
     // Current chat context
     this.currentChatId = null;
@@ -106,20 +107,16 @@ export class MessagingManager {
             }
         }
     });
-       // Add this line to track seen matches across sessions
-       this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
+      
+    // Add this line to track seen matches across sessions
+    this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
 
     window.addEventListener('beforeunload', () => {
         this.cleanup();
     });
-    
-    // Auto-cleanup stale listeners every 5 minutes
-    this.listenerCleanupInterval = setInterval(() => {
-        this.cleanupStaleListeners();
-    }, 300000); // 5 minutes
 }
 
-/**
+    /**
      * Load last seen timestamps from localStorage
      */
     loadLastSeenTimestamps() {
@@ -186,39 +183,18 @@ export class MessagingManager {
     }
 
         /**
-         * Register a listener with tracking
-         */
-        registerListener(id, unsubscribe, type = 'generic') {
-            if (this.activeListeners.has(id)) {
-                console.warn(`⚠️ Replacing existing listener: ${id}`);
-                const existing = this.activeListeners.get(id);
-                existing.unsubscribe();
-            }
-            
-            this.activeListeners.set(id, {
-                unsubscribe,
-                type,
-                createdAt: Date.now()
-            });
-            
-            console.log(`📌 Registered listener: ${id} (${type})`);
-        }
-        
-        /**
-         * Unregister a specific listener
-         */
-        unregisterListener(id) {
-            const listener = this.activeListeners.get(id);
-            if (listener) {
-                try {
-                    listener.unsubscribe();
-                    this.activeListeners.delete(id);
-                    console.log(`🗑️ Unregistered listener: ${id}`);
-                } catch (error) {
-                    console.error(`Error unregistering listener ${id}:`, error);
-                }
-            }
-        }
+     * Register a listener with tracking - DELEGATED to MessageListenersManager
+     */
+    registerListener(id, unsubscribe, type = 'generic') {
+        this.listeners.registerListener(id, unsubscribe, type);
+    }
+    
+    /**
+     * Unregister a specific listener - DELEGATED to MessageListenersManager
+     */
+    unregisterListener(id) {
+        this.listeners.unregisterListener(id);
+    }
 
     
     /**
@@ -591,24 +567,17 @@ export class MessagingManager {
         }
     }
     
-    /**
-     * Set up real-time listeners
+  /**
+     * Set up real-time listeners - DELEGATED to MessageListenersManager
      */
     setupRealtimeListeners() {
         const currentUser = this.state.get('currentUser');
-       
         
-        console.log('👂 Setting up real-time listeners for user:', currentUser.uid);
+        console.log('💬 [MESSAGING] Delegating listener setup to MessageListenersManager');
         
         try {
-            // Listen for new matches
-            this.listenForMatches(currentUser.uid);
-            
-            // Listen for chat updates
-            this.listenForChatUpdates(currentUser.uid);
-            
-            // Listen for new messages (global)
-            this.listenForNewMessages(currentUser.uid);
+            // Delegate all listener setup to MessageListenersManager
+            this.listeners.setupRealtimeListeners(currentUser.uid);
         } catch (error) {
             console.error('Error setting up real-time listeners:', error);
         }
@@ -1496,69 +1465,14 @@ closeChat() {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
     
-   /**
-
-     * FIXED: Enhanced real-time message listener with proper notifications
+    /**
+     * Listen to chat messages - DELEGATED to MessageListenersManager
      */
-        listenToChatMessages(chatId) {
-            this.unregisterListener(`chat_${chatId}`);
-            
-            const currentUser = this.state.get('currentUser');
-            const messagesRef = collection(this.db, 'chats', chatId, 'messages');
-            const q = query(messagesRef, orderBy('timestamp', 'asc'));
-            
-            // FIXED: Track if this is the first snapshot for THIS chat
-            let isInitialLoad = true;
-            const lastSeen = this.lastSeenTimestamps.get(chatId) || this.lastAppActive;
-            
-            try {
-                const unsubscribe = onSnapshot(q, (snapshot) => {
-                    const messages = [];
-                    
-                    snapshot.forEach(messageDoc => {
-                        messages.push({ id: messageDoc.id, ...messageDoc.data() });
-                    });
-                    
-                    // FIXED: Only process notifications after initial load
-                    if (!isInitialLoad) {
-                        snapshot.docChanges().forEach(change => {
-                            if (change.type === 'added') {
-                                const message = change.doc.data();
-                                
-                                if (message.senderId !== currentUser.uid) {
-                                    // Get notification manager safely
-                                    const notificationManager = window.classifiedApp?.managers?.notifications;
-                                    if (notificationManager && notificationManager.shouldShowNotification(message, chatId)) {
-                                        // Don't use async in forEach - handle separately
-                                        this.handleMessageNotification(message, chatId);
-                                    }
-                                }
-                            }
-                        });
-                    }
-                    
-                    this.displayMessages(messages, currentUser.uid);
-                    
-                    // FIXED: Update last seen for this chat
-                    if (this.currentChatId === chatId && this.isAppVisible) {
-                        this.lastSeenTimestamps.set(chatId, Date.now());
-                        this.saveLastSeenTimestamps();
-                    }
-                    
-                    isInitialLoad = false;
-                    
-                }, (error) => {
-                    console.error('❌ Error in chat listener:', error);
-                    this.unregisterListener(`chat_${chatId}`);
-                });
-                
-                this.registerListener(`chat_${chatId}`, unsubscribe, 'chat');
-                console.log('👂 Set up real-time listener for chat:', chatId);
-                
-            } catch (error) {
-                console.error('Error setting up chat listener:', error);
-            }
-        }
+    listenToChatMessages(chatId) {
+        console.log('💬 [MESSAGING] Delegating chat listener to MessageListenersManager');
+        this.listeners.listenToChatMessages(chatId);
+    }
+    
     /**
      * Handle message notification properly
      */
@@ -1579,118 +1493,7 @@ closeChat() {
         }
     }
     
-        /**
-     * Listen for new matches (FIXED to prevent showing old matches)
-     */
-       listenForMatches(userId) {
-            this.unregisterListener('matches_global');
-            
-            try {
-                const matchesRef = collection(this.db, 'matches');
-                const q = query(
-                    matchesRef,
-                    where('users', 'array-contains', userId)
-                );
-                
-                // FIXED: Track initial load and session start time
-                let isInitialLoad = true;
-                const sessionStartTime = Date.now();
-                const thirtySecondsAgo = Date.now() - 30000; // 30 second window
-                
-                // FIXED: Load seen matches from localStorage
-                if (!this.seenMatches) {
-                    this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
-                }
-            
-            const unsubscribe = onSnapshot(q, (snapshot) => {
-                if (isInitialLoad) {
-                    // FIXED: On initial load, mark ALL matches as seen (no popups for old matches)
-                    snapshot.forEach(doc => {
-                        const matchId = doc.id;
-                        const matchData = doc.data();
-                        
-                        // Add to seen matches regardless of age
-                        this.seenMatches.add(matchId);
-                        
-                        // Also store match timestamp for future validation
-                        const matchTime = matchData.timestamp?.toDate?.()?.getTime() || 0;
-                        localStorage.setItem(`match_time_${matchId}`, matchTime.toString());
-                    });
-                    
-                    // Save to localStorage
-                    this.saveSeenMatches();
-                    isInitialLoad = false;
-                    console.log(`👂 Initial load complete, marked ${snapshot.size} existing matches as seen`);
-                    return;
-                }
-                
-          // FIXED: Only process changes after initial load
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === 'added') {
-                        const matchId = change.doc.id;
-                        const matchData = change.doc.data();
-                        
-                        // FIXED: Skip if already seen
-                        if (this.seenMatches.has(matchId)) {
-                            console.log('⏭️ Skipping already seen match:', matchId);
-                            return;
-                        }
-                        
-                        // FIXED: Get match timestamp properly
-                        const matchTime = matchData.timestamp?.toDate?.() || new Date();
-                        const matchTimeMs = matchTime.getTime();
-                        
-                        // FIXED: THREE validation checks for match popup
-                        
-                        // 1. Must be created AFTER this session started
-                        if (matchTimeMs < sessionStartTime) {
-                            console.log('⏭️ Skipping old match from before session:', matchId);
-                            this.seenMatches.add(matchId);
-                            localStorage.setItem(`match_time_${matchId}`, matchTimeMs.toString());
-                            this.saveSeenMatches();
-                            return;
-                        }
-                        
-                        // 2. Must be less than 30 seconds old
-                        const timeDiff = Date.now() - matchTimeMs;
-                        if (timeDiff > 30000) {
-                            console.log('⏭️ Skipping stale match (>30s old):', matchId, `Age: ${Math.round(timeDiff/1000)}s`);
-                            this.seenMatches.add(matchId);
-                            localStorage.setItem(`match_time_${matchId}`, matchTimeMs.toString());
-                            this.saveSeenMatches();
-                            return;
-                        }
-                        
-                        // 3. Must be created after the 30-second window started
-                        if (matchTimeMs < thirtySecondsAgo) {
-                            console.log('⏭️ Match outside 30s window:', matchId);
-                            this.seenMatches.add(matchId);
-                            localStorage.setItem(`match_time_${matchId}`, matchTimeMs.toString());
-                            this.saveSeenMatches();
-                            return;
-                        }
-                        
-                        // This is a genuinely new, recent match!
-                        console.log('🎉 New match detected!', matchId);
-                        this.seenMatches.add(matchId);
-                        this.saveSeenMatches();
-                        this.handleNewMatch(matchData);
-                    }
-                });
-                
-            }, (error) => {
-                console.error('Error in match listener:', error);
-                this.unregisterListener('matches_global');
-            });
-            
-            this.registerListener('matches_global', unsubscribe, 'match');
-            
-        } catch (error) {
-            console.error('Error setting up match listener:', error);
-        }
-    }
-    
-    /**
+  /**
      * Save seen matches to localStorage
      */
     saveSeenMatches() {
@@ -1699,156 +1502,6 @@ closeChat() {
         }
     }
     
-    /**
-     * Listen for chat updates
-     */
-       listenForChatUpdates(userId) {
-        this.unregisterListener('chat_updates_global');
-        
-        try {
-            const chatsRef = collection(this.db, 'chats');
-            const q = query(
-                chatsRef,
-                where('participants', 'array-contains', userId)
-            );
-            
-            let isInitialLoad = true;
-            
-            const unsubscribe = onSnapshot(q, async (snapshot) => {
-                if (isInitialLoad) {
-                    snapshot.forEach(doc => {
-                        const chatData = doc.data();
-                        const chatId = doc.id;
-                        
-                   if (chatData.lastMessageSender && 
-                        chatData.lastMessageSender !== userId &&
-                        chatData.lastMessageTime) {
-                        
-                        // FIX: Add missing messageTime variable
-                      const messageTime = chatData.lastMessageTime.toMillis ? chatData.lastMessageTime.toMillis() : 0;
-                        
-                        // On initial load, only count as unread if:
-                        // 1. Message is from before last session ended AND
-                        // 2. We haven't marked it as seen
-                        const seenKey = `seen_${chatId}_${userId}`;
-                        const lastSeen = localStorage.getItem(seenKey);
-                            
-                            if (messageTime > this.lastAppActive) {
-                                const notificationManager = window.classifiedApp?.managers?.notifications;
-                                if (notificationManager) {
-                                    const currentUnread = notificationManager.unreadMessages.get(chatId) || 0;
-                                    // Only set unread if we don't already have it marked as read
-                                    if (!notificationManager.unreadMessages.has(chatId) || notificationManager.unreadMessages.get(chatId) > 0) {
-                                        notificationManager.updateUnreadCount(chatId, 1);
-                                    }
-                                }
-                            }
-                        }
-                   });
-                    
-                    isInitialLoad = false;
-                    // Update total via NotificationManager
-                    const notificationManager = window.classifiedApp?.managers?.notifications;
-                    if (notificationManager) {
-                        const total = notificationManager.getTotalUnread();
-                        if (total > 0) {
-                            notificationManager.showNotificationDot(total);
-                        }
-                    }
-                   await this.loadChats();
-                    return;
-                }
-                
-                for (const change of snapshot.docChanges()) {
-                    if (change.type === 'modified') {
-                        const chatData = change.doc.data();
-                        const chatId = change.doc.id;
-                        
-                        if (chatData.lastMessageSender && 
-                            chatData.lastMessageSender !== userId &&
-                            this.currentChatId !== chatId &&
-                            chatData.lastMessageTime) {
-                            
-                            const messageTime = chatData.lastMessageTime.toMillis();
-                            
-                           if (messageTime > this.lastAppActive) {
-                                const notificationManager = window.classifiedApp?.managers?.notifications;
-                                if (notificationManager) {
-                                    notificationManager.updateUnreadCount(chatId, 1);
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                await this.loadChats();
-                // NotificationManager handles total unread automatically
-                
-            }, (error) => {
-                console.error('Error in chat updates listener:', error);
-                this.unregisterListener('chat_updates_global');
-            });
-            
-            this.registerListener('chat_updates_global', unsubscribe, 'chat_update');
-            
-        } catch (error) {
-            console.error('Error setting up chat updates listener:', error);
-        }
-    }
-    
-    /**
-     * Listen for new messages globally (for notifications)
-     */
-    listenForNewMessages(userId) {
-        // ADDED: Remove existing listener first
-        this.unregisterListener('messages_global');
-        
-        try {
-            const chatsRef = collection(this.db, 'chats');
-            const q = query(
-                chatsRef,
-                where('participants', 'array-contains', userId)
-            );
-            
-            const unsubscribe = onSnapshot(q, (snapshot) => {
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === 'modified') {
-                        const chatData = change.doc.data();
-                        const chatId = change.doc.id;
-                        
-                        if (chatData.lastMessageSender && chatData.lastMessageSender !== userId) {
-                         if (this.currentChatId !== chatId) {
-                                // Delegate to NotificationManager
-                                const notificationManager = window.classifiedApp?.managers?.notifications;
-                                if (notificationManager) {
-                                    notificationManager.showNotification('message', {
-                                        message: { text: chatData.lastMessage, senderId: chatData.lastMessageSender },
-                                        chatId: chatId,
-                                        partnerInfo: { name: 'User' } // You may want to fetch actual partner info
-                                    });
-                                }
-                                window.classifiedApp?.managers?.notifications?.updateUnreadCount(chatId, 1);
-                            }
-                        }
-                    }
-                });
-            }, (error) => {
-                if (error.code?.includes('permission')) {
-                    handleSecurityError(error);
-                }
-                console.error('Error in global message listener:', error);
-                this.unregisterListener('messages_global'); // ADDED: Cleanup on error
-            });
-            
-            // ADDED: Register with tracking
-            this.registerListener('messages_global', unsubscribe, 'message');
-            console.log('👂 Set up global message notifications for user:', userId);
-            
-        } catch (error) {
-            console.error('Error setting up global message listener:', error);
-        }
-    }
-        
         /**
          * Handle new match
          */
@@ -2533,33 +2186,11 @@ updateChatListUnreadIndicators() {
     });
 }
 
-     /**
-     * Clean up stale listeners (older than 10 minutes)
-     */
-    cleanupStaleListeners() {
-        const tenMinutesAgo = Date.now() - (10 * 60 * 1000);
-        const staleListeners = [];
-        
-        this.activeListeners.forEach((listener, id) => {
-            if (listener.createdAt < tenMinutesAgo && !id.startsWith('chat_')) {
-                // Don't auto-cleanup active chat listeners
-                staleListeners.push(id);
-            }
-        });
-        
-        if (staleListeners.length > 0) {
-            console.log(`🧹 Cleaning up ${staleListeners.length} stale listeners`);
-            staleListeners.forEach(id => {
-                this.unregisterListener(id);
-            });
-        }
-    }
-    
     /**
- * ENHANCED: Cleanup on destroy with better resource management
- */
-       cleanup() {
-        console.log('🧹 Cleaning up messaging listeners and resources');
+     * ENHANCED: Cleanup on destroy with better resource management
+     */
+   cleanup() {
+        console.log('🧹 [MESSAGING] Cleaning up messaging resources');
         
         // Save state first
         try {
@@ -2570,48 +2201,13 @@ updateChatListUnreadIndicators() {
         } catch (error) {
             console.error('Error saving messaging state:', error);
         }
-            
-        console.log(`📊 Active listeners before cleanup: ${this.activeListeners.size}`);
         
-        // 1. Remove ALL tracked listeners
-        this.activeListeners.forEach((listener, id) => {
-            try {
-                listener.unsubscribe();
-                console.log(`✓ Cleaned up listener: ${id} (${listener.type})`);
-            } catch (error) {
-                console.error(`Error cleaning up listener ${id}:`, error);
-            }
-        });
-       if (this.activeListeners) this.activeListeners.clear();
-        
-        // 2. Legacy cleanup for backwards compatibility
-        if (this.chatListeners) {
-            this.chatListeners.forEach(unsubscribe => {
-                try {
-                    unsubscribe();
-                } catch (error) {
-                    console.error('Error unsubscribing from chat listener:', error);
-                }
-            });
-            this.chatListeners.clear();
+        // Delegate ALL listener cleanup to MessageListenersManager
+        if (this.listeners) {
+            this.listeners.cleanupAll();
         }
         
-        // 3. Clean up singleton listeners
-        [this.matchListener, this.globalMessageListener, this.notificationListener].forEach(listener => {
-            if (listener) {
-                try {
-                    listener();
-                } catch (error) {
-                    console.error('Error unsubscribing from singleton listener:', error);
-                }
-            }
-        });
-        
-        this.matchListener = null;
-        this.globalMessageListener = null;
-        this.notificationListener = null;
-        
-        // 4. Clean up audio resources
+        // Clean up audio resources (if any)
         if (this.audioContext) {
             try {
                 this.audioContext.close();
@@ -2620,16 +2216,10 @@ updateChatListUnreadIndicators() {
             }
         }
         
-        // 5. Clear intervals
-        if (this.listenerCleanupInterval) {
-            clearInterval(this.listenerCleanupInterval);
-            this.listenerCleanupInterval = null;
-        }
-        
-        // 6. Clear local tracking state (notification state managed by NotificationManager)
+        // Clear local tracking state (notification state managed by NotificationManager)
         if (this.lastSeenMessages) this.lastSeenMessages.clear();
            
-        // 7. Delegate notification cleanup to NotificationManager
+        // Delegate notification cleanup to NotificationManager
         const notificationManager = window.classifiedApp?.managers?.notifications;
         if (notificationManager) {
             // Clear any chat-specific notification state
@@ -2638,66 +2228,20 @@ updateChatListUnreadIndicators() {
             }
         }
         
-        // 8. Reset document title (NotificationManager handles dot)
+        // Reset document title (NotificationManager handles dot)
         document.title = 'CLASSIFIED - Hoi An Social Discovery';
         
-        console.log('✅ Messaging cleanup complete');
-        console.log(`📊 Active listeners after cleanup: ${this.activeListeners.size}`);
+        console.log('✅ [MESSAGING] Cleanup complete');
     }
 
     /**
-     * Diagnostic method to check active listeners
-     * Call this in console: window.classifiedApp.managers.messaging.diagnosticListeners()
+     * Diagnostic method to check active listeners - DELEGATED
+     * Usage: window.classifiedApp.managers.messaging.diagnosticListeners()
      */
     diagnosticListeners() {
-        console.log('🔍 LISTENER DIAGNOSTIC REPORT');
-        console.log('================================');
-        console.log(`Total active listeners: ${this.activeListeners.size}`);
-        
-        const byType = {};
-        const listenerDetails = [];
-        this.activeListeners.forEach((listener, id) => {
-            byType[listener.type] = (byType[listener.type] || 0) + 1;
-            const age = ((Date.now() - listener.createdAt) / 1000).toFixed(1);
-            listenerDetails.push({
-                id,
-                type: listener.type,
-                age: `${age}s`,
-                created: new Date(listener.createdAt).toISOString()
-            });
-        });
-        
-        console.log('\nActive Listeners:');
-        console.table(listenerDetails);
-        
-        console.log('\nBreakdown by type:');
-        Object.entries(byType).forEach(([type, count]) => {
-            console.log(`  ${type}: ${count}`);
-        });
-        
-        // Check for potential leaks
-        const potentialLeaks = [];
-        this.activeListeners.forEach((listener, id) => {
-            const age = (Date.now() - listener.createdAt) / 1000;
-            if (age > 300) { // Older than 5 minutes
-                potentialLeaks.push(id);
-            }
-        });
-        
-        if (potentialLeaks.length > 0) {
-            console.warn('\n⚠️ Potential memory leaks (listeners >5 min old):');
-            potentialLeaks.forEach(id => console.warn(`  - ${id}`));
-        }
-        
-        console.log('\nLegacy chat listeners:', this.chatListeners?.size || 0);
-        console.log('================================');
-        
-        return {
-            total: this.activeListeners.size,
-            byType,
-            potentialLeaks: potentialLeaks.length
-        };
+        return this.listeners.diagnosticListeners();
     }
+}
 
 
 /**

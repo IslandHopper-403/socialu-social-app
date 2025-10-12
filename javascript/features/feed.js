@@ -1168,7 +1168,7 @@ openStoryByBusinessId(businessId) {
         }
     }
     
-    /**
+  /**
      * Switch social tab
      */
     switchSocialTab(tabType) {
@@ -1186,6 +1186,18 @@ openStoryByBusinessId(businessId) {
             content.classList.remove('active');
         });
         document.getElementById(`${tabType}Content`)?.classList.add('active');
+        
+        // CRITICAL: Load user feed when switching to "people" tab
+        if (tabType === 'people') {
+            console.log('🔄 [switchSocialTab] People tab selected, triggering user feed population');
+            const userFeedManager = window.classifiedApp?.managers?.userFeed;
+            if (userFeedManager) {
+                console.log('✅ [switchSocialTab] UserFeedManager found, calling populateUserFeed()');
+                userFeedManager.populateUserFeed();
+            } else {
+                console.error('❌ [switchSocialTab] UserFeedManager not found!');
+            }
+        }
         
         // FIXED: Hide notifications when switching to messaging tab
         if (tabType === 'messaging') {

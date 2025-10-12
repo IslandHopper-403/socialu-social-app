@@ -45,7 +45,7 @@ import { MockData } from './data/mockData.js';
 
 // Import feature modules
 import { AuthManager } from './features/auth.js';
-import { FeedManager } from './features/feed.js';
+import { FeedManager } from './features/feed/feedManager.js';
 import { UserFeedManager } from './features/feed/userFeed.js';
 import { ProfileManager } from './features/profile.js';
 import { MatchingManager } from './features/matching.js';
@@ -146,16 +146,29 @@ class ClassifiedApp {
     }
 
 
-    // Optional: Add this new method if you want to keep the demo data preview
+   // Optional: Add this new method if you want to keep the demo data preview
 loadDemoContent() {
+    console.log('🎯 [main.js] loadDemoContent() called at:', Date.now());
+    console.log('🎯 [main.js] Loading demo data for preview...');
+    
     // Load demo data in background for immediate visual feedback
     // This doesn't interfere with auth state
     try {
-        this.managers.feed.populateRestaurantFeedWithData(this.mockData.getRestaurants());
-        this.managers.feed.populateActivityFeedWithData(this.mockData.getActivities());
-        console.log('📊 Demo content loaded for preview');
+        // Delegate to businessFeed manager via feedManager orchestrator
+        const restaurants = this.mockData.getRestaurants();
+        const activities = this.mockData.getActivities();
+        
+        console.log('🎯 [main.js] Demo data:', {
+            restaurants: restaurants.length,
+            activities: activities.length
+        });
+        
+        this.managers.feed.businessFeed.populateRestaurantFeedWithData(restaurants);
+        this.managers.feed.businessFeed.populateActivityFeedWithData(activities);
+        
+        console.log('✅ [main.js] Demo content loaded for preview at:', Date.now());
     } catch (error) {
-        console.error('Could not load demo content:', error);
+        console.error('❌ [main.js] Could not load demo content:', error);
         // Non-critical error, don't block app
     }
 }

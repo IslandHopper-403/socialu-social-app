@@ -62,6 +62,9 @@ import { FavoritesCarouselManager } from './features/favoritesCarousel.js';
 // Import UI modules
 import { NavigationManager } from './ui/navigation.js';
 
+// Import core routing
+import { Router } from './core/router.js';
+
 // Import Firestore functions for main app
 import {
     doc,
@@ -177,9 +180,11 @@ loadDemoContent() {
     /**
      * Create all manager instances
      */
-    async createManagers(firebaseServices) {
+  async createManagers(firebaseServices) {
         // Import the new NotificationManager
         const { NotificationManager } = await import('./features/notifications.js');
+        
+        console.log('🔗 [MAIN] Creating manager instances including Router');
         
         // Create manager instances
         this.managers = {
@@ -196,17 +201,24 @@ loadDemoContent() {
             referral: new ReferralManager(firebaseServices, this.state),
             photoUpload: new PhotoUploadManager(firebaseServices, this.state),
             navigation: new NavigationManager(firebaseServices, this.state),
+            // ROUTER: Handles deep links, hash navigation, and browser history
+            router: new Router(this.state),
             // ADD THIS LINE for Maps Feature
             map: new MapManager(firebaseServices, this.state, this.mockData),
             // ADD THIS LINE for Favorites Carousel Feature
             favoritesCarousel: new FavoritesCarouselManager(firebaseServices, this.state),
         };
+        
+        console.log('🔗 [MAIN] Router instance created');
 
-             // Expose individual managers for backwards compatibility
+            // Expose individual managers for backwards compatibility
             this.businessManager = this.managers.business;
             this.navigationManager = this.managers.navigation;
             this.authManager = this.managers.auth;
             this.feedManager = this.managers.feed;
+            this.router = this.managers.router;
+            
+            console.log('🔗 [MAIN] Managers exposed for backwards compatibility, including router');
             
             // Track app lifecycle for notification management
             window.addEventListener('load', () => {
@@ -239,15 +251,29 @@ loadDemoContent() {
         });
     }
 
-    /**
+  /**
  * Initialize all managers
  */
 async initializeManagers() {
     console.log('🔗 [INIT-7] Starting manager initialization loop at:', Date.now());
     
-    // Initialize each manager in sequence
+    // CRITICAL: Initialize router FIRST, then navigation
+    // Router must be ready before navigation init() runs
+    const initOrder = ['router', 'navigation'];
+    
+    // Initialize router and navigation first
+    for (const name of initOrder) {
+        const manager = this.managers[name];
+        if (manager && manager.init) {
+            console.log(`🔗 [INIT-7] Initializing ${name} at:`, Date.now());
+            await manager.init();
+            console.log(`✓ [INIT-7] ${name} manager initialized at:`, Date.now());
+        }
+    }
+    
+    // Initialize remaining managers
     for (const [name, manager] of Object.entries(this.managers)) {
-        if (manager.init) {
+        if (!initOrder.includes(name) && manager.init) {
             console.log(`🔗 [INIT-7] Initializing ${name} at:`, Date.now());
             await manager.init();
             console.log(`✓ [INIT-7] ${name} manager initialized at:`, Date.now());
@@ -255,13 +281,13 @@ async initializeManagers() {
     }
     
     console.log('🔗 [INIT-8] All managers initialized at:', Date.now());
+    console.log('🔗 [INIT-8] Router exists?', !!this.managers.router);
     console.log('🔗 [INIT-8] Navigation manager exists?', !!this.managers.navigation);
     console.log('🔗 [INIT-8] Deep link mode still active?', window.__DEEP_LINK_MODE__);
     console.log('🔗 [INIT-8] Current hash:', window.location.hash);
     
-    // REMOVED: Don't call handleDeepLink() here - navigation manager already handled it in init()
-    // Deep links are now processed during navigation.init() to prevent double-processing
-    console.log('🔗 [INIT-8] Skipping handleDeepLink - already processed in navigation.init()');
+    // Router handles all deep link processing via its init()
+    console.log('🔗 [INIT-8] Deep links processed by Router');
 }
     
     /**

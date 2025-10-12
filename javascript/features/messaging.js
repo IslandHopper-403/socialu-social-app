@@ -1892,7 +1892,7 @@ closeChat() {
                                         partnerInfo: { name: 'User' } // You may want to fetch actual partner info
                                     });
                                 }
-                                this.updateUnreadCount(chatId, 1);
+                                window.classifiedApp?.managers?.notifications?.updateUnreadCount(chatId, 1);
                             }
                         }
                     }
@@ -2461,7 +2461,7 @@ async getChatPartnerInfo(chatId) {
  */
 async openChatFromNotification(chatId, partnerInfo) {
     // Clear notification dot
-    this.hideNotificationDot();
+    window.classifiedApp?.managers?.notifications?.hideNotificationDot();
     
     // Switch to messaging tab
     const feedManager = window.classifiedApp?.managers?.feed;
@@ -2471,26 +2471,6 @@ async openChatFromNotification(chatId, partnerInfo) {
     
     // Open the specific chat
     await this.openChat(partnerInfo.name, partnerInfo.avatar, partnerInfo.id);
-}
-
-
-/**
- * NEW: Unread message tracking
- */
-updateUnreadCount(chatId, increment) {
-    // Delegate to NotificationManager
-    const notificationManager = window.classifiedApp?.managers?.notifications;
-    if (notificationManager) {
-        notificationManager.updateUnreadCount(chatId, increment);
-    }
-    
-    // Keep local copy for UI display
-    const current = this.unreadMessages.get(chatId) || 0;
-    const newCount = Math.max(0, current + increment);
-    this.unreadMessages.set(chatId, newCount);
-    
-    // Update chat list UI with unread indicators
-    this.updateChatListUnreadIndicators();
 }
 
 
@@ -2509,10 +2489,10 @@ updateTotalUnreadCount() {
     
     // Update the notification badge - ONLY if there are unread messages
     if (totalUnread > 0) {
-        this.showNotificationDot(totalUnread);
+        window.classifiedApp?.managers?.notifications?.showNotificationDot(totalUnread);
         console.log(`📊 Total unread messages: ${totalUnread}`);
     } else {
-        this.hideNotificationDot();
+        window.classifiedApp?.managers?.notifications?.hideNotificationDot();
         console.log(`✅ No unread messages`);
     }
 }
@@ -2539,9 +2519,9 @@ async markChatAsRead(chatId) {
     // Update total unread count
     const totalUnread = Array.from(this.unreadMessages.values()).reduce((sum, count) => sum + count, 0);
     if (totalUnread === 0) {
-        this.hideNotificationDot();
+        window.classifiedApp?.managers?.notifications?.hideNotificationDot();
     } else {
-        this.showNotificationDot(totalUnread);
+        window.classifiedApp?.managers?.notifications?.showNotificationDot(totalUnread);
     }
 }
 
@@ -2664,7 +2644,7 @@ updateNotificationState() {
         .reduce((sum, count) => sum + count, 0);
     
     if (totalUnread > 0) {
-        this.showNotificationDot(totalUnread);
+        window.classifiedApp?.managers?.notifications?.showNotificationDot(totalUnread);
         
         // Update document title
         document.title = `(${totalUnread}) CLASSIFIED - Hoi An Social Discovery`;
@@ -2672,7 +2652,7 @@ updateNotificationState() {
         // Update favicon if available
         this.updateFaviconWithCount(totalUnread);
     } else {
-        this.hideNotificationDot();
+        window.classifiedApp?.managers?.notifications?.hideNotificationDot();
         document.title = 'CLASSIFIED - Hoi An Social Discovery';
         this.resetFavicon();
     }
@@ -2786,7 +2766,7 @@ updateNotificationState() {
         // 8. Reset UI
         document.title = 'CLASSIFIED - Hoi An Social Discovery';
         // this.resetFavicon(); // Function doesn't exist
-        this.hideNotificationDot();
+        window.classifiedApp?.managers?.notifications?.hideNotificationDot();
         
         console.log('✅ Messaging cleanup complete');
         console.log(`📊 Active listeners after cleanup: ${this.activeListeners.size}`);
@@ -2849,26 +2829,6 @@ updateNotificationState() {
             byType,
             potentialLeaks: potentialLeaks.length
         };
-    }
-    
-    /**
-     * Show notification dot (delegates to NotificationManager)
-     */
-    showNotificationDot(count = null) {
-        const notificationManager = window.classifiedApp?.managers?.notifications;
-        if (notificationManager) {
-            notificationManager.showNotificationDot(count);
-        }
-    }
-    
-    /**
-     * Hide notification dot (delegates to NotificationManager)
-     */
-    hideNotificationDot() {
-        const notificationManager = window.classifiedApp?.managers?.notifications;
-        if (notificationManager) {
-            notificationManager.hideNotificationDot();
-        }
     }
 
 

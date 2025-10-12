@@ -9,6 +9,7 @@
 // GOOD WORKING CONDITION - QR Code Generator Works -  URL Links Work - Guest Mode + Open Business Profile Works
 // GOOD WORKING CONDITION SCREEN RESPONISVNESS FIXED - BUSINESS STORIES IMPLEMENTED
 // GOOD WORKING CONDITION - First Steps of Refactor Complete Week 1: Complete. Week 2: 2.1 & 2.2 Complete
+// GOOD WORKING CONDITION - Week 1 Complete: Week 2: Completed up unitl step 2.6 - Only minor bugs with CSS and Like Pass buttons
 // From this place forward start refactoring Users and Business for seperate UI/UX portals
 // ALL CSS REFACTORED TO CLEAN ORGINIZED STRUCTURE 
 

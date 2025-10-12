@@ -46,6 +46,7 @@ import { MockData } from './data/mockData.js';
 // Import feature modules
 import { AuthManager } from './features/auth.js';
 import { FeedManager } from './features/feed.js';
+import { UserFeedManager } from './features/feed/userFeed.js';
 import { ProfileManager } from './features/profile.js';
 import { MatchingManager } from './features/matching.js';
 import { MessagingManager } from './features/messaging.js';
@@ -170,6 +171,7 @@ loadDemoContent() {
         this.managers = {
             auth: new AuthManager(firebaseServices, this.state),
             feed: new FeedManager(firebaseServices, this.state, this.mockData),
+            userFeed: new UserFeedManager(firebaseServices, this.state, this.mockData),
             profile: new ProfileManager(firebaseServices, this.state),
             matching: new MatchingManager(firebaseServices, this.state),
             messaging: new MessagingManager(firebaseServices, this.state),
@@ -712,7 +714,7 @@ async initializeManagers() {
             toggleInterest: (element) => this.managers.profile.toggleInterest(element),
             
             // Feed refresh methods
-            populateUserFeed: () => this.managers.feed.populateUserFeed(),
+            populateUserFeed: () => this.managers.userFeed.populateUserFeed(),
             populateRestaurantFeed: () => this.managers.feed.populateRestaurantFeed(),
             populateActivityFeed: () => this.managers.feed.populateActivityFeed(),
             

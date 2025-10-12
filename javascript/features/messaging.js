@@ -1075,12 +1075,21 @@ displayUnifiedChats(chats) {
  * Cleanup chat state (called by navigation manager)
  */
 closeChat() {
-    console.log('🧹 Messaging cleanup');
+    console.log('🧹 [MESSAGING] closeChat() called');
+    console.log('🧹 [MESSAGING] Current chat ID:', this.currentChatId);
     
     if (this.currentChatId) {
+        console.log('🧹 [MESSAGING] Cleaning up chat:', this.currentChatId);
         this.markChatAsRead(this.currentChatId);
         this.markAllMessagesAsRead(this.currentChatId);
-        this.unregisterListener(`chat_${this.currentChatId}`);
+        
+        // Unregister the chat listener
+        const listenerKey = `chat_${this.currentChatId}`;
+        console.log('🧹 [MESSAGING] Unregistering listener:', listenerKey);
+        this.unregisterListener(listenerKey);
+        console.log('🧹 [MESSAGING] Listener unregistered');
+    } else {
+        console.log('⚠️ [MESSAGING] No currentChatId found during cleanup');
     }
     
     // Clear ALL chat-related state
@@ -1092,6 +1101,8 @@ closeChat() {
     this.state.set('currentChatType', null);
     this.state.set('currentBusinessConversationId', null);
     this.state.set('currentChatBusinessId', null);
+    
+    console.log('✅ [MESSAGING] closeChat() complete');
 }
     
       /**

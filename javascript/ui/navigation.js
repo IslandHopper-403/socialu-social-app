@@ -10,6 +10,7 @@
         
         // References to other managers (set later)
         this.authManager = null;
+        this.router = null;
         
         // Track navigation history
         this.navigationHistory = [];
@@ -80,13 +81,15 @@ showContentSkeleton(containerId, type = 'default') {
      */
     setManagers(managers) {
         this.authManager = managers.auth;
+        this.router = managers.router;
+        console.log('🧭 [NAVIGATION] Manager references set, router:', !!this.router);
     }
     
     /**
      * Initialize navigation system
      */
    async init() {
-        console.log('🧭 Initializing navigation manager...');
+        console.log('🧭 [NAVIGATION] Initializing navigation manager...');
         
         // Set up event listeners
         this.setupEventListeners();
@@ -95,25 +98,23 @@ showContentSkeleton(containerId, type = 'default') {
         const hash = window.location.hash.slice(1);
         const isDeepLink = hash.startsWith('business/') || hash.startsWith('story/');
         
+        console.log('🧭 [NAVIGATION] Hash check:', hash, '| Is deep link?', isDeepLink);
+        
         if (isDeepLink) {
-                console.log('🔗 Deep link detected in nav init, handling immediately');
-                
-                // Set initial screen to restaurant (but don't change hash yet)
-                const initialScreen = 'restaurant';
-                this.state.set('currentScreen', initialScreen);
-                this.showScreen(initialScreen, false); // false = don't update history
-                
-                console.log('🔗 Initial screen set to:', initialScreen);
-                console.log('🔗 Current hash still:', window.location.hash);
-                
-                // Set up hashchange listener (needed for navigation)
-                window.addEventListener('hashchange', () => {
-                    this.handleDeepLink();
-                });
-                
-                // Handle the deep link without overwriting the hash
-                this.handleDeepLink();
-            }else {
+            console.log('🧭 [NAVIGATION] Deep link detected, setting up for router handling');
+            
+            // Set initial screen to restaurant (but don't change hash yet)
+            const initialScreen = 'restaurant';
+            this.state.set('currentScreen', initialScreen);
+            this.showScreen(initialScreen, false); // false = don't update history
+            
+            console.log('🧭 [NAVIGATION] Initial screen set to:', initialScreen);
+            console.log('🧭 [NAVIGATION] Router will handle deep link processing');
+            
+            // Router will handle the deep link via its own init()
+            // No need to call handleDeepLink here - router owns deep link logic
+        } else {
+            console.log('🧭 [NAVIGATION] Normal initialization (no deep link)');
             // Normal initialization for non-deep-link loads
             this.initializeNavigation();
         }
@@ -162,6 +163,8 @@ showContentSkeleton(containerId, type = 'default') {
      * Initialize navigation on app start
      */
     initializeNavigation() {
+        console.log('🧭 [NAVIGATION] Running normal initialization');
+        
         // Set initial screen
         const initialScreen = this.state.get('currentScreen') || 'restaurant';
         this.showScreen(initialScreen, false);
@@ -169,13 +172,10 @@ showContentSkeleton(containerId, type = 'default') {
         // Push initial state to history
         history.replaceState({ screen: initialScreen }, '', `#${initialScreen}`);
         
-        // Handle deep links AFTER initialization
-        this.handleDeepLink();
+        console.log('🧭 [NAVIGATION] Normal initialization complete');
         
-        // Listen for hash changes
-        window.addEventListener('hashchange', () => {
-            this.handleDeepLink();
-        });
+        // NOTE: Router handles all deep link and hash change logic
+        // No need to set up listeners here - router owns routing
     }
     
     /**
@@ -638,163 +638,4 @@ handleOverlayBack(overlayId) {
     clearNavigationHistory() {
         this.navigationHistory = [this.state.get('currentScreen') || 'restaurant'];
     }
-    
-  handleDeepLink() {
-    console.log('🔗 [DEEPLINK-1] handleDeepLink() called at:', Date.now());
-    const hash = window.location.hash.slice(1);
-    console.log('🔗 [DEEPLINK-1] Hash value:', hash);
-    console.log('🔗 [DEEPLINK-1] Deep link mode flag:', window.__DEEP_LINK_MODE__);
-    
-    const validScreens = ['restaurant', 'social', 'activity'];
-    
-    // Check for story deep link format: #story/slug/businessId
-    if (hash.startsWith('story/')) {
-        const parts = hash.split('/');
-        const slug = parts[1];
-        const businessId = parts[2];
-        if (slug && businessId) {
-            this.openStoryFromURL(slug, businessId);
-            return;
-        }
-    }
-    
-    // Check for business profile deep link format: #business/businessId
-    if (hash.startsWith('business/')) {
-        console.log('🔗 [DEEPLINK-2] Business deep link detected!');
-        const businessId = hash.split('/')[1];
-        console.log('🔗 [DEEPLINK-2] Business ID/slug:', businessId);
-        
-        if (businessId) {
-            console.log('🔗 [DEEPLINK-2] Calling openBusinessFromURL at:', Date.now());
-            this.openBusinessFromURL(businessId);
-            return;
-        } else {
-            console.error('🔗 [DEEPLINK-2] No business ID found in hash');
-        }
-    }
-    
-    if (validScreens.includes(hash)) {
-        this.showScreen(hash);
-    }
-}
-
-/**
- * Open business profile from URL parameter
- */
-async openBusinessFromURL(businessIdOrSlug) {
-    console.log('🔗 [DEEPLINK-3] openBusinessFromURL() called at:', Date.now());
-    console.log('🔗 [DEEPLINK-3] Business ID/slug:', businessIdOrSlug);
-    
-    // Hide auth screens if visible (for deep links)
-            const authScreen = document.getElementById('authScreen');
-            console.log('🔗 [DEEPLINK-3] Auth screen exists?', !!authScreen);
-            console.log('🔗 [DEEPLINK-3] Auth screen visible?', authScreen?.classList.contains('show'));
-            if (authScreen) {
-                authScreen.style.display = 'none';
-                authScreen.classList.remove('show');
-                authScreen.style.zIndex = '-1'; // Push auth screen behind everything
-            }
-            
-            // DON'T override business profile z-index - let CSS handle it
-            // The CSS z-index hierarchy will work correctly: business profile (375) < photo viewer (700)
-    
-    // Ensure app is initialized
-    console.log('🔗 [DEEPLINK-4] Waiting for app ready at:', Date.now());
-    await this.waitForAppReady();
-    console.log('🔗 [DEEPLINK-4] App ready at:', Date.now());
-    
-    // CRITICAL: If no user authenticated, enter guest mode automatically for deep links
-    const isAuthenticated = this.state.get('isAuthenticated');
-    if (!isAuthenticated) {
-        console.log('🔗 [DEEPLINK-4] No user authenticated, enabling guest mode via AuthManager');
-        
-        // Use the existing guest mode system
-        const authManager = window.classifiedApp?.managers?.auth;
-        if (authManager) {
-            authManager.enableGuestMode();
-            console.log('🔗 [DEEPLINK-4] Guest mode activated');
-        } else {
-            console.error('🔗 [DEEPLINK-4] AuthManager not available');
-        }
-    }
-    
-    // Navigate to restaurant screen first
-    console.log('🔗 [DEEPLINK-4] Showing restaurant screen');
-    this.showScreen('restaurant', false);
-    
-    // Small delay to ensure feed is loaded
-    setTimeout(() => {
-        console.log('🔗 [DEEPLINK-5] 500ms delay elapsed, opening business at:', Date.now());
-        
-        // Use business manager to open profile (handles both ID and slug)
-        const businessManager = window.classifiedApp?.businessManager || window.classifiedApp?.managers?.business;
-        
-        console.log('🔗 [DEEPLINK-5] BusinessManager exists?', !!businessManager);
-        
-        if (businessManager) {
-            console.log('🔗 [DEEPLINK-5] Calling openBusinessProfileBySlugOrId');
-            businessManager.openBusinessProfileBySlugOrId(businessIdOrSlug);
-        } else {
-            console.error('❌ BusinessManager not available');
-        }
-    }, 500);
-}
-
-/**
- * Open story viewer from URL parameter
- */
-async openStoryFromURL(slug, businessId) {
-    console.log('📖 Opening story from URL:', { slug, businessId });
-    
-    // Ensure app is initialized
-    await this.waitForAppReady();
-    
-    // Navigate to restaurant screen first
-    this.showScreen('restaurant', false);
-    
-    // Small delay to ensure feed is loaded
-    setTimeout(() => {
-        // Find and open the story
-        if (window.CLASSIFIED?.openStoryByBusinessId) {
-            window.CLASSIFIED.openStoryByBusinessId(businessId);
-        } else {
-            console.error('❌ Story viewer not available');
-        }
-    }, 500);
-}
-
-/**
- * Wait for app to be ready
- */
-waitForAppReady() {
-    return new Promise((resolve) => {
-        const maxAttempts = 50; // 5 seconds max
-        let attempts = 0;
-        
-        const checkReady = () => {
-            if (window.classifiedApp && window.classifiedApp.businessManager) {
-                console.log('✅ App ready for deep link');
-                resolve();
-                return true;
-            }
-            
-            attempts++;
-            if (attempts >= maxAttempts) {
-                console.error('⏱️ Timeout waiting for app to initialize');
-                resolve(); // Resolve anyway to prevent hanging
-                return true;
-            }
-            
-            return false;
-        };
-        
-        if (checkReady()) return;
-        
-        const checkInterval = setInterval(() => {
-            if (checkReady()) {
-                clearInterval(checkInterval);
-            }
-        }, 100);
-    });
-}
 }

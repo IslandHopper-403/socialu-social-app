@@ -11,7 +11,7 @@ import {
     onSnapshot,
     orderBy,
     limit
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 import { sanitizeText } from '../utils/security.js';
 

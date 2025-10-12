@@ -150,7 +150,7 @@ class ClassifiedApp {
     }
 
 
- // Optional: Add this new method if you want to keep the demo data preview
+// Optional: Add this new method if you want to keep the demo data preview
 loadDemoContent() {
     console.log('🎯 [main.js] loadDemoContent() called at:', Date.now());
     console.log('🎯 [main.js] Loading demo data for preview...');
@@ -173,12 +173,23 @@ loadDemoContent() {
         this.managers.feed.businessFeed.populateRestaurantFeedWithData(restaurants);
         this.managers.feed.businessFeed.populateActivityFeedWithData(activities);
         
-        // CRITICAL: Populate user feed for guest mode
-        if (this.managers.userFeed && typeof this.managers.userFeed.populateUserFeed === 'function') {
-            console.log('🎯 [main.js] Populating user feed with mock data');
-            this.managers.userFeed.populateUserFeed();
+        // CRITICAL: Populate user feed with demo data (no auth check)
+        if (this.managers.userFeed) {
+            console.log('🎯 [main.js] Populating user feed with demo data');
+            
+            // Use demo feed function which doesn't require authentication
+            if (typeof this.managers.userFeed.populateDemoUserFeed === 'function') {
+                console.log('🎯 [main.js] Calling populateDemoUserFeed()');
+                this.managers.userFeed.populateDemoUserFeed();
+            } else {
+                console.warn('⚠️ [main.js] populateDemoUserFeed not available, trying container directly');
+                const container = document.getElementById('userFeedContainer');
+                if (container) {
+                    this.managers.userFeed.populateDemoUserFeed(container);
+                }
+            }
         } else {
-            console.warn('⚠️ [main.js] UserFeedManager not available or populateUserFeed missing');
+            console.warn('⚠️ [main.js] UserFeedManager not available');
         }
         
         console.log('✅ [main.js] Demo content loaded for preview at:', Date.now());

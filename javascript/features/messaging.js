@@ -1882,8 +1882,16 @@ closeChat() {
                         const chatId = change.doc.id;
                         
                         if (chatData.lastMessageSender && chatData.lastMessageSender !== userId) {
-                            if (this.currentChatId !== chatId) {
-                                this.showInAppNotification(chatData, chatId);
+                         if (this.currentChatId !== chatId) {
+                                // Delegate to NotificationManager
+                                const notificationManager = window.classifiedApp?.managers?.notifications;
+                                if (notificationManager) {
+                                    notificationManager.showNotification('message', {
+                                        message: { text: chatData.lastMessage, senderId: chatData.lastMessageSender },
+                                        chatId: chatId,
+                                        partnerInfo: { name: 'User' } // You may want to fetch actual partner info
+                                    });
+                                }
                                 this.updateUnreadCount(chatId, 1);
                             }
                         }

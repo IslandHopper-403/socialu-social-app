@@ -13,7 +13,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 /**
- * Matching Manager - Simple Like/Pass System with Firebase Sync
+ * Matching Manager - Simple Like/Pass System with Firebase Sync.
  * Handles user likes, passes, and match detection
  * All notifications delegated to NotificationManager
  * 

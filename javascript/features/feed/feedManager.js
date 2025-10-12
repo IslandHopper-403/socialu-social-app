@@ -227,8 +227,25 @@ export class FeedManager {
             console.log('🎯 [FeedManager] People tab selected, triggering user feed population');
             const userFeedManager = window.classifiedApp?.managers?.userFeed;
             if (userFeedManager) {
-                console.log('✅ [FeedManager] UserFeedManager found, calling populateUserFeed()');
-                userFeedManager.populateUserFeed();
+                // Check auth state and call appropriate function
+                const isAuthenticated = this.state.get('isAuthenticated');
+                const isGuestMode = this.state.get('isGuestMode');
+                
+                console.log('🎯 [FeedManager] Auth state:', { isAuthenticated, isGuestMode });
+                
+                if (isGuestMode && !isAuthenticated) {
+                    // Guest mode: show demo users with signup prompt
+                    console.log('✅ [FeedManager] Guest mode: calling populateGuestUserFeed()');
+                    userFeedManager.populateGuestUserFeed();
+                } else if (isAuthenticated) {
+                    // Authenticated: load real users
+                    console.log('✅ [FeedManager] Authenticated: calling populateUserFeed()');
+                    userFeedManager.populateUserFeed();
+                } else {
+                    // Default: show demo feed
+                    console.log('✅ [FeedManager] Default: calling populateDemoUserFeed()');
+                    userFeedManager.populateDemoUserFeed();
+                }
             } else {
                 console.error('❌ [FeedManager] UserFeedManager not found!');
             }

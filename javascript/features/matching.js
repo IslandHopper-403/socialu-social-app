@@ -7,7 +7,7 @@ import {
     getDoc,
     updateDoc,
     serverTimestamp
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 /**
  * Matching Manager - Simple Like/Pass System
@@ -31,13 +31,12 @@ export class MatchingManager {
      * Initialize matching system
      */
     async init() {
-        console.log('💕 Initializing matching manager...');
-        console.log('💕 [STEP-1] MatchingManager init at:', Date.now());
+        console.log('💕 [MATCHING] Initializing matching manager...');
         
         this.loadPassedUsers();
         this.loadLikedUsers();
         
-        console.log('✅ MatchingManager initialized');
+        console.log('✅ [MATCHING] Initialized with', this.likedUsers.size, 'likes and', this.passedUsers.size, 'passes');
     }
     
     /**
@@ -48,10 +47,9 @@ export class MatchingManager {
             const stored = localStorage.getItem('passedUsers');
             if (stored) {
                 this.passedUsers = new Set(JSON.parse(stored));
-                console.log('📦 Loaded', this.passedUsers.size, 'passed users');
             }
         } catch (error) {
-            console.error('Error loading passed users:', error);
+            console.error('❌ [MATCHING] Error loading passed users:', error);
         }
     }
     
@@ -62,7 +60,7 @@ export class MatchingManager {
         try {
             localStorage.setItem('passedUsers', JSON.stringify([...this.passedUsers]));
         } catch (error) {
-            console.error('Error saving passed users:', error);
+            console.error('❌ [MATCHING] Error saving passed users:', error);
         }
     }
     
@@ -74,10 +72,9 @@ export class MatchingManager {
             const stored = localStorage.getItem('likedUsers');
             if (stored) {
                 this.likedUsers = new Set(JSON.parse(stored));
-                console.log('📦 Loaded', this.likedUsers.size, 'liked users');
             }
         } catch (error) {
-            console.error('Error loading liked users:', error);
+            console.error('❌ [MATCHING] Error loading liked users:', error);
         }
     }
     
@@ -88,7 +85,7 @@ export class MatchingManager {
         try {
             localStorage.setItem('likedUsers', JSON.stringify([...this.likedUsers]));
         } catch (error) {
-            console.error('Error saving liked users:', error);
+            console.error('❌ [MATCHING] Error saving liked users:', error);
         }
     }
     
@@ -99,14 +96,13 @@ export class MatchingManager {
         try {
             const currentUser = this.auth.currentUser;
             if (!currentUser) {
-                console.error('❌ No authenticated user');
+                console.error('❌ [MATCHING] No authenticated user');
                 window.CLASSIFIED.showLogin();
                 return;
             }
             
             const currentUserId = currentUser.uid;
-            console.log(`👍 LIKE: ${currentUserId} → ${targetUserId}`);
-            console.log('💕 [STEP-2] Like initiated at:', Date.now());
+            console.log(`👍 [MATCHING] LIKE: ${currentUserId} → ${targetUserId}`);
             
             // Create like document
             const likeId = `${currentUserId}_${targetUserId}`;
@@ -116,43 +112,23 @@ export class MatchingManager {
                 timestamp: serverTimestamp()
             };
             
-            // DEBUG: Comprehensive logging
-            console.log('🔍 Like Document Debug:', {
-                likeId,
-                expectedPattern: `${currentUserId}_${targetUserId}`,
-                patternMatches: likeId === `${currentUserId}_${targetUserId}`,
-                data: likeData,
-                authCheck: {
-                    authenticated: !!currentUser,
-                    uid: currentUser.uid,
-                    matchesFromUserId: currentUser.uid === currentUserId
-                }
-            });
-            
             // Save like to Firebase
-            console.log('📝 Writing to Firebase likes collection...');
+            console.log('📝 [MATCHING] Writing like to Firebase...');
             await setDoc(doc(this.db, 'likes', likeId), likeData);
-            console.log('✅ Like saved to Firebase successfully');
+            console.log('✅ [MATCHING] Like saved successfully');
             
             // Track liked user locally
             this.likedUsers.add(targetUserId);
             this.saveLikedUsers();
-            console.log('💾 Saved liked user to localStorage');
             
             // Check for mutual like (match)
-            console.log('🔍 Checking for mutual like...');
+            console.log('🔍 [MATCHING] Checking for mutual like...');
             const reverseLikeId = `${targetUserId}_${currentUserId}`;
             const reverseLikeDoc = await getDoc(doc(this.db, 'likes', reverseLikeId));
             
-            console.log('📊 Mutual like check:', {
-                reverseLikeId,
-                exists: reverseLikeDoc.exists()
-            });
-            
             if (reverseLikeDoc.exists()) {
                 // IT'S A MATCH! 🎉
-                console.log('🎉 MATCH DETECTED!');
-                console.log('💕 [STEP-3] Match detected at:', Date.now());
+                console.log('🎉 [MATCHING] MATCH DETECTED!');
                 
                 // Create match and chat
                 const matchId = await this.createMatch(currentUserId, targetUserId);
@@ -164,7 +140,7 @@ export class MatchingManager {
                 // Delegate all notifications to NotificationManager
                 const notificationManager = window.classifiedApp?.managers?.notifications;
                 if (notificationManager) {
-                    console.log('💕 [STEP-4] Sending match notifications at:', Date.now());
+                    console.log('📬 [MATCHING] Sending match notifications...');
                     
                     // Send match notifications to both users via Firebase
                     await notificationManager.sendMatchNotification(currentUserId, targetUserId);
@@ -178,13 +154,13 @@ export class MatchingManager {
                         partnerPhoto: targetUserData?.photos?.[0] || 'https://via.placeholder.com/100'
                     });
                     
-                    console.log('✅ Match notifications sent');
+                    console.log('✅ [MATCHING] Match notifications sent');
                 } else {
-                    console.warn('⚠️ NotificationManager not available');
+                    console.warn('⚠️ [MATCHING] NotificationManager not available');
                 }
             } else {
                 // Not a match yet, just a like
-                console.log('💕 Like sent, waiting for match...');
+                console.log('💕 [MATCHING] Like sent, waiting for match...');
                 
                 // Send like notification via NotificationManager
                 const notificationManager = window.classifiedApp?.managers?.notifications;
@@ -194,15 +170,12 @@ export class MatchingManager {
                         displayName: currentUser.displayName || 'Someone'
                     };
                     await notificationManager.sendLikeNotification(targetUserId, currentUserData);
-                    console.log('📬 Like notification sent');
+                    console.log('📬 [MATCHING] Like notification sent');
                 }
                 
                 // Show success feedback
                 if (window.CLASSIFIED?.showLikeConfirmation) {
                     window.CLASSIFIED.showLikeConfirmation();
-                } else {
-                    // Simple feedback if no UI method available
-                    console.log('💕 Like sent successfully!');
                 }
             }
             
@@ -210,11 +183,11 @@ export class MatchingManager {
             this.removeUserFromFeed(targetUserId);
             
         } catch (error) {
-            console.error('❌ Error handling like:', error);
-            console.error('🔍 Full error details:', {
+            console.error('❌ [MATCHING] Error handling like:', error);
+            console.error('🔍 [MATCHING] Error details:', {
                 code: error.code,
                 message: error.message,
-                stack: error.stack
+                userId: targetUserId
             });
             alert('Failed to send like. Please try again.');
         }
@@ -227,13 +200,13 @@ export class MatchingManager {
         try {
             const currentUser = this.auth.currentUser;
             if (!currentUser) {
-                console.error('❌ No authenticated user');
+                console.error('❌ [MATCHING] No authenticated user');
                 window.CLASSIFIED.showLogin();
                 return;
             }
             
             const currentUserId = currentUser.uid;
-            console.log(`👎 PASS: ${currentUserId} → ${targetUserId}`);
+            console.log(`👎 [MATCHING] PASS: ${currentUserId} → ${targetUserId}`);
             
             // Create pass document
             const passId = `${currentUserId}_${targetUserId}`;
@@ -243,21 +216,10 @@ export class MatchingManager {
                 timestamp: serverTimestamp()
             };
             
-            // DEBUG: Comprehensive logging
-            console.log('🔍 Pass Document Debug:', {
-                passId,
-                expectedPattern: `${currentUserId}_${targetUserId}`,
-                data: passData,
-                authCheck: {
-                    authenticated: !!currentUser,
-                    uid: currentUser.uid
-                }
-            });
-            
             // Save pass to Firebase
-            console.log('📝 Writing to Firebase passes collection...');
+            console.log('📝 [MATCHING] Writing pass to Firebase...');
             await setDoc(doc(this.db, 'passes', passId), passData);
-            console.log('✅ Pass saved to Firebase successfully');
+            console.log('✅ [MATCHING] Pass saved successfully');
             
             // Track passed user locally
             this.passedUsers.add(targetUserId);
@@ -266,10 +228,13 @@ export class MatchingManager {
             // Move user to bottom of feed instead of removing
             this.moveUserToBottomOfFeed(targetUserId);
             
-            console.log('👎 Pass completed successfully');
-            
         } catch (error) {
-            console.error('❌ Error handling pass:', error);
+            console.error('❌ [MATCHING] Error handling pass:', error);
+            console.error('🔍 [MATCHING] Error details:', {
+                code: error.code,
+                message: error.message,
+                userId: targetUserId
+            });
             alert('Failed to pass. Please try again.');
         }
     }
@@ -284,7 +249,7 @@ export class MatchingManager {
                 throw new Error('Invalid user IDs for match creation');
             }
             
-            console.log('🎉 Creating match between', userId1, 'and', userId2);
+            console.log('🎉 [MATCHING] Creating match between', userId1, 'and', userId2);
             
             // Sort IDs alphabetically for consistent match ID
             const matchId = [userId1, userId2].sort().join('_');
@@ -299,7 +264,7 @@ export class MatchingManager {
                 chatCreated: false
             };
             
-            console.log('📝 Creating match document:', matchId);
+            console.log('📝 [MATCHING] Creating match document:', matchId);
             await setDoc(doc(this.db, 'matches', matchId), matchData);
             
             // Create corresponding chat document for the match
@@ -314,7 +279,7 @@ export class MatchingManager {
                 type: 'match_chat'
             };
             
-            console.log('💬 Creating chat document:', chatId);
+            console.log('💬 [MATCHING] Creating chat document:', chatId);
             await setDoc(doc(this.db, 'chats', chatId), chatData);
             
             // Update match to indicate chat was created
@@ -323,11 +288,11 @@ export class MatchingManager {
                 chatId: chatId
             });
             
-            console.log('✅ Match and chat created successfully:', matchId);
+            console.log('✅ [MATCHING] Match and chat created successfully:', matchId);
             return matchId;
             
         } catch (error) {
-            console.error('❌ Error creating match:', error);
+            console.error('❌ [MATCHING] Error creating match:', error);
             throw error;
         }
     }
@@ -341,7 +306,7 @@ export class MatchingManager {
             const matchDoc = await getDoc(doc(this.db, 'matches', matchId));
             return matchDoc.exists();
         } catch (error) {
-            console.error('Error checking existing match:', error);
+            console.error('❌ [MATCHING] Error checking existing match:', error);
             return false;
         }
     }
@@ -358,7 +323,7 @@ export class MatchingManager {
             
             setTimeout(() => {
                 feedItem.remove();
-                console.log(`🗑️ Removed user ${userId} from feed`);
+                console.log(`🗑️ [MATCHING] Removed user ${userId} from feed`);
             }, 300);
         }
     }
@@ -384,7 +349,7 @@ export class MatchingManager {
                 setTimeout(() => {
                     feedItem.style.opacity = '1';
                     feedItem.style.transform = 'translateX(0)';
-                    console.log(`📍 Moved user ${userId} to bottom of feed`);
+                    console.log(`📍 [MATCHING] Moved user ${userId} to bottom of feed`);
                 }, 50);
             }, 300);
         }
@@ -400,7 +365,7 @@ export class MatchingManager {
             // Implementation depends on your Firebase structure
             return likes;
         } catch (error) {
-            console.error('Error getting user likes:', error);
+            console.error('❌ [MATCHING] Error getting user likes:', error);
             return [];
         }
     }
@@ -415,7 +380,7 @@ export class MatchingManager {
             // Implementation depends on your Firebase structure
             return matches;
         } catch (error) {
-            console.error('Error getting user matches:', error);
+            console.error('❌ [MATCHING] Error getting user matches:', error);
             return [];
         }
     }
@@ -435,19 +400,19 @@ export class MatchingManager {
         this.passedUsers.clear();
         this.saveLikedUsers();
         this.savePassedUsers();
-        console.log('🔄 Reset all matching data');
+        console.log('🔄 [MATCHING] Reset all matching data');
     }
     
     /**
      * Cleanup on destroy
      */
     cleanup() {
-        console.log('🧹 Cleaning up MatchingManager...');
+        console.log('🧹 [MATCHING] Cleaning up MatchingManager...');
         
         // Save current state
         this.savePassedUsers();
         this.saveLikedUsers();
         
-        console.log('✅ MatchingManager cleanup complete');
+        console.log('✅ [MATCHING] Cleanup complete');
     }
 }

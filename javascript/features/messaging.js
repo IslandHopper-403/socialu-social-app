@@ -1905,48 +1905,6 @@ closeChat() {
             console.error('Error setting up global message listener:', error);
         }
     }
-
-
-    /**
-     * Show in-app notification
-     */
-        showInAppNotification(chatData) {
-            // Don't show notification if chat is currently open
-            if (this.currentChatId && this.currentChatId.includes(chatData.lastMessageSender)) {
-                return;
-            }
-            
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.className = 'social-proof-notification';
-            notification.textContent = `💬 New message: ${chatData.lastMessage}`;
-            
-            document.body.appendChild(notification);
-            // Show notification dot
-            this.showNotificationDot();
-            
-            // Play sound
-            if (this.notificationSound) {
-                this.notificationSound.play().catch(e => console.log('Could not play sound:', e));
-            }
-            
-            // Show browser notification if permission granted
-            try {
-                if (Notification.permission === 'granted') {
-                    new Notification('New message', {
-                        body: chatData.lastMessage,
-                        icon: '/path/to/icon.png' // Add your app icon
-                    });
-                }
-            } catch (error) {
-                console.log('Could not show browser notification:', error);
-            }
-            
-            // Remove after 3 seconds
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
         
         /**
          * Handle new match
@@ -2512,30 +2470,16 @@ async openChatFromNotification(chatId, partnerInfo) {
  * NEW: Unread message tracking
  */
 updateUnreadCount(chatId, increment) {
-    const current = this.unreadMessages.get(chatId) || 0;
-    const newCount = Math.max(0, current + increment);
-    
-    this.unreadMessages.set(chatId, newCount);
-    
-    // FIXED: Save immediately after every update
-    this.saveUnreadStateToStorage();
-    
-    // FIXED: Sync to notification manager
+    // Delegate to NotificationManager
     const notificationManager = window.classifiedApp?.managers?.notifications;
     if (notificationManager) {
-        notificationManager.unreadMessages.set(chatId, newCount);
-        notificationManager.saveUnreadStateToStorage();
+        notificationManager.updateUnreadCount(chatId, increment);
     }
     
-    // Calculate total unread
-    const totalUnread = Array.from(this.unreadMessages.values()).reduce((sum, count) => sum + count, 0);
-    
-    // Always show notification if there are unread messages
-    if (totalUnread > 0) {
-        this.showNotificationDot(totalUnread);
-    } else {
-        this.hideNotificationDot();
-    }
+    // Keep local copy for UI display
+    const current = this.unreadMessages.get(chatId) || 0;
+    const newCount = Math.max(0, current + increment);
+    this.unreadMessages.set(chatId, newCount);
     
     // Update chat list UI with unread indicators
     this.updateChatListUnreadIndicators();

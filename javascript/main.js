@@ -224,19 +224,6 @@ loadDemoContent() {
             }
         });
     }
-    
-    /**
-     * Initialize all managers
-     */
-    async initializeManagers() {
-        // Initialize each manager that has an init method
-        for (const [name, manager] of Object.entries(this.managers)) {
-            if (manager && typeof manager.init === 'function') {
-                console.log(`🔧 Initializing ${name} manager...`);
-                await manager.init();
-            }
-        }
-    }
 
     /**
  * Initialize all managers

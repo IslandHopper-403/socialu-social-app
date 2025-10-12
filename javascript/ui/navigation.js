@@ -361,28 +361,33 @@ showOverlay(overlayId) {
         }
     }
     
-/**
-     * Close overlay screen with stack management
-     */
-    closeOverlay(overlayId) {
-        const overlay = document.getElementById(overlayId);
-        if (overlay) {
-            overlay.classList.remove('show');
-            overlay.style.pointerEvents = 'none';  // ADD THIS
-            
-            // DYNAMIC Z-INDEX: Reset any dynamic z-index when closing
-            if (overlayId === 'individualChat') {
-                overlay.style.zIndex = '';
-                console.log('🎯 Reset chat z-index on close');
-                console.trace('Chat close trace:');
-            }
-            
-            // SECURITY: Remove from overlay stack
-            const index = this.overlayStack.indexOf(overlayId);
-            if (index > -1) {
-                this.overlayStack.splice(index, 1);
-                console.log('📚 Overlay stack after close:', this.overlayStack);
-            }
+            /**
+             * Close overlay screen with stack management
+             */
+            closeOverlay(overlayId) {
+                const overlay = document.getElementById(overlayId);
+                if (overlay) {
+                    // CRITICAL: Clean up chat state BEFORE hiding overlay
+                    if (overlayId === 'individualChat' && window.classifiedApp?.managers?.messaging) {
+                        console.log('🧹 [NAVIGATION] Calling messaging.closeChat()');
+                        window.classifiedApp.managers.messaging.closeChat();
+                    }
+                    
+                    overlay.classList.remove('show');
+                    overlay.style.pointerEvents = 'none';
+                    
+                    // DYNAMIC Z-INDEX: Reset any dynamic z-index when closing
+                    if (overlayId === 'individualChat') {
+                        overlay.style.zIndex = '';
+                        console.log('🎯 Reset chat z-index on close');
+                    }
+                    
+                    // SECURITY: Remove from overlay stack
+                    const index = this.overlayStack.indexOf(overlayId);
+                    if (index > -1) {
+                        this.overlayStack.splice(index, 1);
+                        console.log('📚 Overlay stack after close:', this.overlayStack);
+                    }
             
            // Unlock body scroll when no overlays remain
             if (this.overlayStack.length === 0) {

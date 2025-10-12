@@ -2241,65 +2241,111 @@ updateChatListUnreadIndicators() {
     diagnosticListeners() {
         return this.listeners.diagnosticListeners();
     }
-}
-
-
-/**
- * Send promotion message in chat
- */
-async sendPromotionMessage(promoData) {
-    const messageInput = document.getElementById('messageInput');
-    const currentUser = this.state.get('currentUser');
     
-    if (!currentUser || !this.currentChatId || !this.currentChatPartner) {
-        throw new Error('Chat context not available');
+    /**
+     * Clean up old match timestamps from localStorage (housekeeping)
+     */
+    cleanupOldMatchTimestamps() {
+        const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        const keysToRemove = [];
+        
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key?.startsWith('match_time_')) {
+                const timestamp = parseInt(localStorage.getItem(key) || '0');
+                if (timestamp < oneWeekAgo) {
+                    keysToRemove.push(key);
+                }
+            }
+        }
+        
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        console.log(`🧹 Cleaned up ${keysToRemove.length} old match timestamps`);
     }
     
-    // Validate and ensure no undefined fields
-    const sanitizedPromo = {
-        businessId: promoData.businessId || '',
-        businessName: promoData.businessName || 'Business',
-        businessImage: promoData.businessImage || 'https://via.placeholder.com/400',
-        businessType: promoData.businessType || 'Business',
-        promotionTitle: promoData.promotionTitle || 'Special Offer',
-        promotionDetails: promoData.promotionDetails || 'Contact for details',
-        businessAddress: promoData.businessAddress || 'Hoi An, Vietnam'
-    };
-    
-    try {
-        console.log('📤 Sending promotion message:', sanitizedPromo);
+    /**
+     * DEBUG: Verify notification integration
+     */
+    verifyNotificationIntegration() {
+        const notificationManager = window.classifiedApp?.managers?.notifications;
         
-        // Create message document with sanitized promotion data
-        const messageData = {
-            text: `Check out this special from ${sanitizedPromo.businessName}!`,
-            type: 'promotion',
-            promotion: sanitizedPromo,
-            senderId: currentUser.uid,
-            senderName: currentUser.displayName || 'Anonymous',
-            timestamp: serverTimestamp(),
-            read: false
+        console.log('🔍 NOTIFICATION INTEGRATION CHECK');
+        console.log('================================');
+        console.log('✓ NotificationManager exists:', !!notificationManager);
+        console.log('✓ No local unreadMessages Map:', typeof this.unreadMessages === 'undefined');
+        
+        if (notificationManager) {
+            console.log('✓ NotificationManager unread count:', notificationManager.getTotalUnread());
+            console.log('✓ Active unread chats:', Array.from(notificationManager.unreadMessages.entries()));
+        }
+        
+        console.log('✓ MessagingManager does not save to unreadMessages key');
+        console.log('================================');
+        console.log('Integration Status: VERIFIED ✅');
+        
+        return {
+            integrated: true,
+            notificationManagerActive: !!notificationManager,
+            totalUnread: notificationManager?.getTotalUnread() || 0
+        };
+    }
+    
+    /**
+     * Send promotion message in chat
+     */
+    async sendPromotionMessage(promoData) {
+        const messageInput = document.getElementById('messageInput');
+        const currentUser = this.state.get('currentUser');
+        
+        if (!currentUser || !this.currentChatId || !this.currentChatPartner) {
+            throw new Error('Chat context not available');
+        }
+        
+        // Validate and ensure no undefined fields
+        const sanitizedPromo = {
+            businessId: promoData.businessId || '',
+            businessName: promoData.businessName || 'Business',
+            businessImage: promoData.businessImage || 'https://via.placeholder.com/400',
+            businessType: promoData.businessType || 'Business',
+            promotionTitle: promoData.promotionTitle || 'Special Offer',
+            promotionDetails: promoData.promotionDetails || 'Contact for details',
+            businessAddress: promoData.businessAddress || 'Hoi An, Vietnam'
         };
         
-        // Add promotion UI to chat immediately
-        this.addPromotionToUI(sanitizedPromo);
-        
-        // Add to messages subcollection
-        await addDoc(collection(this.db, 'chats', this.currentChatId, 'messages'), messageData);
-        
-        // Update chat document
-        await updateDoc(doc(this.db, 'chats', this.currentChatId), {
-            lastMessage: `📍 Shared ${sanitizedPromo.businessName}`,
-            lastMessageTime: serverTimestamp(),
-            lastMessageSender: currentUser.uid
-        });
-        
-        console.log('✅ Promotion sent successfully');
-        
-    } catch (error) {
-        console.error('❌ Error sending promotion:', error);
-        throw error;
+        try {
+            console.log('📤 Sending promotion message:', sanitizedPromo);
+            
+            // Create message document with sanitized promotion data
+            const messageData = {
+                text: `Check out this special from ${sanitizedPromo.businessName}!`,
+                type: 'promotion',
+                promotion: sanitizedPromo,
+                senderId: currentUser.uid,
+                senderName: currentUser.displayName || 'Anonymous',
+                timestamp: serverTimestamp(),
+                read: false
+            };
+            
+            // Add promotion UI to chat immediately
+            this.addPromotionToUI(sanitizedPromo);
+            
+            // Add to messages subcollection
+            await addDoc(collection(this.db, 'chats', this.currentChatId, 'messages'), messageData);
+            
+            // Update chat document
+            await updateDoc(doc(this.db, 'chats', this.currentChatId), {
+                lastMessage: `📍 Shared ${sanitizedPromo.businessName}`,
+                lastMessageTime: serverTimestamp(),
+                lastMessageSender: currentUser.uid
+            });
+            
+            console.log('✅ Promotion sent successfully');
+            
+        } catch (error) {
+            console.error('❌ Error sending promotion:', error);
+            throw error;
+        }
     }
-}
 
     /**
      * Add promotion to chat UI - SECURED
@@ -2394,59 +2440,4 @@ async sendPromotionMessage(promoData) {
         messagesContainer.appendChild(promoElement);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
-     /**
-     * Clean up old match timestamps from localStorage (housekeeping)
-     */
-   cleanupOldMatchTimestamps() {
-        const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-        const keysToRemove = [];
-        
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key?.startsWith('match_time_')) {
-                const timestamp = parseInt(localStorage.getItem(key) || '0');
-                if (timestamp < oneWeekAgo) {
-                    keysToRemove.push(key);
-                }
-            }
-        }
-        
-        keysToRemove.forEach(key => localStorage.removeItem(key));
-        console.log(`🧹 Cleaned up ${keysToRemove.length} old match timestamps`);
-    }
-    
-    /**
-     * DEBUG: Verify notification integration
-     * Call in console: window.classifiedApp.managers.messaging.verifyNotificationIntegration()
-     */
-    verifyNotificationIntegration() {
-        const notificationManager = window.classifiedApp?.managers?.notifications;
-        
-        console.log('🔍 NOTIFICATION INTEGRATION CHECK');
-        console.log('================================');
-        
-        // Check 1: NotificationManager exists
-        console.log('✓ NotificationManager exists:', !!notificationManager);
-        
-        // Check 2: No local unread tracking
-        console.log('✓ No local unreadMessages Map:', typeof this.unreadMessages === 'undefined');
-        
-        // Check 3: NotificationManager has unread data
-        if (notificationManager) {
-            console.log('✓ NotificationManager unread count:', notificationManager.getTotalUnread());
-            console.log('✓ Active unread chats:', Array.from(notificationManager.unreadMessages.entries()));
-        }
-        
-        // Check 4: No duplicate localStorage operations
-        console.log('✓ MessagingManager does not save to unreadMessages key');
-        
-        console.log('================================');
-        console.log('Integration Status: VERIFIED ✅');
-        
-        return {
-            integrated: true,
-            notificationManagerActive: !!notificationManager,
-            totalUnread: notificationManager?.getTotalUnread() || 0
-        };
-    }
-}
+} // ← CLOSING BRACE FOR MessagingManager CLASS

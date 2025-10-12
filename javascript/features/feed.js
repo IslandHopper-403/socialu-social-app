@@ -101,13 +101,28 @@ export class FeedManager {
         }
     }
     
-    /**
-     * Handle user login - refresh feeds
-     */
-    async onUserLogin(user) {
-        console.log('📊 User logged in, refreshing feeds...');
-        await this.loadAllFeeds();
+   /**
+ * Handle user login - refresh feeds
+ */
+async onUserLogin(user) {
+    console.log('📊 [FeedManager] User logged in, refreshing feeds...');
+    console.log('📊 [FeedManager] Delegating to userFeed manager...');
+    
+    // Delegate user feed to userFeed manager
+    const userFeedManager = window.classifiedApp?.managers?.userFeed;
+    if (userFeedManager) {
+        console.log('✅ [FeedManager] UserFeedManager found, calling onUserLogin');
+        await userFeedManager.onUserLogin(user);
+    } else {
+        console.error('❌ [FeedManager] UserFeedManager not found!');
     }
+    
+    // Load business feeds
+    await Promise.all([
+        this.populateRestaurantFeed(),
+        this.populateActivityFeed()
+    ]);
+}
     
     /**
      * Show demo data for guest mode

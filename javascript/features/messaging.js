@@ -1755,8 +1755,9 @@ closeChat() {
                             notificationManager.showNotificationDot(total);
                         }
                     }
-                    await this.loadChats();
+                   await this.loadChats();
                     return;
+                }
                 
                 for (const change of snapshot.docChanges()) {
                     if (change.type === 'modified') {

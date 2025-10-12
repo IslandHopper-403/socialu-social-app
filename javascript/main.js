@@ -8,6 +8,7 @@
 // GOOD WORKING CONIDITON NEW URL + QR Code Generator + Social Media Outreach System Ideas
 // GOOD WORKING CONDITION - QR Code Generator Works -  URL Links Work - Guest Mode + Open Business Profile Works
 // GOOD WORKING CONDITION SCREEN RESPONISVNESS FIXED - BUSINESS STORIES IMPLEMENTED
+// GOOD WORKING CONDITION - First Steps of Refactor Complete Week 1: Complete. Week 2: 2.1 & 2.2 Complete
 // From this place forward start refactoring Users and Business for seperate UI/UX portals
 // ALL CSS REFACTORED TO CLEAN ORGINIZED STRUCTURE 
 

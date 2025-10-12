@@ -274,11 +274,22 @@ export class UserFeedManager {
         console.log('✅ [populateUserFeedWithData] Feed populated successfully');
     }
     
-    /**
+   /**
      * Populate demo user feed
      */
     populateDemoUserFeed(container) {
         console.log('👥 [populateDemoUserFeed] Showing demo users...');
+        
+        // Get container if not provided
+        if (!container) {
+            container = document.getElementById('userFeedContainer');
+            console.log('👥 [populateDemoUserFeed] Container not provided, fetching from DOM');
+        }
+        
+        if (!container) {
+            console.error('❌ [populateDemoUserFeed] Container not found');
+            return;
+        }
         
         const demoUsers = this.mockData.getUsers();
         
@@ -306,14 +317,18 @@ export class UserFeedManager {
     }
     
     /**
-     * Populate guest user feed
+     * Populate guest user feed (no auth required)
      */
     populateGuestUserFeed() {
         console.log('👥 [populateGuestUserFeed] Showing guest feed...');
+        console.log('👥 [populateGuestUserFeed] Auth state:', {
+            isAuthenticated: this.state.get('isAuthenticated'),
+            isGuestMode: this.state.get('isGuestMode')
+        });
         
         const container = document.getElementById('userFeedContainer');
         if (!container) {
-            console.warn('⚠️ [populateGuestUserFeed] Container not found');
+            console.warn('⚠️ [populateGuestUserFeed] Container not found - social screen may not be active');
             return;
         }
         

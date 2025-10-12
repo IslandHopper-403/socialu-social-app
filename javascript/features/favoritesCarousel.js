@@ -1345,4 +1345,3 @@ updateOfferFavoriteState(offerId, isFavorited) {
     }
     
 }
-export { FavoritesCarouselManager as FavoritesCarousel };

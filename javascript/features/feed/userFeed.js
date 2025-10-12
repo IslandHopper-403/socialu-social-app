@@ -55,6 +55,33 @@ export class UserFeedManager {
     }
     
     /**
+     * Handle user login - refresh user feed
+     */
+    async onUserLogin(user) {
+        console.log('👥 [UserFeedManager] ===== USER LOGIN DETECTED =====');
+        console.log('👥 [UserFeedManager] User:', {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName
+        });
+        console.log('👥 [UserFeedManager] Triggering user feed population...');
+        
+        try {
+            await this.populateUserFeed();
+            console.log('✅ [UserFeedManager] User feed populated successfully');
+        } catch (error) {
+            console.error('❌ [UserFeedManager] Error populating user feed:', error);
+            // Retry once after 1 second if failed
+            console.log('🔄 [UserFeedManager] Retrying user feed load...');
+            setTimeout(() => {
+                this.populateUserFeed();
+            }, 1000);
+        }
+        
+        console.log('👥 [UserFeedManager] ===============================');
+    }
+    
+    /**
      * Set up filter chip event listeners
      */
     setupFilterListeners() {
@@ -71,6 +98,9 @@ export class UserFeedManager {
         
         console.log('✅ [UserFeedManager] Filter listeners attached');
     }
+
+
+    
     
     /**
      * Populate user feed based on auth state
@@ -467,15 +497,7 @@ export class UserFeedManager {
         `;
     }
     
-    /**
-     * Handle user login - refresh feed
-     */
-    async onUserLogin(user) {
-        console.log('👥 [onUserLogin] User logged in, refreshing user feed...');
-        await this.populateUserFeed();
-    }
-    
-    /**
+   /**
      * Show demo data for guest mode
      */
     async showDemoData() {

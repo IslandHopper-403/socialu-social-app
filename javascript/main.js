@@ -150,7 +150,7 @@ class ClassifiedApp {
     }
 
 
-   // Optional: Add this new method if you want to keep the demo data preview
+ // Optional: Add this new method if you want to keep the demo data preview
 loadDemoContent() {
     console.log('🎯 [main.js] loadDemoContent() called at:', Date.now());
     console.log('🎯 [main.js] Loading demo data for preview...');
@@ -158,17 +158,28 @@ loadDemoContent() {
     // Load demo data in background for immediate visual feedback
     // This doesn't interfere with auth state
     try {
-        // Delegate to businessFeed manager via feedManager orchestrator
+        // Get all mock data
         const restaurants = this.mockData.getRestaurants();
         const activities = this.mockData.getActivities();
+        const users = this.mockData.getUsers();
         
         console.log('🎯 [main.js] Demo data:', {
             restaurants: restaurants.length,
-            activities: activities.length
+            activities: activities.length,
+            users: users.length
         });
         
+        // Populate business feeds (restaurants + activities)
         this.managers.feed.businessFeed.populateRestaurantFeedWithData(restaurants);
         this.managers.feed.businessFeed.populateActivityFeedWithData(activities);
+        
+        // CRITICAL: Populate user feed for guest mode
+        if (this.managers.userFeed && typeof this.managers.userFeed.populateUserFeed === 'function') {
+            console.log('🎯 [main.js] Populating user feed with mock data');
+            this.managers.userFeed.populateUserFeed();
+        } else {
+            console.warn('⚠️ [main.js] UserFeedManager not available or populateUserFeed missing');
+        }
         
         console.log('✅ [main.js] Demo content loaded for preview at:', Date.now());
     } catch (error) {

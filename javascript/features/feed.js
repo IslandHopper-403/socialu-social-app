@@ -2,6 +2,7 @@
 
 
 import { sanitizeText, escapeHtml, createSafeElement } from '../utils/security.js';
+import { BusinessFeedManager } from './feed/businessFeed.js';
 
 import {
     collection,
@@ -21,56 +22,56 @@ import {
  */
 export class FeedManager {
     constructor(firebaseServices, appState, mockData) {
+        console.log('📊 [FeedManager] Initializing...');
+        
         this.auth = firebaseServices.auth;
         this.db = firebaseServices.db;
         this.state = appState;
         this.mockData = mockData;
+        
+        // Create business feed manager
+        this.businessFeed = new BusinessFeedManager(firebaseServices, appState, mockData);
+        console.log('✅ [FeedManager] BusinessFeedManager created');
         
         // References to other managers (set later)
         this.uiComponents = null;
         this.adminManager = null;
     }
     
-    /**
+   /**
      * Set references to other managers
      */
     setManagers(managers) {
+        console.log('📊 [FeedManager] Setting manager references...');
+        
         this.uiComponents = managers.ui;
         this.adminManager = managers.admin;
+        
+        // Pass references to business feed manager
+        this.businessFeed.setManagers(managers);
+        console.log('✅ [FeedManager] Business feed references set');
 
-
-        // ADD THIS: Get mockData from global app instance if not available
-    if (!this.mockData && window.classifiedApp && window.classifiedApp.mockData) {
-        this.mockData = window.classifiedApp.mockData;
-        console.log('✅ MockData retrieved from global app instance');
+        // Get mockData from global app instance if not available
+        if (!this.mockData && window.classifiedApp && window.classifiedApp.mockData) {
+            this.mockData = window.classifiedApp.mockData;
+            console.log('✅ [FeedManager] MockData retrieved from global app instance');
         }    
     }
     
-    /**
+  /**
      * Initialize feed system
      */
     async init() {
-        console.log('📊 Initializing feed manager...');
+        console.log('📊 [FeedManager] Initializing feed manager...');
+        
+        // Initialize business feed manager
+        await this.businessFeed.init();
+        console.log('✅ [FeedManager] Business feed initialized');
         
         // Set up event listeners
         this.setupEventListeners();
         
-        // Load initial demo feeds immediately for better UX
-        this.loadInitialFeeds();
-    }
-    
-    /**
-     * Load initial feeds on app start
-     */
-    loadInitialFeeds() {
-        console.log('📊 Loading initial feeds...');
-        
-        // Always load restaurant and activity feeds with demo data initially
-        this.populateRestaurantFeedWithData(this.mockData.getRestaurants());
-        this.populateActivityFeedWithData(this.mockData.getActivities());
-        
-        // Don't load user feed until auth state is determined
-        console.log('📊 Initial feeds loaded, waiting for auth state for user feed');
+        console.log('✅ [FeedManager] Feed manager initialization complete');
     }
     
     /**
@@ -101,12 +102,11 @@ export class FeedManager {
         }
     }
     
-   /**
+ /**
  * Handle user login - refresh feeds
  */
 async onUserLogin(user) {
     console.log('📊 [FeedManager] User logged in, refreshing feeds...');
-    console.log('📊 [FeedManager] Delegating to userFeed manager...');
     
     // Delegate user feed to userFeed manager
     const userFeedManager = window.classifiedApp?.managers?.userFeed;
@@ -117,561 +117,57 @@ async onUserLogin(user) {
         console.error('❌ [FeedManager] UserFeedManager not found!');
     }
     
-    // Load business feeds
-    await Promise.all([
-        this.populateRestaurantFeed(),
-        this.populateActivityFeed()
-    ]);
+    // Delegate business feeds to businessFeed manager
+    console.log('📊 [FeedManager] Delegating business feeds to BusinessFeedManager...');
+    await this.businessFeed.onUserLogin(user);
+    console.log('✅ [FeedManager] Business feeds refreshed');
 }
     
     /**
      * Show demo data for guest mode
      */
     async showDemoData() {
-        console.log('📊 Loading businesses for guest mode...');
+        console.log('📊 [FeedManager] Loading demo data for guest mode...');
         
-        // Try to fetch real Firebase businesses first (no auth required for reading)
-        try {
-            const restaurants = await this.fetchRestaurantsFromFirebase();
-            const activities = await this.fetchActivitiesFromFirebase();
-            
-            // Use Firebase data if available, otherwise fallback to mock data
-            this.populateRestaurantFeedWithData(restaurants.length > 0 ? restaurants : this.mockData.getRestaurants());
-            this.populateActivityFeedWithData(activities.length > 0 ? activities : this.mockData.getActivities());
-        } catch (error) {
-            console.error('Error loading Firebase data in guest mode:', error);
-            // Fallback to mock data
-            this.populateRestaurantFeedWithData(this.mockData.getRestaurants());
-            this.populateActivityFeedWithData(this.mockData.getActivities());
-        }
+        // Delegate to business feed manager
+        await this.businessFeed.showDemoData();
+        
+        console.log('✅ [FeedManager] Demo data loaded');
     }
     
     /**
-     * Populate restaurant feed
+     * Populate restaurant feed - DELEGATED to BusinessFeedManager
      */
     async populateRestaurantFeed() {
-        const storiesContainer = document.getElementById('restaurantStories');
-        const feedContainer = document.getElementById('restaurantFeed');
-        
-        try {
-            // Show loading
-            feedContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-            
-            // Try to fetch from Firebase first
-            if (this.state.get('isAuthenticated') && this.db) {
-                const restaurants = await this.fetchRestaurantsFromFirebase();
-                
-                if (restaurants.length > 0) {
-                    this.populateRestaurantFeedWithData(restaurants, storiesContainer, feedContainer);
-                    return;
-                }
-            }
-            
-            // Fallback to demo data
-            this.populateRestaurantFeedWithData(this.mockData.getRestaurants(), storiesContainer, feedContainer);
-            
-        } catch (error) {
-            console.error('❌ Error loading restaurants:', error);
-            // Fallback to demo data
-            this.populateRestaurantFeedWithData(this.mockData.getRestaurants(), storiesContainer, feedContainer);
-        }
+        console.log('📊 [FeedManager] Delegating restaurant feed to BusinessFeedManager...');
+        await this.businessFeed.populateRestaurantFeed();
     }
     
     /**
-     * Fetch restaurants from Firebase
-     */
-      async fetchRestaurantsFromFirebase() {
-            const restaurants = [];
-            
-            try {
-                const q = query(
-                    collection(this.db, 'businesses'),
-                    where('type', '==', 'restaurant'),
-                    where('status', 'in', ['active', 'pending_approval']),
-                    orderBy('updatedAt', 'desc'),
-                );
-                
-                const snapshot = await getDocs(q);
-                
-                snapshot.forEach(doc => {
-                    const business = doc.data();
-                    restaurants.push({
-                        id: doc.id,
-                        name: business.name,
-                        type: business.type,
-                        image: business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop',
-                        logo: business.photos?.[1] || business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop',
-                        story: business.photos?.[0] || 'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=150&h=200&fit=crop',
-                        promo: business.currentSpecials?.[0] || business.promoTitle || 'Special Offer',
-                        details: business.currentSpecials?.[1] || business.promoDetails || 'Ask about our current promotions',
-                        aboutUs: business.aboutUs || null,
-                        description: business.description || 'Great food and atmosphere in Hoi An',
-                        location: business.address || 'Hoi An Ancient Town',
-                        hours: business.hours || 'Daily 8am-10pm',
-                        price: this.formatPriceRange(business.priceRange),
-                        contact: business.phone || '+84 123 456 789',
-                        rating: business.rating || 4.5,
-                        reviewCount: business.reviewCount || 0,
-                        photos: business.photos || [business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop'],
-                        cuisine: business.cuisine || business.category,
-                        address: business.address || business.location
-                    });
-                });
-                
-                console.log(`✅ Fetched ${restaurants.length} restaurants from Firebase`);
-                return restaurants;
-                
-            } catch (error) {
-                console.error('❌ Error fetching restaurants from Firebase:', error);
-                return [];
-            }
-        }
-        
-    
-    /**
-     * Populate restaurant feed with data
+     * Populate restaurant feed with data - DELEGATED to BusinessFeedManager
      */
     populateRestaurantFeedWithData(restaurants, storiesContainer = null, feedContainer = null) {
-        storiesContainer = storiesContainer || document.getElementById('restaurantStories');
-        feedContainer = feedContainer || document.getElementById('restaurantFeed');
-        
-        // Cache restaurants for story viewer
-        this.cachedRestaurants = restaurants;
-        console.log('💾 Cached', restaurants.length, 'restaurants for story viewer');
-        
-        // Populate stories
-        if (storiesContainer) {
-            this.populateStories('restaurantStories', restaurants);
-        }
-        
-        // Populate feed
-        if (feedContainer) {
-            feedContainer.innerHTML = restaurants.map(restaurant => 
-                this.createBusinessCard(restaurant, 'restaurant')
-            ).join('');
-            
-            // Add business signup banner
-            this.addBusinessSignupBanner(feedContainer);
-            
-            // Add admin notice if applicable
-            if (this.adminManager && this.adminManager.isAdmin()) {
-                this.addAdminNotice(feedContainer);
-            }
-        }
-        
-       console.log('🍽️ Restaurant feed populated with', restaurants.length, 'restaurants');
-        
-        // Set up logo click handlers after feed is rendered
-        setTimeout(() => this.setupLogoClickHandlers(), 100);
+        console.log('📊 [FeedManager] Delegating restaurant feed data population to BusinessFeedManager...');
+        this.businessFeed.populateRestaurantFeedWithData(restaurants, storiesContainer, feedContainer);
     }
     
     /**
-     * Populate activity feed
+     * Populate activity feed - DELEGATED to BusinessFeedManager
      */
     async populateActivityFeed() {
-        const storiesContainer = document.getElementById('activityStories');
-        const feedContainer = document.getElementById('activityFeed');
-        
-        try {
-            feedContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-            
-            // Try to fetch from Firebase first
-            if (this.state.get('isAuthenticated') && this.db) {
-                const activities = await this.fetchActivitiesFromFirebase();
-                
-                if (activities.length > 0) {
-                    this.populateActivityFeedWithData(activities, storiesContainer, feedContainer);
-                    return;
-                }
-            }
-            
-            // Fallback to demo data
-            this.populateActivityFeedWithData(this.mockData.getActivities(), storiesContainer, feedContainer);
-            
-        } catch (error) {
-            console.error('❌ Error loading activities:', error);
-            this.populateActivityFeedWithData(this.mockData.getActivities(), storiesContainer, feedContainer);
-        }
-    }
-    
-    /**
-     * Fetch activities from Firebase
-     */
-    async fetchActivitiesFromFirebase() {
-        const activities = [];
-        
-        const q = query(
-            collection(this.db, 'businesses'),
-            where('type', '==', 'activity'),
-            where('status', 'in', ['active', 'pending_approval']),
-            orderBy('updatedAt', 'desc'),
-        );
-        
-        const snapshot = await getDocs(q);
-        console.log(`🔍 Found ${snapshot.size} activities in Firebase`);
-        
-        snapshot.forEach(doc => {
-            const business = doc.data();
-            activities.push({
-                id: doc.id,
-                name: business.name,
-                type: business.type,
-                image: business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop',
-                logo: business.photos?.[1] || business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop',
-                story: business.photos?.[0] || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=150&h=200&fit=crop',
-                promo: business.currentSpecials?.[0] || business.promoTitle || 'Special Activity',
-                details: business.currentSpecials?.[1] || business.promoDetails || 'Book now for special rates',
-                aboutUs: business.aboutUs || null,
-                description: business.description || 'Amazing activity experience in Hoi An',
-                location: business.address || 'Hoi An, Vietnam',
-                hours: business.hours || 'Daily tours available',
-                price: this.formatPriceRange(business.priceRange),
-                contact: business.phone || '+84 123 456 789',
-                rating: business.rating || 4.5,
-                reviewCount: business.reviewCount || 0,
-                photos: business.photos || [business.photos?.[0] || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop']
-            });
-        });
-        
-        return activities;
+        console.log('📊 [FeedManager] Delegating activity feed to BusinessFeedManager...');
+        await this.businessFeed.populateActivityFeed();
     }
     
    /**
-     * Populate activity feed with data
+     * Populate activity feed with data - DELEGATED to BusinessFeedManager
      */
     populateActivityFeedWithData(activities, storiesContainer = null, feedContainer = null) {
-        storiesContainer = storiesContainer || document.getElementById('activityStories');
-        feedContainer = feedContainer || document.getElementById('activityFeed');
-        
-        console.log('🎯 Populating activity feed with', activities.length, 'activities');
-        
-        // Cache activities for story viewer
-        this.cachedActivities = activities;
-        console.log('💾 Cached', activities.length, 'activities for story viewer');
-        
-        // Populate stories
-        if (storiesContainer) {
-            this.populateStories('activityStories', activities);
-        }
-        
-        // Populate feed
-        if (feedContainer) {
-            feedContainer.innerHTML = activities.map(activity => 
-                this.createBusinessCard(activity, 'activity')
-            ).join('');
-            
-            // Add business signup banner
-            this.addBusinessSignupBanner(feedContainer);
-        }
-        
-        console.log('🎯 Activity feed populated with', activities.length, 'activities');
-        
-       // Set up logo click handlers after feed is rendered
-       setTimeout(() => this.setupLogoClickHandlers(), 100);
+        console.log('📊 [FeedManager] Delegating activity feed data population to BusinessFeedManager...');
+        this.businessFeed.populateActivityFeedWithData(activities, storiesContainer, feedContainer);
     }
     
  
-     /**
-     * Create business card HTML - SECURED
-     */
-    createBusinessCard(business, type) {
-        // Check if business is favorited
-        const isFavorited = window.classifiedApp?.managers?.favoritesCarousel?.isBusinessFavorited(business.id) || false;
-        const heartIcon = isFavorited ? '❤️' : '🤍';
-        
-        // Create card container safely
-        const card = document.createElement('div');
-        card.className = 'business-card';
-        card.onclick = () => window.CLASSIFIED.openBusinessProfile(business, type);
-        
-        // Create header
-        const header = document.createElement('div');
-        header.className = 'business-header';
-
-        const logo = document.createElement('div');
-        logo.className = 'business-logo';
-        const logoUrl = business.logo || business.photos?.[0] || '';
-        logo.style.backgroundImage = `url("${logoUrl}")`;  // Use double quotes
-        
-        // Make logo clickable to open story (SECURITY: stopPropagation)
-        logo.style.cursor = 'pointer';
-        logo.onclick = (e) => {
-            e.stopPropagation(); // Prevent card click
-            const storyManager = window.classifiedApp?.managers?.businessStory;
-            if (storyManager) {
-                storyManager.showBusinessStory(business);
-            }
-        };
-        
-        const info = document.createElement('div');
-        info.className = 'business-info';
-        
-        const name = document.createElement('h3');
-        name.textContent = business.name; // Safe
-        
-        const typeEl = document.createElement('p');
-        typeEl.textContent = business.type; // Safe
-        
-        info.appendChild(name);
-        info.appendChild(typeEl);
-        
-        // Add rating and review count if available
-        if (business.rating || business.reviewCount) {
-            const ratingDiv = document.createElement('div');
-            ratingDiv.className = 'business-rating-info';
-            ratingDiv.style.cssText = 'display: flex; align-items: center; gap: 8px; margin-top: 4px;';
-            
-            if (business.rating) {
-                const stars = document.createElement('span');
-                stars.className = 'rating-stars';
-                stars.textContent = '⭐'.repeat(Math.round(business.rating));
-                stars.style.cssText = 'font-size: 14px;';
-                
-                const ratingText = document.createElement('span');
-                ratingText.className = 'rating-value';
-                ratingText.textContent = business.rating;
-                ratingText.style.cssText = 'font-weight: 600; font-size: 14px;';
-                
-                ratingDiv.appendChild(stars);
-                ratingDiv.appendChild(ratingText);
-            }
-            
-            if (business.reviewCount) {
-                const reviews = document.createElement('span');
-                reviews.className = 'review-count';
-                reviews.textContent = `(${business.reviewCount} reviews)`;
-                reviews.style.cssText = 'font-size: 12px; opacity: 0.8;';
-                ratingDiv.appendChild(reviews);
-            }
-            
-            info.appendChild(ratingDiv);
-        }
-        
-        // Favorite button - Store ID safely in data attribute
-        const favBtn = document.createElement('button');
-        favBtn.className = 'business-favorite-btn';
-        favBtn.textContent = heartIcon; // ✅ Using textContent (safe)
-        favBtn.dataset.businessId = business.id; // ✅ Store ID in data attribute (safe)
-        favBtn.setAttribute('onclick', 'event.stopPropagation(); window.CLASSIFIED.toggleBusinessFavoriteFromEvent(this); return false;');
-        favBtn.style.cssText = `
-            background: none; border: none; font-size: 24px; cursor: pointer; 
-            transition: transform 0.2s ease; position: absolute; right: 15px; top: 15px;
-        `;
-        favBtn.title = 'Save this business';
-        
-        header.appendChild(logo);
-        header.appendChild(info);
-        header.appendChild(favBtn);
-        
-       // Create image carousel container
-        const imageContainer = document.createElement('div');
-        imageContainer.className = 'business-image-carousel';
-        imageContainer.style.cssText = `
-        position: relative;
-        overflow: hidden;
-        height: 280px;
-        width: 100%;
-    `;
-        
-        // Create scrollable wrapper
-        const scrollWrapper = document.createElement('div');
-        scrollWrapper.className = 'carousel-scroll';
-        scrollWrapper.style.cssText = `
-        display: flex;
-        flex-direction: row;
-        overflow-x: auto;
-        overflow-y: hidden;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        height: 280px;
-        width: 100%;
-        -ms-overflow-style: none;
-    `;
-    scrollWrapper.style.WebkitScrollbar = 'display: none';
-        
-        // Hide scrollbar
-        scrollWrapper.style.msOverflowStyle = 'none';
-        scrollWrapper.style.webkitScrollbar = 'none';
-        
-        // Add all available images
-        const photos = business.photos || [business.image];
-        photos.slice(0, 5).forEach((photo) => {
-            const imageDiv = document.createElement('div');
-            imageDiv.className = 'carousel-image';
-            imageDiv.style.cssText = `
-                min-width: 100%;
-                width: 100%;
-                height: 100%;
-                flex-shrink: 0;
-                scroll-snap-align: start;
-                background-image: url("${photo}");
-                background-size: cover;
-                background-position: center;
-            `;
-            scrollWrapper.appendChild(imageDiv);
-        });
-        
-        imageContainer.appendChild(scrollWrapper);
-        
-        
-        // Add dot indicators
-        const dotsContainer = document.createElement('div');
-        dotsContainer.className = 'carousel-dots';
-        dotsContainer.style.cssText = `
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 6px;
-        `;
-        
-        photos.slice(0, 5).forEach((_, index) => {
-            const dot = document.createElement('span');
-            dot.className = 'carousel-dot';
-            dot.style.cssText = `
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-                background: ${index === 0 ? 'white' : 'rgba(255,255,255,0.5)'};
-                transition: background 0.3s;
-            `;
-            dotsContainer.appendChild(dot);
-        });
-        
-        // Track current image
-        let currentIndex = 0;
-        
-        // Touch handling
-        let startX = 0;
-        let currentX = 0;
-        let isDragging = false;
-        
-       // Touch AND mouse handling for better compatibility
-        const handleStart = (e) => {
-            startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-            isDragging = true;
-            imageContainer.style.cursor = 'grabbing';
-        };
-        
-        const handleMove = (e) => {
-            if (!isDragging) return;
-            e.preventDefault();
-            currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-            const diff = currentX - startX;
-            scrollWrapper.style.transform = `translateX(${-currentIndex * 100 + (diff / imageContainer.offsetWidth * 100)}%)`;
-        };
-        
-        const handleEnd = () => {
-            if (!isDragging) return;
-            isDragging = false;
-            imageContainer.style.cursor = 'grab';
-            const diff = currentX - startX;
-            
-            if (Math.abs(diff) > 50) { // Swipe threshold
-                if (diff > 0 && currentIndex > 0) {
-                    currentIndex--;
-                } else if (diff < 0 && currentIndex < photos.length - 1) {
-                    currentIndex++;
-                }
-            }
-            
-            // Update position and dots
-            scrollWrapper.style.transform = `translateX(${-currentIndex * 100}%)`;
-            dotsContainer.querySelectorAll('.carousel-dot').forEach((dot, i) => {
-                dot.style.background = i === currentIndex ? 'white' : 'rgba(255,255,255,0.5)';
-            });
-            
-            // Reset for next swipe
-            startX = 0;
-            currentX = 0;
-        };
-        
-        // Add both touch and mouse events
-        imageContainer.addEventListener('touchstart', handleStart, { passive: true });
-        imageContainer.addEventListener('touchmove', handleMove, { passive: false });
-        imageContainer.addEventListener('touchend', handleEnd);
-        
-        // Mouse events for desktop testing
-        imageContainer.addEventListener('mousedown', handleStart);
-        imageContainer.addEventListener('mousemove', handleMove);
-        imageContainer.addEventListener('mouseup', handleEnd);
-        imageContainer.addEventListener('mouseleave', handleEnd);
-        
-        // Prevent card click on swipe
-        imageContainer.addEventListener('click', (e) => {
-            if (Math.abs(currentX - startX) > 5) {
-                e.stopPropagation();
-            }
-        });
-        
-        if (photos.length > 1) {
-            imageContainer.appendChild(dotsContainer);
-        }
-        
-        // Create content
-        const content = document.createElement('div');
-        content.className = 'business-content';
-        
-        const desc = document.createElement('div');
-        desc.className = 'business-description';
-        desc.textContent = business.description.substring(0, 100) + '...'; // Safe
-        
-        const promo = document.createElement('div');
-        promo.className = 'business-promo';
-        
-        const promoTitle = document.createElement('div');
-        promoTitle.className = 'promo-title';
-        promoTitle.textContent = business.promo; // Safe
-        
-        const promoDetails = document.createElement('div');
-        promoDetails.className = 'promo-details';
-        promoDetails.textContent = business.details; // Safe
-        
-        promo.appendChild(promoTitle);
-        promo.appendChild(promoDetails);
-        
-        content.appendChild(desc);
-        content.appendChild(promo);
-        
-        // Assemble card
-        card.appendChild(header);
-        card.appendChild(imageContainer);
-        card.appendChild(content);
-        
-        // Fix: Convert to HTML string but preserve onclick
-        const html = card.outerHTML;
-        // Add onclick directly to the HTML string
-        return html.replace('<div class="business-card"', 
-            `<div class="business-card" onclick="window.CLASSIFIED.openBusinessProfile('${business.id}', '${type}')"`);
-        
-    }
-    
-
-    /**
-     * Add business signup banner
-     */
-    addBusinessSignupBanner(container) {
-        const banner = document.createElement('div');
-        banner.className = 'business-signup-banner';
-        banner.innerHTML = `
-            <h3>🤖 Own a Business in Hoi An?</h3>
-            <p>Create your account instantly and reach 100+ travelers daily</p>
-            <div class="cta-button" onclick="CLASSIFIED.showBusinessSignup()">
-                🚀 Create Business Account 
-            </div>
-        `;
-        
-        // Insert after 3rd business card
-        const businessCards = container.querySelectorAll('.business-card');
-        if (businessCards.length >= 3) {
-            businessCards[2].insertAdjacentElement('afterend', banner);
-        } else {
-            container.appendChild(banner);
-        }
-    }
-
     /**
      * ==========================================
      * DAILY STORIES IMPLEMENTATION
@@ -796,9 +292,9 @@ async onUserLogin(user) {
 openStoryByBusinessId(businessId) {
     console.log('📖 [openStoryByBusinessId] Opening story for business:', businessId);
     
-    // Get all businesses from both feeds
-    const restaurants = this.cachedRestaurants || this.mockData.getRestaurants();
-    const activities = this.cachedActivities || this.mockData.getActivities();
+    // Get all businesses from both feeds (via businessFeed cache)
+    const restaurants = this.businessFeed.cachedRestaurants || this.mockData.getRestaurants();
+    const activities = this.businessFeed.cachedActivities || this.mockData.getActivities();
     const allBusinesses = [...restaurants, ...activities];
     
     // Find the business
@@ -826,27 +322,25 @@ openStoryByBusinessId(businessId) {
      * Get current businesses based on feed type
      */
     getCurrentBusinesses(feedType) {
-        console.log('📖 [getCurrentBusinesses] Getting businesses for:', feedType);
+        console.log('📖 [FeedManager] Getting businesses for:', feedType);
         
-        // Store businesses in memory when populating feeds
+        // Get from businessFeed cache
         let businesses = [];
         
         if (feedType === 'restaurantStories') {
-            // Use cached Firebase restaurants if available
-            businesses = this.cachedRestaurants || this.mockData.getRestaurants();
-            console.log('📖 [getCurrentBusinesses] Retrieved restaurants:', {
+            businesses = this.businessFeed.cachedRestaurants || this.mockData.getRestaurants();
+            console.log('📖 [FeedManager] Retrieved restaurants:', {
                 count: businesses.length,
-                source: this.cachedRestaurants ? 'Firebase cache' : 'mock data'
+                source: this.businessFeed.cachedRestaurants ? 'BusinessFeed cache' : 'mock data'
             });
         } else if (feedType === 'activityStories') {
-            // Use cached Firebase activities if available
-            businesses = this.cachedActivities || this.mockData.getActivities();
-            console.log('📖 [getCurrentBusinesses] Retrieved activities:', {
+            businesses = this.businessFeed.cachedActivities || this.mockData.getActivities();
+            console.log('📖 [FeedManager] Retrieved activities:', {
                 count: businesses.length,
-                source: this.cachedActivities ? 'Firebase cache' : 'mock data'
+                source: this.businessFeed.cachedActivities ? 'BusinessFeed cache' : 'mock data'
             });
         } else {
-            console.warn('⚠️ [getCurrentBusinesses] Unknown feedType:', feedType);
+            console.warn('⚠️ [FeedManager] Unknown feedType:', feedType);
         }
         
         return businesses;
@@ -1153,36 +647,6 @@ openStoryByBusinessId(businessId) {
      * ==========================================
      */
     
-    /**
-     * Add admin notice for pending businesses
-     */
-    async addAdminNotice(container) {
-        try {
-            const q = query(
-                collection(this.db, 'businesses'),
-                where('status', '==', 'pending_approval')
-            );
-            
-            const snapshot = await getDocs(q);
-            
-            if (snapshot.size > 0) {
-                const adminNotice = document.createElement('div');
-                adminNotice.innerHTML = `
-                    <div style="background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3); border-radius: 15px; padding: 20px; margin: 20px 0; text-align: center;">
-                        <h3 style="margin: 0 0 10px 0; color: #FF6B6B;">🛡️ Admin Notice</h3>
-                        <p style="margin: 0 0 15px 0; font-size: 14px;">${snapshot.size} business${snapshot.size > 1 ? 'es' : ''} pending approval</p>
-                        <button onclick="CLASSIFIED.openAdminPanel()" style="background: rgba(255,107,107,0.2); border: 1px solid rgba(255,107,107,0.3); border-radius: 20px; padding: 8px 16px; color: #FF6B6B; cursor: pointer; font-size: 12px;">
-                            Review Applications
-                        </button>
-                    </div>
-                `;
-                container.appendChild(adminNotice);
-            }
-        } catch (error) {
-            console.error('Error checking pending businesses:', error);
-        }
-    }
-    
   /**
      * Switch social tab
      */
@@ -1226,92 +690,3 @@ openStoryByBusinessId(businessId) {
             }
         }
     }
-    
-    /**
-     * Format price range
-     */
-    formatPriceRange(priceRange) {
-        const priceMap = {
-            'budget': '$ - Budget Friendly',
-            'moderate': '$$ - Moderate',
-            'expensive': '$$$ - Expensive'
-        };
-        return priceMap[priceRange] || '$$ - Moderate';
-    }
-
-    /**
-     * Refresh activity feed (for debugging)
-     */
-    async refreshActivityFeed() {
-        console.log('🔄 Refreshing activity feed...');
-        await this.populateActivityFeed();
-    }
-
-    /**
-     * Set up event listeners for logo clicks (event delegation)
-     * Called from main.js after feed is populated
-     */
-    setupLogoClickHandlers() {
-        console.log('🖱️ Setting up logo click handlers via event delegation');
-        
-        const restaurantFeed = document.getElementById('restaurantFeed');
-        const activityFeed = document.getElementById('activityFeed');
-        
-        [restaurantFeed, activityFeed].forEach(container => {
-            if (!container) return;
-            
-            // Remove existing listener if any
-            if (container._logoClickHandler) {
-                container.removeEventListener('click', container._logoClickHandler);
-            }
-            
-            // Create handler
-            const handler = (e) => {
-                // Check if clicked element is a business logo
-                const logo = e.target.closest('.business-logo');
-                if (logo) {
-                    e.stopPropagation(); // Prevent card click
-                    
-                    // Find the business card
-                    const card = logo.closest('.business-card');
-                    if (card) {
-                        // Extract business ID from card onclick
-                        const onclickAttr = card.getAttribute('onclick');
-                        if (onclickAttr) {
-                            const match = onclickAttr.match(/openBusinessProfile\('([^']+)',\s*'([^']+)'/);
-                            if (match) {
-                                const [, businessId, type] = match;
-                                console.log('📖 Logo clicked for business:', businessId);
-                                
-                                // Get business data and open story
-                                const business = this.getBusinessById(businessId, type);
-                                if (business && window.classifiedApp?.managers?.businessStory) {
-                                    window.classifiedApp.managers.businessStory.showBusinessStory(business);
-                                } else {
-                                    console.warn('⚠️ Could not find business or story manager');
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-            
-            // Store reference and attach
-            container._logoClickHandler = handler;
-            container.addEventListener('click', handler);
-        });
-        
-        console.log('✅ Logo click handlers attached');
-    }
-    
-    /**
-     * Get business data by ID
-     */
-    getBusinessById(businessId, type) {
-        const businesses = type === 'restaurant' 
-            ? (this.cachedRestaurants || this.mockData.getRestaurants())
-            : (this.cachedActivities || this.mockData.getActivities());
-        
-        return businesses.find(b => b.id === businessId);
-    }
-}

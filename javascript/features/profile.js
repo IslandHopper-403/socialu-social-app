@@ -32,14 +32,26 @@ export class ProfileManager {
         this.currentViewedUser = null;
     }
     
-    /**
+ /**
      * Set references to other managers
      */
     setManagers(managers) {
+        console.log('👤 [PROFILE-DEBUG] setManagers() called at:', Date.now());
+        console.log('👤 [PROFILE-DEBUG] Available managers:', Object.keys(managers));
+        
         this.navigationManager = managers.navigation;
         this.photoUploadManager = managers.photoUpload;
         this.referralManager = managers.referral;
         this.feedManager = managers.feed;
+        this.userFeedManager = managers.userFeed; // ✅ ADDED: Direct reference to UserFeedManager
+        
+        console.log('👤 [PROFILE-DEBUG] Manager references set:', {
+            hasNavigation: !!this.navigationManager,
+            hasPhotoUpload: !!this.photoUploadManager,
+            hasReferral: !!this.referralManager,
+            hasFeedManager: !!this.feedManager,
+            hasUserFeedManager: !!this.userFeedManager
+        });
     }
     
     /**
@@ -258,11 +270,26 @@ export class ProfileManager {
      * Save user profile
      */
      async saveUserProfile() {
+        console.log('👤 [SAVE-PROFILE-1] saveUserProfile() called at:', Date.now());
+        
         const user = this.state.get('currentUser');
+        console.log('👤 [SAVE-PROFILE-1] Current user:', {
+            uid: user?.uid,
+            email: user?.email,
+            displayName: user?.displayName
+        });
+        
         if (!user) {
+            console.error('❌ [SAVE-PROFILE-1] No user found, aborting');
             alert('Please log in first');
             return;
         }
+        
+        console.log('👤 [SAVE-PROFILE-2] Manager availability:', {
+            hasFeedManager: !!this.feedManager,
+            hasUserFeedManager: !!this.userFeedManager,
+            feedManagerHasUserFeed: !!(this.feedManager?.userFeed)
+        });
         
         try {
             // CHECK: Ensure profile document exists
@@ -365,23 +392,69 @@ export class ProfileManager {
             }
             
             // Save to Firebase - always use setDoc with merge for safety
+            console.log('👤 [SAVE-PROFILE-4] Writing to Firebase at:', Date.now());
+            console.log('👤 [SAVE-PROFILE-4] User ID:', user.uid);
+            console.log('👤 [SAVE-PROFILE-4] Data keys being saved:', Object.keys(cleanedData));
+            
             await setDoc(doc(this.db, 'users', user.uid), cleanedData, { merge: true });
+            
+            console.log('✅ [SAVE-PROFILE-5] Firebase write successful at:', Date.now());
             
             // Update local state
             this.state.set('userProfile', profileData);
+            console.log('✅ [SAVE-PROFILE-5] Local state updated');
             
-            console.log('💾 Profile saved successfully');
+            console.log('💾 [SAVE-PROFILE-6] Profile saved successfully to Firebase at:', Date.now());
             this.navigationManager.hideLoading();
             
             alert('Profile saved successfully! 🎉 You\'ll now appear in the user feed.');
             
-            // Refresh user feed
+            // Close profile editor
+            console.log('👤 [SAVE-PROFILE-7] Closing profile editor at:', Date.now());
             this.closeProfileEditor();
-            if (this.feedManager) {
-                await this.feedManager.populateUserFeed();
+            
+            // CRITICAL: Refresh user feed with multiple fallback paths
+            console.log('👤 [SAVE-PROFILE-8] Starting feed refresh at:', Date.now());
+            console.log('👤 [SAVE-PROFILE-8] Checking manager paths:', {
+                path1_userFeedManager: !!this.userFeedManager,
+                path2_feedManager_userFeed: !!(this.feedManager?.userFeed),
+                path3_window_managers: !!(window.classifiedApp?.managers?.userFeed)
+            });
+            
+            try {
+                // Path 1: Direct userFeedManager reference (BEST)
+                if (this.userFeedManager && typeof this.userFeedManager.populateUserFeed === 'function') {
+                    console.log('✅ [SAVE-PROFILE-8] Using direct userFeedManager reference');
+                    await this.userFeedManager.populateUserFeed();
+                    console.log('✅ [SAVE-PROFILE-9] Feed refresh completed via path 1 at:', Date.now());
+                }
+                // Path 2: Through feedManager.userFeed (FALLBACK)
+                else if (this.feedManager?.userFeed && typeof this.feedManager.userFeed.populateUserFeed === 'function') {
+                    console.log('⚠️ [SAVE-PROFILE-8] Using feedManager.userFeed fallback path');
+                    await this.feedManager.userFeed.populateUserFeed();
+                    console.log('✅ [SAVE-PROFILE-9] Feed refresh completed via path 2 at:', Date.now());
+                }
+                // Path 3: Global app instance (EMERGENCY FALLBACK)
+                else if (window.classifiedApp?.managers?.userFeed && typeof window.classifiedApp.managers.userFeed.populateUserFeed === 'function') {
+                    console.log('⚠️ [SAVE-PROFILE-8] Using global app instance fallback path');
+                    await window.classifiedApp.managers.userFeed.populateUserFeed();
+                    console.log('✅ [SAVE-PROFILE-9] Feed refresh completed via path 3 at:', Date.now());
+                }
+                // No valid path found
+                else {
+                    console.error('❌ [SAVE-PROFILE-9] CRITICAL: No valid path to populateUserFeed found!');
+                    console.error('❌ [SAVE-PROFILE-9] Available methods on userFeedManager:', 
+                        this.userFeedManager ? Object.getOwnPropertyNames(Object.getPrototypeOf(this.userFeedManager)) : 'null');
+                    console.error('❌ [SAVE-PROFILE-9] Feed will NOT refresh - user may not appear in feed');
+                }
+            } catch (feedError) {
+                console.error('❌ [SAVE-PROFILE-9] Feed refresh error:', feedError);
+                console.error('❌ [SAVE-PROFILE-9] Error stack:', feedError.stack);
+                // Don't throw - profile is saved, just feed didn't refresh
             }
             
             // Show referral code
+            console.log('👤 [SAVE-PROFILE-10] Showing referral code at:', Date.now());
             if (this.referralManager) {
                 setTimeout(() => {
                     this.referralManager.showReferralCode();
@@ -618,13 +691,15 @@ export class ProfileManager {
         }
         
         try {
+            console.log('👤 [SAVE-PROFILE-3] Validation passed, preparing Firebase save at:', Date.now());
             this.navigationManager.showLoading();
             
-            // Gather form data
-            const businessData = this.gatherBusinessProfileData();
+            // Use sanitized data from validator
+            const profileData = validation.sanitizedData;
+            console.log('👤 [SAVE-PROFILE-3] Sanitized profile data fields:', Object.keys(profileData));
             
             // Add system fields
-            businessData.uid = user.uid;
+            profileData.uid = user.uid;
             businessData.email = user.email;
             businessData.updatedAt = serverTimestamp();
             

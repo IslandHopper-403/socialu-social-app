@@ -200,7 +200,11 @@ export class MessagingManager {
             try {
                 await this.loadMatches();
                 await this.loadChats();
-                this.setupRealtimeListeners();
+                // Setup listeners directly
+                const currentUser = this.state.get('currentUser');
+                if (currentUser) {
+                    this.listeners.setupRealtimeListeners(currentUser.uid);
+                }
             } catch (error) {
                 console.error('Error initializing messaging:', error);
             }
@@ -539,21 +543,7 @@ export class MessagingManager {
         }
     }
     
-  /**
-     * Set up real-time listeners - DELEGATED to MessageListenersManager
-     */
-    setupRealtimeListeners() {
-        const currentUser = this.state.get('currentUser');
-        
-        console.log('💬 [MESSAGING] Delegating listener setup to MessageListenersManager');
-        
-        try {
-            // Delegate all listener setup to MessageListenersManager
-            this.listeners.setupRealtimeListeners(currentUser.uid);
-        } catch (error) {
-            console.error('Error setting up real-time listeners:', error);
-        }
-    }
+  // NOTE: setupRealtimeListeners() removed - call this.listeners.setupRealtimeListeners(userId) directly
     
     /**
      * Load user matches
@@ -1014,11 +1004,11 @@ displayUnifiedChats(chats) {
             // Load chat messages
             await this.loadChatMessages(chatId);
         
-            // Create chat document if it doesn't exist (do this BEFORE listener)
+           // Create chat document if it doesn't exist (do this BEFORE listener)
             await this.ensureChatExists(chatId, currentUser.uid, userId);
             
-            // Set up real-time listener for this chat
-            this.listenToChatMessages(chatId);
+            // Set up real-time listener for this chat (call directly)
+            this.listeners.listenToChatMessages(chatId);
             
         } catch (error) {
             console.error('❌ [MESSAGING] Error opening chat:', error);
@@ -1293,113 +1283,8 @@ closeChat() {
         messages.forEach(msg => {
             // Check if it's a promotion message
             if (msg.type === 'promotion' && msg.promotion) {
-                // Create promotion card
-                const isSent = msg.senderId === currentUserId;
-                const promoElement = document.createElement('div');
-                promoElement.className = `message ${isSent ? 'sent' : 'received'}`;
-
-                // Get promotion data FIRST
-                const promo = msg.promotion;
-                
-                // Create styled promo card
-                const promoCard = document.createElement('div');
-                promoCard.className = 'promo-message-card';
-
-                // Choose color based on card type
-                const isBusinessCard = promo.cardType === 'business' || (!promo.offerTitle && !promo.promotionTitle.includes('Special'));
-                const gradient = isBusinessCard 
-                    ? 'linear-gradient(135deg, #4A9EFF, #0066CC)'  // Blue for business
-                    : 'linear-gradient(135deg, #FF6B6B, #FF8C42)'; // Salmon for offers
-                
-                promoCard.style.cssText = `
-                    background: ${gradient};
-                    border-radius: 15px;
-                    padding: 15px;
-                    margin: 10px 0;
-                    max-width: 250px;
-                    cursor: pointer;
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                    color: white;
-                `;
-            
-                // Make entire card clickable
-                promoCard.style.cursor = 'pointer';
-              promoCard.addEventListener('click', () => {
-                console.log('🔗 Opening business profile:', promo);
-                const businessId = promo.businessId || promo.id;
-                const businessType = promo.businessType || promo.type || 'restaurant';
-                
-                if (businessId) {
-                    console.log('📍 Navigating to business:', businessId, businessType);
-                    window.CLASSIFIED.openBusinessProfile(businessId, businessType);
-                } else {
-                    console.error('No businessId found in promotion object:', promo);
-                    alert('Unable to open business profile. Please try again.');
-                }
-            });
-                
-                // Business name header
-                const nameDiv = document.createElement('div');
-                nameDiv.style.cssText = 'font-weight: 700; font-size: 16px; margin-bottom: 8px; color: white;';
-                nameDiv.textContent = promo.businessName || 'Business';
-                
-                const typeDiv = document.createElement('div');
-                typeDiv.style.cssText = 'font-size: 12px; opacity: 0.9; margin-bottom: 10px; color: white;';
-                typeDiv.textContent = promo.businessType || 'restaurant';
-                
-                // Promo content box
-                const contentDiv = document.createElement('div');
-                contentDiv.style.cssText = 'background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; margin-bottom: 10px;';
-                
-                const titleDiv = document.createElement('div');
-                titleDiv.style.cssText = 'font-weight: 700; margin-bottom: 5px; color: white; font-size: 14px;';
-                titleDiv.textContent = `🎉 ${promo.promotionTitle || 'Special Offer'}`;
-                
-                const detailsDiv = document.createElement('div');
-                detailsDiv.style.cssText = 'font-size: 12px; opacity: 0.9; color: white;';
-                detailsDiv.textContent = promo.promotionDetails || 'Ask about our current promotions!';
-                
-                contentDiv.appendChild(titleDiv);
-                contentDiv.appendChild(detailsDiv);
-                
-                // Address
-                const addressDiv = document.createElement('div');
-                addressDiv.style.cssText = 'font-size: 11px; opacity: 0.8; color: white; margin-bottom: 5px;';
-                addressDiv.textContent = `📍 ${promo.businessAddress || 'Tap to view location'}`;
-                
-                // Business hours (if available)
-                if (promo.businessHours) {
-                    const hoursDiv = document.createElement('div');
-                    hoursDiv.style.cssText = 'font-size: 11px; opacity: 0.8; color: white;';
-                    hoursDiv.textContent = `🕐 ${promo.businessHours}`;
-                    
-                    // Assemble card with hours
-                    promoCard.appendChild(nameDiv);
-                    promoCard.appendChild(typeDiv);
-                    promoCard.appendChild(contentDiv);
-                    promoCard.appendChild(addressDiv);
-                    promoCard.appendChild(hoursDiv);
-                } else {
-                    // Assemble card without hours
-                    promoCard.appendChild(nameDiv);
-                    promoCard.appendChild(typeDiv);
-                    promoCard.appendChild(contentDiv);
-                    promoCard.appendChild(addressDiv);
-                }
-                
-                // Add time
-                if (msg.timestamp) {
-                    const timeDiv = document.createElement('div');
-                    timeDiv.className = 'message-time';
-                    timeDiv.textContent = this.formatMessageTime(msg.timestamp.toDate());
-                    promoElement.appendChild(promoCard);
-                    promoElement.appendChild(timeDiv);
-                } else {
-                    promoElement.appendChild(promoCard);
-                }
-                
+                const promoElement = this.createPromotionMessageElement(msg, currentUserId);
                 messagesContainer.appendChild(promoElement);
-                
             } else {
                 // Regular text message (keep existing code)
                 const sanitizedMsg = sanitizeMessage(msg);
@@ -1459,13 +1344,7 @@ closeChat() {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
     
-    /**
-     * Listen to chat messages - DELEGATED to MessageListenersManager
-     */
-    listenToChatMessages(chatId) {
-        console.log('💬 [MESSAGING] Delegating chat listener to MessageListenersManager');
-        this.listeners.listenToChatMessages(chatId);
-    }
+    // NOTE: listenToChatMessages() removed - call this.listeners.listenToChatMessages(chatId) directly
     
     /**
      * Handle message notification properly
@@ -1763,58 +1642,33 @@ updateChatListUnreadIndicators() {
 }
 
     /**
-     * ENHANCED: Cleanup on destroy with better resource management
+     * Cleanup on destroy
      */
   cleanup() {
         console.log('🧹 [MESSAGING] Cleaning up messaging resources');
         
-       // Save state first
+        // Save state
         try {
-            // Note: unreadMessages now managed by NotificationManager
             this.saveMessageReadStates();
         } catch (error) {
             console.error('Error saving messaging state:', error);
         }
         
-        // Delegate ALL listener cleanup to MessageListenersManager
+        // Delegate listener cleanup
         if (this.listeners) {
             this.listeners.cleanupAll();
         }
         
-        // Clean up audio resources (if any)
-        if (this.audioContext) {
-            try {
-                this.audioContext.close();
-            } catch (error) {
-                console.error('Error closing audio context:', error);
-            }
-        }
-        
-        // Clear local tracking state (notification state managed by NotificationManager)
-        if (this.lastSeenMessages) this.lastSeenMessages.clear();
-           
-        // Delegate notification cleanup to NotificationManager
+        // Mark current chat as read
         const notificationManager = window.classifiedApp?.managers?.notifications;
-        if (notificationManager) {
-            // Clear any chat-specific notification state
-            if (this.currentChatId) {
-                notificationManager.markChatAsRead(this.currentChatId);
-            }
+        if (notificationManager && this.currentChatId) {
+            notificationManager.markChatAsRead(this.currentChatId);
         }
-        
-        // Reset document title (NotificationManager handles dot)
-        document.title = 'CLASSIFIED - Hoi An Social Discovery';
         
         console.log('✅ [MESSAGING] Cleanup complete');
     }
 
-    /**
-     * Diagnostic method to check active listeners - DELEGATED
-     * Usage: window.classifiedApp.managers.messaging.diagnosticListeners()
-     */
-    diagnosticListeners() {
-        return this.listeners.diagnosticListeners();
-    }
+    // NOTE: diagnosticListeners() removed - call this.listeners.diagnosticListeners() directly
     
     /**
      * Clean up old match timestamps from localStorage (housekeeping)
@@ -1894,6 +1748,84 @@ updateChatListUnreadIndicators() {
         }
     }
 
+    /**
+     * Create promotion message element
+     */
+    createPromotionMessageElement(msg, currentUserId) {
+        const isSent = msg.senderId === currentUserId;
+        const promo = msg.promotion;
+        
+        const promoElement = document.createElement('div');
+        promoElement.className = `message ${isSent ? 'sent' : 'received'}`;
+        
+        const promoCard = document.createElement('div');
+        promoCard.className = 'promo-message-card';
+        
+        const isBusinessCard = promo.cardType === 'business' || (!promo.offerTitle && !promo.promotionTitle.includes('Special'));
+        const gradient = isBusinessCard 
+            ? 'linear-gradient(135deg, #4A9EFF, #0066CC)'
+            : 'linear-gradient(135deg, #FF6B6B, #FF8C42)';
+        
+        promoCard.style.cssText = `background: ${gradient}; border-radius: 15px; padding: 15px; margin: 10px 0; max-width: 250px; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.1); color: white;`;
+        
+        promoCard.addEventListener('click', () => {
+            const businessId = promo.businessId || promo.id;
+            const businessType = promo.businessType || promo.type || 'restaurant';
+            if (businessId) {
+                window.CLASSIFIED.openBusinessProfile(businessId, businessType);
+            }
+        });
+        
+        const nameDiv = document.createElement('div');
+        nameDiv.style.cssText = 'font-weight: 700; font-size: 16px; margin-bottom: 8px; color: white;';
+        nameDiv.textContent = promo.businessName || 'Business';
+        
+        const typeDiv = document.createElement('div');
+        typeDiv.style.cssText = 'font-size: 12px; opacity: 0.9; margin-bottom: 10px; color: white;';
+        typeDiv.textContent = promo.businessType || 'restaurant';
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.style.cssText = 'background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; margin-bottom: 10px;';
+        
+        const titleDiv = document.createElement('div');
+        titleDiv.style.cssText = 'font-weight: 700; margin-bottom: 5px; color: white; font-size: 14px;';
+        titleDiv.textContent = `🎉 ${promo.promotionTitle || 'Special Offer'}`;
+        
+        const detailsDiv = document.createElement('div');
+        detailsDiv.style.cssText = 'font-size: 12px; opacity: 0.9; color: white;';
+        detailsDiv.textContent = promo.promotionDetails || 'Ask about our current promotions!';
+        
+        contentDiv.appendChild(titleDiv);
+        contentDiv.appendChild(detailsDiv);
+        
+        const addressDiv = document.createElement('div');
+        addressDiv.style.cssText = 'font-size: 11px; opacity: 0.8; color: white; margin-bottom: 5px;';
+        addressDiv.textContent = `📍 ${promo.businessAddress || 'Tap to view location'}`;
+        
+        promoCard.appendChild(nameDiv);
+        promoCard.appendChild(typeDiv);
+        promoCard.appendChild(contentDiv);
+        promoCard.appendChild(addressDiv);
+        
+        if (promo.businessHours) {
+            const hoursDiv = document.createElement('div');
+            hoursDiv.style.cssText = 'font-size: 11px; opacity: 0.8; color: white;';
+            hoursDiv.textContent = `🕐 ${promo.businessHours}`;
+            promoCard.appendChild(hoursDiv);
+        }
+        
+        promoElement.appendChild(promoCard);
+        
+        if (msg.timestamp) {
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'message-time';
+            timeDiv.textContent = this.formatMessageTime(msg.timestamp.toDate());
+            promoElement.appendChild(timeDiv);
+        }
+        
+        return promoElement;
+    }
+    
     /**
      * Add promotion to chat UI - SECURED
      */

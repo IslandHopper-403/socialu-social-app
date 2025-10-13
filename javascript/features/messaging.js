@@ -106,11 +106,15 @@ export class MessagingManager {
 }
 
     /**
-     * Load message read states from localStorage
+     * Load message read states from localStorage (user-specific)
      */
     loadMessageReadStates() {
         try {
-            const saved = localStorage.getItem('messageReadStates');
+            const currentUser = this.state.get('currentUser');
+            if (!currentUser) return;
+            
+            const storageKey = `messageReadStates_${currentUser.uid}`;
+            const saved = localStorage.getItem(storageKey);
             if (saved) {
                 const parsed = JSON.parse(saved);
                 Object.entries(parsed).forEach(([messageId, state]) => {
@@ -123,17 +127,21 @@ export class MessagingManager {
     }
     
     /**
-     * Save message read states to localStorage
+     * Save message read states to localStorage (user-specific)
      */
     saveMessageReadStates() {
         try {
+            const currentUser = this.state.get('currentUser');
+            if (!currentUser) return;
+            
+            const storageKey = `messageReadStates_${currentUser.uid}`;
             const toSave = {};
             // Only save last 100 message states to prevent localStorage bloat
             const entries = Array.from(this.messageReadStates.entries()).slice(-100);
             entries.forEach(([messageId, state]) => {
                 toSave[messageId] = state;
             });
-            localStorage.setItem('messageReadStates', JSON.stringify(toSave));
+            localStorage.setItem(storageKey, JSON.stringify(toSave));
         } catch (error) {
             console.error('Error saving message read states:', error);
         }

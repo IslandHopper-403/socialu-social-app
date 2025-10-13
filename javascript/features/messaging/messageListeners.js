@@ -295,17 +295,19 @@ export class MessageListenersManager {
                         
                         this.messaging.seenMatches.add(matchId);
                         
-                        // Store match timestamp for future validation
-                        const matchTime = matchData.timestamp?.toDate?.()?.getTime() || 0;
-                        localStorage.setItem(`match_time_${matchId}`, matchTime.toString());
-                    });
-                    
-                    // Save to localStorage
-                    this.messaging.saveSeenMatches();
-                    isInitialLoad = false;
-                    console.log(`✅ [LISTENERS] Initial match load complete, marked all as seen`);
-                    return;
+                    // Store match timestamp for future validation
+                    const matchTime = matchData.timestamp?.toDate?.()?.getTime() || 0;
+                    localStorage.setItem(`match_time_${matchId}`, matchTime.toString());
+                });
+                
+                // Save seenMatches to localStorage directly
+                if (this.messaging.seenMatches) {
+                    localStorage.setItem('seenMatches', JSON.stringify(Array.from(this.messaging.seenMatches)));
                 }
+                isInitialLoad = false;
+                console.log(`✅ [LISTENERS] Initial match load complete, marked all as seen`);
+                return;
+            }
                 
                 // Process changes ONLY after initial load
                 console.log(`🔍 [LISTENERS] Processing ${snapshot.docChanges().length} match changes`);
@@ -360,7 +362,11 @@ export class MessageListenersManager {
                        // This is a genuinely NEW, RECENT match!
                         console.log(`🎉 [LISTENERS] GENUINE NEW MATCH: ${matchId} (age: ${Math.round(timeDiff / 1000)}s)`);
                         this.messaging.seenMatches.add(matchId);
-                        this.messaging.saveSeenMatches();
+                        
+                        // Save seenMatches to localStorage directly
+                        if (this.messaging.seenMatches) {
+                            localStorage.setItem('seenMatches', JSON.stringify(Array.from(this.messaging.seenMatches)));
+                        }
                         
                         // Delegate to NotificationManager for match popup
                         const notificationManager = window.classifiedApp?.managers?.notifications;

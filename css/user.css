@@ -483,6 +483,82 @@
 
 .chat-item {
     position: relative !important;
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-md) 20px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.3s ease;
+}
+
+.chat-item:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+/* Chat item notification indicators - unified system */
+.chat-item .chat-unread-dot {
+    position: absolute !important;
+    top: 15px !important;
+    right: 15px !important;
+    width: 12px !important;
+    height: 12px !important;
+    background: #FF4444 !important;
+    border-radius: var(--radius-circle) !important;
+    border: 2px solid var(--bg-dark) !important;
+    z-index: 10 !important;
+}
+
+.chat-item .chat-unread-count {
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+    background: #FF4444 !important;
+    color: white !important;
+    border-radius: var(--radius-circle) !important;
+    min-width: 22px !important;
+    height: 22px !important;
+    padding: 0 5px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    border: 2px solid var(--bg-dark) !important;
+}
+
+.chat-item .unread-indicator {
+    position: absolute !important;
+    top: 50% !important;
+    right: 15px !important;
+    transform: translateY(-50%) !important;
+    background: #FF4444 !important;
+    color: white !important;
+    border-radius: var(--radius-circle) !important;
+    min-width: 22px !important;
+    height: 22px !important;
+    padding: 0 5px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    z-index: 5 !important;
+    border: 2px solid var(--bg-dark) !important;
+}
+
+/* Hide notification when messaging tab is active */
+.social-tab.active .message-notification-dot,
+.social-tab.active .unread-count-badge {
+    display: none !important;
+}
+
+/* In-app notification toast styling */
+.chat-notification {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    z-index: 1001 !important;
+    animation: slideInRight 0.3s ease !important;
 }
 
 /* =====================================================

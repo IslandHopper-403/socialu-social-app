@@ -171,6 +171,11 @@ export class MessagingManager {
         this.navigationManager = managers.navigation;
         this.profileManager = managers.profile;
         
+        // Wire up MatchingManager for seenMatches tracking
+        if (this.listeners && managers.matching) {
+            this.listeners.setMatchingManager(managers.matching);
+        }
+        
         // Get mock data reference from app
         if (window.classifiedApp && window.classifiedApp.mockData) {
             this.mockData = window.classifiedApp.mockData;

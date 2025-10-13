@@ -931,10 +931,14 @@ displayUnifiedChats(chats) {
      * Open chat with user
      */
     async openChat(name, avatar, userId) {
-    console.log(`💬 Opening chat with ${name} (${userId})`);
+    console.log(`💬 [MESSAGING] Opening chat with ${name} (${userId})`);
+    console.log(`💬 [MESSAGING] [STEP-1] openChat called at:`, Date.now());
     
     const currentUser = this.state.get('currentUser');
+    console.log(`💬 [MESSAGING] [STEP-2] Current user:`, currentUser ? currentUser.uid : 'NONE');
+    
     if (!currentUser) {
+        console.error('❌ [MESSAGING] No authenticated user');
         alert('Please login to chat');
         return;
     }
@@ -994,14 +998,21 @@ displayUnifiedChats(chats) {
             
             // Load chat messages
             await this.loadChatMessages(chatId);
+        
+            // Create chat document if it doesn't exist (do this BEFORE listener)
+            await this.ensureChatExists(chatId, currentUser.uid, userId);
             
             // Set up real-time listener for this chat
             this.listenToChatMessages(chatId);
             
-            // Create chat document if it doesn't exist
-            await this.ensureChatExists(chatId, currentUser.uid, userId);
         } catch (error) {
-            console.error('Error opening chat:', error);
+            console.error('❌ [MESSAGING] Error opening chat:', error);
+            console.error('❌ [MESSAGING] Error details:', {
+                message: error.message,
+                stack: error.stack,
+                chatId: chatId,
+                userId: userId
+            });
             alert('Failed to open chat. Please try again.');
         }
     }

@@ -179,7 +179,7 @@ export class MessageListenersManager {
         
         // Track if this is the first snapshot for THIS chat
         let isInitialLoad = true;
-        const lastSeen = this.messaging.lastSeenTimestamps.get(chatId) || this.messaging.lastAppActive;
+        const lastSeen = this.messaging.lastAppActive;
         
         try {
             const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -217,11 +217,14 @@ export class MessageListenersManager {
                 // Display messages via messaging manager
                 this.messaging.displayMessages(messages, currentUser.uid);
                 
-                // Update last seen timestamp if chat is active
+                // Update last seen timestamp if chat is active (delegated to NotificationManager)
                 if (this.messaging.currentChatId === chatId && this.messaging.isAppVisible) {
-                    console.log(`✅ [LISTENERS] Updating last seen for chat ${chatId}`);
-                    this.messaging.lastSeenTimestamps.set(chatId, Date.now());
-                    this.messaging.saveLastSeenTimestamps();
+                    console.log(`✅ [LISTENERS] Chat is active and visible`);
+                    const notificationManager = window.classifiedApp?.managers?.notifications;
+                    if (notificationManager) {
+                        notificationManager.lastSeenTimestamps.set(chatId, Date.now());
+                        notificationManager.saveLastSeenTimestamps();
+                    }
                 }
                 
                 isInitialLoad = false;
@@ -345,11 +348,38 @@ export class MessageListenersManager {
                             return;
                         }
                         
-                        // This is a genuinely NEW, RECENT match!
+                       // This is a genuinely NEW, RECENT match!
                         console.log(`🎉 [LISTENERS] GENUINE NEW MATCH: ${matchId} (age: ${Math.round(timeDiff / 1000)}s)`);
                         this.messaging.seenMatches.add(matchId);
                         this.messaging.saveSeenMatches();
-                        this.messaging.handleNewMatch(matchData);
+                        
+                        // Delegate to NotificationManager for match popup
+                        const notificationManager = window.classifiedApp?.managers?.notifications;
+                        if (notificationManager) {
+                            const currentUser = this.state.get('currentUser');
+                            const partnerId = matchData.users.find(id => id !== currentUser?.uid);
+                            
+                            if (partnerId) {
+                                console.log(`📬 [LISTENERS] Delegating to NotificationManager for match popup`);
+                                
+                                // Get partner data and show match notification
+                                getDoc(doc(this.db, 'users', partnerId)).then(partnerDoc => {
+                                    if (partnerDoc.exists()) {
+                                        const partnerData = partnerDoc.data();
+                                        notificationManager.showNotification('match', {
+                                            matchId: matchId,
+                                            partnerId: partnerId,
+                                            partnerName: partnerData.name || 'User',
+                                            partnerPhoto: partnerData.photos?.[0] || 'https://via.placeholder.com/100'
+                                        });
+                                    }
+                                }).catch(error => {
+                                    console.error('Error fetching partner data for match:', error);
+                                });
+                            }
+                        } else {
+                            console.warn('⚠️ [LISTENERS] NotificationManager not available for match popup');
+                        }
                     }
                 });
                 

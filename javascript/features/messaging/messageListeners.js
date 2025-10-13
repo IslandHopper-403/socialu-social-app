@@ -221,11 +221,13 @@ export class MessageListenersManager {
                             if (message.senderId !== currentUser.uid) {
                                 console.log(`🆕 [LISTENERS] New message from other user in chat ${chatId}`);
                                 
-                                // Get notification manager safely
+                                // Only show notification popup, don't increment count
+                                // (Count is handled by listenForChatUpdates to avoid duplicates)
                                 const notificationManager = window.classifiedApp?.managers?.notifications;
                                 if (notificationManager && notificationManager.shouldShowNotification(message, chatId)) {
-                                    console.log(`🔔 [LISTENERS] Triggering notification for message`);
-                                    this.messaging.handleMessageNotification(message, chatId);
+                                    console.log(`🔔 [LISTENERS] Showing notification popup (no count increment)`);
+                                    // Show toast/sound only, not count
+                                    notificationManager.playSound();
                                 }
                             }
                         }
@@ -499,6 +501,9 @@ export class MessageListenersManager {
                 // Process changes after initial load
                 console.log(`🔍 [LISTENERS] Processing ${snapshot.docChanges().length} chat changes`);
                 
+                // Track processed messages to prevent duplicates
+                const processedMessages = new Set();
+                
                 for (const change of snapshot.docChanges()) {
                     if (change.type === 'modified') {
                         const chatData = change.doc.data();
@@ -511,8 +516,14 @@ export class MessageListenersManager {
                             
                             const messageTime = chatData.lastMessageTime.toMillis();
                             
-                            if (messageTime > this.messaging.lastAppActive) {
-                                console.log(`🆕 [LISTENERS] New message in chat: ${chatId}`);
+                            // Create unique message identifier
+                            const messageId = `${chatId}_${messageTime}_${chatData.lastMessageSender}`;
+                            
+                            // Only process if not already seen
+                            if (!processedMessages.has(messageId) && messageTime > this.messaging.lastAppActive) {
+                                processedMessages.add(messageId);
+                                console.log(`🆕 [LISTENERS] New message in chat: ${chatId} (deduped)`);
+                                
                                 const notificationManager = window.classifiedApp?.managers?.notifications;
                                 if (notificationManager) {
                                     notificationManager.updateUnreadCount(chatId, 1);
@@ -569,9 +580,9 @@ export class MessageListenersManager {
                         
                         if (chatData.lastMessageSender && chatData.lastMessageSender !== userId) {
                             if (this.messaging.currentChatId !== chatId) {
-                                console.log(`🔔 [LISTENERS] New message notification for chat: ${chatId}`);
+                                console.log(`🔔 [LISTENERS] New message in chat: ${chatId}`);
                                 
-                                // Delegate to NotificationManager
+                                // Show notification popup only (count handled by listenForChatUpdates)
                                 const notificationManager = window.classifiedApp?.managers?.notifications;
                                 if (notificationManager) {
                                     notificationManager.showNotification('message', {
@@ -582,12 +593,13 @@ export class MessageListenersManager {
                                         chatId: chatId,
                                         partnerInfo: { name: 'User' }
                                     });
-                                    notificationManager.updateUnreadCount(chatId, 1);
+                                    // NOTE: Count update removed - handled by listenForChatUpdates
                                 }
                             }
                         }
                     }
                 });
+                
             }, (error) => {
                 console.error('❌ [LISTENERS] Error in global message listener:', error);
                 this.unregisterListener('messages_global');

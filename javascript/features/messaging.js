@@ -1472,15 +1472,6 @@ closeChat() {
         }
     }
     
-/**
-     * Save seen matches to localStorage
-     */
-    saveSeenMatches() {
-        if (this.seenMatches) {
-            localStorage.setItem('seenMatches', JSON.stringify(Array.from(this.seenMatches)));
-        }
-    }
-    
     /**
      * Open chat with viewed user
      */
@@ -1532,221 +1523,9 @@ closeChat() {
         // You could implement server-side logic to send actual push notifications
     }
     
-    /**
-     * Create a match between two users
-     */
-  /**
- * FIXED: Create a match between two users with proper chat setup
- */
-async createMatch(userId1, userId2) {
-    try {
-        // SECURITY: Validate user IDs
-        if (!userId1 || !userId2 || userId1 === userId2) {
-            throw new Error('Invalid user IDs for match creation');
-        }
-        
-        console.log('🎉 Creating match between', userId1, 'and', userId2);
-        
-        // FIXED: Add creation timestamp for 30-second validation
-        const matchData = {
-            users: [userId1, userId2].sort(), // Sort for consistency
-            timestamp: serverTimestamp(),
-            createdTimestamp: Date.now(), // Client timestamp for immediate validation
-            status: 'active',
-            createdBy: 'system',
-            chatCreated: false
-        };
-        
-        // Use sorted IDs as document ID for consistency
-        const matchId = [userId1, userId2].sort().join('_');
-        
-        // Create the match document
-        await setDoc(doc(this.db, 'matches', matchId), matchData);
-        
-        // Create corresponding chat document
-        const chatId = matchId; // Use same ID for simplicity
-        await setDoc(doc(this.db, 'chats', chatId), {
-            participants: [userId1, userId2].sort(),
-            createdAt: serverTimestamp(),
-            lastMessage: '',
-            lastMessageTime: serverTimestamp(),
-            lastMessageSender: null,
-            matchId: matchId,
-            type: 'match_chat'
-        });
-        
-        // Update match to indicate chat was created
-        await updateDoc(doc(this.db, 'matches', matchId), {
-            chatCreated: true,
-            chatId: chatId
-        });
-        
-        // Send match notification to both users
-        await this.sendMatchNotifications(userId1, userId2, matchId);
-        
-        console.log('✅ Match created successfully:', matchId);
-        return matchId;
-        
-    } catch (error) {
-        console.error('❌ Error creating match:', error);
-        throw error;
-    }
-}
-
-
-/**
- * SECURED: Check if two users have mutual likes (for match detection)
- */
-async checkMutualLikes(userId1, userId2) {
-    try {
-        // SECURITY: Validate and sanitize user IDs
-        if (!userId1 || !userId2 || userId1 === userId2) {
-            console.error('Invalid user IDs for mutual like check');
-            return false;
-        }
-        
-        // SECURITY: Ensure IDs are alphanumeric only
-        const safeUserId1 = userId1.replace(/[^a-zA-Z0-9_-]/g, '');
-        const safeUserId2 = userId2.replace(/[^a-zA-Z0-9_-]/g, '');
-        
-        if (safeUserId1 !== userId1 || safeUserId2 !== userId2) {
-            console.error('User IDs contain invalid characters');
-            return false;
-        }
-        
-        // Check both directions for likes
-        const [like1Doc, like2Doc] = await Promise.all([
-            getDoc(doc(this.db, 'likes', `${userId1}_${userId2}`)),
-            getDoc(doc(this.db, 'likes', `${userId2}_${userId1}`))
-        ]);
-        
-        const hasMutualLikes = like1Doc.exists() && like2Doc.exists();
-        
-        if (hasMutualLikes) {
-            console.log('💕 Mutual likes detected between', userId1, 'and', userId2);
-        }
-        
-        return hasMutualLikes;
-    } catch (error) {
-        console.error('Error checking mutual likes:', error);
-        return false;
-    }
-}
-
-/**
- * ENHANCED: Process like action with proper match detection
- */
-async processLikeAction(fromUserId, toUserId, type = 'like') {
-    try {
-        // Validate inputs
-        if (!fromUserId || !toUserId || fromUserId === toUserId) {
-            throw new Error('Invalid user IDs for like action');
-        }
-        
-        // Check if already liked (prevent duplicates)
-        const likeId = `${fromUserId}_${toUserId}`;
-        const existingLike = await getDoc(doc(this.db, 'likes', likeId));
-        
-        if (existingLike.exists()) {
-            console.log('⚠️ Like already exists:', likeId);
-            return { isMatch: false, alreadyLiked: true };
-        }
-        
-        // Record the like with timestamp
-        await setDoc(doc(this.db, 'likes', likeId), {
-            fromUserId: fromUserId,
-            toUserId: toUserId,
-            timestamp: serverTimestamp(),
-            type: type // 'like' or 'superlike'
-        });
-        
-        console.log(`✅ ${type} recorded:`, likeId);
-        
-        // Check for mutual likes
-        const isMutual = await this.checkMutualLikes(fromUserId, toUserId);
-        
-        if (isMutual) {
-            // Create match only if mutual
-            const matchId = await this.createMatch(fromUserId, toUserId);
-            
-            // Trigger match popup for current user
-            await this.triggerMatchPopup(fromUserId, toUserId);
-            
-            return { isMatch: true, matchId: matchId };
-        }
-        
-        return { isMatch: false };
-        
-    } catch (error) {
-        console.error('Error processing like action:', error);
-        throw error;
-    }
-}
-
-/**
- * ENHANCED: Trigger match popup with timestamp validation
- */
-async triggerMatchPopup(currentUserId, matchedUserId) {
-    try {
-        // Get matched user data with validation
-        const matchedUserDoc = await getDoc(doc(this.db, 'users', matchedUserId));
-        
-        if (!matchedUserDoc.exists()) {
-            console.error('Matched user not found:', matchedUserId);
-            return;
-        }
-        
-        const userData = matchedUserDoc.data();
-        
-        // Sanitize user data
-        const safeName = this.escapeHtml(userData.name || 'Someone');
-        const safeAvatar = userData.photos?.[0] || userData.photo || 'https://via.placeholder.com/100';
-        
-        // Store matched user data
-        this.state.set('lastMatchedUser', {
-            id: matchedUserId,
-            name: safeName,
-            avatar: safeAvatar
-        });
-        
-        // Show match popup
-        const matchPopup = document.getElementById('matchPopup');
-        if (matchPopup) {
-            // Prevent duplicate popups
-            if (matchPopup.classList.contains('show')) {
-                console.log('Match popup already showing');
-                return;
-            }
-            
-            matchPopup.classList.add('show');
-            
-            // Update popup content safely
-            const popupText = matchPopup.querySelector('p');
-            if (popupText) {
-                popupText.textContent = `You and ${safeName} both liked each other`;
-            }
-            
-            // Auto-close after 10 seconds
-            setTimeout(() => {
-                if (matchPopup.classList.contains('show')) {
-                    matchPopup.classList.remove('show');
-                }
-            }, 10000);
-            
-            // Mark this match as seen
-            this.seenMatches.add(`${currentUserId}_${matchedUserId}`);
-            this.saveSeenMatches();
-        }
-        
-    } catch (error) {
-        console.error('Error triggering match popup:', error);
-    }
-}
-    
-    /**
+   /**
      * Utility Methods
      */
-    
     generateChatId(userId1, userId2) {
         return [userId1, userId2].sort().join('_');
     }
@@ -1974,11 +1753,9 @@ updateChatListUnreadIndicators() {
   cleanup() {
         console.log('🧹 [MESSAGING] Cleaning up messaging resources');
         
-        // Save state first
+       // Save state first
         try {
             // Note: unreadMessages now managed by NotificationManager
-            this.saveSeenMatches();
-            this.saveLastSeenTimestamps();
             this.saveMessageReadStates();
         } catch (error) {
             console.error('Error saving messaging state:', error);

@@ -27,6 +27,9 @@ export class MessageListenersManager {
         this.state = appState;
         this.messaging = messagingManager; // Reference back to parent
         
+        // Get reference to MatchingManager for seenMatches
+        this.matchingManager = null; // Will be set via setMatchingManager()
+        
         // Listener tracking
         this.activeListeners = new Map(); // id -> {unsubscribe, type, createdAt}
         
@@ -50,6 +53,14 @@ export class MessageListenersManager {
         }, 300000); // 5 minutes
         
         console.log('⏰ [LISTENERS] Cleanup interval started (5 min)');
+    }
+    
+    /**
+     * Set reference to MatchingManager (called after initialization)
+     */
+    setMatchingManager(matchingManager) {
+        this.matchingManager = matchingManager;
+        console.log('🔗 [LISTENERS] MatchingManager reference set');
     }
     
     /**
@@ -277,10 +288,10 @@ export class MessageListenersManager {
             const sessionStartTime = Date.now();
             const thirtySecondsAgo = Date.now() - 30000; // 30 second window
             
-            // Load seen matches from localStorage (user-specific)
-            if (!this.messaging.seenMatches) {
-                const storageKey = `seenMatches_${userId}`;
-                this.messaging.seenMatches = new Set(JSON.parse(localStorage.getItem(storageKey) || '[]'));
+           // Ensure MatchingManager has loaded seenMatches
+            if (!this.matchingManager) {
+                console.warn('⚠️ [LISTENERS] MatchingManager not available for match tracking');
+                return;
             }
             
             const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -292,19 +303,18 @@ export class MessageListenersManager {
                     // Mark ALL existing matches as seen (no popups for old matches)
                     snapshot.forEach(doc => {
                         const matchId = doc.id;
-                        const matchData = doc.data();
+                       const matchData = doc.data();
                         
-                        this.messaging.seenMatches.add(matchId);
+                        this.matchingManager.seenMatches.add(matchId);
                         
-                    // Store match timestamp for future validation
+                   // Store match timestamp for future validation
                     const matchTime = matchData.timestamp?.toDate?.()?.getTime() || 0;
                     localStorage.setItem(`match_time_${matchId}`, matchTime.toString());
                 });
                 
-               // Save seenMatches to localStorage directly (user-specific)
-                if (this.messaging.seenMatches) {
-                    const storageKey = `seenMatches_${userId}`;
-                    localStorage.setItem(storageKey, JSON.stringify(Array.from(this.messaging.seenMatches)));
+               // Save seenMatches via MatchingManager
+                if (this.matchingManager) {
+                    this.matchingManager.saveSeenMatches();
                 }
                 isInitialLoad = false;
                 console.log(`✅ [LISTENERS] Initial match load complete, marked all as seen`);
@@ -321,8 +331,8 @@ export class MessageListenersManager {
                         
                         console.log(`🆕 [LISTENERS] New match detected: ${matchId}`);
                         
-                        // Skip if already seen
-                        if (this.messaging.seenMatches.has(matchId)) {
+                       // Skip if already seen
+                        if (this.matchingManager.seenMatches.has(matchId)) {
                             console.log(`⏭️ [LISTENERS] Skipping already seen match: ${matchId}`);
                             return;
                         }
@@ -334,41 +344,40 @@ export class MessageListenersManager {
                         // THREE validation checks for match popup
                         
                         // 1. Must be created AFTER this session started
-                        if (matchTimeMs < sessionStartTime) {
+                       if (matchTimeMs < sessionStartTime) {
                             console.log(`⏭️ [LISTENERS] Match ${matchId} is from before session (age: ${Math.round((Date.now() - matchTimeMs) / 1000)}s)`);
-                            this.messaging.seenMatches.add(matchId);
+                            this.matchingManager.seenMatches.add(matchId);
                             localStorage.setItem(`match_time_${matchId}`, matchTimeMs.toString());
-                            this.messaging.saveSeenMatches();
+                            this.matchingManager.saveSeenMatches();
                             return;
                         }
                         
                         // 2. Must be less than 30 seconds old
                         const timeDiff = Date.now() - matchTimeMs;
-                        if (timeDiff > 30000) {
+                       if (timeDiff > 30000) {
                             console.log(`⏭️ [LISTENERS] Match ${matchId} is too old (${Math.round(timeDiff / 1000)}s)`);
-                            this.messaging.seenMatches.add(matchId);
+                            this.matchingManager.seenMatches.add(matchId);
                             localStorage.setItem(`match_time_${matchId}`, matchTimeMs.toString());
-                            this.messaging.saveSeenMatches();
+                            this.matchingManager.saveSeenMatches();
                             return;
                         }
                         
                         // 3. Must be created after the 30-second window started
-                        if (matchTimeMs < thirtySecondsAgo) {
+                      if (matchTimeMs < thirtySecondsAgo) {
                             console.log(`⏭️ [LISTENERS] Match ${matchId} outside 30s window`);
-                            this.messaging.seenMatches.add(matchId);
+                            this.matchingManager.seenMatches.add(matchId);
                             localStorage.setItem(`match_time_${matchId}`, matchTimeMs.toString());
-                            this.messaging.saveSeenMatches();
+                            this.matchingManager.saveSeenMatches();
                             return;
                         }
                         
                        // This is a genuinely NEW, RECENT match!
                         console.log(`🎉 [LISTENERS] GENUINE NEW MATCH: ${matchId} (age: ${Math.round(timeDiff / 1000)}s)`);
-                        this.messaging.seenMatches.add(matchId);
+                        this.matchingManager.seenMatches.add(matchId);
                         
-                        // Save seenMatches to localStorage directly (user-specific)
-                        if (this.messaging.seenMatches) {
-                            const storageKey = `seenMatches_${userId}`;
-                            localStorage.setItem(storageKey, JSON.stringify(Array.from(this.messaging.seenMatches)));
+                        // Save seenMatches via MatchingManager
+                        if (this.matchingManager) {
+                            this.matchingManager.saveSeenMatches();
                         }
                         
                         // Delegate to NotificationManager for match popup

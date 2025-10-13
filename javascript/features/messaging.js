@@ -1838,33 +1838,6 @@ updateChatListUnreadIndicators() {
     }
     
     /**
-     * DEBUG: Verify notification integration
-     */
-    verifyNotificationIntegration() {
-        const notificationManager = window.classifiedApp?.managers?.notifications;
-        
-        console.log('🔍 NOTIFICATION INTEGRATION CHECK');
-        console.log('================================');
-        console.log('✓ NotificationManager exists:', !!notificationManager);
-        console.log('✓ No local unreadMessages Map:', typeof this.unreadMessages === 'undefined');
-        
-        if (notificationManager) {
-            console.log('✓ NotificationManager unread count:', notificationManager.getTotalUnread());
-            console.log('✓ Active unread chats:', Array.from(notificationManager.unreadMessages.entries()));
-        }
-        
-        console.log('✓ MessagingManager does not save to unreadMessages key');
-        console.log('================================');
-        console.log('Integration Status: VERIFIED ✅');
-        
-        return {
-            integrated: true,
-            notificationManagerActive: !!notificationManager,
-            totalUnread: notificationManager?.getTotalUnread() || 0
-        };
-    }
-    
-    /**
      * Send promotion message in chat
      */
     async sendPromotionMessage(promoData) {

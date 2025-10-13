@@ -69,16 +69,9 @@ export class MessagingManager {
     this.isAppVisible = !document.hidden;
     this.isChatVisible = false; // Track if chat overlay is actually visible
 
-    // FIXED: Track when messages were last seen per chat
-    this.lastSeenTimestamps = new Map(); // chatId -> timestamp
-    this.loadLastSeenTimestamps();
-    
     // Track read receipts per message
-    this.messageReadStates = new Map(); // messageId -> {read: boolean, readAt: timestamp}
+   this.messageReadStates = new Map(); // messageId -> {read: boolean, readAt: timestamp}
     this.loadMessageReadStates();
-    
-    // FIXED: Track seen matches across sessions
-    this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
     
     // FIXED: Better last active tracking
     this.lastAppActive = parseInt(localStorage.getItem('lastAppActive') || Date.now().toString(), 10);
@@ -86,9 +79,8 @@ export class MessagingManager {
     // FIXED: Track initial loads to prevent notifications
     this.initialLoadComplete = new Set();
     this.firstLoadTimestamp = Date.now(); // When THIS session started
-    this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
        
-      // ADDED: Track app visibility for smart notifications
+    // ADDED: Track app visibility for smart notifications
     document.addEventListener('visibilitychange', () => {
         this.isAppVisible = !document.hidden;
         
@@ -107,47 +99,12 @@ export class MessagingManager {
             }
         }
     });
-      
-    // Add this line to track seen matches across sessions
-    this.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
 
     window.addEventListener('beforeunload', () => {
         this.cleanup();
     });
 }
 
-    /**
-     * Load last seen timestamps from localStorage
-     */
-    loadLastSeenTimestamps() {
-        try {
-            const saved = localStorage.getItem('lastSeenTimestamps');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                Object.entries(parsed).forEach(([chatId, timestamp]) => {
-                    this.lastSeenTimestamps.set(chatId, timestamp);
-                });
-            }
-        } catch (error) {
-            console.error('Error loading last seen timestamps:', error);
-        }
-    }
-
-    /**
-     * Save last seen timestamps to localStorage
-     */
-    saveLastSeenTimestamps() {
-        try {
-            const toSave = {};
-            this.lastSeenTimestamps.forEach((timestamp, chatId) => {
-                toSave[chatId] = timestamp;
-            });
-            localStorage.setItem('lastSeenTimestamps', JSON.stringify(toSave));
-        } catch (error) {
-            console.error('Error saving last seen timestamps:', error);
-        }
-    }
-    
     /**
      * Load message read states from localStorage
      */
@@ -1504,148 +1461,12 @@ closeChat() {
         }
     }
     
-  /**
+/**
      * Save seen matches to localStorage
      */
     saveSeenMatches() {
         if (this.seenMatches) {
             localStorage.setItem('seenMatches', JSON.stringify(Array.from(this.seenMatches)));
-        }
-    }
-    
-        /**
-         * Handle new match
-         */
-           async handleNewMatch(matchData) {
-            console.log('🎉 New match!', matchData);
-            
-            try {
-                // SECURITY: Validate match data structure
-                if (!matchData.users || !Array.isArray(matchData.users) || matchData.users.length !== 2) {
-                    console.error('Invalid match data structure');
-                    return;
-                }
-                
-                // FIXED: Double-check match age before showing popup
-                const matchTime = matchData.timestamp?.toDate?.() || new Date();
-                const matchAge = Date.now() - matchTime.getTime();
-                
-                if (matchAge > 30000) {
-                    console.log('⏭️ Match too old for popup, age:', Math.round(matchAge/1000), 'seconds');
-                    return;
-                }
-                
-                // Prevent duplicate match popups
-                const matchPopup = document.getElementById('matchPopup');
-                if (matchPopup && matchPopup.classList.contains('show')) {
-                    console.log('Match popup already showing, skipping duplicate');
-                    return;
-                }
-                
-                // 🎯 TINDER-STYLE: Don't auto-open chat, just add to inbox
-                console.log('✅ Match added to inbox (Tinder-style) - chat will open on first message');
-                
-                // Show match popup
-              // 🎯 TINDER-STYLE: Show match popup but DON'T auto-open chat
-                if (matchPopup) {
-                    // Update match popup content
-                    const currentUser = this.state.get('currentUser');
-                    const partnerId = matchData.users.find(id => id !== currentUser.uid);
-                    
-                    if (partnerId) {
-                        const partnerDoc = await getDoc(doc(this.db, 'users', partnerId));
-                        if (partnerDoc.exists()) {
-                            const partnerData = partnerDoc.data();
-                            this.state.set('lastMatchedUser', {
-                                id: partnerId,
-                                name: partnerData.name,
-                                avatar: partnerData.photos?.[0] || 'https://via.placeholder.com/100'
-                            });
-                            
-                            // Update popup text
-                            const popupText = matchPopup.querySelector('p');
-                            if (popupText) {
-                                popupText.textContent = `You and ${partnerData.name} both liked each other`;
-                            }
-                            
-                            // Setup button click handlers for Tinder-style behavior
-                            this.setupMatchPopupButtons(matchPopup);
-                        }
-                    }
-                    
-                    // Show the popup
-                    matchPopup.classList.add('show');
-                    
-                    // Play notification sound
-                    const notificationManager = window.classifiedApp?.managers?.notifications;
-                    if (notificationManager) {
-                        notificationManager.playSound();
-                    }
-                    
-                    // Auto-close after 15 seconds if user doesn't interact
-                    setTimeout(() => {
-                        if (matchPopup.classList.contains('show')) {
-                            matchPopup.classList.remove('show');
-                            console.log('✅ Match saved to inbox - will appear when first message sent');
-                        }
-                    }, 15000);
-                }
-            } catch (error) {
-                console.error('Error handling new match:', error);
-            }
-            // At the end of the method:
-            this.saveSeenMatches();
-        }
-    
-   /**
-     * Start chat from match popup
-     */
-    startChatFromMatch() {
-        const matchedUser = this.state.get('lastMatchedUser');
-        if (matchedUser) {
-            console.log('🚀 Starting chat with matched user:', matchedUser.name);
-            
-            // Hide match popup first
-            const matchPopup = document.getElementById('matchPopup');
-            if (matchPopup) {
-                matchPopup.classList.remove('show');
-            }
-            
-            // Switch to social tab first
-            if (window.classifiedApp?.managers?.feed) {
-                window.classifiedApp.managers.feed.switchSocialTab('messaging');
-            }
-            
-            // Small delay to ensure UI updates, then open chat
-            setTimeout(() => {
-                this.openChat(matchedUser.name, matchedUser.avatar, matchedUser.id);
-            }, 300);
-        } else {
-            console.error('No matched user found');
-            alert('Unable to start chat. Please try again.');
-        }
-    }
-
-    /**
-     * 🎯 TINDER-STYLE: Setup match popup button handlers
-     */
-    setupMatchPopupButtons(matchPopup) {
-        const keepSwipingBtn = matchPopup.querySelector('.keep-swiping-btn');
-        const sendMessageBtn = matchPopup.querySelector('.send-message-btn');
-        
-        // TINDER-STYLE: "Keep Swiping" just closes popup - match saved silently
-        if (keepSwipingBtn) {
-            keepSwipingBtn.onclick = () => {
-                matchPopup.classList.remove('show');
-                console.log('✅ Match saved to inbox - will appear when first message sent');
-            };
-        }
-        
-        // TINDER-STYLE: "Send Message" opens chat immediately
-        if (sendMessageBtn) {
-            sendMessageBtn.onclick = () => {
-                this.startChatFromMatch();
-            };
         }
     }
     
@@ -1758,67 +1579,6 @@ async createMatch(userId1, userId2) {
     } catch (error) {
         console.error('❌ Error creating match:', error);
         throw error;
-    }
-}
-
-
-/**
- * NEW: Send match notifications to both users
- */
-async sendMatchNotifications(userId1, userId2, matchId) {
-    try {
-        // Get user data for notifications
-        const [user1Doc, user2Doc] = await Promise.all([
-            getDoc(doc(this.db, 'users', userId1)),
-            getDoc(doc(this.db, 'users', userId2))
-        ]);
-        
-        const user1Data = user1Doc.exists() ? user1Doc.data() : null;
-        const user2Data = user2Doc.exists() ? user2Doc.data() : null;
-        
-        // Create notification documents
-        const notifications = [];
-        
-        if (user1Data && user2Data) {
-            // Notification for user1
-            notifications.push(
-                setDoc(doc(collection(this.db, 'notifications')), {
-                    userId: userId1,
-                    type: 'match',
-                    title: '🎉 It\'s a Match!',
-                    message: `You and ${user2Data.name} liked each other!`,
-                    matchId: matchId,
-                    partnerId: userId2,
-                    partnerName: user2Data.name,
-                    partnerPhoto: user2Data.photos?.[0] || user2Data.photo,
-                    read: false,
-                    timestamp: serverTimestamp()
-                })
-            );
-            
-            // Notification for user2
-            notifications.push(
-                setDoc(doc(collection(this.db, 'notifications')), {
-                    userId: userId2,
-                    type: 'match',
-                    title: '🎉 It\'s a Match!',
-                    message: `You and ${user1Data.name} liked each other!`,
-                    matchId: matchId,
-                    partnerId: userId1,
-                    partnerName: user1Data.name,
-                    partnerPhoto: user1Data.photos?.[0] || user1Data.photo,
-                    read: false,
-                    timestamp: serverTimestamp()
-                })
-            );
-            
-            await Promise.all(notifications);
-            console.log('📬 Match notifications sent');
-        }
-        
-    } catch (error) {
-        console.error('Error sending match notifications:', error);
-        // Don't throw - match creation should still succeed
     }
 }
 

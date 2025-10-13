@@ -79,11 +79,15 @@ export class NotificationManager {
     // ==================== PERSISTENCE METHODS ====================
     
     /**
-     * Load processed messages from storage
+     * Load processed messages from storage (user-specific)
      */
     loadProcessedMessages() {
         try {
-            const saved = localStorage.getItem('processedNotifications');
+            const currentUser = this.state.get('currentUser');
+            if (!currentUser) return;
+            
+            const storageKey = `processedNotifications_${currentUser.uid}`;
+            const saved = localStorage.getItem(storageKey);
             if (saved) {
                 const parsed = JSON.parse(saved);
                 // Only load messages from current session (last 24 hours)
@@ -105,25 +109,33 @@ export class NotificationManager {
     }
     
     /**
-     * Save processed messages to storage
+     * Save processed messages to storage (user-specific)
      */
     saveProcessedMessages() {
         try {
             if (!this.isInitialized) return;
             
+            const currentUser = this.state.get('currentUser');
+            if (!currentUser) return;
+            
+            const storageKey = `processedNotifications_${currentUser.uid}`;
             const toSave = Array.from(this.processedMessages).slice(-100);
-            localStorage.setItem('processedNotifications', JSON.stringify(toSave));
+            localStorage.setItem(storageKey, JSON.stringify(toSave));
         } catch (error) {
             console.error('Error saving processed messages:', error);
         }
     }
     
     /**
-     * Load unread counts from storage
+     * Load unread counts from storage (user-specific)
      */
     loadUnreadStateFromStorage() {
         try {
-            const saved = localStorage.getItem('unreadMessages');
+            const currentUser = this.state.get('currentUser');
+            if (!currentUser) return;
+            
+            const storageKey = `unreadMessages_${currentUser.uid}`;
+            const saved = localStorage.getItem(storageKey);
             if (saved) {
                 const parsed = JSON.parse(saved);
                 Object.entries(parsed).forEach(([chatId, count]) => {
@@ -140,12 +152,16 @@ export class NotificationManager {
     }
     
     /**
-     * Save unread counts to storage
+     * Save unread counts to storage (user-specific)
      */
     saveUnreadStateToStorage() {
         try {
             if (!this.isInitialized) return;
             
+            const currentUser = this.state.get('currentUser');
+            if (!currentUser) return;
+            
+            const storageKey = `unreadMessages_${currentUser.uid}`;
             const unreadObject = {};
             this.unreadMessages.forEach((count, chatId) => {
                 if (count > 0) {
@@ -153,18 +169,22 @@ export class NotificationManager {
                 }
             });
             
-            localStorage.setItem('unreadMessages', JSON.stringify(unreadObject));
+            localStorage.setItem(storageKey, JSON.stringify(unreadObject));
         } catch (error) {
             console.error('Error saving unread state:', error);
         }
     }
     
     /**
-     * Load last seen timestamps
+     * Load last seen timestamps (user-specific)
      */
     loadLastSeenTimestamps() {
         try {
-            const saved = localStorage.getItem('lastSeenTimestamps');
+            const currentUser = this.state.get('currentUser');
+            if (!currentUser) return;
+            
+            const storageKey = `lastSeenTimestamps_${currentUser.uid}`;
+            const saved = localStorage.getItem(storageKey);
             if (saved) {
                 const parsed = JSON.parse(saved);
                 Object.entries(parsed).forEach(([chatId, timestamp]) => {
@@ -178,18 +198,22 @@ export class NotificationManager {
     }
     
     /**
-     * Save last seen timestamps
+     * Save last seen timestamps (user-specific)
      */
     saveLastSeenTimestamps() {
         try {
             if (!this.isInitialized) return;
             
+            const currentUser = this.state.get('currentUser');
+            if (!currentUser) return;
+            
+            const storageKey = `lastSeenTimestamps_${currentUser.uid}`;
             const timestamps = {};
             this.lastSeenTimestamps.forEach((time, chatId) => {
                 timestamps[chatId] = time;
             });
             
-            localStorage.setItem('lastSeenTimestamps', JSON.stringify(timestamps));
+            localStorage.setItem(storageKey, JSON.stringify(timestamps));
         } catch (error) {
             console.error('Error saving last seen timestamps:', error);
         }

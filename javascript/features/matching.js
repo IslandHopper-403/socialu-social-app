@@ -23,6 +23,7 @@ import {
  * - Added self-like/pass prevention
  * - localStorage now syncs with Firebase on init
  */
+
 export class MatchingManager {
     constructor(firebaseServices, appState) {
         this.auth = firebaseServices.auth;
@@ -34,6 +35,9 @@ export class MatchingManager {
         
         // Track liked users to filter from feed
         this.likedUsers = new Set();
+        
+        // Track seen matches (prevent duplicate popups)
+        this.seenMatches = new Set();
     }
     
     /**
@@ -46,11 +50,13 @@ export class MatchingManager {
         // Load from localStorage first (instant feedback)
         this.loadPassedUsers();
         this.loadLikedUsers();
+        this.loadSeenMatches();
         
         // Log initial state from localStorage
         console.log('📦 [MATCHING] Loaded from localStorage:', {
             likes: this.likedUsers.size,
-            passes: this.passedUsers.size
+            passes: this.passedUsers.size,
+            seenMatches: this.seenMatches.size
         });
         
         // Sync with Firebase (source of truth)
@@ -227,6 +233,41 @@ export class MatchingManager {
             localStorage.setItem(storageKey, JSON.stringify(realUsers));
         } catch (error) {
             console.error('❌ [MATCHING] Error saving liked users:', error);
+        }
+    }
+    
+    /**
+     * Load seen matches from localStorage (user-specific)
+     */
+    loadSeenMatches() {
+        try {
+            const currentUser = this.auth.currentUser;
+            if (!currentUser) return;
+            
+            const storageKey = `seenMatches_${currentUser.uid}`;
+            const stored = localStorage.getItem(storageKey);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                this.seenMatches = new Set(parsed);
+                console.log('📦 [MATCHING] Loaded', this.seenMatches.size, 'seen matches');
+            }
+        } catch (error) {
+            console.error('❌ [MATCHING] Error loading seen matches:', error);
+        }
+    }
+    
+    /**
+     * Save seen matches to localStorage (user-specific)
+     */
+    saveSeenMatches() {
+        try {
+            const currentUser = this.auth.currentUser;
+            if (!currentUser) return;
+            
+            const storageKey = `seenMatches_${currentUser.uid}`;
+            localStorage.setItem(storageKey, JSON.stringify(Array.from(this.seenMatches)));
+        } catch (error) {
+            console.error('❌ [MATCHING] Error saving seen matches:', error);
         }
     }
     

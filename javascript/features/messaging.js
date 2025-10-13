@@ -70,7 +70,7 @@ export class MessagingManager {
     this.isChatVisible = false; // Track if chat overlay is actually visible
 
     // Track read receipts per message
-   this.messageReadStates = new Map(); // messageId -> {read: boolean, readAt: timestamp}
+    this.messageReadStates = new Map(); // messageId -> {read: boolean, readAt: timestamp}
     this.loadMessageReadStates();
     
     // FIXED: Better last active tracking
@@ -79,8 +79,10 @@ export class MessagingManager {
     // FIXED: Track initial loads to prevent notifications
     this.initialLoadComplete = new Set();
     this.firstLoadTimestamp = Date.now(); // When THIS session started
+    
+    // NOTE: seenMatches moved to MatchingManager (proper architecture)
        
-    // ADDED: Track app visibility for smart notifications
+      // ADDED: Track app visibility for smart notifications
     document.addEventListener('visibilitychange', () => {
         this.isAppVisible = !document.hidden;
         

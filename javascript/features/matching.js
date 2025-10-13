@@ -145,11 +145,15 @@ export class MatchingManager {
     }
     
     /**
-     * Load passed users from localStorage
+     * Load passed users from localStorage (user-specific)
      */
     loadPassedUsers() {
         try {
-            const stored = localStorage.getItem('passedUsers');
+            const currentUser = this.auth.currentUser;
+            if (!currentUser) return;
+            
+            const storageKey = `passedUsers_${currentUser.uid}`;
+            const stored = localStorage.getItem(storageKey);
             if (stored) {
                 const parsed = JSON.parse(stored);
                 // Filter out demo users that shouldn't be in localStorage
@@ -167,24 +171,32 @@ export class MatchingManager {
     }
     
     /**
-     * Save passed users to localStorage
+     * Save passed users to localStorage (user-specific)
      */
     savePassedUsers() {
         try {
+            const currentUser = this.auth.currentUser;
+            if (!currentUser) return;
+            
+            const storageKey = `passedUsers_${currentUser.uid}`;
             // Filter out demo users before saving
             const realUsers = [...this.passedUsers].filter(id => !id.startsWith('user_'));
-            localStorage.setItem('passedUsers', JSON.stringify(realUsers));
+            localStorage.setItem(storageKey, JSON.stringify(realUsers));
         } catch (error) {
             console.error('❌ [MATCHING] Error saving passed users:', error);
         }
     }
     
     /**
-     * Load liked users from localStorage
+     * Load liked users from localStorage (user-specific)
      */
     loadLikedUsers() {
         try {
-            const stored = localStorage.getItem('likedUsers');
+            const currentUser = this.auth.currentUser;
+            if (!currentUser) return;
+            
+            const storageKey = `likedUsers_${currentUser.uid}`;
+            const stored = localStorage.getItem(storageKey);
             if (stored) {
                 const parsed = JSON.parse(stored);
                 // Filter out demo users that shouldn't be in localStorage
@@ -202,13 +214,17 @@ export class MatchingManager {
     }
     
     /**
-     * Save liked users to localStorage
+     * Save liked users to localStorage (user-specific)
      */
     saveLikedUsers() {
         try {
+            const currentUser = this.auth.currentUser;
+            if (!currentUser) return;
+            
+            const storageKey = `likedUsers_${currentUser.uid}`;
             // Filter out demo users before saving
             const realUsers = [...this.likedUsers].filter(id => !id.startsWith('user_'));
-            localStorage.setItem('likedUsers', JSON.stringify(realUsers));
+            localStorage.setItem(storageKey, JSON.stringify(realUsers));
         } catch (error) {
             console.error('❌ [MATCHING] Error saving liked users:', error);
         }

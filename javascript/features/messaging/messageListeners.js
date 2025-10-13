@@ -103,9 +103,8 @@ export class MessageListenersManager {
             } catch (error) {
                 console.error(`❌ [LISTENERS] Error unregistering ${id}:`, error);
             }
-        } else {
-            console.warn(`⚠️ [LISTENERS] Listener not found: ${id}`);
         }
+        // Note: Silently ignore if listener doesn't exist (normal on first setup)
     }
     
     /**

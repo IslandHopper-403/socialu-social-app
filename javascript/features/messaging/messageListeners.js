@@ -165,12 +165,22 @@ export class MessageListenersManager {
         
         console.log(`💬 [LISTENERS] Setting up listener for chat: ${chatId}`);
         
-        // Remove existing listener for this chat first
-        this.unregisterListener(`chat_${chatId}`);
+        // Remove existing listener for this chat first (silently ignore if none exists)
+        const listenerKey = `chat_${chatId}`;
+        if (this.activeListeners.has(listenerKey)) {
+            console.log(`🔄 [LISTENERS] Replacing existing listener for chat: ${chatId}`);
+            this.unregisterListener(listenerKey);
+        }
         
         const currentUser = this.state.get('currentUser');
         if (!currentUser) {
             console.error('❌ [LISTENERS] No current user for chat listener');
+            return;
+        }
+        
+        // Verify database connection
+        if (!this.db) {
+            console.error('❌ [LISTENERS] No database connection for chat listener');
             return;
         }
         
@@ -179,7 +189,6 @@ export class MessageListenersManager {
         
         // Track if this is the first snapshot for THIS chat
         let isInitialLoad = true;
-        const lastSeen = this.messaging.lastAppActive;
         
         try {
             const unsubscribe = onSnapshot(q, (snapshot) => {

@@ -277,9 +277,10 @@ export class MessageListenersManager {
             const sessionStartTime = Date.now();
             const thirtySecondsAgo = Date.now() - 30000; // 30 second window
             
-            // Load seen matches from localStorage
+            // Load seen matches from localStorage (user-specific)
             if (!this.messaging.seenMatches) {
-                this.messaging.seenMatches = new Set(JSON.parse(localStorage.getItem('seenMatches') || '[]'));
+                const storageKey = `seenMatches_${userId}`;
+                this.messaging.seenMatches = new Set(JSON.parse(localStorage.getItem(storageKey) || '[]'));
             }
             
             const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -300,9 +301,10 @@ export class MessageListenersManager {
                     localStorage.setItem(`match_time_${matchId}`, matchTime.toString());
                 });
                 
-                // Save seenMatches to localStorage directly
+               // Save seenMatches to localStorage directly (user-specific)
                 if (this.messaging.seenMatches) {
-                    localStorage.setItem('seenMatches', JSON.stringify(Array.from(this.messaging.seenMatches)));
+                    const storageKey = `seenMatches_${userId}`;
+                    localStorage.setItem(storageKey, JSON.stringify(Array.from(this.messaging.seenMatches)));
                 }
                 isInitialLoad = false;
                 console.log(`✅ [LISTENERS] Initial match load complete, marked all as seen`);
@@ -363,9 +365,10 @@ export class MessageListenersManager {
                         console.log(`🎉 [LISTENERS] GENUINE NEW MATCH: ${matchId} (age: ${Math.round(timeDiff / 1000)}s)`);
                         this.messaging.seenMatches.add(matchId);
                         
-                        // Save seenMatches to localStorage directly
+                        // Save seenMatches to localStorage directly (user-specific)
                         if (this.messaging.seenMatches) {
-                            localStorage.setItem('seenMatches', JSON.stringify(Array.from(this.messaging.seenMatches)));
+                            const storageKey = `seenMatches_${userId}`;
+                            localStorage.setItem(storageKey, JSON.stringify(Array.from(this.messaging.seenMatches)));
                         }
                         
                         // Delegate to NotificationManager for match popup

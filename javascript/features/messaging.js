@@ -308,38 +308,6 @@ export class MessagingManager {
         }
     }
     
-   /**
-     * Set up business message listeners
-     */
-    setupBusinessMessageListeners() {
-        const user = this.state.get('currentUser');
-        if (!user) return;
-        
-        try {
-            // Listen for new messages in business chats
-            const chatsQuery = query(
-                collection(this.db, 'chats'),
-                where('participants', 'array-contains', user.uid)
-            );
-            
-            const unsubscribe = onSnapshot(chatsQuery, (snapshot) => {
-                console.log('📬 Business messages updated');
-                this.loadBusinessMessages();
-            });
-            
-            // SECURITY: Track listener for cleanup
-            this.registerListener(`business_messages_${user.uid}`, unsubscribe, 'business');
-            
-            // Store reference for cleanup
-            if (this.businessManager) {
-                this.businessManager.businessMessageListener = unsubscribe;
-            }
-            
-        } catch (error) {
-            console.error('Error setting up business message listeners:', error);
-        }
-    }
-    
     /**
      * Update business messages list in dashboard
      */
@@ -1345,26 +1313,6 @@ closeChat() {
     }
     
     // NOTE: listenToChatMessages() removed - call this.listeners.listenToChatMessages(chatId) directly
-    
-    /**
-     * Handle message notification properly
-     */
-    async handleMessageNotification(message, chatId) {
-        try {
-            const partnerInfo = await this.getChatPartnerInfo(chatId);
-            const notificationManager = window.classifiedApp?.managers?.notifications;
-            
-            if (notificationManager) {
-                notificationManager.showNotification(message, chatId, partnerInfo);
-                
-                if (this.currentChatId !== chatId) {
-                    notificationManager.updateUnreadCount(chatId, 1);
-                }
-            }
-        } catch (error) {
-            console.error('Error handling message notification:', error);
-        }
-    }
     
     /**
      * Open chat with viewed user

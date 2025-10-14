@@ -229,27 +229,69 @@ export class UserFeedManager {
     }
     
     /**
-     * Get liked users from localStorage
+     * Get liked users from localStorage (user-specific)
      */
     getLikedUsers() {
         try {
-            const stored = localStorage.getItem('likedUsers');
-            return stored ? new Set(JSON.parse(stored)) : new Set();
+            console.log('🔍 [FEED-DEBUG-1] getLikedUsers() called at:', Date.now());
+            
+            const currentUser = this.state.get('currentUser');
+            if (!currentUser || !currentUser.uid) {
+                console.warn('⚠️ [FEED-DEBUG-1] No current user, returning empty set');
+                return new Set();
+            }
+            
+            // CRITICAL FIX: Use user-specific key to match matching.js
+            const storageKey = `likedUsers_${currentUser.uid}`;
+            const stored = localStorage.getItem(storageKey);
+            
+            console.log('🔍 [FEED-DEBUG-1] Reading from localStorage:', {
+                userId: currentUser.uid,
+                storageKey,
+                hasData: !!stored,
+                dataLength: stored ? JSON.parse(stored).length : 0
+            });
+            
+            const likedUsers = stored ? new Set(JSON.parse(stored)) : new Set();
+            console.log('✅ [FEED-DEBUG-1] Loaded', likedUsers.size, 'liked users');
+            
+            return likedUsers;
         } catch (error) {
-            console.error('❌ [getLikedUsers] Error:', error);
+            console.error('❌ [FEED-DEBUG-1] Error loading liked users:', error);
             return new Set();
         }
     }
     
     /**
-     * Get passed users from localStorage  
+     * Get passed users from localStorage (user-specific)
      */
     getPassedUsers() {
         try {
-            const stored = localStorage.getItem('passedUsers');
-            return stored ? new Set(JSON.parse(stored)) : new Set();
+            console.log('🔍 [FEED-DEBUG-2] getPassedUsers() called at:', Date.now());
+            
+            const currentUser = this.state.get('currentUser');
+            if (!currentUser || !currentUser.uid) {
+                console.warn('⚠️ [FEED-DEBUG-2] No current user, returning empty set');
+                return new Set();
+            }
+            
+            // CRITICAL FIX: Use user-specific key to match matching.js
+            const storageKey = `passedUsers_${currentUser.uid}`;
+            const stored = localStorage.getItem(storageKey);
+            
+            console.log('🔍 [FEED-DEBUG-2] Reading from localStorage:', {
+                userId: currentUser.uid,
+                storageKey,
+                hasData: !!stored,
+                dataLength: stored ? JSON.parse(stored).length : 0
+            });
+            
+            const passedUsers = stored ? new Set(JSON.parse(stored)) : new Set();
+            console.log('✅ [FEED-DEBUG-2] Loaded', passedUsers.size, 'passed users');
+            
+            return passedUsers;
         } catch (error) {
-            console.error('❌ [getPassedUsers] Error:', error);
+            console.error('❌ [FEED-DEBUG-2] Error loading passed users:', error);
             return new Set();
         }
     }

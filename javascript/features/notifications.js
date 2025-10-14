@@ -578,6 +578,7 @@ export class NotificationManager {
                 console.log('✅ [MATCH-POPUP-DEBUG] Match popup auto-closed');
             }
         }, 15000);
+    }
     
     /**
      * Start chat from match (delegates to messaging manager)

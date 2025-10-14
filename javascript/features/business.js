@@ -1,6 +1,7 @@
 // javascript/features/business.js
 
 import { sanitizeText, escapeHtml } from '../utils/security.js';
+import { BusinessDashboardManager } from './business/businessDashboard.js';
 
 import {
     doc,
@@ -40,7 +41,11 @@ export class BusinessManager {
         this.messagingManager = null; 
         this.storyManager = null;  // Reference to BusinessStoryManager
         
-        // Dashboard data
+        // Initialize dashboard sub-manager
+        this.dashboard = new BusinessDashboardManager(firebaseServices, appState);
+        console.log('✅ [BUSINESS] Dashboard sub-manager initialized');
+        
+        // Dashboard data (kept for backward compatibility)
         this.dashboardData = {
             views: 0,
             clicks: 0,
@@ -67,6 +72,14 @@ export class BusinessManager {
         this.authManager = managers.auth;
         this.messagingManager = managers.messaging; 
         this.storyManager = managers.businessStory;  // Add story manager reference
+        
+        // Pass manager references to dashboard sub-manager
+        this.dashboard.setManagers({
+            navigation: managers.navigation,
+            messaging: managers.messaging,
+            business: this  // Parent reference
+        });
+        console.log('✅ [BUSINESS] Dashboard manager references set');
         
         // Get mock data reference from the main app
         if (window.classifiedApp && window.classifiedApp.mockData) {
@@ -97,427 +110,88 @@ export class BusinessManager {
     
    /**
      * Handle business login
+     * DELEGATION: Passes to dashboard sub-manager
      */
     async handleBusinessLogin(businessData) {
-        console.log('🏢 Business user logged in');
+        console.log('🏢 [BUSINESS] Business user logged in');
         
-        // Store business data
+        // Store business data locally (for backward compatibility)
         this.currentBusinessData = businessData;
         
-        // Check if profile needs completion
-        if (businessData.status === 'pending_approval' && !businessData.description) {
-            this.needsProfileCompletion = true;
-        }
+        // Delegate to dashboard
+        await this.dashboard.handleBusinessLogin(businessData);
     }
     
     /**
      * Initialize business dashboard
+     * DELEGATION: Auth check + delegate to dashboard
      */
     async initializeDashboard() {
-        console.log('📊 Initializing business dashboard');
+        console.log('📊 [BUSINESS] Initializing dashboard');
         
-        // Load dashboard data
-        await this.loadBusinessDashboard();
-        
-        // Update dashboard UI
-        this.updateDashboardUI();
-        
-        // Show profile completion prompt if needed
-        if (this.needsProfileCompletion) {
-            setTimeout(() => {
-                alert('Welcome! Please complete your business profile to get approved and start appearing in feeds.');
-                this.profileManager.openBusinessProfileEditor();
-            }, 1000);
+        // SECURITY: Auth check at manager level
+        if (!this.state.get('isBusinessUser')) {
+            console.error('❌ [BUSINESS] Business authentication required');
+            return;
         }
-         // SECURITY: Set up real-time listeners with proper cleanup
-        this.setupDashboardListeners();  // <-- ADD THIS LINE HERE
+        
+        // Delegate to dashboard sub-manager
+        await this.dashboard.initializeDashboard();
     }
-
-            /**
+    
+    /**
+     * Load business dashboard data
+     * DELEGATION: Simple pass-through
+     */
+    async loadBusinessDashboard() {
+       return this.dashboard.loadBusinessDashboard();
+    }
+    
+    /**
+     * Update dashboard UI
+     * DELEGATION: Simple pass-through
+     */
+    updateDashboardUI() {
+        return this.dashboard.updateDashboardUI();
+    }
+    
+    /**
+     * Open business messages overlay
+     * DELEGATION: Auth check + delegate
+     */
+    openBusinessMessages() {
+        if (!this.state.get('isBusinessUser')) {
+            console.error('❌ [BUSINESS] Business authentication required');
+            return;
+        }
+        return this.dashboard.openBusinessMessages();
+    }
+    
+    /**
+     * Close business messages overlay
+     * DELEGATION: Simple pass-through
+     */
+    closeBusinessMessages() {
+        return this.dashboard.closeBusinessMessages();
+    }
+    
+    /**
      * Set up real-time listeners for dashboard stats
-     * SECURITY: Firestore rules must restrict to business owner only
+     * DELEGATION: Auth check + delegate (called by initializeDashboard)
      */
+
     setupDashboardListeners() {
-        const user = this.state.get('currentUser');
-        if (!user || !this.state.get('isBusinessUser')) {
-            console.error('❌ Unauthorized: Business authentication required');
-            return;
-        }
-        
-        console.log('📊 Setting up dashboard real-time listeners');
-        
-        // 1. Listen to business analytics collection for views
-        this.setupAnalyticsListener(user.uid);
-        
-        // 2. Listen to messages for this business
-        this.setupMessagesListener(user.uid);
-        
-        // 3. Listen to promotions
-        this.setupPromotionsListener(user.uid);
-        
-        // 4. Set up auto-refresh interval (30 seconds)
-        this.dashboardRefreshInterval = setInterval(() => {
-            this.updateDashboardStats();
-        }, 30000);
+        // DELEGATION: Called internally by dashboard.initializeDashboard()
+        // No direct call needed - dashboard handles its own listeners
+        console.log('🔗 [BUSINESS] Dashboard listeners managed by sub-manager');
     }
     
     /**
-     * Set up analytics listener for real-time view counts
-     */
-    setupAnalyticsListener(businessId) {
-        try {
-            // Query for today's analytics
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            const analyticsQuery = query(
-                collection(this.db, 'businessAnalytics'),
-                where('businessId', '==', businessId),
-                where('timestamp', '>=', Timestamp.fromDate(today)),
-                orderBy('timestamp', 'desc')
-            );
-            
-            // SECURITY: Clean up previous listener
-            if (this.analyticsListener) {
-                this.analyticsListener();
-            }
-            
-            // Real-time listener for analytics
-            this.analyticsListener = onSnapshot(analyticsQuery, 
-                (snapshot) => {
-                    let todayViews = 0;
-                    let todayMessages = 0;
-                    
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        if (data.type === 'view') todayViews++;
-                        if (data.type === 'message') todayMessages++;
-                    });
-                    
-                    // Update dashboard data
-                    this.dashboardData.todayViews = todayViews;
-                    
-                    // Update UI with textContent (SECURITY)
-                    const viewsEl = document.getElementById('businessViewsCount');
-                    if (viewsEl) viewsEl.textContent = todayViews;
-                    
-                    console.log(`📈 Today's views: ${todayViews}`);
-                },
-                (error) => {
-                    console.error('❌ Analytics listener error:', error);
-                }
-            );
-        } catch (error) {
-            console.error('❌ Error setting up analytics listener:', error);
-        }
-    }
-    
-    /**
-     * Set up messages listener for unread count
-     */
-    setupMessagesListener(businessId) {
-        try {
-            // FIXED: Query the businessConversations collection, not messages
-            const messagesQuery = query(
-                collection(this.db, 'businessConversations'),
-                where('businessId', '==', businessId),
-                orderBy('lastMessageTime', 'desc'),
-                limit(50)
-            );
-            
-            // SECURITY: Clean up previous listener
-            if (this.messagesListener) {
-                this.messagesListener();
-                this.messagesListener = null;
-            }
-            
-            console.log('👂 Setting up business messages listener for:', businessId);
-            
-            // Real-time listener for messages
-            this.messagesListener = onSnapshot(messagesQuery,
-                (snapshot) => {
-                    let unreadCount = 0;
-                    const conversations = [];
-                    
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        conversations.push({
-                            id: doc.id,
-                            ...data
-                        });
-                        
-                        // Count unread from business perspective
-                        if (data.businessUnread && data.businessUnread > 0) {
-                            unreadCount += data.businessUnread;
-                        }
-                    });
-                    
-                    this.dashboardData.messages = unreadCount;
-                    
-                    // Update UI with textContent (SECURITY)
-                    const messagesEl = document.getElementById('businessMessagesCount');
-                    if (messagesEl) messagesEl.textContent = unreadCount;
-            
-                    // REMOVED OLD FUNCTION - this.updateMessagesList(snapshot);
-                    
-                    // Update Recent Messages block on dashboard
-                    this.updateRecentMessagesBlock(conversations);
-                    
-                        // ADDED: Update Messages count block on dashboard
-                        this.updateMessagesCountBlock(unreadCount, conversations.length);
-                        
-                        console.log(`💬 Business conversations: ${conversations.length} total, ${unreadCount} unread`);
-                    },
-                    (error) => {
-                        console.error('❌ Messages listener error:', error);
-                    }
-            );
-        } catch (error) {
-            console.error('❌ Error setting up messages listener:', error);
-        }
-    }
-    
-    /**
-     * Set up promotions listener
-     */
-    setupPromotionsListener(businessId) {
-        try {
-            // Query for active promotions
-            const promotionsQuery = query(
-                collection(this.db, 'promotions'),
-                where('businessId', '==', businessId),
-                where('status', '==', 'active'),
-                orderBy('createdAt', 'desc')
-            );
-            
-            // SECURITY: Clean up previous listener
-            if (this.promotionsListener) {
-                this.promotionsListener();
-            }
-            
-            // Real-time listener for promotions
-            this.promotionsListener = onSnapshot(promotionsQuery,
-                (snapshot) => {
-                    const promotions = [];
-                    snapshot.forEach(doc => {
-                        promotions.push({ id: doc.id, ...doc.data() });
-                    });
-                    
-                    this.dashboardData.promotions = promotions;
-                    
-                    // Update promotions count badge
-                    const badgeEl = document.getElementById('promotionsBadge');
-                    if (badgeEl) {
-                        if (promotions.length > 0) {
-                            badgeEl.textContent = promotions.length;
-                            badgeEl.style.display = 'flex';
-                        } else {
-                            badgeEl.style.display = 'none';
-                        }
-                    }
-                    
-                    console.log(`📢 Active promotions: ${promotions.length}`);
-                },
-                (error) => {
-                    console.error('❌ Promotions listener error:', error);
-                }
-            );
-        } catch (error) {
-            console.error('❌ Error setting up promotions listener:', error);
-        }
-    }
-    
-    /**
-     * Update messages list in dashboard
-     * SECURITY: Always use textContent for user data
-     */
-    updateMessagesList(snapshot) {
-        const messagesList = document.getElementById('businessMessagesList');
-        if (!messagesList) return;
-        
-        const emptyState = document.getElementById('businessMessagesEmpty');
-        
-        if (snapshot.empty) {
-            if (emptyState) emptyState.style.display = 'block';
-            messagesList.innerHTML = ''; // Safe - no user content
-            return;
-        }
-        
-        if (emptyState) emptyState.style.display = 'none';
-        
-        // Clear and rebuild list
-        messagesList.innerHTML = ''; // Safe - we'll use textContent for user data
-        
-        // Show first 3 conversations
-        let count = 0;
-        snapshot.forEach(doc => {
-            if (count >= 3) return;
-            
-            const data = doc.data();
-            const messageItem = document.createElement('div');
-            // Only mark as unread if has unread messages
-            messageItem.className = data.businessUnread > 0 ? 'message-item unread' : 'message-item';
-            messageItem.dataset.conversationId = doc.id;
-            
-            // Avatar with actual customer photo
-        const avatar = document.createElement('div');
-        avatar.className = 'customer-avatar';
-        
-        // Fetch customer photo
-        if (conv.userId) {
-            this.fetchCustomerPhoto(conv.userId).then(photoUrl => {
-                if (photoUrl) {
-                    avatar.style.backgroundImage = `url('${photoUrl}')`;
-                    avatar.style.backgroundSize = 'cover';
-                    avatar.style.backgroundPosition = 'center';
-                    avatar.textContent = ''; // Clear emoji
-                } else {
-                    avatar.textContent = '👤'; // Fallback
-                }
-            });
-        } else {
-            avatar.textContent = '👤'; // Fallback if no userId
-        }
-            
-            const content = document.createElement('div');
-            content.className = 'message-content';
-            
-            const header = document.createElement('div');
-            header.className = 'message-header';
-            
-            const name = document.createElement('span');
-            name.className = 'customer-name';
-            // SECURITY: Use textContent for user data
-            name.textContent = data.userName || 'Customer';
-            
-            const time = document.createElement('span');
-            time.className = 'message-time';
-            time.textContent = this.formatMessageTime(data.lastMessageTime);
-            
-            header.appendChild(name);
-            header.appendChild(time);
-            
-            const preview = document.createElement('div');
-            preview.className = 'message-preview';
-            if (data.businessUnread > 0) {
-                preview.style.fontWeight = '700'; // Bold for unread
-            }
-            // SECURITY: Use textContent for message content
-            preview.textContent = data.lastMessage || 'New inquiry about your business';
-            
-            content.appendChild(header);
-            content.appendChild(preview);
-            
-            // Add unread badge if needed
-            if (data.businessUnread > 0) {
-                const badge = document.createElement('div');
-                badge.className = 'unread-badge';
-                badge.textContent = data.businessUnread.toString();
-                badge.style.cssText = 'background: #ff6b6b; color: white; border-radius: 10px; padding: 2px 6px; font-size: 11px; margin-left: auto;';
-                content.appendChild(badge);
-            }
-            
-            messageItem.appendChild(avatar);
-            messageItem.appendChild(content);
-            
-            messageItem.onclick = () => {
-                // SECURITY: Validate conversation ID
-                if (doc.id && typeof doc.id === 'string') {
-                    window.CLASSIFIED.openBusinessConversation(doc.id);
-                }
-            };
-            
-            messagesList.appendChild(messageItem);
-            count++;
-        });
-    }
-    
-    /**
-     * Format timestamp for message display
-     */
-    formatMessageTime(timestamp) {
-        if (!timestamp) return 'Now';
-        
-        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-        const now = new Date();
-        const diff = now - date;
-        
-        if (diff < 60000) return 'Just now';
-        if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
-        if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
-        
-        return date.toLocaleDateString();
-    }
-    
-    /**
-     * Update dashboard stats (called by interval)
-     */
-    async updateDashboardStats() {
-        const user = this.state.get('currentUser');
-        if (!user || !this.state.get('isBusinessUser')) return;
-        
-        try {
-            // Calculate rating from reviews
-            const reviewsQuery = query(
-                collection(this.db, 'reviews'),
-                where('businessId', '==', user.uid)
-            );
-            
-            const reviewsSnapshot = await getDocs(reviewsQuery);
-            let totalRating = 0;
-            let reviewCount = 0;
-            
-            reviewsSnapshot.forEach(doc => {
-                const data = doc.data();
-                if (data.rating) {
-                    totalRating += data.rating;
-                    reviewCount++;
-                }
-            });
-            
-            const avgRating = reviewCount > 0 ? (totalRating / reviewCount).toFixed(1) : '5.0';
-            
-            // Update UI with textContent (SECURITY)
-            const ratingEl = document.getElementById('businessRatingValue');
-            if (ratingEl) ratingEl.textContent = avgRating;
-            
-            // Calculate response rate
-            // TODO: Implement actual response rate calculation
-            const responseRate = '95%';
-            const responseEl = document.getElementById('businessResponseRate');
-            if (responseEl) responseEl.textContent = responseRate;
-            
-        } catch (error) {
-            console.error('❌ Error updating stats:', error);
-        }
-    }
-    
-    /**
-     * Clean up all dashboard listeners
-     * SECURITY: Must be called on logout/cleanup
+     * Cleanup dashboard listeners
+     * DELEGATION: Simple pass-through
      */
     cleanupDashboardListeners() {
-        console.log('🧹 Cleaning up dashboard listeners');
-        
-        if (this.analyticsListener) {
-            this.analyticsListener();
-            this.analyticsListener = null;
-        }
-        
-        if (this.messagesListener) {
-            this.messagesListener();
-            this.messagesListener = null;
-        }
-        
-        if (this.promotionsListener) {
-            this.promotionsListener();
-            this.promotionsListener = null;
-        }
-        
-        if (this.dashboardRefreshInterval) {
-            clearInterval(this.dashboardRefreshInterval);
-            this.dashboardRefreshInterval = null;
-        }
+        return this.dashboard.cleanupDashboardListeners();
     }
     
     /**
@@ -582,32 +256,7 @@ export class BusinessManager {
         }
     }
     
-    /**
-     * Load business dashboard data
-     */
-       async loadBusinessDashboard() {
-            const user = this.state.get('currentUser');
-            if (!user) return;
-            
-            try {
-                // Get business analytics
-                const analyticsDoc = await getDoc(doc(this.db, 'businessAnalytics', user.uid));
-                if (analyticsDoc.exists()) {
-                    const data = analyticsDoc.data();
-                    this.dashboardData = {
-                        views: data.views || 0,
-                        clicks: data.clicks || 0,
-                        messages: data.messages || 0,
-                        promotions: data.promotions || []
-                    };
-                }
-                
-                console.log('📊 Business dashboard loaded:', this.dashboardData);
-                
-            } catch (error) {
-                console.error('❌ Error loading dashboard:', error);
-            }
-        }
+    // (Already handled in CHANGE 5 - delete this duplicate if it exists)
         
         /**
          * Open business profile by slug or ID
@@ -1811,180 +1460,23 @@ export class BusinessManager {
         return '';
     }
     
-     /**
-     * Update Recent Messages block on dashboard
-     */
-    updateRecentMessagesBlock(conversations) {
-        console.log('🔧 updateRecentMessagesBlock called with:', conversations.length, 'conversations');
-        
-        const recentBlock = document.getElementById('recentMessagesBlock');
-        if (!recentBlock) {
-            console.error('❌ recentMessagesBlock not found!');
-            return;
-        }
-        
-        // FIXED: Use correct ID instead of class selector
-        const recentList = document.getElementById('businessMessagesList');
-        if (!recentList) {
-            console.error('❌ businessMessagesList not found!');
-            return;
-        }
-        
-        console.log('✅ Found elements, rendering messages...');
-        console.log('📦 Container before clear:', recentList.innerHTML.substring(0, 100));
-        
-        // Clear existing
-        recentList.innerHTML = '';
-        
-        // CRITICAL FIX: Force display to block
-        recentList.style.display = 'block';
-        console.log('🧹 Container cleared and display set to block');
-        
-        // Hide/show empty state
-        const emptyState = document.getElementById('businessMessagesEmpty');
-        
-        // Show top 3 most recent
-        const topThree = conversations.slice(0, 3);
-        
-        if (topThree.length === 0) {
-            recentList.style.display = 'none';
-            if (emptyState) emptyState.style.display = 'block';
-            return;
-        }
-        
-        // Hide empty state when we have messages
-        if (emptyState) emptyState.style.display = 'none';
-        
-        topThree.forEach(conv => {
-        console.log('📝 Rendering message from:', conv.userName, 'ID:', conv.id);
-        
-        // Use same structure as Business Messages overlay
-        const item = document.createElement('div');
-        item.className = conv.businessUnread > 0 ? 'message-item unread' : 'message-item';
-        item.dataset.conversationId = conv.id;
-        
-        // Avatar with actual customer photo
-        const avatar = document.createElement('div');
-        avatar.className = 'customer-avatar';
-        
-        // Fetch customer photo
-        if (conv.userId) {
-            this.fetchCustomerPhoto(conv.userId).then(photoUrl => {
-                if (photoUrl) {
-                    avatar.style.backgroundImage = `url('${photoUrl}')`;
-                    avatar.style.backgroundSize = 'cover';
-                    avatar.style.backgroundPosition = 'center';
-                    avatar.textContent = ''; // Clear emoji
-                } else {
-                    avatar.textContent = '👤'; // Fallback
-                }
-            });
-        } else {
-            avatar.textContent = '👤'; // Fallback if no userId
-        }
-        // Content container
-        const content = document.createElement('div');
-        content.className = 'message-content';
-        
-        // Header (name + time)
-        const header = document.createElement('div');
-        header.className = 'message-header';
-        
-        const name = document.createElement('span');
-        name.className = 'customer-name';
-        name.textContent = conv.userName || 'Customer';
-        
-        const time = document.createElement('span');
-        time.className = 'message-time';
-        time.textContent = this.formatMessageTime(conv.lastMessageTime);
-        
-        header.appendChild(name);
-        header.appendChild(time);
-        
-        // Preview
-        const preview = document.createElement('div');
-        preview.className = 'message-preview';
-        preview.textContent = conv.lastMessage || 'New inquiry';
-        
-        content.appendChild(header);
-        content.appendChild(preview);
-        
-        // Unread badge
-        if (conv.businessUnread > 0) {
-            const badge = document.createElement('div');
-            badge.className = 'unread-badge';
-            badge.textContent = conv.businessUnread.toString();
-            content.appendChild(badge);
-        }
-        
-        item.appendChild(avatar);
-        item.appendChild(content);
-        
-        item.onclick = () => {
-        console.log('🖱️ Message clicked, opening conversation:', conv.id);
-        if (this.messagingManager && this.messagingManager.businessMessaging) {
-            this.messagingManager.businessMessaging.openBusinessConversationFromDashboard(conv.id);
-        } else {
-            console.error('❌ Managers not available');
-        }
-    };
-        
-        recentList.appendChild(item);
-        console.log('✅ Message appended to list');
-    });
-    
-    console.log('✅ Finished rendering', topThree.length, 'messages to Recent Messages block');
-    console.log('📦 Container after render:', recentList.innerHTML.substring(0, 200));
-    console.log('📊 Container display:', recentList.style.display);
-    console.log('📊 Container visibility:', window.getComputedStyle(recentList).visibility);
-    console.log('📊 Container height:', window.getComputedStyle(recentList).height);
-    }
     
     /**
-     * Update Messages count block on dashboard
-     */
-    updateMessagesCountBlock(unreadCount, totalCount) {
-        const countBlock = document.getElementById('messagesCountBlock');
-        if (!countBlock) return;
-        
-        const unreadEl = countBlock.querySelector('.unread-count');
-        const totalEl = countBlock.querySelector('.total-count');
-        
-        if (unreadEl) unreadEl.textContent = unreadCount;
-        if (totalEl) totalEl.textContent = totalCount;
-    }
-    
-    
-   /**
      * Cleanup business dashboard resources
+     * DELEGATION: Delegates to dashboard sub-manager
      */
    cleanup() {
-        console.log('🧹 Cleaning up business dashboard');
+        console.log('🧹 [BUSINESS] Cleaning up business manager');
         
-        // SECURITY: Clean up all listeners to prevent memory leaks
-        this.cleanupDashboardListeners();
-        this.cleanupAnalyticsListeners();
-        
-        // Clear refresh interval
-        if (this.dashboardRefreshInterval) {
-            clearInterval(this.dashboardRefreshInterval);
-            this.dashboardRefreshInterval = null;
+        // Delegate dashboard cleanup to sub-manager
+        if (this.dashboard) {
+            this.dashboard.cleanup();
         }
         
-        // Clear any business message listeners
-        if (this.businessMessageListener) {
-            this.businessMessageListener();
-            this.businessMessageListener = null;
-        }
-        
-        // Clear cached data
+        // Clear local cached data
         this.currentBusinessData = null;
-        this.dashboardData = {
-            views: 0,
-            clicks: 0,
-            messages: 0,
-            promotions: []
-        };
+        
+        console.log('✅ [BUSINESS] Cleanup complete');
     }
     
     /**

@@ -393,7 +393,7 @@ export class BusinessMessagingManager {
         }
     }
     
- /**
+     /**
      * Track business message for analytics
      */
     async trackBusinessMessage(businessId) {
@@ -407,11 +407,12 @@ export class BusinessMessagingManager {
             });
         } catch (error) {
             console.error('Error tracking message:', error);
-       }
+        }
     }
      
     /**
      * Open business conversation from dashboard
+     */
     async openBusinessConversationFromDashboard(conversationId) {
     try {
         const user = this.state.get('currentUser');

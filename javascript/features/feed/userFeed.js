@@ -316,7 +316,7 @@ export class UserFeedManager {
         console.log('✅ [populateDemoUserFeed] Demo feed displayed');
     }
     
-    /**
+   /**
      * Populate guest user feed (no auth required)
      */
     populateGuestUserFeed() {
@@ -332,48 +332,167 @@ export class UserFeedManager {
             return;
         }
         
-        container.innerHTML = '';
+        // Add guest mode banner at top
+        container.innerHTML = `
+            <div style="background: linear-gradient(135deg, #4CAF50, #45a049); padding: 15px 20px; border-radius: 15px; margin-bottom: 20px; text-align: center; color: white; font-weight: 500; font-size: 14px;">
+                🔒 Browsing as guest. Some features may be limited.
+            </div>
+        `;
         
-        // Show first 3 users to guests
-        const guestUsers = this.mockData.getUsers().slice(0, 3);
+        // Show first 3-5 users to guests with blur + CTA
+        const guestUsers = this.mockData.getUsers().slice(0, 5);
         guestUsers.forEach((user, index) => {
-            const feedItem = this.createUserFeedItem(user, index);
-            
-            // Add guest overlay
-            const overlay = document.createElement('div');
-            overlay.innerHTML = `
-                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; border-radius: 20px; z-index: 10;">
-                    <div style="text-align: center; padding: 20px;">
-                        <h3 style="color: #FFD700; margin-bottom: 10px;">🔒 Sign up to connect!</h3>
-                        <button onclick="CLASSIFIED.showRegister()" style="background: linear-gradient(135deg, #00D4FF, #0099CC); border: none; padding: 10px 20px; border-radius: 20px; color: white; font-weight: 600; cursor: pointer;">
-                            Create Account
-                        </button>
-                    </div>
-                </div>
-            `;
-            overlay.style.position = 'relative';
-            feedItem.appendChild(overlay);
-            
+            const feedItem = this.createGuestUserFeedItem(user, index);
             container.appendChild(feedItem);
         });
         
-        // Add signup encouragement
+        // Add signup encouragement card
         const signupCard = document.createElement('div');
         signupCard.innerHTML = `
-            <div style="background: linear-gradient(135deg, #FFD700, #FF6B6B); padding: 30px; border-radius: 20px; text-align: center; margin: 20px 0;">
-                <h3 style="margin: 0 0 15px 0; font-size: 20px;">🚀 Ready to connect?</h3>
-                <p style="margin: 0 0 20px 0; opacity: 0.9;">Join ${this.mockData.getUsers().length}+ travelers already using CLASSIFIED</p>
-                <button onclick="CLASSIFIED.showRegister()" style="background: rgba(255,255,255,0.2); border: none; padding: 12px 24px; border-radius: 25px; color: white; font-weight: 600; cursor: pointer; margin-right: 10px;">
-                    Sign Up Free
+            <div style="background: linear-gradient(135deg, #00D4FF, #0099CC); padding: 35px 25px; border-radius: 20px; text-align: center; margin: 25px 0; box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);">
+                <div style="font-size: 40px; margin-bottom: 15px;">🎉</div>
+                <h3 style="margin: 0 0 12px 0; font-size: 22px; color: white; font-weight: 600;">Invite Friends & Get Premium!</h3>
+                <p style="margin: 0 0 20px 0; opacity: 0.95; color: white; font-size: 15px;">Both you and your friend get 1 week premium features</p>
+                <button onclick="CLASSIFIED.showRegister()" style="background: rgba(255,255,255,0.95); border: none; padding: 14px 32px; border-radius: 25px; color: #0099CC; font-weight: 600; cursor: pointer; font-size: 16px; margin-right: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s ease;">
+                    📱 Share App
                 </button>
-                <button onclick="CLASSIFIED.showLogin()" style="background: transparent; border: 2px solid rgba(255,255,255,0.3); padding: 10px 22px; border-radius: 25px; color: white; font-weight: 600; cursor: pointer;">
-                    Login
+                <button onclick="CLASSIFIED.showLogin()" style="background: transparent; border: 2px solid rgba(255,255,255,0.9); padding: 12px 30px; border-radius: 25px; color: white; font-weight: 600; cursor: pointer; font-size: 16px; transition: all 0.3s ease;">
+                    ⚡ My Code
                 </button>
             </div>
         `;
         container.appendChild(signupCard);
         
-        console.log('✅ [populateGuestUserFeed] Guest feed displayed');
+        console.log('✅ [populateGuestUserFeed] Guest feed displayed with', guestUsers.length, 'blurred profiles');
+    }
+    
+    /**
+     * Create guest user feed item with blur + CTA (EXACT MATCH TO ORIGINAL DESIGN)
+     */
+    createGuestUserFeedItem(user, index) {
+        console.log('👥 [createGuestUserFeedItem] Creating guest feed item for:', {
+            index,
+            userName: user.name,
+            userId: user.uid || user.id
+        });
+        
+        // Sanitize user data
+        const safeName = sanitizeText(user.name || 'User');
+        const safeBio = sanitizeText(user.bio || 'No bio');
+        const safeAge = parseInt(user.age) || 25;
+        const userId = user.uid || user.id || `demo_${safeName.toLowerCase().replace(/\s/g, '_')}`;
+        
+        // Create card wrapper
+        const feedItem = document.createElement('div');
+        feedItem.className = 'user-feed-item';
+        feedItem.style.cssText = `
+            animation: fadeInUp 0.6s ease forwards;
+            animation-delay: ${index * 0.1}s;
+            opacity: 0;
+            margin-bottom: 20px;
+            position: relative;
+        `;
+        
+        // Guest Mode badge (yellow, top-left)
+        const guestBadge = document.createElement('div');
+        guestBadge.style.cssText = `
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            z-index: 5;
+            box-shadow: 0 3px 10px rgba(255, 215, 0, 0.4);
+        `;
+        guestBadge.textContent = '🔒 Guest Mode';
+        
+        // Status badges (top-right)
+        const statusBadges = document.createElement('div');
+        statusBadges.className = 'user-status-badges';
+        statusBadges.innerHTML = `
+            ${user.isOnline ? '<div class="status-badge status-online">🟢 Online</div>' : ''}
+            <div class="status-badge status-distance">📍 ${escapeHtml(user.distance)}</div>
+            <div class="status-badge status-match">🔥 ${parseInt(user.matchPercentage) || 75}% Match</div>
+        `;
+        
+        // User image container (BLURRED)
+        const imageDiv = document.createElement('div');
+        imageDiv.className = 'user-image';
+        imageDiv.style.cssText = `
+            background-image: url('${escapeHtml(user.image)}');
+            filter: blur(12px);
+            -webkit-filter: blur(12px);
+        `;
+        
+        const imageOverlay = document.createElement('div');
+        imageOverlay.className = 'user-image-overlay';
+        imageOverlay.innerHTML = `
+            <div class="user-name">${escapeHtml(safeName)}, ${safeAge}</div>
+        `;
+        imageDiv.appendChild(imageOverlay);
+        
+        // User info section (visible content)
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'user-info';
+        
+        const bioDiv = document.createElement('div');
+        bioDiv.className = 'user-bio';
+        bioDiv.textContent = safeBio;
+        
+        const interestsDiv = document.createElement('div');
+        interestsDiv.className = 'user-interests';
+        interestsDiv.innerHTML = (user.interests || []).slice(0, 3).map(interest => 
+            `<span class="interest-tag">${escapeHtml(sanitizeText(interest))}</span>`
+        ).join('');
+        
+        // YELLOW CTA BUTTON (Big, prominent)
+        const ctaButton = document.createElement('button');
+        ctaButton.style.cssText = `
+            width: 100%;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: #000;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+            transition: all 0.3s ease;
+        `;
+        ctaButton.textContent = 'Sign Up to Connect';
+        ctaButton.onclick = (e) => {
+            e.stopPropagation();
+            window.CLASSIFIED.showRegister();
+        };
+        
+        // Add hover effect
+        ctaButton.addEventListener('mouseenter', () => {
+            ctaButton.style.transform = 'translateY(-2px)';
+            ctaButton.style.boxShadow = '0 6px 20px rgba(255, 215, 0, 0.5)';
+        });
+        ctaButton.addEventListener('mouseleave', () => {
+            ctaButton.style.transform = 'translateY(0)';
+            ctaButton.style.boxShadow = '0 4px 15px rgba(255, 215, 0, 0.4)';
+        });
+        
+        // Assemble card
+        infoDiv.appendChild(bioDiv);
+        infoDiv.appendChild(interestsDiv);
+        infoDiv.appendChild(ctaButton);
+        
+        feedItem.appendChild(guestBadge);
+        feedItem.appendChild(statusBadges);
+        feedItem.appendChild(imageDiv);
+        feedItem.appendChild(infoDiv);
+        
+        console.log('✅ [createGuestUserFeedItem] Guest feed item created successfully');
+        return feedItem;
     }
     
     /**

@@ -1229,9 +1229,12 @@ closeChat() {
     /**
      * Display messages with sanitization
      */
-    displayMessages(messages, currentUserId) {
+   displayMessages(messages, currentUserId) {
         const messagesContainer = document.getElementById('chatMessages');
         if (!messagesContainer) return;
+        
+        // CRITICAL FIX: Always clear container first (removes placeholder HTML)
+        messagesContainer.innerHTML = '';
         
         if (messages.length === 0) {
             const emptyDiv = document.createElement('div');

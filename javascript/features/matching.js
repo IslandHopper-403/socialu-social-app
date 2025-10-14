@@ -536,6 +536,14 @@ export class MatchingManager {
             });
             
             console.log('✅ [MATCHING] Match and chat created successfully:', matchId);
+            
+            // PERFORMANCE: Invalidate user feed cache so matched user disappears
+            const userFeedManager = window.classifiedApp?.managers?.userFeed;
+            if (userFeedManager) {
+                userFeedManager.cachedMatchedUsers = null;
+                console.log('⚡ [MATCHING] Invalidated user feed cache');
+            }
+            
             return matchId;
             
         } catch (error) {

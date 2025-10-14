@@ -2,7 +2,8 @@
 
 import { sanitizeMessage, sanitizeText, escapeHtml, sanitizeHtml } from '../utils/security.js';
 import { handleSecurityError } from '../utils/security.js';
-import { formatMessageTime } from '../../utils/helpers.js';
+import { formatMessageTime } from '../utils/helpers.js';
+
 
 import {
     collection,

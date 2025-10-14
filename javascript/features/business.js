@@ -41,26 +41,14 @@ export class BusinessManager {
         this.messagingManager = null; 
         this.storyManager = null;  // Reference to BusinessStoryManager
         
-        // Initialize dashboard sub-manager
+       // Initialize dashboard sub-manager
         this.dashboard = new BusinessDashboardManager(firebaseServices, appState);
         console.log('✅ [BUSINESS] Dashboard sub-manager initialized');
         
-        // Dashboard data (kept for backward compatibility)
-        this.dashboardData = {
-            views: 0,
-            clicks: 0,
-            messages: 0,
-            promotions: [],
-            todayViews: 0,
-            rating: 0,
-            responseRate: 0
-        };
-        
-        // Real-time listeners (SECURITY: Must clean up on logout)
-        this.statsListener = null;
-        this.messagesListener = null;
-        this.promotionsListener = null;
-        this.analyticsListener = null;
+        // Real-time listeners for Analytics & Promotions overlays
+        // NOTE: Dashboard listeners (stats/messages) managed by dashboard sub-manager
+        this.promotionsListener = null;   // Section 3.4: Promotions overlay
+        this.analyticsListener = null;    // Section 3.3: Analytics overlay
     }
     
     /**
@@ -190,73 +178,11 @@ export class BusinessManager {
      * Cleanup dashboard listeners
      * DELEGATION: Simple pass-through
      */
-    cleanupDashboardListeners() {
+   cleanupDashboardListeners() {
         return this.dashboard.cleanupDashboardListeners();
     }
     
     /**
-     * Update dashboard UI with current data
-     */
-    updateDashboardUI() {
-        const businessData = this.currentBusinessData;
-        if (!businessData) return;
-        
-        // Update business name - SAFE
-        const nameEl = document.getElementById('businessName');
-        if (nameEl) {
-            nameEl.textContent = sanitizeText(businessData.name || 'Business');
-        }
-        
-        // Update greeting based on time
-        const greetingEl = document.getElementById('businessGreeting');
-        if (greetingEl) {
-            const hour = new Date().getHours();
-            let greeting = 'Good morning';
-            if (hour >= 12 && hour < 17) greeting = 'Good afternoon';
-            if (hour >= 17) greeting = 'Good evening';
-            greetingEl.textContent = greeting;
-        }
-        
-        // Update status message - SAFE
-        const statusEl = document.getElementById('businessStatusMessage');
-        if (statusEl) {
-            statusEl.textContent = businessData.isOpen ? 'Currently accepting orders' : 'Temporarily closed';
-        }
-        
-        // Update stats - SAFE
-        this.updateDashboardStats();
-    }
-    
-    /**
-     * Update dashboard statistics
-     */
-    async updateDashboardStats() {
-        // Update view count
-        const viewsEl = document.getElementById('businessViewsCount');
-        if (viewsEl) {
-            viewsEl.textContent = this.dashboardData.views || '0';
-        }
-        
-        // Update message count
-        const messagesEl = document.getElementById('businessMessagesCount');
-        if (messagesEl) {
-            messagesEl.textContent = this.dashboardData.messages || '0';
-        }
-        
-        // Update rating (mock for now)
-        const ratingEl = document.getElementById('businessRatingValue');
-        if (ratingEl) {
-            ratingEl.textContent = '4.8';
-        }
-        
-        // Update response rate (mock for now)
-        const responseEl = document.getElementById('businessResponseRate');
-        if (responseEl) {
-            responseEl.textContent = '95%';
-        }
-    }
-    
-    // (Already handled in CHANGE 5 - delete this duplicate if it exists)
         
         /**
          * Open business profile by slug or ID
@@ -874,13 +800,6 @@ export class BusinessManager {
     }
     
     /**
-     * Get business dashboard data
-     */
-    getDashboardData() {
-        return { ...this.dashboardData };
-    }
-    
-    /**
      * Update business promotion
      */
     async updateBusinessPromotion(promoData) {
@@ -1242,158 +1161,14 @@ export class BusinessManager {
     
     /**
      * Open Business Messages (SECURITY: Filter business messages only)
+     * DELEGATION: Delegates to dashboard sub-manager
      */
     openBusinessMessages() {
         if (!this.state.get('isBusinessUser')) {
             console.error('❌ Unauthorized: Business authentication required');
             return;
         }
-        
-        console.log('💬 Opening Business Messages');
-        const overlay = document.getElementById('businessMessages');
-        if (overlay) {
-            overlay.classList.add('show');
-            this.loadBusinessConversations();
-        }
-    }
-    
-        /**
-         * Load Business Conversations (SECURITY: Business messages only)
-         */
-        async loadBusinessConversations() {
-            const user = this.state.get('currentUser');
-            if (!user || !this.state.get('isBusinessUser')) return;
-            
-            try {
-                console.log('Loading business conversations...');
-                
-                // Query businessConversations collection
-                const conversationsQuery = query(
-                    collection(this.db, 'businessConversations'),
-                    where('businessId', '==', user.uid),
-                    orderBy('lastMessageTime', 'desc'),
-                    limit(50)
-                );
-                
-                const snapshot = await getDocs(conversationsQuery);
-                
-                // FIXED: Target the correct container inside businessMessages overlay
-                const messagesOverlay = document.getElementById('businessMessages');
-                const messagesList = messagesOverlay ? document.getElementById('businessConversationsList') : null;
-                const emptyState = messagesOverlay ? document.getElementById('businessMessagesEmpty') : null;
-                
-                console.log('📋 Found elements:', {
-                    overlay: !!messagesOverlay,
-                    list: !!messagesList,
-                    empty: !!emptyState,
-                    conversations: snapshot.size
-                });
-            
-            if (snapshot.empty) {
-                if (emptyState) emptyState.style.display = 'block';
-                if (messagesList) messagesList.style.display = 'none';
-                return;
-            }
-            
-            // Hide empty state, show list
-            if (emptyState) emptyState.style.display = 'none';
-            if (messagesList) {
-                messagesList.style.display = 'block';
-                messagesList.innerHTML = ''; // Clear existing
-                
-                // Populate conversations
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    this.renderConversationItem(doc.id, data, messagesList);
-                });
-            }
-            
-        } catch (error) {
-            console.error('❌ Error loading conversations:', error);
-        }
-    }
-    
-    /**
-     * Render a single conversation item
-     */
-    renderConversationItem(conversationId, data, container) {
-        const messageItem = document.createElement('div');
-        messageItem.className = data.businessUnread > 0 ? 'message-item unread' : 'message-item';
-        messageItem.dataset.conversationId = conversationId;
-        
-        const avatar = document.createElement('div');
-            avatar.className = 'customer-avatar';
-            
-            // Fetch customer photo
-            if (data.userId) {
-                this.fetchCustomerPhoto(data.userId).then(photoUrl => {
-                    if (photoUrl) {
-                        avatar.style.backgroundImage = `url('${photoUrl}')`;
-                        avatar.style.backgroundSize = 'cover';
-                        avatar.style.backgroundPosition = 'center';
-                        avatar.textContent = '';
-                    } else {
-                        avatar.textContent = '👤';
-                    }
-                });
-            } else {
-                avatar.textContent = '👤';
-            }
-        
-        const content = document.createElement('div');
-        content.className = 'message-content';
-        
-        const header = document.createElement('div');
-        header.className = 'message-header';
-        
-        const name = document.createElement('span');
-        name.className = 'customer-name';
-        name.textContent = data.userName || 'Customer';
-        
-        const time = document.createElement('span');
-        time.className = 'message-time';
-        time.textContent = this.formatMessageTime(data.lastMessageTime);
-        
-        header.appendChild(name);
-        header.appendChild(time);
-        
-        const preview = document.createElement('div');
-        preview.className = 'message-preview';
-        preview.textContent = data.lastMessage || 'New inquiry';
-        
-        content.appendChild(header);
-        content.appendChild(preview);
-        
-        // Unread badge
-        if (data.businessUnread > 0) {
-            const badge = document.createElement('div');
-            badge.className = 'unread-badge';
-            badge.textContent = data.businessUnread.toString();
-            content.appendChild(badge);
-        }
-        
-        messageItem.appendChild(avatar);
-        messageItem.appendChild(content);
-        
-        messageItem.onclick = () => {
-        console.log('🖱️ Conversation clicked from overlay:', conversationId);
-        
-        // Close business messages overlay first
-        const messagesOverlay = document.getElementById('businessMessages');
-        if (messagesOverlay) {
-            messagesOverlay.classList.remove('show');
-            console.log('✅ Closed business messages overlay');
-        }
-        
-        // Open conversation in chat
-        if (this.messagingManager && this.messagingManager.businessMessaging) {
-            this.messagingManager.businessMessaging.openBusinessConversationFromDashboard(conversationId);
-        } else {
-            console.error('❌ BusinessMessaging manager not available');
-        }
-    };
-        
-        container.appendChild(messageItem);
+        return this.dashboard.openBusinessMessages();
     }
     
     /**
@@ -1423,43 +1198,9 @@ export class BusinessManager {
         // TODO: Generate insights from analytics data
         console.log('Loading business insights...');
     }
-
-      /**
-     * Format timestamp for message display
-     */
-    formatMessageTime(timestamp) {
-        if (!timestamp) return 'Now';
-        
-        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-        const now = new Date();
-        const diff = now - date;
-        
-        if (diff < 60000) return 'Just now';
-        if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
-        if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
-        
-        return date.toLocaleDateString();
-    }
-
-
-      /**
-     * Fetch customer profile photo
-     */
-    async fetchCustomerPhoto(userId) {
-        try {
-            const userRef = doc(this.db, 'users', userId);
-            const userDoc = await getDoc(userRef);
-            
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                return userData.photos?.[0] || userData.photo || '';
-            }
-        } catch (error) {
-            console.error('Error fetching customer photo:', error);
-        }
-        return '';
-    }
     
+    // NOTE: formatMessageTime() and fetchCustomerPhoto() moved to utils/helpers.js
+    // Will be imported in Section 3.8: Utility extraction
     
     /**
      * Cleanup business dashboard resources

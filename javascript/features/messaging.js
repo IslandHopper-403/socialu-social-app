@@ -521,17 +521,26 @@ export class MessagingManager {
         if (!currentUser) return;
         
         try {
-            console.log('👥 Loading matches for user:', currentUser.uid);
+            console.log('👥 [MATCHES-DEBUG] Loading matches for user:', currentUser.uid);
             
             const matchesContainer = document.getElementById('matchesScroll');
             if (!matchesContainer) return;
             
-            // Try to load real matches from Firebase first
+            // CRITICAL: Load real matches AND filter for matches WITHOUT messages (Tinder-style)
             const realMatches = await this.loadRealMatches(currentUser.uid);
             
-            if (realMatches.length > 0) {
-                console.log(`✅ Found ${realMatches.length} real matches`);
-                matchesContainer.innerHTML = realMatches.map(match => `
+            // TINDER-STYLE: Only show matches that don't have messages yet
+            const matchesWithoutMessages = await this.filterMatchesWithoutMessages(realMatches, currentUser.uid);
+            
+            console.log('👥 [MATCHES-DEBUG] Matches breakdown:', {
+                totalMatches: realMatches.length,
+                withoutMessages: matchesWithoutMessages.length,
+                withMessages: realMatches.length - matchesWithoutMessages.length
+            });
+            
+          if (matchesWithoutMessages.length > 0) {
+                console.log(`✅ Found ${matchesWithoutMessages.length} matches without messages`);
+                matchesContainer.innerHTML = matchesWithoutMessages.map(match => `
                     <div class="match-avatar" 
                          style="background-image: url('${match.avatar}')"
                          onclick="CLASSIFIED.openChat('${match.name}', '${match.avatar}', '${match.userId}')">
@@ -654,6 +663,49 @@ export class MessagingManager {
     } catch (error) {
             console.error('❌ Error loading chats:', error);
         }
+    }
+    
+    /**
+     * Filter matches to show only those WITHOUT messages (Tinder-style New Matches carousel)
+     */
+    async filterMatchesWithoutMessages(matches, currentUserId) {
+        console.log('🔍 [MATCHES-DEBUG] Filtering matches without messages...');
+        
+        const matchesWithoutMessages = [];
+        
+        for (const match of matches) {
+            const chatId = this.generateChatId(currentUserId, match.userId);
+            
+            try {
+                // Check if chat has messages
+                const chatDoc = await getDoc(doc(this.db, 'chats', chatId));
+                
+                if (!chatDoc.exists()) {
+                    // No chat document = no messages
+                    console.log('🔍 [MATCHES-DEBUG] No chat doc for:', match.name);
+                    matchesWithoutMessages.push(match);
+                } else {
+                    const chatData = chatDoc.data();
+                    const hasMessages = chatData.lastMessage && 
+                                       chatData.lastMessage !== '' && 
+                                       chatData.lastMessage !== 'No messages yet';
+                    
+                    if (!hasMessages) {
+                        console.log('🔍 [MATCHES-DEBUG] Chat exists but no messages for:', match.name);
+                        matchesWithoutMessages.push(match);
+                    } else {
+                        console.log('🔍 [MATCHES-DEBUG] Has messages, excluding from carousel:', match.name);
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking chat for match:', match.name, error);
+                // On error, include in carousel (safe default)
+                matchesWithoutMessages.push(match);
+            }
+        }
+        
+        console.log('✅ [MATCHES-DEBUG] Filtered to', matchesWithoutMessages.length, 'matches without messages');
+        return matchesWithoutMessages;
     }
     
     /**
@@ -808,14 +860,37 @@ return businessChats;
 
     /**
  * Display unified chat list (social + business)
+ * TINDER-STYLE: Only show chats with messages
  */
 displayUnifiedChats(chats) {
     const chatList = document.getElementById('chatList');
     if (!chatList) return;
     
-    console.log('🔄 Displaying', chats.length, 'unified chats');
+    console.log('🔄 [CHAT-LIST-DEBUG] Total chats before filter:', chats.length);
     
-    chatList.innerHTML = chats.map(chat => {
+    // CRITICAL FIX: Filter out chats without messages (they belong in New Matches carousel)
+    const chatsWithMessages = chats.filter(chat => {
+        const hasMessage = chat.lastMessage && 
+                          chat.lastMessage !== '' && 
+                          chat.lastMessage !== 'No messages yet' &&
+                          !chat.isNew;
+        
+        if (!hasMessage) {
+            console.log('🔍 [CHAT-LIST-DEBUG] Filtering out chat without messages:', {
+                partnerId: chat.partnerId,
+                partnerName: chat.partnerName,
+                lastMessage: chat.lastMessage,
+                isNew: chat.isNew
+            });
+        }
+        
+        return hasMessage;
+    });
+    
+    console.log('🔄 [CHAT-LIST-DEBUG] Chats with messages:', chatsWithMessages.length);
+    console.log('🔄 [CHAT-LIST-DEBUG] Chats filtered out:', chats.length - chatsWithMessages.length);
+    
+    chatList.innerHTML = chatsWithMessages.map(chat => {
         const timeAgo = chat.lastMessageTime ? this.getTimeAgo(chat.lastMessageTime) : 'New';
         const notificationManager = window.classifiedApp?.managers?.notifications;
         const unreadCount = notificationManager ? (notificationManager.unreadMessages.get(chat.id) || 0) : 0;

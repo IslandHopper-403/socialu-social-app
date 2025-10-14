@@ -544,23 +544,15 @@ export class NotificationManager {
             };
         }
         
-        // CRITICAL FIX: Force inline styles for iOS Safari compatibility
-        // iOS Safari has issues with position: fixed in certain contexts
-        matchPopup.style.cssText = `
-            position: fixed !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            -webkit-transform: translate(-50%, -50%) !important;
-            z-index: 999999 !important;
-            display: flex !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-            pointer-events: auto !important;
-        `;
-        
-        // Show popup (add class after inline styles)
+        // Show popup - let CSS handle styling
         matchPopup.classList.add('show');
+        
+        // MOBILE FIX: Only add minimal inline styles for iOS Safari if needed
+        if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+            // iOS Safari sometimes needs explicit positioning
+            matchPopup.style.display = 'flex';
+            matchPopup.style.position = 'fixed';
+        }
         
         console.log('✅ [MATCH-POPUP-DEBUG] Popup should now be visible');
         console.log('✅ [MATCH-POPUP-DEBUG] Final styles:', {

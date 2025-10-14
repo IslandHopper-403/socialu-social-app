@@ -155,11 +155,12 @@ export class UserFeedManager {
         }
     }
     
-    /**
+   /**
      * Fetch users from Firebase
      */
     async fetchUsersFromFirebase() {
         console.log('👥 [fetchUsersFromFirebase] Starting fetch...');
+        console.log('🔍 [FEED-DEBUG-3] fetchUsersFromFirebase() called at:', Date.now());
         
         const users = [];
         const currentUserId = this.state.get('currentUser')?.uid;
@@ -184,10 +185,14 @@ export class UserFeedManager {
         const likedUsers = this.getLikedUsers();
         const passedUsers = this.getPassedUsers();
         
+        // CRITICAL FIX: Also get MATCHED users from Firebase
+        const matchedUsers = await this.getMatchedUsers(currentUserId);
+        
         console.log('👥 [fetchUsersFromFirebase] Filtering:', {
             totalFromFirebase: snapshot.size,
             likedCount: likedUsers.size,
-            passedCount: passedUsers.size
+            passedCount: passedUsers.size,
+            matchedCount: matchedUsers.size
         });
         
         snapshot.forEach(doc => {
@@ -200,7 +205,13 @@ export class UserFeedManager {
                 !userData.bio || 
                 !userData.interests?.length ||
                 likedUsers.has(docId) ||
-                passedUsers.has(docId)) {
+                passedUsers.has(docId) ||
+                matchedUsers.has(docId)) {  // ✅ NEW: Filter matched users
+                
+                // Debug log for filtered users
+                if (matchedUsers.has(docId)) {
+                    console.log('🔍 [FEED-DEBUG-3] Filtered out matched user:', docId);
+                }
                 return;
             }
             
@@ -295,6 +306,52 @@ export class UserFeedManager {
             return new Set();
         }
     }
+
+    /**
+     * Get matched users from Firebase
+     * CRITICAL: Query Firebase for all matches involving current user
+     */
+    async getMatchedUsers(currentUserId) {
+        try {
+            console.log('🔍 [FEED-DEBUG-4] getMatchedUsers() called at:', Date.now());
+            console.log('🔍 [FEED-DEBUG-4] Querying matches for user:', currentUserId);
+            
+            const matchedUsers = new Set();
+            
+            if (!currentUserId) {
+                console.warn('⚠️ [FEED-DEBUG-4] No current user ID');
+                return matchedUsers;
+            }
+            
+            // Query matches collection where current user is a participant
+            const matchesQuery = query(
+                collection(this.db, 'matches'),
+                where('users', 'array-contains', currentUserId)
+            );
+            
+            const matchesSnapshot = await getDocs(matchesQuery);
+            
+            console.log('🔍 [FEED-DEBUG-4] Firebase returned', matchesSnapshot.size, 'matches');
+            
+            matchesSnapshot.forEach(doc => {
+                const matchData = doc.data();
+                // Get the OTHER user in the match
+                const otherUserId = matchData.users?.find(uid => uid !== currentUserId);
+                if (otherUserId) {
+                    matchedUsers.add(otherUserId);
+                    console.log('🔍 [FEED-DEBUG-4] Found matched user:', otherUserId);
+                }
+            });
+            
+            console.log('✅ [FEED-DEBUG-4] Total matched users:', matchedUsers.size);
+            return matchedUsers;
+            
+        } catch (error) {
+            console.error('❌ [FEED-DEBUG-4] Error fetching matched users:', error);
+            return new Set();
+        }
+    }
+    
     
     /**
      * Populate user feed with data

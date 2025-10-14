@@ -481,17 +481,29 @@ export class NotificationManager {
      * Show match popup (extracted from matching.js)
      */
     showMatchPopup(userData) {
-        console.log('🎉 Showing match popup for:', userData);
+        console.log('🎉 [MATCH-POPUP-DEBUG] Showing match popup for:', userData);
+        console.log('🎉 [MATCH-POPUP-DEBUG] Device info:', {
+            userAgent: navigator.userAgent,
+            isIOS: /iPhone|iPad|iPod/.test(navigator.userAgent),
+            viewport: { width: window.innerWidth, height: window.innerHeight }
+        });
         
         const matchPopup = document.getElementById('matchPopup');
         if (!matchPopup) {
-            console.error('Match popup element not found');
+            console.error('❌ [MATCH-POPUP-DEBUG] Match popup element not found');
             return;
         }
         
+        console.log('🎉 [MATCH-POPUP-DEBUG] Popup element found:', {
+            display: matchPopup.style.display,
+            visibility: matchPopup.style.visibility,
+            zIndex: matchPopup.style.zIndex,
+            hasShowClass: matchPopup.classList.contains('show')
+        });
+        
         // Prevent duplicate popups
         if (matchPopup.classList.contains('show')) {
-            console.log('Match popup already showing');
+            console.log('⚠️ [MATCH-POPUP-DEBUG] Match popup already showing');
             return;
         }
         
@@ -515,9 +527,11 @@ export class NotificationManager {
         this.state.set('lastMatchedUser', userData);
         
         // Setup button handlers
-        if (startChatBtn) {
+       if (startChatBtn) {
             startChatBtn.onclick = () => {
                 matchPopup.classList.remove('show');
+                matchPopup.style.display = 'none'; // iOS fix
+                console.log('💬 [MATCH-POPUP-DEBUG] Starting chat from match');
                 this.startChatFromMatch();
             };
         }
@@ -525,21 +539,45 @@ export class NotificationManager {
         if (keepSwipingBtn) {
             keepSwipingBtn.onclick = () => {
                 matchPopup.classList.remove('show');
-                console.log('✅ Match saved to inbox');
+                matchPopup.style.display = 'none'; // iOS fix
+                console.log('✅ [MATCH-POPUP-DEBUG] Match saved to inbox');
             };
         }
         
-        // Show popup
+        // CRITICAL FIX: Force inline styles for iOS Safari compatibility
+        // iOS Safari has issues with position: fixed in certain contexts
+        matchPopup.style.cssText = `
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            -webkit-transform: translate(-50%, -50%) !important;
+            z-index: 999999 !important;
+            display: flex !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+        `;
+        
+        // Show popup (add class after inline styles)
         matchPopup.classList.add('show');
         
+        console.log('✅ [MATCH-POPUP-DEBUG] Popup should now be visible');
+        console.log('✅ [MATCH-POPUP-DEBUG] Final styles:', {
+            display: matchPopup.style.display,
+            zIndex: matchPopup.style.zIndex,
+            position: matchPopup.style.position,
+            transform: matchPopup.style.transform
+        });
+        
         // Auto-close after 15 seconds
-        setTimeout(() => {
+       setTimeout(() => {
             if (matchPopup.classList.contains('show')) {
                 matchPopup.classList.remove('show');
-                console.log('✅ Match popup auto-closed');
+                matchPopup.style.display = 'none'; // iOS Safari fix
+                console.log('✅ [MATCH-POPUP-DEBUG] Match popup auto-closed');
             }
         }, 15000);
-    }
     
     /**
      * Start chat from match (delegates to messaging manager)

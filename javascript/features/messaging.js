@@ -526,21 +526,14 @@ export class MessagingManager {
             const matchesContainer = document.getElementById('matchesScroll');
             if (!matchesContainer) return;
             
-            // CRITICAL: Load real matches AND filter for matches WITHOUT messages (Tinder-style)
+            // Load ALL real matches (don't filter by message status)
             const realMatches = await this.loadRealMatches(currentUser.uid);
             
-            // TINDER-STYLE: Only show matches that don't have messages yet
-            const matchesWithoutMessages = await this.filterMatchesWithoutMessages(realMatches, currentUser.uid);
+            console.log('👥 [MATCHES-DEBUG] Total matches:', realMatches.length);
             
-            console.log('👥 [MATCHES-DEBUG] Matches breakdown:', {
-                totalMatches: realMatches.length,
-                withoutMessages: matchesWithoutMessages.length,
-                withMessages: realMatches.length - matchesWithoutMessages.length
-            });
-            
-          if (matchesWithoutMessages.length > 0) {
-                console.log(`✅ Found ${matchesWithoutMessages.length} matches without messages`);
-                matchesContainer.innerHTML = matchesWithoutMessages.map(match => `
+          if (realMatches.length > 0) {
+                console.log(`✅ Found ${realMatches.length} matches`);
+                matchesContainer.innerHTML = realMatches.map(match => `
                     <div class="match-avatar" 
                          style="background-image: url('${match.avatar}')"
                          onclick="CLASSIFIED.openChat('${match.name}', '${match.avatar}', '${match.userId}')">
@@ -663,49 +656,6 @@ export class MessagingManager {
     } catch (error) {
             console.error('❌ Error loading chats:', error);
         }
-    }
-    
-    /**
-     * Filter matches to show only those WITHOUT messages (Tinder-style New Matches carousel)
-     */
-    async filterMatchesWithoutMessages(matches, currentUserId) {
-        console.log('🔍 [MATCHES-DEBUG] Filtering matches without messages...');
-        
-        const matchesWithoutMessages = [];
-        
-        for (const match of matches) {
-            const chatId = this.generateChatId(currentUserId, match.userId);
-            
-            try {
-                // Check if chat has messages
-                const chatDoc = await getDoc(doc(this.db, 'chats', chatId));
-                
-                if (!chatDoc.exists()) {
-                    // No chat document = no messages
-                    console.log('🔍 [MATCHES-DEBUG] No chat doc for:', match.name);
-                    matchesWithoutMessages.push(match);
-                } else {
-                    const chatData = chatDoc.data();
-                    const hasMessages = chatData.lastMessage && 
-                                       chatData.lastMessage !== '' && 
-                                       chatData.lastMessage !== 'No messages yet';
-                    
-                    if (!hasMessages) {
-                        console.log('🔍 [MATCHES-DEBUG] Chat exists but no messages for:', match.name);
-                        matchesWithoutMessages.push(match);
-                    } else {
-                        console.log('🔍 [MATCHES-DEBUG] Has messages, excluding from carousel:', match.name);
-                    }
-                }
-            } catch (error) {
-                console.error('Error checking chat for match:', match.name, error);
-                // On error, include in carousel (safe default)
-                matchesWithoutMessages.push(match);
-            }
-        }
-        
-        console.log('✅ [MATCHES-DEBUG] Filtered to', matchesWithoutMessages.length, 'matches without messages');
-        return matchesWithoutMessages;
     }
     
     /**

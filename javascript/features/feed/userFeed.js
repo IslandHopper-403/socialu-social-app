@@ -28,6 +28,11 @@ export class UserFeedManager {
         
         // Cache for fetched users
         this.currentUsers = [];
+
+        // PERFORMANCE: Cache matched users to avoid repeated Firebase queries
+        this.cachedMatchedUsers = null;
+        this.matchedUsersCacheTime = 0;
+        this.CACHE_DURATION = 60000; // 1 minute cache
         
         console.log('✅ [UserFeedManager] Initialized');
     }
@@ -311,8 +316,15 @@ export class UserFeedManager {
      * Get matched users from Firebase
      * CRITICAL: Query Firebase for all matches involving current user
      */
-    async getMatchedUsers(currentUserId) {
+   async getMatchedUsers(currentUserId) {
         try {
+            // PERFORMANCE: Check cache first
+            const now = Date.now();
+            if (this.cachedMatchedUsers && (now - this.matchedUsersCacheTime) < this.CACHE_DURATION) {
+                console.log('⚡ [UserFeed] Using cached matched users:', this.cachedMatchedUsers.size);
+                return this.cachedMatchedUsers;
+            }
+            
             console.log('🔍 [FEED-DEBUG-4] getMatchedUsers() called at:', Date.now());
             console.log('🔍 [FEED-DEBUG-4] Querying matches for user:', currentUserId);
             
@@ -344,6 +356,11 @@ export class UserFeedManager {
             });
             
             console.log('✅ [FEED-DEBUG-4] Total matched users:', matchedUsers.size);
+            
+            // PERFORMANCE: Cache the results
+            this.cachedMatchedUsers = matchedUsers;
+            this.matchedUsersCacheTime = Date.now();
+            
             return matchedUsers;
             
         } catch (error) {

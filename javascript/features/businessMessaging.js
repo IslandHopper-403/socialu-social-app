@@ -1,7 +1,8 @@
-// User-to-Business Messaing Module
+// User-to-Business Messaging Module
 
 import { sanitizeMessage, sanitizeText, escapeHtml, sanitizeHtml } from '../utils/security.js';
 import { handleSecurityError } from '../utils/security.js';
+import { formatMessageTime } from '../../utils/helpers.js';
 
 import {
     collection,
@@ -277,7 +278,7 @@ export class BusinessMessagingManager {
         
         const timeDiv = document.createElement('div');
         timeDiv.className = 'message-time';
-        timeDiv.textContent = this.formatMessageTime(message.timestamp);
+        timeDiv.textContent = formatMessageTime(message.timestamp);
         
         messageDiv.appendChild(textDiv);
         messageDiv.appendChild(timeDiv);
@@ -406,29 +407,11 @@ export class BusinessMessagingManager {
             });
         } catch (error) {
             console.error('Error tracking message:', error);
-        }
+       }
     }
-    
-        /**
-         * Format timestamp for message display
-         */
-        formatMessageTime(timestamp) {
-            if (!timestamp) return 'Now';
-            
-            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            const now = new Date();
-            const diff = now - date;
-            
-            if (diff < 60000) return 'Just now';
-            if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
-            if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
-            
-            return date.toLocaleDateString();
-        }
      
     /**
      * Open business conversation from dashboard
-     */
     async openBusinessConversationFromDashboard(conversationId) {
     try {
         const user = this.state.get('currentUser');

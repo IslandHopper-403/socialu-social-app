@@ -134,6 +134,9 @@ export class AuthManager {
         if (this.messagingManager) {
             this.messagingManager.cleanup();
         }
+
+       // CLEANUP: Clear user-specific localStorage on logout (best practice)
+        this.clearUserLocalStorage();
         
         // Clean up business dashboard resources
         if (this.businessManager) {
@@ -845,7 +848,51 @@ async businessSignup(businessData) {
             user.email === 'your-admin-email@gmail.com' // Replace with your email
         );
     }
-    
+
+    /**
+     * Clear user-specific localStorage on logout
+     * SECURITY: Prevent data leakage between account switches on shared devices
+     */
+    clearUserLocalStorage() {
+        try {
+            const currentUser = this.state.get('currentUser');
+            
+            if (!currentUser || !currentUser.uid) {
+                console.warn('⚠️ [AUTH] No user to clean up localStorage for');
+                return;
+            }
+            
+            const userId = currentUser.uid;
+            console.log('🧹 [AUTH] Clearing localStorage for user:', userId);
+            
+            // List of user-specific keys to clear
+            const keysToRemove = [
+                `likedUsers_${userId}`,
+                `passedUsers_${userId}`,
+                `seenMatches_${userId}`,
+                `businessFavorites_${userId}`,
+                `offerFavorites_${userId}`,
+                `processedMessages_${userId}`,
+                `lastAppClose_${userId}`
+            ];
+            
+            let removedCount = 0;
+            keysToRemove.forEach(key => {
+                if (localStorage.getItem(key)) {
+                    localStorage.removeItem(key);
+                    removedCount++;
+                    console.log('🧹 [AUTH] Removed:', key);
+                }
+            });
+            
+            console.log(`✅ [AUTH] Cleared ${removedCount} localStorage items for user ${userId}`);
+            
+        } catch (error) {
+            console.error('❌ [AUTH] Error clearing localStorage:', error);
+            // Non-critical error, don't throw
+        }
+    }
+
     /**
      * Cleanup on destroy
      */

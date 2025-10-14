@@ -646,6 +646,17 @@ async initializeManagers() {
             // Use navigation manager for proper stack handling
             this.managers.navigation.closeOverlay('businessChat');
         },
+            
+            // CRITICAL FIX: Add missing closeMatchPopup function
+            closeMatchPopup: () => {
+                console.log('❌ Closing match popup via X button');
+                const matchPopup = document.getElementById('matchPopup');
+                if (matchPopup) {
+                    matchPopup.classList.remove('show');
+                    matchPopup.style.display = 'none'; // iOS Safari fix
+                    console.log('✅ Match popup closed');
+                }
+            },
         
         fillBusinessQuestion: (button) => {
             const questionText = button.textContent.trim();

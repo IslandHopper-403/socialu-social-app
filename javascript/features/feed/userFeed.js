@@ -26,6 +26,9 @@ export class UserFeedManager {
         // Current filter state
         this.currentUserFilter = 'all';
         
+        // Cache for fetched users
+        this.currentUsers = [];
+        
         console.log('✅ [UserFeedManager] Initialized');
     }
     
@@ -105,7 +108,7 @@ export class UserFeedManager {
     /**
      * Populate user feed based on auth state
      */
-    async populateUserFeed() {
+ async populateUserFeed() {
         console.log('👥 [populateUserFeed] Called with auth state:', {
             isAuthenticated: this.state.get('isAuthenticated'),
             isGuestMode: this.state.get('isGuestMode'),
@@ -130,6 +133,9 @@ export class UserFeedManager {
         try {
             console.log('👥 [populateUserFeed] Fetching users from Firebase...');
             const users = await this.fetchUsersFromFirebase();
+            
+            // CACHE THE USERS FOR FILTERING
+            this.currentUsers = users;
             
             console.log('👥 [populateUserFeed] Fetched users:', {
                 count: users.length,
@@ -450,7 +456,7 @@ export class UserFeedManager {
         return feedItem;
     }
     
-    /**
+ /**
      * Filter users by category
      */
     filterUsers(filter) {
@@ -464,16 +470,29 @@ export class UserFeedManager {
         });
         document.querySelector(`[data-filter="${filter}"]`)?.classList.add('active');
         
-        // Get appropriate users based on filter
+        // Use cached real users if available, otherwise mock data
+        const sourceUsers = this.currentUsers.length > 0 ? this.currentUsers : this.mockData.getUsers();
+        
+        console.log('👥 [filterUsers] Filtering from:', {
+            source: this.currentUsers.length > 0 ? 'Firebase' : 'Mock',
+            totalUsers: sourceUsers.length
+        });
+        
+        // Filter based on selection
         let filteredUsers;
         if (filter === 'online') {
-            filteredUsers = this.mockData.getOnlineUsers();
+            filteredUsers = sourceUsers.filter(u => u.isOnline);
         } else if (filter === 'nearby') {
-            filteredUsers = this.mockData.getNearbyUsers();
+            // Users within 5km
+            filteredUsers = sourceUsers.filter(u => {
+                const distance = parseInt(u.distance) || 999;
+                return distance <= 5;
+            });
         } else if (filter === 'nomads') {
-            filteredUsers = this.mockData.getUsersByCategory('nomads');
+            filteredUsers = sourceUsers.filter(u => u.category === 'nomads');
         } else {
-            filteredUsers = this.mockData.getUsers();
+            // 'all' filter
+            filteredUsers = sourceUsers;
         }
         
         console.log('👥 [filterUsers] Filtered to', filteredUsers.length, 'users');

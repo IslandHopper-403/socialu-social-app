@@ -450,70 +450,6 @@ export class BusinessManager {
         // For now, show the full business auth screen
         this.showBusinessSignup();
     }
-
-    /**
-     * Create clean URL slug from business name
-     */
-    createBusinessSlug(business) {
-        if (!business) return '';
-        
-        // Use business name to create slug
-        const name = business.name || business.businessName || '';
-        
-        // Create clean slug: "Moon Restaurant" → "moonrestaurant"
-        const slug = name
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '') // Remove all non-alphanumeric chars
-            .trim();
-        
-        // Fallback to ID if slug is empty
-        return slug || business.id;
-    }
-    
-     /**
-     * Share business profile
-     */
-    shareBusinessProfile() {
-        const business = this.state.get('currentBusiness');
-        if (!business) return;
-        
-        // Create clean slug from business name
-        const slug = this.createBusinessSlug(business);
-        
-        // Create direct URL to business profile
-        const businessUrl = `${window.location.origin}${window.location.pathname}#business/${slug}`;
-        
-        if (navigator.share) {
-            // Native share (mobile)
-            navigator.share({
-                title: business.name,
-                text: `Check out ${business.name} on CLASSIFIED Hoi An!`,
-                url: businessUrl
-            }).catch(err => console.log('Share cancelled'));
-        } else {
-            // Clipboard fallback - URL ONLY
-            navigator.clipboard.writeText(businessUrl).then(() => {
-                alert(`✅ Link copied!\n\n${businessUrl}`);
-            }).catch(err => {
-                console.error('Copy failed:', err);
-                alert('Unable to share. Please copy the URL manually.');
-            });
-        }
-    }
-    
-   /**
-     * Get directions to business
-     */
-    getDirections() {
-        const business = this.state.get('currentBusiness');
-        if (!business) return;
-        
-        const address = business.location || business.address || business.name;
-        const encodedAddress = encodeURIComponent(`${address}, Hoi An, Vietnam`);
-        
-        // Open Google Maps
-        window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
-    }
     
     /**
      * Show business UI elements
@@ -615,6 +551,57 @@ export class BusinessManager {
     getBusinessStatus() {
         const businessProfile = this.state.get('businessProfile');
         return businessProfile?.status || 'unknown';
+    }
+
+
+    // ========== MARKETING TOOLS DELEGATION ==========
+    
+    /**
+     * Create business slug
+     * DELEGATION: Passes to profile sub-manager
+     */
+    createBusinessSlug(business) {
+        return this.businessProfile.createBusinessSlug(business);
+    }
+    
+    /**
+     * Share business profile
+     * DELEGATION: Passes to profile sub-manager
+     */
+    shareBusinessProfile() {
+        return this.businessProfile.shareBusinessProfile();
+    }
+    
+    /**
+     * Get directions to business
+     * DELEGATION: Passes to profile sub-manager
+     */
+    getDirections() {
+        return this.businessProfile.getDirections();
+    }
+    
+    /**
+     * Generate business URL
+     * DELEGATION: Passes to profile sub-manager
+     */
+    generateBusinessURL(businessId) {
+        return this.businessProfile.generateBusinessURL(businessId);
+    }
+    
+    /**
+     * Generate all business URLs
+     * DELEGATION: Passes to profile sub-manager
+     */
+    async generateAllBusinessURLs(format = 'csv', category = 'all') {
+        return this.businessProfile.generateAllBusinessURLs(format, category);
+    }
+    
+    /**
+     * Mass upload businesses
+     * DELEGATION: Passes to profile sub-manager
+     */
+    async massUploadBusinesses(businessesData) {
+        return this.businessProfile.massUploadBusinesses(businessesData);
     }
 
 
@@ -739,18 +726,6 @@ export class BusinessManager {
     }
     
     /**
-     * Open Business Messages (SECURITY: Filter business messages only)
-     * DELEGATION: Delegates to dashboard sub-manager
-     */
-    openBusinessMessages() {
-        if (!this.state.get('isBusinessUser')) {
-            console.error('❌ Unauthorized: Business authentication required');
-            return;
-        }
-        return this.dashboard.openBusinessMessages();
-    }
-    
-    /**
      * Insert Quick Reply Template (SECURITY: Predefined templates only)
      * DELEGATION: Handled by dashboard sub-manager
      */
@@ -802,586 +777,6 @@ export class BusinessManager {
         this.currentBusinessData = null;
         
         console.log('✅ [BUSINESS] Cleanup complete');
-    }
-    
-    /**
-     * Generate direct URL for any business (for outreach/marketing)
-     */
-    generateBusinessURL(businessId) {
-        return `${window.location.origin}${window.location.pathname}#business/${businessId}`;
-    }
-    
-/**
- * Generate business URLs in multiple formats - REAL DATA ONLY
- * @param {string} format - 'csv', 'qr', 'social', or 'console'
- * @param {string} category - Category filter ('all', 'restaurant', 'activity')
- */
- async generateAllBusinessURLs(format = 'csv', category = 'all') {
-    console.log(`📋 Generating business URLs (${format} format, ${category})...`);
-    console.log('⚠️ REAL DATA ONLY - No mock data, no placeholders');
-    
-    // Collect ONLY real businesses from Firebase
-    let businesses = [];
-    
-    try {
-        const snapshot = await getDocs(collection(this.db, 'businesses'));
-        
-        if (snapshot.empty) {
-            console.warn('⚠️ No businesses found in Firebase!');
-            alert('❌ No businesses found in database.\n\nBusinesses must sign up first before generating marketing materials.');
-            return;
-        }
-        
-       snapshot.forEach(doc => {
-            const b = doc.data();
-            
-            // ONLY skip if completely missing name (can't identify the business)
-            if (!b.name) {
-                console.warn(`⚠️ Skipping business ${doc.id} - missing business name`);
-                return; // Skip this business
-            }
-            
-            // DEBUG: Log what data exists (but don't skip if missing)
-            console.log(`📱 Business: ${b.name}`);
-            console.log(`   Contact Email: ${b.email || '⚠️ NONE'}`);
-            console.log(`   Auth Email: ${b.authEmail || 'N/A'}`);
-            console.log(`   Has Real Email: ${b.hasRealEmail ? 'YES ✅' : 'NO ❌'}`);
-            console.log(`   Phone: ${b.phone || '⚠️ NONE'}`);
-            console.log(`   ZaloID: ${b.zaloId || '⚠️ NONE'}`);
-            console.log(`---`);
-            
-            const slug = this.createBusinessSlug(b);
-            
-           businesses.push({
-                name: b.name,
-                email: b.email,                                    // Real email from signup
-                phone: b.phone || '',                              // Real phone or empty
-                zaloId: b.zaloId || b.phone || '',                // Real Zalo ID or phone
-                type: b.type || 'Business',
-                category: b.category || b.type || 'General',
-                url: `${window.location.origin}${window.location.pathname}#business/${slug}`,
-                shareUrl: `${window.location.origin}${window.location.pathname}#business/${slug}`,
-                location: b.location || b.address || 'Hoi An, Vietnam',
-                description: b.description || '',
-                currentSpecials: b.currentSpecials || [],          // ✅ ADD: Promotions array
-                aboutUs: b.aboutUs || b.about || b.description || '', // ✅ ADD: About Us section
-                id: doc.id
-            });
-        });
-        
-        console.log(`✅ Found ${businesses.length} valid businesses with complete data`);
-        
-        if (businesses.length === 0) {
-            alert('❌ No valid businesses found.\n\nAll businesses must have:\n• Business name\n• Email address\n\nPlease ensure businesses complete their profiles.');
-            return;
-        }
-        
-    } catch (error) {
-        console.error('❌ Failed to fetch businesses from Firebase:', error);
-        alert('Failed to fetch businesses from database: ' + error.message);
-        return;
-    }
-    
-    // Filter by category if specified
-    if (category !== 'all') {
-        const categoryLower = category.toLowerCase();
-        const beforeFilter = businesses.length;
-        
-        businesses = businesses.filter(b => {
-            const type = b.type.toLowerCase();
-            const cat = b.category.toLowerCase();
-            return type.includes(categoryLower) || cat.includes(categoryLower);
-        });
-        
-        console.log(`📊 Filtered from ${beforeFilter} to ${businesses.length} ${category} businesses`);
-        
-        if (businesses.length === 0) {
-            alert(`❌ No businesses found in category: ${category}\n\nTry "all" to see all businesses.`);
-            return;
-        }
-    }
-    
-    // Route to correct format
-    switch(format) {
-        case 'csv':
-            return this.exportBusinessCSV(businesses);
-        case 'qr':
-            return this.generateQRCodes(businesses);
-        case 'social':
-            return this.generateSocialTemplates(businesses);
-        default:
-            return this.exportBusinessCSV(businesses);
-    }
-}
-    
-/**
- * Export businesses as CSV optimized for multi-channel marketing
- * REAL DATA ONLY - No placeholders or generated content
- * Supports: YAMM (Email), WhatsApp, SMS, Zalo
- */
-exportBusinessCSV(businesses) {
-    // Multi-channel marketing optimized columns
-    const csvRows = [
-    [
-        'Email',              // Column A - YAMM email campaigns (REQUIRED)
-        'PhoneNumber',        // Column B - SMS/WhatsApp/Zalo (optional)
-        'WhatsAppNumber',     // Column C - WhatsApp international format (optional)
-        'ZaloID',             // Column D - Zalo messaging (optional)
-        'BusinessName',       // Column E - {{BusinessName}} merge tag
-        'ProfileURL',         // Column F - {{ProfileURL}} merge tag
-        'ShortURL',           // Column G - Short link for SMS
-        'ContactName',        // Column H - Personalization
-        'Category',           // Column I - Segmentation
-        'Type',               // Column J - Segmentation
-        'Location',           // Column K - Geographic targeting
-        'Description',        // Column L - Short description for outreach
-        'AboutUs',            // Column M - Full About Us section for verification
-        'Promotion1',         // Column N - First promotion from currentSpecials[0]
-        'Promotion2',         // Column O - Second promotion from currentSpecials[1]
-        'Promotion3',         // Column P - Third promotion from currentSpecials[2]
-        'BusinessId',         // Column Q - Tracking
-        'JoinDate',           // Column R - Engagement timing
-        'Status',             // Column S - Campaign filtering
-        'PreferredChannel'    // Column T - Communication preference
-    ],
-      ...businesses.map(b => {
-            // ONLY use real contact emails (filter out fake auth emails)
-            const isFakeEmail = !b.email || 
-                               b.email.includes('@business.com') ||     // Our fake domain
-                               b.email.includes('noemail') || 
-                               b.email === '';
-            
-            // Use the hasRealEmail flag if available, otherwise check email format
-            const email = (b.hasRealEmail === false) ? '' : 
-                         (isFakeEmail ? '' : b.email);
-            
-            // Filter out fake/test phone numbers
-            const isFakePhone = b.phone && (
-                b.phone.includes('123 4567') ||     // Common test pattern
-                b.phone === '+84 90 123 4567' ||    // Exact fake number
-                b.phone === '+84 905 123 456' ||    // Another test pattern
-                b.phone.match(/^\+84\s?90[0-9]\s?123\s?456[0-9]$/)  // Pattern: +84 90X 123 456X
-            );
-            
-            // Use ONLY real phone number or leave empty
-            const phoneNumber = (b.phone && !isFakePhone) ? b.phone : '';
-            
-            // WhatsApp uses international format without spaces (only if phone exists)
-            const whatsAppNumber = phoneNumber ? phoneNumber.replace(/\s+/g, '') : '';
-            
-            // Zalo ID - use real data or leave empty
-            const zaloID = b.zaloId || phoneNumber || '';
-            
-            // Extract contact name from business name (remove suffixes)
-            const contactName = b.name
-                .replace(/\s+(Restaurant|Hotel|Café|Cafe|Bar|Spa|Shop|Store|Gallery|Studio|Team|&.*$).*$/i, '')
-                .trim() || b.name;  // Fallback to full name
-            
-            // Create short URL for SMS/WhatsApp
-            const shortURL = b.url.replace(`${window.location.origin}${window.location.pathname}#business/`, 'socialu.app/b/');
-            
-            // Determine preferred channel based on business type and available contact methods
-            let preferredChannel = 'Email'; // Default
-            if (phoneNumber) {
-                // If has phone, prefer WhatsApp for restaurants/cafes
-                if (b.type.toLowerCase().includes('restaurant') || 
-                    b.type.toLowerCase().includes('café') || 
-                    b.type.toLowerCase().includes('cafe')) {
-                    preferredChannel = 'WhatsApp';
-                }
-   }
-        // Hotels/Resorts always prefer email (formal)
-        if (b.type.toLowerCase().includes('hotel') || 
-            b.type.toLowerCase().includes('resort')) {
-            preferredChannel = 'Email';
-        }
-        
-        // Extract promotions from currentSpecials array (0, 1, 2)
-        const currentSpecials = b.currentSpecials || [];
-        const promotion1 = currentSpecials[0] || 'No promotion';
-        const promotion2 = currentSpecials[1] || '';
-        const promotion3 = currentSpecials[2] || '';
-        
-        // Get About Us section (full description, not truncated)
-        const aboutUs = b.aboutUs || b.about || b.description || 'No description provided';
-        
-        return [
-            `"${email}"`,                                    // Email (real)
-            `"${phoneNumber}"`,                              // PhoneNumber (real or empty)
-            `"${whatsAppNumber}"`,                           // WhatsAppNumber (real or empty)
-            `"${zaloID}"`,                                   // ZaloID (real or empty)
-            `"${b.name}"`,                                   // BusinessName
-            `"${b.url}"`,                                    // ProfileURL
-            `"${shortURL}"`,                                 // ShortURL
-            `"${contactName} team"`,                         // ContactName
-            `"${b.category}"`,                               // Category
-            `"${b.type}"`,                                   // Type
-            `"${b.location}"`,                               // Location
-            `"${(b.description || '').substring(0, 150).replace(/"/g, '""')}"`, // Description (CSV-escaped)
-            `"${aboutUs.replace(/"/g, '""')}"`,              // AboutUs (CSV-escaped, full text)
-            `"${promotion1.replace(/"/g, '""')}"`,           // Promotion1 (CSV-escaped)
-            `"${promotion2.replace(/"/g, '""')}"`,           // Promotion2 (CSV-escaped)
-            `"${promotion3.replace(/"/g, '""')}"`,           // Promotion3 (CSV-escaped)
-            `"${b.id}"`,                                     // BusinessId
-            `"${new Date().toISOString().split('T')[0]}"`,   // JoinDate
-            `"Active"`,                                      // Status
-            `"${preferredChannel}"`                          // PreferredChannel
-        ];
-    })
-];
-    const csv = csvRows.map(row => row.join(',')).join('\n');
-        
-        
-        // Download CSV
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        const date = new Date().toISOString().split('T')[0];
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', `socialu-businesses-${date}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        console.log(`✅ CSV downloaded: ${businesses.length} businesses`);
-        alert(`✅ CSV downloaded!\n${businesses.length} businesses exported`);
-        
-        return csv;
-    }
-    
-    /**
-     * Generate QR codes for all businesses
-     */
-generateQRCodes(businesses) {
-    const overlay = document.createElement('div');
-    overlay.id = 'qrCodesOverlay';
-    overlay.innerHTML = `
-        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-                    background: rgba(0,0,0,0.95); z-index: 10000; 
-                    overflow-y: auto; padding: 20px;">
-            <div style="max-width: 1200px; margin: 0 auto; background: white; 
-                        border-radius: 12px; padding: 24px;">
-                <div style="display: flex; justify-content: space-between; 
-                            align-items: center; margin-bottom: 24px; 
-                            padding-bottom: 16px; border-bottom: 2px solid #eee;">
-                    <h2 style="margin: 0; color: #FF6B6B;">Business QR Codes</h2>
-                    <button onclick="this.closest('#qrCodesOverlay').remove()" 
-                            style="background: none; border: none; font-size: 24px; 
-                                   cursor: pointer; padding: 8px; color: #666;">✕</button>
-                </div>
-                <div id="qrGrid" style="display: grid; 
-                                       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
-                                       gap: 20px; margin-bottom: 24px;"></div>
-                <div style="text-align: center; padding: 16px; background: #f0f0f0; 
-                            border-radius: 8px; margin-top: 20px;">
-                    <p style="margin: 0; color: #666;">💡 Right-click any QR code and select "Save image as..." to download</p>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(overlay);
-    const qrGrid = document.getElementById('qrGrid');
-    
-    // Generate QR codes using canvas (no CORS issues)
-    businesses.forEach(business => {
-        const card = document.createElement('div');
-        card.innerHTML = `
-            <div style="border: 2px solid #eee; border-radius: 8px; 
-                        padding: 16px; text-align: center; background: #fafafa;">
-                <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #333;">${business.name}</h3>
-                <div style="font-size: 12px; color: #666; margin-bottom: 12px;">${business.type} • ${business.category}</div>
-                <div class="qr-container-${business.id.replace(/[^a-z0-9]/gi, '')}" 
-                     style="background: white; padding: 12px; border-radius: 8px; 
-                            margin: 12px auto; width: 200px; height: 200px; 
-                            display: flex; align-items: center; justify-content: center;"></div>
-                <div style="font-size: 10px; color: #999; word-break: break-all; margin-top: 8px;">
-                    ${business.url}
-                </div>
-            </div>
-        `;
-        qrGrid.appendChild(card);
-        
-        // Generate QR code as canvas
-        const container = card.querySelector(`.qr-container-${business.id.replace(/[^a-z0-9]/gi, '')}`);
-      const qr = new QRCode(container, {
-    text: business.url,
-    width: 200,
-    height: 200,
-    colorDark: "#000000",
-    colorLight: "rgba(0,0,0,0)", // Transparent background
-    correctLevel: QRCode.CorrectLevel.L
-});
-
-// Convert canvas to transparent PNG after generation
-setTimeout(() => {
-    const canvas = container.querySelector('canvas');
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
-        
-        // Make white pixels transparent
-        for (let i = 0; i < data.length; i += 4) {
-            if (data[i] === 255 && data[i+1] === 255 && data[i+2] === 255) {
-                data[i+3] = 0; // Set alpha to 0 (transparent)
-            }
-        }
-        ctx.putImageData(imageData, 0, 0);
-    }
-}, 100);
-    });
-    
-    console.log(`Generated ${businesses.length} QR codes`);
-    alert(`QR Codes Generated!\n\n${businesses.length} codes ready.\n\nRight-click any code and "Save image as..." to download.`);
-}
-    
-    /**
-     * Generate social media templates
-     */
-    generateSocialTemplates(businesses) {
-        const templates = [];
-        
-        templates.push('=== SOCIAL MEDIA OUTREACH TEMPLATES ===\n');
-        templates.push('Copy & paste for Instagram, Facebook, WhatsApp, Email\n');
-        templates.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n');
-        
-        businesses.forEach((business, index) => {
-            if (index > 0) templates.push('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
-            
-            templates.push(`📍 **${business.name.toUpperCase()}**\n`);
-            templates.push(`🏷️ ${business.category} | ${business.type}`);
-            templates.push(`📌 ${business.location}\n`);
-            
-            // Instagram/Facebook
-            templates.push(`\n📸 INSTAGRAM/FACEBOOK:`);
-            templates.push(`\n✨ Discover ${business.name} on SocialU! ✨`);
-            templates.push(`\n\n${business.description.substring(0, 150)}...`);
-            templates.push(`\n\n📍 ${business.location}`);
-            templates.push(`\n🔗 ${business.url}`);
-            templates.push(`\n\n#HoiAn #Vietnam #${business.type.replace(' ', '')}`);
-            
-            // WhatsApp
-            templates.push(`\n\n💬 WHATSAPP:`);
-            templates.push(`\nHi! 👋 Check out ${business.name} on SocialU:`);
-            templates.push(`\n${business.url}`);
-            templates.push(`\n\nPerfect for ${business.category.toLowerCase()}! 🌟`);
-            
-            // Email
-            templates.push(`\n\n📧 EMAIL TEMPLATE:`);
-            templates.push(`\nEmail: ${business.email || 'info@' + business.name.toLowerCase().replace(/\s+/g, '') + '.com'}`);
-            templates.push(`\nSubject: Your ${business.name} profile on SocialU`);
-            templates.push(`\n\nHi ${business.name} team,`);
-            templates.push(`\n\nWe've created a profile for you on SocialU - Hoi An's social discovery app!`);
-            templates.push(`\n\nView your profile: ${business.url}`);
-            templates.push(`\n\nWould you like to claim and customize it?`);
-            templates.push(`\n\nBest regards,`);
-            templates.push(`\nSocialU Team`);
-        });
-        
-        const output = templates.join('\n');
-        
-        // Copy to clipboard
-        navigator.clipboard.writeText(output).then(() => {
-            console.log('✅ Social templates copied!');
-            console.log(output);
-            alert(`✅ Social Templates Copied!\n\n${businesses.length} business templates ready to paste`);
-        }).catch(() => {
-            console.log(output);
-            alert('Templates generated! Check console to copy.');
-        });
-        
-        return output;
-    }
-
-    /**
-     * Generate social media templates
-     */
-    generateSocialTemplates(businesses) {
-        const templates = [];
-        
-        templates.push('=== SOCIAL MEDIA OUTREACH TEMPLATES ===\n');
-        templates.push('Copy & paste for Instagram, Facebook, WhatsApp, Email\n');
-        templates.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n');
-        
-        businesses.forEach((business, index) => {
-            if (index > 0) templates.push('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
-            
-            templates.push(`📍 **${business.name.toUpperCase()}**\n`);
-            templates.push(`🏷️ ${business.category} | ${business.type}`);
-            templates.push(`📌 ${business.location}\n`);
-            
-            // Instagram/Facebook
-            templates.push(`\n📸 INSTAGRAM/FACEBOOK:`);
-            templates.push(`\n✨ Discover ${business.name} on SocialU! ✨`);
-            templates.push(`\n\n${business.description.substring(0, 150)}...`);
-            templates.push(`\n\n📍 ${business.location}`);
-            templates.push(`\n🔗 ${business.url}`);
-            templates.push(`\n\n#HoiAn #Vietnam #${business.type.replace(' ', '')}`);
-            
-            // WhatsApp
-            templates.push(`\n\n💬 WHATSAPP:`);
-            templates.push(`\nHi! 👋 Check out ${business.name} on SocialU:`);
-            templates.push(`\n${business.url}`);
-            templates.push(`\n\nPerfect for ${business.category.toLowerCase()}! 🌟`);
-            
-            // Email
-            templates.push(`\n\n📧 EMAIL TEMPLATE:`);
-            templates.push(`\nEmail: ${business.email || 'info@' + business.name.toLowerCase().replace(/\s+/g, '') + '.com'}`);
-            templates.push(`\nSubject: Your ${business.name} profile on SocialU`);
-            templates.push(`\n\nHi ${business.name} team,`);
-            templates.push(`\n\nWe've created a profile for you on SocialU - Hoi An's social discovery app!`);
-            templates.push(`\n\nView your profile: ${business.url}`);
-            templates.push(`\n\nWould you like to claim and customize it?`);
-            templates.push(`\n\nBest regards,`);
-            templates.push(`\nSocialU Team`);
-        });
-        
-        const output = templates.join('\n');
-        
-        // Copy to clipboard
-        navigator.clipboard.writeText(output).then(() => {
-            console.log('✅ Social templates copied!');
-            console.log(output);
-            alert(`✅ Social Templates Copied!\n\n${businesses.length} business templates ready to paste`);
-        }).catch(() => {
-            console.log(output);
-            alert('Templates generated! Check console to copy.');
-        });
-        
-        return output;
-    }
-    
-    /**
-     * ADMIN: Mass upload businesses from array
-     * Use for bulk business creation with temp accounts
-     * @param {Array} businessesData - Array of business objects
-     * @example
-     * [
-     *   { name: "Red Dragon", phone: "+84 905 111 222", email: "info@red.com", type: "Restaurant" },
-     *   { name: "Mystery Cafe", phone: "+84 905 333 444", email: "", type: "Cafe" },  // No email
-     * ]
-     */
-    async massUploadBusinesses(businessesData) {
-        if (!Array.isArray(businessesData) || businessesData.length === 0) {
-            alert('❌ Please provide an array of business data');
-            return;
-        }
-        
-        console.log(`📤 Starting mass upload of ${businessesData.length} businesses...`);
-        
-        const results = {
-            success: [],
-            failed: []
-        };
-        
-        for (let i = 0; i < businessesData.length; i++) {
-            const business = businessesData[i];
-            
-            try {
-                // Validate required fields
-                if (!business.name || !business.phone) {
-                    throw new Error('Missing required fields: name or phone');
-                }
-                
-                console.log(`\n📝 [${i + 1}/${businessesData.length}] Processing: ${business.name}`);
-                
-                // Get auth manager reference
-                const authManager = window.classifiedApp?.managers?.auth;
-                if (!authManager) {
-                    throw new Error('Auth manager not available');
-                }
-                
-                // Call businessSignup with the data
-                const result = await authManager.businessSignup({
-                    name: business.name,
-                    email: business.email || '',  // May be empty
-                    phone: business.phone,
-                    type: business.type || 'Business',
-                    location: business.location || 'Hoi An, Vietnam'
-                });
-                
-                results.success.push({
-                    name: business.name,
-                    tempPassword: result.tempPassword,
-                    authEmail: result.authEmail,
-                    contactEmail: business.email || '',
-                    phone: business.phone,
-                    hasRealEmail: result.hasRealEmail
-                });
-                
-                console.log(`✅ Uploaded: ${business.name}`);
-                
-                // Small delay to avoid rate limiting
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-            } catch (error) {
-                console.error(`❌ Failed: ${business.name}`, error);
-                results.failed.push({
-                    name: business.name,
-                    error: error.message
-                });
-            }
-        }
-        
-        console.log(`\n📊 Upload Summary:`);
-        console.log(`   ✅ Success: ${results.success.length}`);
-        console.log(`   ❌ Failed: ${results.failed.length}`);
-        
-        // Download credentials CSV for emailing to businesses
-        if (results.success.length > 0) {
-            this.downloadBusinessCredentials(results.success);
-        }
-        
-        // Show results summary
-        alert(`📊 Mass Upload Complete!\n\n✅ Success: ${results.success.length}\n❌ Failed: ${results.failed.length}\n\nCredentials CSV has been downloaded.`);
-        
-        return results;
-    }
-    
-    /**
-     * Download CSV of business credentials (for emailing to businesses)
-     */
-    downloadBusinessCredentials(businesses) {
-        console.log('📥 Generating credentials CSV...');
-        
-        const csvRows = [
-            [
-                'BusinessName',
-                'LoginEmail',
-                'TempPassword',
-                'ContactEmail',
-                'Phone',
-                'ClaimURL',
-                'HasRealEmail'
-            ],
-            ...businesses.map(b => [
-                `"${b.name}"`,
-                `"${b.authEmail}"`,
-                `"${b.tempPassword}"`,
-                `"${b.contactEmail}"`,
-                `"${b.phone}"`,
-                `"https://www.socialu.app/#business-login"`,
-                `"${b.hasRealEmail ? 'Yes' : 'No'}"`
-            ])
-        ];
-        
-        const csv = csvRows.map(row => row.join(',')).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        const date = new Date().toISOString().split('T')[0];
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', `business-credentials-${date}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        console.log(`✅ Credentials CSV downloaded: ${businesses.length} businesses`);
     }
     
 }

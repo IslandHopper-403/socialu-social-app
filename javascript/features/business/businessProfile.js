@@ -567,10 +567,11 @@ export class BusinessProfileManager {
         let currentIndex = 0;
         counter.textContent = `1/${business.photos.length}`;
         
-        // Touch/swipe handling
+       // Touch/swipe handling
         let startX = 0;
         let currentX = 0;
         let isDragging = false;
+        let hasMoved = false; // Track if mouse/touch moved significantly
         
         const updateSlide = (index) => {
             swiper.style.transform = `translateX(-${index * 100}%)`;
@@ -581,26 +582,51 @@ export class BusinessProfileManager {
         const handleStart = (e) => {
             startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
             isDragging = true;
+            hasMoved = false;
         };
         
         const handleMove = (e) => {
             if (!isDragging) return;
-            e.preventDefault();
             currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            
+            // If moved more than 10px, it's a drag not a click
+            if (Math.abs(currentX - startX) > 10) {
+                hasMoved = true;
+                e.preventDefault();
+            }
         };
         
-        const handleEnd = () => {
+        const handleEnd = (e) => {
             if (!isDragging) return;
             isDragging = false;
             
-            const diff = currentX - startX;
-            if (Math.abs(diff) > 50) {
-                if (diff > 0 && currentIndex > 0) {
+            // If no significant movement, treat as click (desktop)
+            if (!hasMoved) {
+                const clickX = e.type.includes('mouse') ? e.clientX : startX;
+                const rect = swiper.getBoundingClientRect();
+                const clickPosition = clickX - rect.left;
+                const clickPercent = clickPosition / rect.width;
+                
+                // Left third = previous, right third = next
+                if (clickPercent < 0.33 && currentIndex > 0) {
                     updateSlide(currentIndex - 1);
-                } else if (diff < 0 && currentIndex < business.photos.length - 1) {
+                } else if (clickPercent > 0.67 && currentIndex < business.photos.length - 1) {
                     updateSlide(currentIndex + 1);
                 }
+            } 
+            // Otherwise treat as swipe (mobile)
+            else {
+                const diff = currentX - startX;
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0 && currentIndex > 0) {
+                        updateSlide(currentIndex - 1);
+                    } else if (diff < 0 && currentIndex < business.photos.length - 1) {
+                        updateSlide(currentIndex + 1);
+                    }
+                }
             }
+            
+            hasMoved = false;
         };
         
         // Store listeners for cleanup

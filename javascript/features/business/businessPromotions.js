@@ -38,8 +38,8 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 export class BusinessPromotionsManager {
-    constructor(firebaseServices, appState) {
-        console.log('📢 [PROMOTIONS] Constructing BusinessPromotionsManager');
+   constructor(firebaseServices, appState) {
+        console.log('📢 [PROMOTIONS] Constructing BusinessPromotionsManager at:', Date.now());
         
         this.db = firebaseServices.db;
         this.state = appState;
@@ -57,7 +57,46 @@ export class BusinessPromotionsManager {
         // Current promotion being edited (null if creating new)
         this.editingPromoId = null;
         
-        console.log('✅ [PROMOTIONS] BusinessPromotionsManager constructed');
+        // Set up event listeners using delegation pattern
+        this.setupEventListeners();
+        
+        console.log('✅ [PROMOTIONS] BusinessPromotionsManager constructed at:', Date.now());
+    }
+    
+    /**
+     * Set up event listeners using delegation pattern
+     * SECURITY: Single listener for all dynamic buttons
+     */
+    setupEventListeners() {
+        console.log('🔗 [PROMOTIONS] Setting up event delegation at:', Date.now());
+        
+        // Delegate promotion type selector buttons
+        document.addEventListener('click', (e) => {
+            // Handle promo type selection
+            if (e.target.matches('.promo-type-selector .type-btn')) {
+                console.log('🎯 [PROMOTIONS] Type button clicked:', e.target.dataset.type);
+                this.handleTypeSelection(e.target);
+            }
+        });
+        
+        console.log('✅ [PROMOTIONS] Event delegation active at:', Date.now());
+    }
+    
+    /**
+     * Handle promotion type selection
+     * @param {HTMLElement} selectedButton - The clicked type button
+     */
+    handleTypeSelection(selectedButton) {
+        console.log('🎯 [PROMOTIONS] Selecting type:', selectedButton.dataset.type, 'at:', Date.now());
+        
+        // Remove active from all type buttons
+        const typeButtons = document.querySelectorAll('.promo-type-selector .type-btn');
+        typeButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Add active to clicked button
+        selectedButton.classList.add('active');
+        
+        console.log('✅ [PROMOTIONS] Type selected:', selectedButton.dataset.type);
     }
     
     /**
@@ -267,13 +306,8 @@ export class BusinessPromotionsManager {
             typeButtons.forEach(btn => btn.classList.remove('active'));
             typeButtons[0]?.classList.add('active'); // Default to first type
             
-            // Add click handlers for type buttons
-            typeButtons.forEach(btn => {
-                btn.onclick = function() {
-                    typeButtons.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                };
-            });
+            // NOTE: Click handlers managed by event delegation in setupEventListeners()
+            console.log('✅ [PROMOTIONS] Form initialized, type buttons ready for delegation');
         }
         
         if (list) list.style.display = 'none';
@@ -601,12 +635,40 @@ export class BusinessPromotionsManager {
         editBtn.textContent = 'Edit';
         editBtn.onclick = () => this.editPromotion(promo.id);
         
+        // Pause/Play button
+        const pauseBtn = document.createElement('button');
+        pauseBtn.className = 'promo-pause-btn';
+        pauseBtn.dataset.promoId = promo.id;
+        pauseBtn.dataset.currentStatus = promo.status;
+        
+        if (promo.status === 'active') {
+            pauseBtn.innerHTML = '⏸️ Pause';
+            pauseBtn.title = 'Pause this promotion';
+            pauseBtn.onclick = () => {
+                console.log('⏸️ [PROMOTIONS] Pausing promotion:', promo.id);
+                this.togglePromotionStatus(promo.id, 'paused');
+            };
+        } else if (promo.status === 'paused') {
+            pauseBtn.innerHTML = '▶️ Resume';
+            pauseBtn.title = 'Resume this promotion';
+            pauseBtn.onclick = () => {
+                console.log('▶️ [PROMOTIONS] Resuming promotion:', promo.id);
+                this.togglePromotionStatus(promo.id, 'active');
+            };
+        }
+        
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'promo-delete-btn';
         deleteBtn.textContent = 'Delete';
         deleteBtn.onclick = () => this.deletePromotion(promo.id);
         
         actions.appendChild(editBtn);
+        
+        // Only show pause button for active or paused promotions
+        if (promo.status === 'active' || promo.status === 'paused') {
+            actions.appendChild(pauseBtn);
+        }
+        
         actions.appendChild(deleteBtn);
         
         item.appendChild(content);

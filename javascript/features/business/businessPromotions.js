@@ -76,7 +76,7 @@ export class BusinessPromotionsManager {
     /**
      * Open Promotions Manager overlay
      */
-    openPromotionsManager() {
+  openPromotionsManager() {
         console.log('📢 [PROMOTIONS] Opening promotions manager');
         
         const overlay = document.getElementById('promotionsManager');
@@ -86,6 +86,17 @@ export class BusinessPromotionsManager {
             // Track in navigation stack
             if (this.navigationManager) {
                 this.navigationManager.showOverlay('promotionsManager');
+            }
+            
+            // Show empty state by default (will be hidden if promotions exist)
+            const emptyState = document.getElementById('promotionsEmptyState');
+            const list = document.getElementById('promotionsList');
+            if (emptyState) {
+                emptyState.style.display = 'block';
+                console.log('📭 [PROMOTIONS] Empty state shown by default');
+            }
+            if (list) {
+                list.style.display = 'none';
             }
             
             // Load active promotions by default

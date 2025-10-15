@@ -558,11 +558,11 @@ async initializeManagers() {
             openAdminPanel: () => alert('Admin panel coming soon!'),
             
             
-            // Profile methods
+           // Profile methods
             openProfileEditor: () => this.managers.profile.openProfileEditor(),
             closeProfileEditor: () => this.managers.navigation.closeOverlay('profileEditor'),
             openBusinessProfileEditor: () => this.managers.business.openBusinessProfileEditor(),
-            closeBusinessProfileEditor: () => this.managers.navigation.closeOverlay('businessProfileEditor'),
+            closeBusinessProfileEditor: () => this.managers.business.closeBusinessProfileEditor(),
             saveUserProfile: () => this.managers.profile.saveUserProfile(),
             saveBusinessProfile: () => this.managers.business.saveBusinessProfile(),
             viewMyProfile: () => this.managers.profile.viewMyProfile(),
@@ -808,6 +808,7 @@ async initializeManagers() {
             
             // Marketing tools (optional - for bulk URL generation)
             generateAllBusinessURLs: (format = 'csv', category = 'all') => this.managers.business?.generateAllBusinessURLs(format, category),
+            massUploadBusinesses: (businessesData) => this.managers.business?.massUploadBusinesses(businessesData),
             downloadAllQRCodes: () => this.managers.business?.downloadAllQRCodes(),
             printQRCodes: () => this.managers.business?.printQRCodes(),
             
@@ -917,6 +918,13 @@ async initializeManagers() {
             value: () => this.managers.auth ? this.managers.auth.isAdminUser() : false
         });
         
+        // DEBUG: Log business profile API availability
+        console.log('✅ [MAIN] Business profile API exposed:', {
+            openEditor: typeof window.CLASSIFIED.openBusinessProfileEditor === 'function',
+            closeEditor: typeof window.CLASSIFIED.closeBusinessProfileEditor === 'function',
+            saveProfile: typeof window.CLASSIFIED.saveBusinessProfile === 'function',
+            massUpload: typeof window.CLASSIFIED.massUploadBusinesses === 'function'
+        });
     }
     
     /**

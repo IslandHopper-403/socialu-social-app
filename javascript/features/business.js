@@ -4,6 +4,7 @@ import { sanitizeText, escapeHtml } from '../utils/security.js';
 import { BusinessDashboardManager } from './business/businessDashboard.js';
 import { BusinessAnalyticsManager } from './business/businessAnalytics.js';
 import { BusinessPromotionsManager } from './business/businessPromotions.js';
+import { BusinessProfileManager } from './business/businessProfile.js';
 
 import {
     doc,
@@ -54,6 +55,10 @@ export class BusinessManager {
         // Initialize promotions sub-manager
         this.promotions = new BusinessPromotionsManager(firebaseServices, appState);
         console.log('✅ [BUSINESS] Promotions sub-manager initialized');
+        
+        // Initialize profile sub-manager
+        this.businessProfile = new BusinessProfileManager(firebaseServices, appState);
+        console.log('✅ [BUSINESS] Profile sub-manager initialized');
     }
     
     /**
@@ -87,6 +92,14 @@ export class BusinessManager {
             business: this  // Parent reference
         });
         console.log('✅ [BUSINESS] Promotions manager references set');
+        
+        // Pass manager references to profile sub-manager
+        this.businessProfile.setManagers({
+            navigation: managers.navigation,
+            auth: managers.auth,
+            businessStory: managers.businessStory
+        });
+        console.log('✅ [BUSINESS] Profile manager references set');
         
         // Get mock data reference from the main app
         if (window.classifiedApp && window.classifiedApp.mockData) {
@@ -384,318 +397,34 @@ export class BusinessManager {
     
     /**
      * Update business profile UI
+     * DELEGATION: Passes to profile sub-manager
      */
-      updateBusinessProfileUI(business) {
-       // Safety check
-        if (!business) {
-            console.error('No business data provided to updateBusinessProfileUI');
-            return;
-        }
-        
-        // Clean up old special offer dots from previous profiles
-        document.querySelectorAll('.special-dot').forEach(dot => dot.parentElement?.remove());
-        
-        // Update header - SAFE
-        const headerTitle = document.getElementById('profileHeaderTitle');
-        if (headerTitle) {
-            headerTitle.textContent = sanitizeText(business.type || 'Business');
-        }
-        
-     // Update hero - SAFE (CSS background) 
-        const heroElement = document.getElementById('profileHero');
-        const imageUrl = business.photos?.[0] || business.image || business.story;
-        console.log('Final imageUrl:', imageUrl);
-        
-      if (heroElement && imageUrl) {
-            heroElement.style.backgroundImage = `url('${escapeHtml(imageUrl)}')`;
-            heroElement.style.backgroundSize = 'cover';
-            heroElement.style.backgroundPosition = 'center';
-        }
-        
-        // Add story avatar to hero (delegate to story manager)
-        if (this.storyManager) {
-            this.storyManager.addStoryAvatarToHero(business, heroElement);
-        }
-        
-          // Add photo counter
-         this.addPhotoCounter(business);
-                
-        // Update basic info - SAFE
-        document.getElementById('profileName').textContent = sanitizeText(business.name || 'Business Name');
-        document.getElementById('profileType').textContent = sanitizeText(business.type || 'Business Type');
-        
-        // Update rating display
-        const starsElement = document.querySelector('#businessProfile .stars');
-        const ratingSpan = document.querySelector('#businessProfile .profile-rating span');
-        if (business.rating && starsElement) {
-            // Display filled stars based on rating
-            const fullStars = Math.floor(business.rating);
-            const hasHalfStar = business.rating % 1 >= 0.5;
-            let starsHTML = '★'.repeat(fullStars);
-            if (hasHalfStar && fullStars < 5) {
-                starsHTML += '☆';
-                starsHTML += '☆'.repeat(4 - fullStars);
-            } else {
-                starsHTML += '☆'.repeat(5 - fullStars);
-            }
-            starsElement.textContent = starsHTML;
-            starsElement.style.color = '#FFD700'; // Gold color for stars
-        }
-        
-        if (business.reviewCount && ratingSpan) {
-            ratingSpan.textContent = `${business.rating || 0} (${business.reviewCount} reviews)`;
-        }
-        
-        // Update promotion - SAFE
-        if (business.currentSpecials && business.currentSpecials.length > 0) {
-            const promoTitle = document.getElementById('profilePromoTitle');
-            const promoDetails = document.getElementById('profilePromoDetails');
-            
-            if (promoTitle && promoDetails) {
-                // Set title
-                promoTitle.textContent = 'Special Offer';
-                
-                // Create rotating specials
-                let currentSpecialIndex = 0;
-                const specials = business.currentSpecials;
-                
-               // Display first special
-                promoDetails.textContent = sanitizeText(specials[0]);
-                promoDetails.style.transition = 'opacity 0.5s ease-in-out';
-                promoDetails.style.opacity = '1'; // Ensure it's visible
-                
-                // Add indicator dots if multiple specials
-                if (specials.length > 1) {
-                    const dotsContainer = document.createElement('div');
-                    dotsContainer.style.cssText = `
-                        text-align: center;
-                        margin-top: 10px;
-                    `;
-                    
-                    specials.forEach((_, index) => {
-                        const dot = document.createElement('span');
-                        dot.style.cssText = `
-                            display: inline-block;
-                            width: 6px;
-                            height: 6px;
-                            border-radius: 50%;
-                            margin: 0 3px;
-                            background: ${index === 0 ? 'white' : 'rgba(255,255,255,0.4)'}; 
-                            transition: background 0.3s ease;
-                        `;
-                        dot.className = 'special-dot';
-                        dotsContainer.appendChild(dot);
-                    });
-                    
-                    promoDetails.parentElement.appendChild(dotsContainer);
-                    
-                    // Auto-rotate specials
-                    const rotateSpecials = setInterval(() => {
-                        // Fade out
-                        promoDetails.style.opacity = '0';
-                        
-                        setTimeout(() => {
-                            // Update index
-                            currentSpecialIndex = (currentSpecialIndex + 1) % specials.length;
-                            
-                            // Update text
-                            promoDetails.textContent = sanitizeText(specials[currentSpecialIndex]);
-                            
-                          // Update dots if they exist and dotsContainer is in scope
-                            const dots = promoDetails.parentElement.querySelector('.special-dot')?.parentElement;
-                            if (dots) {
-                                dots.querySelectorAll('.special-dot').forEach((dot, i) => {
-                                   dot.style.background = i === currentSpecialIndex ? 'white' : 'rgba(255,255,255,0.4)';
-                                });
-                            }
-                                                        
-                            // Fade in
-                            promoDetails.style.opacity = '1';
-                        }, 500);
-                    }, 4000);
-                    
-                    // Store interval ID for cleanup
-                    this.specialsInterval = rotateSpecials;
-                }
-            }
-
-            } else if (business.promo) {
-            document.getElementById('profilePromoTitle').textContent = sanitizeText(business.promo);
-            document.getElementById('profilePromoDetails').textContent = sanitizeText(business.details || '');
-        } else if (business.promoTitle) {
-            document.getElementById('profilePromoTitle').textContent = sanitizeText(business.promoTitle);
-            document.getElementById('profilePromoDetails').textContent = sanitizeText(business.promoDetails || '');
-        }
-        
-        // Update description - SAFE
-        document.getElementById('profileDescription').textContent = 
-            sanitizeText(business.description || 'A great place to visit in Hoi An');
-        
-        // Update details - SAFE
-        document.getElementById('profileLocation').textContent = 
-            sanitizeText(business.location || business.address || 'Hoi An');
-        document.getElementById('profileHours').textContent = 
-            sanitizeText(business.hours || 'Check for current hours');
-        document.getElementById('profilePrice').textContent = 
-            sanitizeText(business.price || business.priceRange || '$$ - Moderate');
-        document.getElementById('profileContact').textContent = 
-            sanitizeText(business.contact || business.phone || 'Contact for details');
+    updateBusinessProfileUI(business) {
+        return this.businessProfile.updateBusinessProfileUI(business);
     }
     
-   closeBusinessProfile() {
-        console.log('🔙 Closing business profile');
-        
-        // Clear business state first
-        this.state.set('currentBusiness', null);
-
-        // Clear any rotating specials interval
-        if (this.specialsInterval) {
-            clearInterval(this.specialsInterval);
-            this.specialsInterval = null;
-        }
-        
-        // Close the overlay
-        this.navigationManager.closeOverlay('businessProfile');
-        
-        // SIMPLE: Always return to current feed screen
-        const currentScreen = this.state.get('currentScreen') || 'restaurant';
-        this.navigationManager.showScreen(currentScreen, false);
-        console.log('📱 Returned to', currentScreen, 'feed from business profile');
+   /**
+     * Close business profile
+     * DELEGATION: Passes to profile sub-manager
+     */
+    closeBusinessProfile() {
+        return this.businessProfile.closeBusinessProfile();
     }
 
-
-
-        // Add photo counter to hero image
-    addPhotoCounter(business) {
-        const heroElement = document.getElementById('profileHero');
-        if (!heroElement || !business.photos || business.photos.length <= 1) return;
-        // Remove existing counter if any
-        const existingCounter = heroElement.querySelector('.hero-photo-counter');
-        if (existingCounter) existingCounter.remove();
-        
-        // Add new counter
-        const counter = document.createElement('div');
-        counter.className = 'hero-photo-counter';
-        counter.textContent = `1/${business.photos.length}`;
-        counter.style.cssText = `
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 13px;
-            font-weight: 500;
-        `;
-        heroElement.appendChild(counter);
-        
-        // Make hero clickable
-        heroElement.style.cursor = 'pointer';
-        heroElement.onclick = () => {
-            const currentBusiness = this.state.get('currentBusiness');
-            if (currentBusiness) {
-                this.openPhotoViewer(currentBusiness);
-            }
-        };
-    }
-    
-    // Open photo viewer
+       /**
+     * Open photo viewer
+     * DELEGATION: Passes to profile sub-manager
+     */
     openPhotoViewer(business) {
-        if (!business.photos || business.photos.length === 0) return;
-        
-        const viewer = document.getElementById('photoViewer');
-        const swiper = document.getElementById('photoSwiper');
-        const counter = document.getElementById('photoCounter');
-        
-        // Clear existing photos
-        swiper.innerHTML = '';
-        
-        // Add all photos
-        business.photos.forEach((photo, index) => {
-            const slide = document.createElement('div');
-            slide.className = 'photo-slide';
-            slide.innerHTML = `<img src="${escapeHtml(photo)}" alt="${business.name} photo ${index + 1}">`;
-            swiper.appendChild(slide);
-        });
-        
-        // Initialize swipe tracking
-        let currentIndex = 0;
-        counter.textContent = `1/${business.photos.length}`;
-        
-        // Touch/swipe handling
-        let startX = 0;
-        let currentX = 0;
-        let isDragging = false;
-        
-        const updateSlide = (index) => {
-            swiper.style.transform = `translateX(-${index * 100}%)`;
-            counter.textContent = `${index + 1}/${business.photos.length}`;
-            currentIndex = index;
-        };
-        
-        const handleStart = (e) => {
-            startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-            isDragging = true;
-        };
-        
-        const handleMove = (e) => {
-            if (!isDragging) return;
-            e.preventDefault();
-            currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-        };
-        
-        const handleEnd = () => {
-            if (!isDragging) return;
-            isDragging = false;
-            
-            const diff = currentX - startX;
-            if (Math.abs(diff) > 50) {
-                if (diff > 0 && currentIndex > 0) {
-                    updateSlide(currentIndex - 1);
-                } else if (diff < 0 && currentIndex < business.photos.length - 1) {
-                    updateSlide(currentIndex + 1);
-                }
-            }
-        };
-        
-        // Store listeners for cleanup
-        this.photoViewerListeners = {
-            touchstart: handleStart,
-            touchmove: handleMove,
-            touchend: handleEnd,
-            mousedown: handleStart,
-            mousemove: handleMove,
-            mouseup: handleEnd,
-            mouseleave: handleEnd
-        };
-        
-        // Add event listeners
-        swiper.addEventListener('touchstart', this.photoViewerListeners.touchstart, { passive: true });
-        swiper.addEventListener('touchmove', this.photoViewerListeners.touchmove, { passive: false });
-        swiper.addEventListener('touchend', this.photoViewerListeners.touchend);
-        swiper.addEventListener('mousedown', this.photoViewerListeners.mousedown);
-        swiper.addEventListener('mousemove', this.photoViewerListeners.mousemove);
-        swiper.addEventListener('mouseup', this.photoViewerListeners.mouseup);
-        swiper.addEventListener('mouseleave', this.photoViewerListeners.mouseleave);
-        
-        // Show viewer
-        viewer.classList.add('show');
+        return this.businessProfile.openPhotoViewer(business);
     }
     
-        closePhotoViewer() {
-        const viewer = document.getElementById('photoViewer');
-        const swiper = document.getElementById('photoSwiper');
-        
-        // Clean up event listeners
-        if (this.photoViewerListeners && swiper) {
-            Object.entries(this.photoViewerListeners).forEach(([event, handler]) => {
-                swiper.removeEventListener(event, handler);
-            });
-            this.photoViewerListeners = null;
-        }
-        
-        viewer.classList.remove('show');
+    /**
+     * Close photo viewer
+     * DELEGATION: Passes to profile sub-manager
+     */
+    closePhotoViewer() {
+        return this.businessProfile.closePhotoViewer();
     }
 
     
@@ -1046,7 +775,7 @@ export class BusinessManager {
      * Cleanup business dashboard resources
      * DELEGATION: Delegates to dashboard sub-manager
      */
-   cleanup() {
+  cleanup() {
         console.log('🧹 [BUSINESS] Cleaning up business manager');
         
         // Delegate dashboard cleanup to sub-manager
@@ -1062,6 +791,11 @@ export class BusinessManager {
         // Delegate promotions cleanup to sub-manager
         if (this.promotions) {
             this.promotions.cleanup();
+        }
+        
+        // Delegate profile cleanup to sub-manager
+        if (this.businessProfile) {
+            this.businessProfile.cleanup();
         }
         
         // Clear local cached data

@@ -97,7 +97,8 @@ export class BusinessManager {
         this.businessProfile.setManagers({
             navigation: managers.navigation,
             auth: managers.auth,
-            businessStory: managers.businessStory
+            businessStory: managers.businessStory,
+            business: this  // Parent reference for mockData & analytics access
         });
         console.log('✅ [BUSINESS] Profile manager references set');
         

@@ -428,8 +428,36 @@ async initializeManagers() {
                 }
                 this.managers.business?.openPromotionsManager();
             },
-            closePromotionsManager: () => this.managers.business?.closePromotionsManager(),
-            createPromotion: () => this.managers.business?.createPromotion(),
+            closePromotionsManager: () => {
+                this.managers.business?.closePromotionsManager();
+            },
+            createPromotion: () => {
+                this.managers.business?.createPromotion();
+            },
+            editPromotion: (promoId) => {
+                if (!this.state.get('isBusinessUser')) {
+                    console.error('❌ Business authentication required');
+                    return;
+                }
+                // SECURITY: Validate promoId format (Firestore auto-ID is alphanumeric)
+                if (typeof promoId === 'string' && promoId.length > 0) {
+                    this.managers.business?.editPromotion(promoId);
+                } else {
+                    console.error('❌ Invalid promotion ID');
+                }
+            },
+            deletePromotion: (promoId) => {
+                if (!this.state.get('isBusinessUser')) {
+                    console.error('❌ Business authentication required');
+                    return;
+                }
+                // SECURITY: Validate promoId format
+                if (typeof promoId === 'string' && promoId.length > 0) {
+                    this.managers.business?.deletePromotion(promoId);
+                } else {
+                    console.error('❌ Invalid promotion ID');
+                }
+            },
             savePromotion: () => {
                 // SECURITY: Sanitize all promotion inputs
                 const title = document.getElementById('promoTitle')?.value || '';
@@ -444,15 +472,30 @@ async initializeManagers() {
                     this.managers.business?.savePromotion(title, description);
                 }
             },
-            cancelPromotion: () => this.managers.business?.cancelPromotion(),
+            cancelPromotion: () => {
+                this.managers.business?.cancelPromotion();
+            },
             switchPromoTab: (tab, button) => {
                 // SECURITY: Validate tab input
                 const validTabs = ['active', 'paused', 'expired'];
                 const safeTab = validTabs.includes(tab) ? tab : 'active';
                 this.managers.business?.switchPromoTab(safeTab, button);
             },
+            togglePromotionStatus: (promoId, newStatus) => {
+                if (!this.state.get('isBusinessUser')) {
+                    console.error('❌ Business authentication required');
+                    return;
+                }
+                // SECURITY: Validate status value
+                const validStatuses = ['active', 'paused', 'expired'];
+                if (validStatuses.includes(newStatus) && typeof promoId === 'string' && promoId.length > 0) {
+                    this.managers.business?.togglePromotionStatus(promoId, newStatus);
+                } else {
+                    console.error('❌ Invalid promotion ID or status');
+                }
+            },
             
-            // Business Messages (SECURITY: Filter to business messages only)
+           // Business Messages (SECURITY: Filter to business messages only)
             openBusinessMessages: () => {
                 if (!this.state.get('isBusinessUser')) {
                     console.error('❌ Business authentication required');
@@ -460,18 +503,31 @@ async initializeManagers() {
                 }
                 this.managers.business?.openBusinessMessages();
             },
-            closeBusinessMessages: () => this.managers.business?.closeBusinessMessages(),
+            closeBusinessMessages: () => {
+                this.managers.business?.closeBusinessMessages();
+            },
             filterBusinessMessages: (filter, button) => {
+                if (!this.state.get('isBusinessUser')) {
+                    console.error('❌ Business authentication required');
+                    return;
+                }
                 // SECURITY: Validate filter input
                 const validFilters = ['all', 'unread', 'inquiries'];
-                const safeFilter = validFilters.includes(filter) ? filter : 'all';
+               const safeFilter = validFilters.includes(filter) ? filter : 'all';
                 this.managers.business?.filterBusinessMessages(safeFilter, button);
             },
             insertQuickReply: (type) => {
-                // SECURITY: Only allow predefined reply types
+                if (!this.state.get('isBusinessUser')) {
+                    console.error('❌ Business authentication required');
+                    return;
+                }
+                // SECURITY: Validate type input
                 const validTypes = ['greeting', 'hours', 'location', 'promotion'];
-                const safeType = validTypes.includes(type) ? type : 'greeting';
-                this.managers.business?.insertQuickReply(safeType);
+                if (validTypes.includes(type)) {
+                    this.managers.business?.insertQuickReply(type);
+                } else {
+                    console.error('❌ Invalid quick reply type');
+                }
             },
             
             // Business Insights

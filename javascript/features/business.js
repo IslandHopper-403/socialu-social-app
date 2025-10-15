@@ -765,7 +765,7 @@ export class BusinessManager {
         }
     }
     
-    /**
+   /**
      * Get directions to business
      */
     getDirections() {
@@ -779,26 +779,6 @@ export class BusinessManager {
         window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
     }
     
-    /**
-     * Track business view
-     */
-    async trackBusinessView(businessId) {
-        try {
-            const user = this.state.get('currentUser');
-            if (!user) return;
-            
-            await addDoc(collection(this.db, 'businessAnalytics'), {
-                businessId: businessId,
-                type: 'view',
-                timestamp: serverTimestamp()
-            });
-            
-            console.log('👁️ Business view tracked');
-        } catch (error) {
-            console.error('Error tracking view:', error);
-        }
-    }
-        
     /**
      * Show business UI elements
      */

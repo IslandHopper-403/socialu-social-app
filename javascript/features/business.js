@@ -217,182 +217,43 @@ export class BusinessManager {
     /**
         
         /**
-         * Open business profile by slug or ID
-         */
-        async openBusinessProfileBySlugOrId(slugOrId, businessType = 'restaurant') {
-            console.log('🔍 Looking up business by slug/ID:', slugOrId);
-            
-            // First, try to find by slug
-            const business = await this.findBusinessBySlug(slugOrId);
-            
-            if (business) {
-                console.log('✅ Found business by slug:', business.name);
-                return this.openBusinessProfile(business, businessType);
-            }
-            
-            // Fallback: try as regular ID
-            console.log('🔄 Trying as regular ID...');
-            return this.openBusinessProfile(slugOrId, businessType);
-        }
+     * Open business profile by slug or ID
+     * DELEGATION: Passes to businessProfile sub-manager
+     */
+    async openBusinessProfileBySlugOrId(slugOrId, businessType = 'restaurant') {
+        return this.businessProfile.openBusinessProfileBySlugOrId(slugOrId, businessType);
+    }
     
         /**
-         * Find business by slug
-         */
-        async findBusinessBySlug(slug) {
-            // Search in mock data
-            if (window.classifiedApp && window.classifiedApp.mockData) {
-                const mockData = window.classifiedApp.mockData;
-                
-                // Search restaurants
-                const restaurants = mockData.getRestaurants?.() || [];
-                for (const restaurant of restaurants) {
-                    if (this.createBusinessSlug(restaurant) === slug) {
-                        return restaurant;
-                    }
-                }
-                
-                // Search activities
-                const activities = mockData.getActivities?.() || [];
-                for (const activity of activities) {
-                    if (this.createBusinessSlug(activity) === slug) {
-                        return activity;
-                    }
-                }
-            }
-            
-            // Search in Firebase (if needed)
-            try {
-                const snapshot = await getDocs(collection(this.db, 'businesses'));
-                for (const doc of snapshot.docs) {
-                    const business = { id: doc.id, ...doc.data() };
-                    if (this.createBusinessSlug(business) === slug) {
-                        return business;
-                    }
-                }
-            } catch (error) {
-                console.error('Error searching businesses:', error);
-            }
-            
-            return null;
-        }
+     * Find business by slug
+     * DELEGATION: Passes to businessProfile sub-manager
+     */
+    async findBusinessBySlug(slug) {
+        return this.businessProfile.findBusinessBySlug(slug);
+    }
         
-       async openBusinessProfile(businessDataOrId, businessType) {
-        let businessData;
-        let businessId;
-        
-        // Handle both full object and ID
-        if (typeof businessDataOrId === 'object' && businessDataOrId !== null) {
-            businessData = businessDataOrId;
-            businessId = businessData.id || businessData.uid;
-        } else {
-            businessId = businessDataOrId;
-            businessData = null; // Will fetch below
-        }
-        
-        console.log(`🏢 Opening ${businessType} profile:`, businessId);
-        window.currentBusinessProfileId = businessId;
-        
-        try {
-            this.navigationManager.showLoading();
-            
-            // FIXED: Only fetch if we don't already have business data from feed
-            if (!businessData) {
-                // Try to fetch from Firebase first
-                businessData = await this.fetchBusinessFromFirebase(businessId);
-                
-                // Fallback to mock data
-                if (!businessData) {
-                    businessData = this.getBusinessFromMockData(businessId, businessType);
-                }
-            }
-            
-        if (!businessData) {
-            console.error('Business not found for ID:', businessId);
-            console.log('Attempted Firebase lookup:', businessId);
-            
-            const restaurants = this.mockData?.getRestaurants?.() || [];
-            const activities = this.mockData?.getActivities?.() || [];
-            console.log('Available restaurant IDs:', restaurants.map(r => ({ id: r.id, name: r.name })));
-            console.log('Available activity IDs:', activities.map(a => ({ id: a.id, name: a.name })));
-            console.log('Looking for ID:', businessId);
-            
-            // Try to find the business
-            const foundRestaurant = restaurants.find(r => r.id === businessId);
-            const foundActivity = activities.find(a => a.id === businessId);
-            console.log('Found in restaurants?', foundRestaurant);
-            console.log('Found in activities?', foundActivity);
-            
-            alert(`Business not found (ID: ${businessId})`);
-            this.navigationManager.hideLoading();
-            return;
-        }
-            
-            // Update state
-            this.state.set('currentBusiness', businessData);
-            
-            // Update UI
-            this.updateBusinessProfileUI(businessData);
-            
-           // FIXED: Always track that business profile came from feed
-            if (this.navigationManager) {
-                // Clear any previous overlay stack issues
-                const stackIndex = this.navigationManager.overlayStack.indexOf('businessProfile');
-                if (stackIndex > -1) {
-                    this.navigationManager.overlayStack.splice(stackIndex, 1);
-                }
-                this.navigationManager.showOverlay('businessProfile');
-            } else {
-                // Fallback if navigation manager not available
-                const profileOverlay = document.getElementById('businessProfile');
-                if (profileOverlay) {
-                    profileOverlay.classList.add('show');
-                }
-            }
-            
-           // Track view - delegate to analytics
-            await this.analytics.trackBusinessView(businessId);
-            
-            this.navigationManager.hideLoading();
-            
-        } catch (error) {
-            console.error('❌ Error opening business profile:', error);
-            this.navigationManager.hideLoading();
-            alert('Failed to load business profile');
-        }
+      /**
+     * Open business profile
+     * DELEGATION: Passes to businessProfile sub-manager
+     */
+    async openBusinessProfile(businessDataOrId, businessType) {
+        return this.businessProfile.openBusinessProfile(businessDataOrId, businessType);
     }
     
     /**
      * Fetch business from Firebase
+     * DELEGATION: Passes to businessProfile sub-manager
      */
     async fetchBusinessFromFirebase(businessId) {
-        try {
-            const businessDoc = await getDoc(doc(this.db, 'businesses', businessId));
-            if (businessDoc.exists()) {
-                return { id: businessDoc.id, ...businessDoc.data() };
-            }
-        } catch (error) {
-            console.error('Error fetching business:', error);
-        }
-        return null;
+        return this.businessProfile.fetchBusinessFromFirebase(businessId);
     }
     
     /**
      * Get business from mock data
+     * DELEGATION: Passes to businessProfile sub-manager
      */
-      getBusinessFromMockData(businessId, businessType) {
-        // Access mock data through the app instance
-        if (window.classifiedApp && window.classifiedApp.mockData) {
-            const mockData = window.classifiedApp.mockData;
-            
-            // Try to find in restaurants first
-            const restaurant = mockData.getRestaurantById(businessId);
-            if (restaurant) return restaurant;
-            
-            // Then try activities
-            const activity = mockData.getActivityById(businessId);
-            if (activity) return activity;
-        }
-        return null;
+    getBusinessFromMockData(businessId, businessType) {
+        return this.businessProfile.getBusinessFromMockData(businessId, businessType);
     }
     
     /**

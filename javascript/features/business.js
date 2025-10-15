@@ -2,6 +2,7 @@
 
 import { sanitizeText, escapeHtml } from '../utils/security.js';
 import { BusinessDashboardManager } from './business/businessDashboard.js';
+import { BusinessAnalyticsManager } from './business/businessAnalytics.js';
 
 import {
     doc,
@@ -45,10 +46,14 @@ export class BusinessManager {
         this.dashboard = new BusinessDashboardManager(firebaseServices, appState);
         console.log('✅ [BUSINESS] Dashboard sub-manager initialized');
         
-        // Real-time listeners for Analytics & Promotions overlays
+        // Initialize analytics sub-manager
+        this.analytics = new BusinessAnalyticsManager(firebaseServices, appState);
+        console.log('✅ [BUSINESS] Analytics sub-manager initialized');
+        
+        // Real-time listeners for Promotions overlays
         // NOTE: Dashboard listeners (stats/messages) managed by dashboard sub-manager
+        // NOTE: Analytics listeners managed by analytics sub-manager
         this.promotionsListener = null;   // Section 3.4: Promotions overlay
-        this.analyticsListener = null;    // Section 3.3: Analytics overlay
     }
     
     /**
@@ -68,6 +73,13 @@ export class BusinessManager {
             business: this  // Parent reference
         });
         console.log('✅ [BUSINESS] Dashboard manager references set');
+        
+        // Pass manager references to analytics sub-manager
+        this.analytics.setManagers({
+            navigation: managers.navigation,
+            business: this  // Parent reference
+        });
+        console.log('✅ [BUSINESS] Analytics manager references set');
         
         // Get mock data reference from the main app
         if (window.classifiedApp && window.classifiedApp.mockData) {
@@ -317,8 +329,8 @@ export class BusinessManager {
                 }
             }
             
-            // Track view
-            await this.trackBusinessView(businessId);
+           // Track view - delegate to analytics
+            await this.analytics.trackBusinessView(businessId);
             
             this.navigationManager.hideLoading();
             
@@ -890,168 +902,41 @@ export class BusinessManager {
     }
 
 
-// ========== SECURE OVERLAY MANAGEMENT FUNCTIONS ==========
+// ========== ANALYTICS DELEGATION METHODS ==========
     
     /**
-     * Open Business Analytics (SECURITY: Requires business auth)
+     * Open Business Analytics
+     * DELEGATION: Passes to analytics sub-manager
      */
     openBusinessAnalytics() {
-        if (!this.state.get('isBusinessUser')) {
-            console.error('❌ Unauthorized: Business authentication required');
-            return;
-        }
-        
-        console.log('📊 Opening Business Analytics');
-        const overlay = document.getElementById('businessAnalytics');
-        if (overlay) {
-            overlay.classList.add('show');
-            this.loadAnalyticsData('today');
-        }
+        return this.analytics.openBusinessAnalytics();
     }
     
     /**
-     * Close Business Analytics (with listener cleanup)
+     * Close Business Analytics
+     * DELEGATION: Passes to analytics sub-manager
      */
     closeBusinessAnalytics() {
-        const overlay = document.getElementById('businessAnalytics');
-        if (overlay) {
-            overlay.classList.remove('show');
-            // SECURITY: Clean up any analytics listeners
-            this.cleanupAnalyticsListeners();
-        }
+        return this.analytics.closeBusinessAnalytics();
     }
     
     /**
-     * Clean up analytics listeners to prevent memory leaks
-     */
-    cleanupAnalyticsListeners() {
-        if (this.analyticsListener) {
-            this.analyticsListener();
-            this.analyticsListener = null;
-        }
-    }
-    
-    /**
-     * Change Analytics Range (SECURITY: Input validation)
+     * Change Analytics Range
+     * DELEGATION: Passes to analytics sub-manager
      */
     changeAnalyticsRange(range, button) {
-        // SECURITY: Validate range input
-        const validRanges = ['today', 'week', 'month', 'quarter'];
-        if (!validRanges.includes(range)) {
-            console.error('❌ Invalid range:', range);
-            return;
-        }
-        
-        // Update UI - use textContent for safety
-        document.querySelectorAll('.time-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        if (button) button.classList.add('active');
-        
-        this.loadAnalyticsData(range);
+        return this.analytics.changeAnalyticsRange(range, button);
     }
     
     /**
-     * Load Analytics Data (SECURITY: Firestore rules enforce access)
+     * Track business view
+     * DELEGATION: Passes to analytics sub-manager
      */
-    async loadAnalyticsData(range) {
-        const user = this.state.get('currentUser');
-        if (!user || !this.state.get('isBusinessUser')) {
-            console.error('❌ Unauthorized access attempt');
-            return;
-        }
-        
-        console.log(`📈 Loading analytics for: ${range}`);
-        
-        try {
-            // Calculate date range
-            const now = new Date();
-            let startDate = new Date();
-            
-            switch(range) {
-                case 'today':
-                    startDate.setHours(0, 0, 0, 0);
-                    break;
-                case 'week':
-                    startDate.setDate(now.getDate() - 7);
-                    break;
-                case 'month':
-                    startDate.setDate(now.getDate() - 30);
-                    break;
-                case 'quarter':
-                    startDate.setMonth(now.getMonth() - 3);
-                    break;
-            }
-            
-            // TODO: Fetch real data from Firestore with proper queries
-            // For now, use mock data
-            const mockData = {
-                profileViews: Math.floor(Math.random() * 500) + 100,
-                messages: Math.floor(Math.random() * 50) + 10,
-                directions: Math.floor(Math.random() * 30) + 5,
-                photoViews: Math.floor(Math.random() * 300) + 50,
-                viewsChange: Math.random() * 40 - 10,
-                messagesChange: Math.random() * 30 - 5,
-                directionsChange: Math.random() * 25 - 5,
-                photoChange: Math.random() * 35 - 10
-            };
-            
-            this.updateAnalyticsUI(mockData);
-        } catch (error) {
-            console.error('❌ Error loading analytics:', error);
-        }
+    async trackBusinessView(businessId) {
+        return this.analytics.trackBusinessView(businessId);
     }
-    
-    /**
-     * Update Analytics UI (SECURITY: Use textContent only)
-     */
-    updateAnalyticsUI(data) {
-        // SECURITY: Always use textContent, never innerHTML
-        
-        // Profile Views
-        const viewsEl = document.getElementById('analyticsProfileViews');
-        if (viewsEl) viewsEl.textContent = data.profileViews.toLocaleString();
-        
-        const viewsChangeEl = document.getElementById('analyticsViewsChange');
-        if (viewsChangeEl) {
-            const change = data.viewsChange.toFixed(1);
-            viewsChangeEl.textContent = `${change > 0 ? '+' : ''}${change}%`;
-            viewsChangeEl.className = change > 0 ? 'card-change positive' : 'card-change negative';
-        }
-        
-        // Messages (using textContent for safety)
-        const messagesEl = document.getElementById('analyticsMessages');
-        if (messagesEl) messagesEl.textContent = data.messages.toLocaleString();
-        
-        const messagesChangeEl = document.getElementById('analyticsMessagesChange');
-        if (messagesChangeEl) {
-            const change = data.messagesChange.toFixed(1);
-            messagesChangeEl.textContent = `${change > 0 ? '+' : ''}${change}%`;
-            messagesChangeEl.className = change > 0 ? 'card-change positive' : 'card-change negative';
-        }
-        
-        // Directions
-        const directionsEl = document.getElementById('analyticsDirections');
-        if (directionsEl) directionsEl.textContent = data.directions.toLocaleString();
-        
-        const directionsChangeEl = document.getElementById('analyticsDirectionsChange');
-        if (directionsChangeEl) {
-            const change = data.directionsChange.toFixed(1);
-            directionsChangeEl.textContent = `${change > 0 ? '+' : ''}${change}%`;
-            directionsChangeEl.className = change > 0 ? 'card-change positive' : 'card-change negative';
-        }
-        
-        // Photo Views
-        const photoViewsEl = document.getElementById('analyticsPhotoViews');
-        if (photoViewsEl) photoViewsEl.textContent = data.photoViews.toLocaleString();
-        
-        const photoChangeEl = document.getElementById('analyticsPhotoChange');
-        if (photoChangeEl) {
-            const change = data.photoChange.toFixed(1);
-            photoChangeEl.textContent = `${change > 0 ? '+' : ''}${change}%`;
-            photoChangeEl.className = change > 0 ? 'card-change positive' : 'card-change negative';
-        }
-    }
+
+// ========== PROMOTIONS OVERLAY METHODS ==========
     
     /**
      * Open Promotions Manager (SECURITY: Business only)
@@ -1212,6 +1097,11 @@ export class BusinessManager {
         // Delegate dashboard cleanup to sub-manager
         if (this.dashboard) {
             this.dashboard.cleanup();
+        }
+        
+        // Delegate analytics cleanup to sub-manager
+        if (this.analytics) {
+            this.analytics.cleanup();
         }
         
         // Clear local cached data

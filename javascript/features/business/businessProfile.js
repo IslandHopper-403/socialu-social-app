@@ -617,11 +617,11 @@ export class BusinessProfileManager {
         // Add event listeners
         swiper.addEventListener('touchstart', this.photoViewerListeners.touchstart, { passive: true });
         swiper.addEventListener('touchmove', this.photoViewerListeners.touchmove, { passive: false });
-        swiper.addEventListener('touchend', this.photoViewerListeners.touchend);
-        swiper.addEventListener('mousedown', this.photoViewerListeners.mousedown);
-        swiper.addEventListener('mousemove', this.photoViewerListeners.mousemove);
-        swiper.addEventListener('mouseup', this.photoViewerListeners.mouseup);
-        swiper.addEventListener('mouseleave', this.photoViewerListeners.mouseleave);
+        swiper.addEventListener('touchend', this.photoViewerListeners.touchend, { passive: true });
+        swiper.addEventListener('mousedown', this.photoViewerListeners.mousedown, { passive: false });
+        swiper.addEventListener('mousemove', this.photoViewerListeners.mousemove, { passive: false });
+        swiper.addEventListener('mouseup', this.photoViewerListeners.mouseup, { passive: true });
+        swiper.addEventListener('mouseleave', this.photoViewerListeners.mouseleave, { passive: true });
         
         // Show viewer
         viewer.classList.add('show');

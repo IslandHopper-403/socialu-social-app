@@ -995,7 +995,7 @@ async initializeManagers() {
         if (isBusinessUser) {
             document.getElementById('editProfileBtn').onclick = () => {
                 this.closeSettings();
-                this.managers.profile.openBusinessProfileEditor();
+                this.managers.business.openBusinessProfileEditor();
             };
         } else {
             document.getElementById('editProfileBtn').onclick = () => {
@@ -1016,7 +1016,7 @@ async initializeManagers() {
     
     openBusinessDashboard() {
         this.closeSettings();
-        this.managers.profile.openBusinessProfileEditor();
+        this.managers.business.openBusinessProfileEditor();
     }
     
     shareApp() {

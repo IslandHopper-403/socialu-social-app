@@ -457,40 +457,118 @@ export class BusinessAnalyticsManager {
         // }
     }
     
-    /**
+   /**
      * Track promotion view
-     * TODO Phase 3D: Implement Firestore tracking
+     * ✅ ACTIVATED: Real Firestore tracking for Section 3.4
      * 
      * Collection: businessAnalytics
      * Document fields:
-     * - type: 'promotion'
+     * - type: 'promo_view'
      * - businessId: string
      * - promotionId: string (which promotion was viewed)
      * - userId: string
      * - timestamp: serverTimestamp()
      */
     async trackPromotionView(businessId, promotionId) {
-        console.log('📢 [ANALYTICS] STUB: Track promotion view at:', Date.now());
+        console.log('📢 [ANALYTICS] Tracking promotion view at:', Date.now());
         console.log('📢 [ANALYTICS] BusinessId:', businessId, 'PromotionId:', promotionId);
-        console.log('⚠️ [ANALYTICS] TODO Phase 3D: Implement real Firestore tracking');
         
-        // TODO Phase 3D: Uncomment and implement
-        // try {
-        //     const user = this.state.get('currentUser');
-        //     if (!user) return;
-        //     
-        //     await addDoc(collection(this.db, 'businessAnalytics'), {
-        //         businessId: businessId,
-        //         type: 'promotion',
-        //         promotionId: promotionId,
-        //         timestamp: serverTimestamp(),
-        //         userId: user.uid
-        //     });
-        //     
-        //     console.log('✅ [ANALYTICS] Promotion view tracked successfully');
-        // } catch (error) {
-        //     console.error('❌ [ANALYTICS] Error tracking promotion:', error);
-        // }
+        try {
+            const user = this.state.get('currentUser');
+            if (!user) {
+                console.log('ℹ️ [ANALYTICS] No user logged in, skipping promo view tracking');
+                return;
+            }
+            
+            await addDoc(collection(this.db, 'businessAnalytics'), {
+                businessId: businessId,
+                promotionId: promotionId,
+                type: 'promo_view',
+                timestamp: serverTimestamp(),
+                userId: user.uid
+            });
+            
+            console.log('✅ [ANALYTICS] Promotion view tracked successfully');
+            
+        } catch (error) {
+            console.error('❌ [ANALYTICS] Error tracking promotion view:', error);
+        }
+    }
+    
+    /**
+     * Track promotion click
+     * ✅ NEW: Added for Section 3.4
+     * 
+     * Collection: businessAnalytics
+     * Document fields:
+     * - type: 'promo_click'
+     * - businessId: string
+     * - promotionId: string
+     * - userId: string
+     * - timestamp: serverTimestamp()
+     */
+    async trackPromotionClick(businessId, promotionId) {
+        console.log('🖱️ [ANALYTICS] Tracking promotion click at:', Date.now());
+        console.log('🖱️ [ANALYTICS] BusinessId:', businessId, 'PromotionId:', promotionId);
+        
+        try {
+            const user = this.state.get('currentUser');
+            if (!user) {
+                console.log('ℹ️ [ANALYTICS] No user logged in, skipping promo click tracking');
+                return;
+            }
+            
+            await addDoc(collection(this.db, 'businessAnalytics'), {
+                businessId: businessId,
+                promotionId: promotionId,
+                type: 'promo_click',
+                timestamp: serverTimestamp(),
+                userId: user.uid
+            });
+            
+            console.log('✅ [ANALYTICS] Promotion click tracked successfully');
+            
+        } catch (error) {
+            console.error('❌ [ANALYTICS] Error tracking promotion click:', error);
+        }
+    }
+    
+    /**
+     * Get promotion analytics for a specific promotion
+     * ✅ NEW: Added for Section 3.4
+     * 
+     * Returns views and clicks count for a promotion
+     * Used by promotions dashboard to show performance
+     */
+    async getPromotionStats(promotionId) {
+        console.log('📊 [ANALYTICS] Getting promotion stats at:', Date.now());
+        console.log('📊 [ANALYTICS] PromotionId:', promotionId);
+        
+        try {
+            const analyticsQuery = query(
+                collection(this.db, 'businessAnalytics'),
+                where('promotionId', '==', promotionId)
+            );
+            
+            const snapshot = await getDocs(analyticsQuery);
+            
+            let views = 0;
+            let clicks = 0;
+            
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.type === 'promo_view') views++;
+                if (data.type === 'promo_click') clicks++;
+            });
+            
+            console.log(`📊 [ANALYTICS] Promo stats - Views: ${views}, Clicks: ${clicks}`);
+            
+            return { views, clicks };
+            
+        } catch (error) {
+            console.error('❌ [ANALYTICS] Error getting promo stats:', error);
+            return { views: 0, clicks: 0 };
+        }
     }
     
     // ========== CLEANUP METHODS ==========

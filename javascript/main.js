@@ -561,10 +561,10 @@ async initializeManagers() {
             // Profile methods
             openProfileEditor: () => this.managers.profile.openProfileEditor(),
             closeProfileEditor: () => this.managers.navigation.closeOverlay('profileEditor'),
-            openBusinessProfileEditor: () => this.managers.profile.openBusinessProfileEditor(),
+            openBusinessProfileEditor: () => this.managers.business.openBusinessProfileEditor(),
             closeBusinessProfileEditor: () => this.managers.navigation.closeOverlay('businessProfileEditor'),
             saveUserProfile: () => this.managers.profile.saveUserProfile(),
-            saveBusinessProfile: () => this.managers.profile.saveBusinessProfile(),
+            saveBusinessProfile: () => this.managers.business.saveBusinessProfile(),
             viewMyProfile: () => this.managers.profile.viewMyProfile(),
             closeMyProfile: () => this.managers.navigation.closeOverlay('myProfileView'),
             

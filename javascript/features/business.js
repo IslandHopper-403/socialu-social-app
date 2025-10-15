@@ -3,6 +3,7 @@
 import { sanitizeText, escapeHtml } from '../utils/security.js';
 import { BusinessDashboardManager } from './business/businessDashboard.js';
 import { BusinessAnalyticsManager } from './business/businessAnalytics.js';
+import { BusinessPromotionsManager } from './business/businessPromotions.js';
 
 import {
     doc,
@@ -50,10 +51,9 @@ export class BusinessManager {
         this.analytics = new BusinessAnalyticsManager(firebaseServices, appState);
         console.log('✅ [BUSINESS] Analytics sub-manager initialized');
         
-        // Real-time listeners for Promotions overlays
-        // NOTE: Dashboard listeners (stats/messages) managed by dashboard sub-manager
-        // NOTE: Analytics listeners managed by analytics sub-manager
-        this.promotionsListener = null;   // Section 3.4: Promotions overlay
+        // Initialize promotions sub-manager
+        this.promotions = new BusinessPromotionsManager(firebaseServices, appState);
+        console.log('✅ [BUSINESS] Promotions sub-manager initialized');
     }
     
     /**
@@ -80,6 +80,13 @@ export class BusinessManager {
             business: this  // Parent reference
         });
         console.log('✅ [BUSINESS] Analytics manager references set');
+        
+        // Pass manager references to promotions sub-manager
+        this.promotions.setManagers({
+            navigation: managers.navigation,
+            business: this  // Parent reference
+        });
+        console.log('✅ [BUSINESS] Promotions manager references set');
         
         // Get mock data reference from the main app
         if (window.classifiedApp && window.classifiedApp.mockData) {
@@ -916,112 +923,90 @@ export class BusinessManager {
         return this.analytics.trackBusinessView(businessId);
     }
 
-// ========== PROMOTIONS OVERLAY METHODS ==========
+// ========== PROMOTIONS DELEGATION METHODS ==========
     
     /**
-     * Open Promotions Manager (SECURITY: Business only)
+     * Open Promotions Manager
+     * DELEGATION: Passes to promotions sub-manager
      */
     openPromotionsManager() {
         if (!this.state.get('isBusinessUser')) {
-            console.error('❌ Unauthorized: Business authentication required');
+            console.error('❌ [BUSINESS] Unauthorized: Business authentication required');
             return;
         }
-        
-        console.log('📢 Opening Promotions Manager');
-        const overlay = document.getElementById('promotionsManager');
-        if (overlay) {
-            overlay.classList.add('show');
-            this.loadPromotions('active');
-        }
+        return this.promotions.openPromotionsManager();
     }
     
     /**
-     * Load Promotions (SECURITY: Firestore rules enforce ownership)
+     * Close Promotions Manager
+     * DELEGATION: Passes to promotions sub-manager
      */
-    async loadPromotions(status) {
-        const user = this.state.get('currentUser');
-        if (!user || !this.state.get('isBusinessUser')) return;
-        
-        try {
-            // TODO: Implement Firestore query for promotions
-            console.log(`Loading ${status} promotions for business ${user.uid}`);
-            
-            // Show empty state for now
-            const emptyState = document.getElementById('promotionsEmptyState');
-            if (emptyState) emptyState.style.display = 'block';
-            
-        } catch (error) {
-            console.error('❌ Error loading promotions:', error);
-        }
+    closePromotionsManager() {
+        return this.promotions.closePromotionsManager();
     }
     
     /**
-     * Create Promotion (SECURITY: Show form with validation)
+     * Load Promotions
+     * DELEGATION: Passes to promotions sub-manager
+     */
+    loadPromotions(status) {
+        return this.promotions.loadPromotions(status);
+    }
+    
+    /**
+     * Create Promotion
+     * DELEGATION: Passes to promotions sub-manager
      */
     createPromotion() {
-        const form = document.getElementById('promotionForm');
-        const list = document.getElementById('promotionsList');
-        const emptyState = document.getElementById('promotionsEmptyState');
-        
-        if (form) {
-            form.style.display = 'block';
-            if (list) list.style.display = 'none';
-            if (emptyState) emptyState.style.display = 'none';
-        }
+        return this.promotions.createPromotion();
     }
     
     /**
-     * Save Promotion (SECURITY: Sanitized inputs from main.js)
+     * Edit Promotion
+     * DELEGATION: Passes to promotions sub-manager
      */
-    async savePromotion(safeTitle, safeDescription) {
-        const user = this.state.get('currentUser');
-        if (!user || !this.state.get('isBusinessUser')) {
-            console.error('❌ Unauthorized');
-            return;
-        }
-        
-        // Additional validation
-        if (!safeTitle || safeTitle.length > 50) {
-            alert('Title is required (max 50 characters)');
-            return;
-        }
-        
-        if (!safeDescription || safeDescription.length > 200) {
-            alert('Description is required (max 200 characters)');
-            return;
-        }
-        
-        try {
-            // TODO: Save to Firestore with proper structure
-            console.log('Saving promotion:', { safeTitle, safeDescription });
-            
-            // Close form
-            this.cancelPromotion();
-            
-            // Reload promotions
-            this.loadPromotions('active');
-            
-        } catch (error) {
-            console.error('❌ Error saving promotion:', error);
-            alert('Failed to save promotion');
-        }
+    editPromotion(promoId) {
+        return this.promotions.editPromotion(promoId);
     }
     
     /**
-     * Cancel Promotion Creation
+     * Delete Promotion
+     * DELEGATION: Passes to promotions sub-manager
+     */
+    deletePromotion(promoId) {
+        return this.promotions.deletePromotion(promoId);
+    }
+    
+    /**
+     * Save Promotion
+     * DELEGATION: Passes to promotions sub-manager
+     */
+    savePromotion(safeTitle, safeDescription) {
+        return this.promotions.savePromotion(safeTitle, safeDescription);
+    }
+    
+    /**
+     * Cancel Promotion
+     * DELEGATION: Passes to promotions sub-manager
      */
     cancelPromotion() {
-        const form = document.getElementById('promotionForm');
-        const list = document.getElementById('promotionsList');
-        
-        if (form) {
-            form.style.display = 'none';
-            // Clear form inputs
-            const inputs = form.querySelectorAll('input, textarea');
-            inputs.forEach(input => input.value = '');
-        }
-        
-        if (list) list.style.display = 'block';
+        return this.promotions.cancelPromotion();
+    }
+    
+    /**
+     * Switch Promotion Tab
+     * DELEGATION: Passes to promotions sub-manager
+     */
+    switchPromoTab(tab, button) {
+        return this.promotions.switchPromoTab(tab, button);
+    }
+    
+    /**
+     * Toggle Promotion Status
+     * DELEGATION: Passes to promotions sub-manager
+     */
+    togglePromotionStatus(promoId, newStatus) {
+        return this.promotions.togglePromotionStatus(promoId, newStatus);
     }
     
     /**
@@ -1038,20 +1023,10 @@ export class BusinessManager {
     
     /**
      * Insert Quick Reply Template (SECURITY: Predefined templates only)
+     * DELEGATION: Handled by dashboard sub-manager
      */
     insertQuickReply(type) {
-        const templates = {
-            greeting: 'Hello! Thank you for your interest in our business.',
-            hours: 'We are open Monday-Saturday 9AM-9PM, Sunday 10AM-6PM.',
-            location: 'We are located at [Your Address]. Click here for directions: [Map Link]',
-            promotion: 'Check out our current promotions! [Promotion Details]'
-        };
-        
-        const template = templates[type];
-        if (template) {
-            // TODO: Insert into active chat input
-            console.log('Quick reply:', template);
-        }
+        return this.dashboard.insertQuickReply(type);
     }
     
     /**
@@ -1082,6 +1057,11 @@ export class BusinessManager {
         // Delegate analytics cleanup to sub-manager
         if (this.analytics) {
             this.analytics.cleanup();
+        }
+        
+        // Delegate promotions cleanup to sub-manager
+        if (this.promotions) {
+            this.promotions.cleanup();
         }
         
         // Clear local cached data

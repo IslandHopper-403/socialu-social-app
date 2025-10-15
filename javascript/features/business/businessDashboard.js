@@ -125,8 +125,8 @@ export class BusinessDashboardManager {
             setTimeout(() => {
                 alert('Welcome! Please complete your business profile to get approved and start appearing in feeds.');
                 // Delegate to parent business manager for profile editor
-                if (this.businessManager && this.businessManager.profileManager) {
-                    this.businessManager.profileManager.openBusinessProfileEditor();
+                if (this.businessManager) {
+                    this.businessManager.openBusinessProfileEditor();
                 }
             }, 1000);
         }

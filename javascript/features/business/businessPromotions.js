@@ -24,6 +24,7 @@ import { sanitizeText } from '../../utils/security.js';
 import {
     collection,
     doc,
+    getDoc,
     addDoc,
     updateDoc,
     deleteDoc,
@@ -261,10 +262,18 @@ export class BusinessPromotionsManager {
             document.getElementById('promoStartDate').value = '';
             document.getElementById('promoEndDate').value = '';
             
-            // Reset type selector to default
+           // Reset type selector to default
             const typeButtons = document.querySelectorAll('.promo-type-selector .type-btn');
             typeButtons.forEach(btn => btn.classList.remove('active'));
             typeButtons[0]?.classList.add('active'); // Default to first type
+            
+            // Add click handlers for type buttons
+            typeButtons.forEach(btn => {
+                btn.onclick = function() {
+                    typeButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                };
+            });
         }
         
         if (list) list.style.display = 'none';

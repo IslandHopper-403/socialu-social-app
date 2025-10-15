@@ -604,6 +604,31 @@ export class BusinessManager {
         return this.businessProfile.massUploadBusinesses(businessesData);
     }
 
+    // ========== PROFILE EDITOR DELEGATION METHODS ==========
+    
+    /**
+     * Open business profile editor
+     * DELEGATION: Passes to profile sub-manager
+     */
+    openBusinessProfileEditor() {
+        return this.businessProfile.openBusinessProfileEditor();
+    }
+    
+    /**
+     * Close business profile editor
+     * DELEGATION: Passes to profile sub-manager
+     */
+    closeBusinessProfileEditor() {
+        return this.businessProfile.closeBusinessProfileEditor();
+    }
+    
+    /**
+     * Save business profile
+     * DELEGATION: Passes to profile sub-manager
+     */
+    async saveBusinessProfile() {
+        return this.businessProfile.saveBusinessProfile();
+    }
 
 // ========== ANALYTICS DELEGATION METHODS ==========
     

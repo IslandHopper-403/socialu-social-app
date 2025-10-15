@@ -195,7 +195,23 @@ export class BusinessPromotionsManager {
             
         } catch (error) {
             console.error('❌ [PROMOTIONS] Error loading promotions:', error);
-            alert('Failed to load promotions. Please try again.');
+            
+            // Show empty state when query fails (e.g., index still building)
+            const list = document.getElementById('promotionsList');
+            const emptyState = document.getElementById('promotionsEmptyState');
+            
+            if (list) list.style.display = 'none';
+            if (emptyState) {
+                emptyState.style.display = 'block';
+                console.log('📭 [PROMOTIONS] Showing empty state due to query error');
+            }
+            
+            // Only show alert if it's not an index error
+            if (!error.message?.includes('index')) {
+                alert('Failed to load promotions. Please try again.');
+            } else {
+                console.log('ℹ️ [PROMOTIONS] Index is building - showing empty state');
+            }
         }
     }
     

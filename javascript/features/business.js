@@ -71,6 +71,12 @@ export class BusinessManager {
         this.messagingManager = managers.messaging; 
         this.storyManager = managers.businessStory;  // Add story manager reference
         
+        // 🆕 CRITICAL: Get mock data FIRST before passing to sub-managers
+        if (window.classifiedApp && window.classifiedApp.mockData) {
+            this.mockData = window.classifiedApp.mockData;
+            console.log('✅ [BUSINESS] MockData loaded in BusinessManager');
+        }
+        
         // Pass manager references to dashboard sub-manager
         this.dashboard.setManagers({
             navigation: managers.navigation,
@@ -100,13 +106,8 @@ export class BusinessManager {
             businessStory: managers.businessStory,
             business: this  // Parent reference for mockData & analytics access
         });
-        console.log('✅ [BUSINESS] Profile manager references set');
         
-        // Get mock data reference from the main app
-        if (window.classifiedApp && window.classifiedApp.mockData) {
-            this.mockData = window.classifiedApp.mockData;
-            console.log('✅ MockData loaded in BusinessManager');
-        }
+        console.log('✅ [BUSINESS] Profile manager references set');
     }
     
     /**

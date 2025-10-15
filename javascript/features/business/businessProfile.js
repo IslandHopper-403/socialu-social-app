@@ -30,6 +30,10 @@ export class BusinessProfileManager {
         this.navigationManager = null;
         this.authManager = null;
         this.storyManager = null;
+        this.analyticsManager = null;  // 🆕 For tracking business views
+        
+        // Mock data reference (for business lookups)
+        this.mockData = null;  // 🆕 Set via setManagers
         
         // Instance variables for cleanup
         this.photoViewerListeners = null;
@@ -38,7 +42,7 @@ export class BusinessProfileManager {
         console.log('✅ [BUSINESS-PROFILE] BusinessProfileManager initialized');
     }
     
-    /**
+   /**
      * Set references to other managers
      */
     setManagers(managers) {
@@ -46,7 +50,19 @@ export class BusinessProfileManager {
         this.authManager = managers.auth;
         this.storyManager = managers.businessStory;
         
-        console.log('✅ [BUSINESS-PROFILE] Manager references set');
+        // 🆕 Get analytics manager from parent business manager
+        this.analyticsManager = managers.business?.analytics;
+        
+        // 🆕 Get mock data from parent business manager
+        this.mockData = managers.business?.mockData;
+        
+        console.log('✅ [BUSINESS-PROFILE] Manager references set:', {
+            navigation: !!this.navigationManager,
+            auth: !!this.authManager,
+            story: !!this.storyManager,
+            analytics: !!this.analyticsManager,
+            mockData: !!this.mockData
+        });
     }
     
     // ========== PROFILE DISPLAY FUNCTIONS ==========
@@ -238,8 +254,251 @@ export class BusinessProfileManager {
         this.navigationManager.showScreen(currentScreen, false);
         console.log('📱 [BUSINESS-PROFILE] Returned to', currentScreen, 'feed');
     }
+
+    /**
+     * Close business profile
+     */
+    closeBusinessProfile() {
+        console.log('🔙 [BUSINESS-PROFILE] Closing business profile');
+        
+        // Clear business state first
+        this.state.set('currentBusiness', null);
+
+        // Clear any rotating specials interval
+        if (this.specialsInterval) {
+            clearInterval(this.specialsInterval);
+            this.specialsInterval = null;
+        }
+        
+        // Close the overlay
+        this.navigationManager.closeOverlay('businessProfile');
+        
+        // SIMPLE: Always return to current feed screen
+        const currentScreen = this.state.get('currentScreen') || 'restaurant';
+        this.navigationManager.showScreen(currentScreen, false);
+        console.log('📱 [BUSINESS-PROFILE] Returned to', currentScreen, 'feed');
+    }
     
-    // ========== PHOTO MANAGEMENT FUNCTIONS ==========
+    // ========== BUSINESS PROFILE OPENING & LOOKUP ==========
+    
+    /**
+     * Open business profile by slug or ID
+     * Tries slug lookup first, then falls back to regular ID
+     */
+    async openBusinessProfileBySlugOrId(slugOrId, businessType = 'restaurant') {
+        console.log('🔍 [BUSINESS-PROFILE] Looking up business by slug/ID:', slugOrId);
+        
+        // First, try to find by slug
+        const business = await this.findBusinessBySlug(slugOrId);
+        
+        if (business) {
+            console.log('✅ [BUSINESS-PROFILE] Found business by slug:', business.name);
+            return this.openBusinessProfile(business, businessType);
+        }
+        
+        // Fallback: try as regular ID
+        console.log('🔄 [BUSINESS-PROFILE] Trying as regular ID...');
+        return this.openBusinessProfile(slugOrId, businessType);
+    }
+    
+    /**
+     * Find business by slug
+     * Searches both mock data and Firebase
+     */
+    async findBusinessBySlug(slug) {
+        console.log('🔎 [BUSINESS-PROFILE] Searching for slug:', slug);
+        
+        // Search in mock data (if available)
+        if (window.classifiedApp && window.classifiedApp.mockData) {
+            const mockData = window.classifiedApp.mockData;
+            
+            // Search restaurants
+            const restaurants = mockData.getRestaurants?.() || [];
+            for (const restaurant of restaurants) {
+                if (this.createBusinessSlug(restaurant) === slug) {
+                    console.log('✅ [BUSINESS-PROFILE] Found in restaurants:', restaurant.name);
+                    return restaurant;
+                }
+            }
+            
+            // Search activities
+            const activities = mockData.getActivities?.() || [];
+            for (const activity of activities) {
+                if (this.createBusinessSlug(activity) === slug) {
+                    console.log('✅ [BUSINESS-PROFILE] Found in activities:', activity.name);
+                    return activity;
+                }
+            }
+        }
+        
+        // Search in Firebase (if needed)
+        try {
+            const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js');
+            const snapshot = await getDocs(collection(this.db, 'businesses'));
+            
+            for (const doc of snapshot.docs) {
+                const business = { id: doc.id, ...doc.data() };
+                if (this.createBusinessSlug(business) === slug) {
+                    console.log('✅ [BUSINESS-PROFILE] Found in Firebase:', business.name);
+                    return business;
+                }
+            }
+        } catch (error) {
+            console.error('❌ [BUSINESS-PROFILE] Error searching businesses:', error);
+        }
+        
+        console.log('📭 [BUSINESS-PROFILE] No business found for slug:', slug);
+        return null;
+    }
+    
+    /**
+     * Open business profile (main method)
+     * Handles both full business objects and business IDs
+     */
+    async openBusinessProfile(businessDataOrId, businessType) {
+        let businessData;
+        let businessId;
+        
+        // Handle both full object and ID
+        if (typeof businessDataOrId === 'object' && businessDataOrId !== null) {
+            businessData = businessDataOrId;
+            businessId = businessData.id || businessData.uid;
+        } else {
+            businessId = businessDataOrId;
+            businessData = null; // Will fetch below
+        }
+        
+        console.log(`🏢 [BUSINESS-PROFILE] Opening ${businessType} profile:`, businessId);
+        window.currentBusinessProfileId = businessId;
+        
+        try {
+            this.navigationManager.showLoading();
+            
+            // FIXED: Only fetch if we don't already have business data from feed
+            if (!businessData) {
+                // Try to fetch from Firebase first
+                businessData = await this.fetchBusinessFromFirebase(businessId);
+                
+                // Fallback to mock data
+                if (!businessData) {
+                    businessData = this.getBusinessFromMockData(businessId, businessType);
+                }
+            }
+            
+            if (!businessData) {
+                console.error('❌ [BUSINESS-PROFILE] Business not found for ID:', businessId);
+                
+                // DEBUG logging for troubleshooting
+                const mockData = window.classifiedApp?.mockData;
+                if (mockData) {
+                    const restaurants = mockData.getRestaurants?.() || [];
+                    const activities = mockData.getActivities?.() || [];
+                    console.log('📊 [BUSINESS-PROFILE] Available restaurant IDs:', restaurants.map(r => ({ id: r.id, name: r.name })));
+                    console.log('📊 [BUSINESS-PROFILE] Available activity IDs:', activities.map(a => ({ id: a.id, name: a.name })));
+                    console.log('🔍 [BUSINESS-PROFILE] Looking for ID:', businessId);
+                    
+                    const foundRestaurant = restaurants.find(r => r.id === businessId);
+                    const foundActivity = activities.find(a => a.id === businessId);
+                    console.log('🔍 [BUSINESS-PROFILE] Found in restaurants?', foundRestaurant);
+                    console.log('🔍 [BUSINESS-PROFILE] Found in activities?', foundActivity);
+                }
+                
+                alert(`Business not found (ID: ${businessId})`);
+                this.navigationManager.hideLoading();
+                return;
+            }
+            
+            // Update state
+            this.state.set('currentBusiness', businessData);
+            
+            // Update UI
+            this.updateBusinessProfileUI(businessData);
+            
+            // Track that business profile came from feed
+            if (this.navigationManager) {
+                // Clear any previous overlay stack issues
+                const stackIndex = this.navigationManager.overlayStack.indexOf('businessProfile');
+                if (stackIndex > -1) {
+                    this.navigationManager.overlayStack.splice(stackIndex, 1);
+                }
+                this.navigationManager.showOverlay('businessProfile');
+            } else {
+                // Fallback if navigation manager not available
+                const profileOverlay = document.getElementById('businessProfile');
+                if (profileOverlay) {
+                    profileOverlay.classList.add('show');
+                }
+            }
+            
+            // Track view - delegate to analytics manager (if available)
+            if (this.analyticsManager) {
+                await this.analyticsManager.trackBusinessView(businessId);
+            } else {
+                console.log('⚠️ [BUSINESS-PROFILE] Analytics manager not available, skipping view tracking');
+            }
+            
+            this.navigationManager.hideLoading();
+            
+        } catch (error) {
+            console.error('❌ [BUSINESS-PROFILE] Error opening business profile:', error);
+            this.navigationManager.hideLoading();
+            alert('Failed to load business profile');
+        }
+    }
+    
+    /**
+     * Fetch business from Firebase
+     */
+    async fetchBusinessFromFirebase(businessId) {
+        console.log('🔥 [BUSINESS-PROFILE] Fetching business from Firebase:', businessId);
+        
+        try {
+            const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js');
+            const businessDoc = await getDoc(doc(this.db, 'businesses', businessId));
+            
+            if (businessDoc.exists()) {
+                console.log('✅ [BUSINESS-PROFILE] Business found in Firebase');
+                return { id: businessDoc.id, ...businessDoc.data() };
+            }
+        } catch (error) {
+            console.error('❌ [BUSINESS-PROFILE] Error fetching business:', error);
+        }
+        
+        console.log('📭 [BUSINESS-PROFILE] Business not found in Firebase');
+        return null;
+    }
+    
+    /**
+     * Get business from mock data
+     */
+    getBusinessFromMockData(businessId, businessType) {
+        console.log('🎭 [BUSINESS-PROFILE] Fetching business from mock data:', businessId);
+        
+        // Access mock data through the app instance
+        if (window.classifiedApp && window.classifiedApp.mockData) {
+            const mockData = window.classifiedApp.mockData;
+            
+            // Try to find in restaurants first
+            const restaurant = mockData.getRestaurantById(businessId);
+            if (restaurant) {
+                console.log('✅ [BUSINESS-PROFILE] Found in mock restaurants:', restaurant.name);
+                return restaurant;
+            }
+            
+            // Then try activities
+            const activity = mockData.getActivityById(businessId);
+            if (activity) {
+                console.log('✅ [BUSINESS-PROFILE] Found in mock activities:', activity.name);
+                return activity;
+            }
+        }
+        
+        console.log('📭 [BUSINESS-PROFILE] Business not found in mock data');
+        return null;
+    }
+    
+      
+  // ========== PHOTO MANAGEMENT FUNCTIONS ==========
     
     /**
      * Add photo counter to hero image

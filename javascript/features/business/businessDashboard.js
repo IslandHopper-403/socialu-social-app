@@ -398,6 +398,14 @@ export class BusinessDashboardManager {
         
         try {
             // Calculate rating from reviews
+            // TODO Phase 3D: Implement real reviews collection with proper Firestore rules
+            // For now, use mock rating to prevent permission errors
+            
+            const avgRating = '5.0'; // Mock rating for MVP
+            
+            console.log('⭐ [DASHBOARD] Rating calculated (mock):', avgRating);
+            
+            /* COMMENTED OUT UNTIL REVIEWS COLLECTION HAS FIRESTORE RULES
             const reviewsQuery = query(
                 collection(this.db, 'reviews'),
                 where('businessId', '==', user.uid)
@@ -416,8 +424,7 @@ export class BusinessDashboardManager {
             });
             
             const avgRating = reviewCount > 0 ? (totalRating / reviewCount).toFixed(1) : '5.0';
-            
-            console.log('⭐ [DASHBOARD] Rating calculated:', avgRating);
+            */
             
             // Update UI with textContent (SECURITY)
             const ratingEl = document.getElementById('businessRatingValue');

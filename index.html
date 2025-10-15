@@ -1211,18 +1211,21 @@
                     <button class="promo-tab" onclick="CLASSIFIED.switchPromoTab('expired', this)">Expired</button>
                 </div>
                 
-                <!-- Promotions List -->
-                <div class="promotions-list" id="promotionsList">
-                    <!-- Promotions will be dynamically loaded here -->
-                    <div class="empty-state" id="promotionsEmptyState">
-                        <div style="font-size: 48px; margin-bottom: 10px;">📢</div>
-                        <div style="font-weight: 600; margin-bottom: 5px;">No Promotions Yet</div>
-                        <div style="font-size: 14px; opacity: 0.7;">Create your first promotion to attract customers</div>
-                        <button class="btn primary-btn" onclick="CLASSIFIED.createPromotion()" style="margin-top: 20px;">Create Promotion</button>
-                    </div>
-                </div>
-                
-                <!-- Promotion Form (Hidden by default) -->
+             <!-- Promotions List -->
+            <div class="promotions-list" id="promotionsList">
+                <!-- Promotions will be dynamically loaded here -->
+            </div>
+            
+            <!-- Empty State (Separate from list) -->
+            <div class="empty-state" id="promotionsEmptyState" style="display: none;">
+                <div style="font-size: 48px; margin-bottom: 10px;">📢</div>
+                <div style="font-weight: 600; margin-bottom: 5px;">No Promotions Yet</div>
+                <div style="font-size: 14px; opacity: 0.7;">Create your first promotion to attract customers</div>
+                <button class="btn primary-btn" onclick="CLASSIFIED.createPromotion()" style="margin-top: 20px;">Create Promotion</button>
+            </div>
+        
+             <!-- Promotion Form (Hidden by default) -->
+
                 <div class="promotion-form" id="promotionForm" style="display: none;">
                     <div class="form-section">
                         <label>Promotion Title</label>

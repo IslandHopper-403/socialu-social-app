@@ -9,7 +9,7 @@ import {
     updateProfile
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 
-import { clearUserData } from '../utils/storage.js';
+import { clearUserData, sessionStorage as storage } from '../utils/storage.js';
 
 import {
     doc,
@@ -291,7 +291,7 @@ export class AuthManager {
             const referralCode = this.generateReferralCode();
             
             // Check for referral
-            const referredBy = sessionStorage.getItem('referralCode');
+            const referredBy = storage.getItem('referralCode');
             
             // Create COMPLETE initial user profile with all fields
             const profileData = {
@@ -335,7 +335,7 @@ export class AuthManager {
             }
             
             // Clear referral code
-            sessionStorage.removeItem('referralCode');
+            storage.removeItem('referralCode');
             
             console.log('🎉 Registration completed successfully!');
             return user;
@@ -691,7 +691,7 @@ async businessSignup(businessData) {
         const referralCode = urlParams.get('ref');
         
         if (referralCode) {
-            sessionStorage.setItem('referralCode', referralCode);
+            storage.setItem('referralCode', referralCode);
             
             // Show referral welcome if referral manager exists
             if (this.referralManager) {

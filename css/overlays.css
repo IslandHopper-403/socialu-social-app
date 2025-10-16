@@ -917,6 +917,57 @@ input:disabled + .toggle-slider {
 }
 
 /* =====================================================
+   Business Messages Overlay
+   ===================================================== */
+.business-messages-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 20px;
+    background: var(--bg-dark);
+}
+
+.message-filters {
+    display: flex;
+    gap: 12px;
+    padding: var(--spacing-lg) var(--spacing-lg) 0;
+    margin-bottom: var(--spacing-md);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.message-filters::-webkit-scrollbar {
+    display: none;
+}
+
+.business-conversations {
+    padding: 0 var(--spacing-lg);
+}
+
+.customer-name {
+    font-weight: 600;
+    color: white;
+}
+
+.unread-badge {
+    position: absolute;
+    top: 50%;
+    right: var(--spacing-md);
+    transform: translateY(-50%);
+    background: var(--error);
+    color: white;
+    border-radius: var(--radius-circle);
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    border: 2px solid var(--bg-dark);
+}
+
+/* =====================================================
    Photo Viewer Overlay
    ===================================================== */
 .photo-viewer-overlay {

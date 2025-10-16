@@ -3,7 +3,7 @@
 import { sanitizeMessage, sanitizeText, escapeHtml, sanitizeHtml } from '../utils/security.js';
 import { handleSecurityError } from '../utils/security.js';
 import { formatMessageTime } from '../utils/helpers.js';
-
+import { getUserItem, setUserItem, getChatItem, setChatItem, getItem, setItem } from '../utils/storage.js';
 
 import {
     collection,
@@ -76,7 +76,7 @@ export class MessagingManager {
     this.loadMessageReadStates();
     
     // FIXED: Better last active tracking
-    this.lastAppActive = parseInt(localStorage.getItem('lastAppActive') || Date.now().toString(), 10);
+    this.lastAppActive = parseInt(getItem('lastAppActive') || Date.now().toString(), 10);
     
     // FIXED: Track initial loads to prevent notifications
     this.initialLoadComplete = new Set();
@@ -90,11 +90,11 @@ export class MessagingManager {
         
         if (document.hidden) {
             // App going to background - save timestamp
-            localStorage.setItem('lastAppActive', Date.now().toString());
+            setItem('lastAppActive', Date.now().toString());
             this.isChatVisible = false; // Chat can't be visible if app is hidden
         } else {
             // App coming to foreground - update timestamp
-            this.lastAppActive = parseInt(localStorage.getItem('lastAppActive') || Date.now().toString(), 10);
+            this.lastAppActive = parseInt(getItem('lastAppActive') || Date.now().toString(), 10);
             
             // Only mark as read if chat is actually open
             if (this.currentChatId && this.isChatVisible) {
@@ -109,7 +109,7 @@ export class MessagingManager {
     });
 }
 
-    /**
+   /**
      * Load message read states from localStorage (user-specific)
      */
     loadMessageReadStates() {
@@ -117,16 +117,14 @@ export class MessagingManager {
             const currentUser = this.state.get('currentUser');
             if (!currentUser) return;
             
-            const storageKey = `messageReadStates_${currentUser.uid}`;
-            const saved = localStorage.getItem(storageKey);
+            const saved = getUserItem('messageReadStates', currentUser.uid);
             if (saved) {
-                const parsed = JSON.parse(saved);
-                Object.entries(parsed).forEach(([messageId, state]) => {
+                Object.entries(saved).forEach(([messageId, state]) => {
                     this.messageReadStates.set(messageId, state);
                 });
             }
         } catch (error) {
-            console.error('Error loading message read states:', error);
+            console.error('❌ [MESSAGING] Error loading message read states:', error);
         }
     }
     
@@ -138,16 +136,15 @@ export class MessagingManager {
             const currentUser = this.state.get('currentUser');
             if (!currentUser) return;
             
-            const storageKey = `messageReadStates_${currentUser.uid}`;
             const toSave = {};
             // Only save last 100 message states to prevent localStorage bloat
             const entries = Array.from(this.messageReadStates.entries()).slice(-100);
             entries.forEach(([messageId, state]) => {
                 toSave[messageId] = state;
             });
-            localStorage.setItem(storageKey, JSON.stringify(toSave));
+            setUserItem('messageReadStates', toSave, currentUser.uid);
         } catch (error) {
-            console.error('Error saving message read states:', error);
+            console.error('❌ [MESSAGING] Error saving message read states:', error);
         }
     }
 
@@ -691,7 +688,7 @@ export class MessagingManager {
                         const partnerData = partnerDoc.data();
                         
                  // Check unread status - use lastAppActive as the cutoff
-                const seenTime = localStorage.getItem(`seen_${chatDoc.id}_${userId}`);
+                const seenTime = getChatItem('seen', chatDoc.id, userId);
                 const messageTime = chatData.lastMessageTime?.toMillis?.() || 0;
                 
                 // It's unread if: message is from other user AND newer than last app active AND not seen
@@ -975,7 +972,7 @@ displayUnifiedChats(chats) {
             if (notificationManager) {
                 notificationManager.markChatAsRead(chatId);
             }
-            localStorage.setItem(`seen_${chatId}_${currentUser.uid}`, Date.now().toString());
+            setChatItem('seen', Date.now().toString(), chatId, currentUser.uid);
             this.updateChatListUnreadIndicators();
             
          // Update chat list UI indicators (visual only, not state)
@@ -1487,8 +1484,8 @@ async markChatAsRead(chatId) {
         notificationManager.markChatAsRead(chatId);
     }
     
-    // Also save timestamp of when we last read this chat
-    localStorage.setItem(`lastRead_${chatId}`, Date.now().toString());
+   // Also save timestamp of when we last read this chat
+    setChatItem('lastRead', Date.now().toString(), chatId, this.state.get('currentUser')?.uid || '');
 }
 
 /**

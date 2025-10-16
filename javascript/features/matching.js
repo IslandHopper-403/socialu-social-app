@@ -38,6 +38,9 @@ export class MatchingManager {
         // Track liked users to filter from feed
         this.likedUsers = new Set();
         
+        // Track matched users to filter from feed
+        this.matchedUsers = new Set();
+        
         // Track seen matches (prevent duplicate popups)
         this.seenMatches = new Set();
     }
@@ -107,10 +110,30 @@ export class MatchingManager {
                 firebasePasses.add(data.toUserId);
             });
             
+            // CRITICAL FIX: Fetch matches from Firebase
+            const matchesQuery = query(
+                collection(this.db, 'matches'),
+                where('users', 'array-contains', currentUserId)
+            );
+            const matchesSnapshot = await getDocs(matchesQuery);
+            const firebaseMatches = new Set();
+            matchesSnapshot.forEach(doc => {
+                const data = doc.data();
+                // Extract the OTHER user's ID from the match
+                const partnerId = data.users.find(id => id !== currentUserId);
+                if (partnerId) {
+                    firebaseMatches.add(partnerId);
+                }
+            });
+            
             console.log('📊 [MATCHING] Firebase data:', {
                 likes: firebaseLikes.size,
-                passes: firebasePasses.size
+                passes: firebasePasses.size,
+                matches: firebaseMatches.size
             });
+            
+            // Update matched users Set
+            this.matchedUsers = firebaseMatches;
             
             // Clean localStorage: Remove any entries NOT in Firebase
             const localLikes = [...this.likedUsers];
@@ -143,7 +166,8 @@ export class MatchingManager {
                 likesRemoved,
                 passesRemoved,
                 finalLikes: this.likedUsers.size,
-                finalPasses: this.passedUsers.size
+                finalPasses: this.passedUsers.size,
+                finalMatches: this.matchedUsers.size
             });
             
         } catch (error) {
@@ -634,10 +658,12 @@ export class MatchingManager {
     }
     
     /**
-     * Check if user has been liked or passed
+     * Check if user has been liked, passed, or matched
      */
     hasUserBeenActioned(userId) {
-        return this.likedUsers.has(userId) || this.passedUsers.has(userId);
+        return this.likedUsers.has(userId) || 
+               this.passedUsers.has(userId) || 
+               this.matchedUsers.has(userId);
     }
     
     /**

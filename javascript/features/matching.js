@@ -12,6 +12,8 @@ import {
     serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
+import { getUserItem, setUserItem } from '../utils/storage.js';
+
 /**
  * Matching Manager - Simple Like/Pass System with Firebase Sync.
  * Handles user likes, passes, and match detection
@@ -158,16 +160,14 @@ export class MatchingManager {
             const currentUser = this.auth.currentUser;
             if (!currentUser) return;
             
-            const storageKey = `passedUsers_${currentUser.uid}`;
-            const stored = localStorage.getItem(storageKey);
+            const stored = getUserItem('passedUsers', currentUser.uid);
             if (stored) {
-                const parsed = JSON.parse(stored);
                 // Filter out demo users that shouldn't be in localStorage
-                const cleanedPasses = parsed.filter(id => !id.startsWith('user_'));
+                const cleanedPasses = stored.filter(id => !id.startsWith('user_'));
                 this.passedUsers = new Set(cleanedPasses);
                 
-                if (cleanedPasses.length < parsed.length) {
-                    console.log('🧹 [MATCHING] Cleaned', parsed.length - cleanedPasses.length, 'demo users from passes');
+                if (cleanedPasses.length < stored.length) {
+                    console.log('🧹 [MATCHING] Cleaned', stored.length - cleanedPasses.length, 'demo users from passes');
                     this.savePassedUsers(); // Update localStorage
                 }
             }
@@ -184,10 +184,9 @@ export class MatchingManager {
             const currentUser = this.auth.currentUser;
             if (!currentUser) return;
             
-            const storageKey = `passedUsers_${currentUser.uid}`;
             // Filter out demo users before saving
             const realUsers = [...this.passedUsers].filter(id => !id.startsWith('user_'));
-            localStorage.setItem(storageKey, JSON.stringify(realUsers));
+            setUserItem('passedUsers', realUsers, currentUser.uid);
         } catch (error) {
             console.error('❌ [MATCHING] Error saving passed users:', error);
         }
@@ -201,16 +200,14 @@ export class MatchingManager {
             const currentUser = this.auth.currentUser;
             if (!currentUser) return;
             
-            const storageKey = `likedUsers_${currentUser.uid}`;
-            const stored = localStorage.getItem(storageKey);
+            const stored = getUserItem('likedUsers', currentUser.uid);
             if (stored) {
-                const parsed = JSON.parse(stored);
                 // Filter out demo users that shouldn't be in localStorage
-                const cleanedLikes = parsed.filter(id => !id.startsWith('user_'));
+                const cleanedLikes = stored.filter(id => !id.startsWith('user_'));
                 this.likedUsers = new Set(cleanedLikes);
                 
-                if (cleanedLikes.length < parsed.length) {
-                    console.log('🧹 [MATCHING] Cleaned', parsed.length - cleanedLikes.length, 'demo users from likes');
+                if (cleanedLikes.length < stored.length) {
+                    console.log('🧹 [MATCHING] Cleaned', stored.length - cleanedLikes.length, 'demo users from likes');
                     this.saveLikedUsers(); // Update localStorage
                 }
             }
@@ -227,10 +224,9 @@ export class MatchingManager {
             const currentUser = this.auth.currentUser;
             if (!currentUser) return;
             
-            const storageKey = `likedUsers_${currentUser.uid}`;
             // Filter out demo users before saving
             const realUsers = [...this.likedUsers].filter(id => !id.startsWith('user_'));
-            localStorage.setItem(storageKey, JSON.stringify(realUsers));
+            setUserItem('likedUsers', realUsers, currentUser.uid);
         } catch (error) {
             console.error('❌ [MATCHING] Error saving liked users:', error);
         }
@@ -244,11 +240,9 @@ export class MatchingManager {
             const currentUser = this.auth.currentUser;
             if (!currentUser) return;
             
-            const storageKey = `seenMatches_${currentUser.uid}`;
-            const stored = localStorage.getItem(storageKey);
+            const stored = getUserItem('seenMatches', currentUser.uid);
             if (stored) {
-                const parsed = JSON.parse(stored);
-                this.seenMatches = new Set(parsed);
+                this.seenMatches = new Set(stored);
                 console.log('📦 [MATCHING] Loaded', this.seenMatches.size, 'seen matches');
             }
         } catch (error) {
@@ -264,8 +258,7 @@ export class MatchingManager {
             const currentUser = this.auth.currentUser;
             if (!currentUser) return;
             
-            const storageKey = `seenMatches_${currentUser.uid}`;
-            localStorage.setItem(storageKey, JSON.stringify(Array.from(this.seenMatches)));
+            setUserItem('seenMatches', Array.from(this.seenMatches), currentUser.uid);
         } catch (error) {
             console.error('❌ [MATCHING] Error saving seen matches:', error);
         }

@@ -810,6 +810,7 @@ extractBusinessIdFromCard(cardElement) {
     
     /**
      * Set up click handlers for favorite cards with proper cleanup
+     * FIXED: Also attach remove button handlers
      */
     setupFavoriteCardClickHandlers() {
         // Clean up existing listeners first
@@ -818,12 +819,13 @@ extractBusinessIdFromCard(cardElement) {
         const favoriteCards = document.querySelectorAll('.favorite-card');
         
         favoriteCards.forEach(card => {
+            // Main card click handler (send promotion)
             const clickHandler = () => {
                 const businessId = card.dataset.businessId;
                 const offerId = card.dataset.offerId;
                 const type = card.dataset.type;
                 
-                console.log('Favorite card clicked:', { businessId, offerId, type });
+                console.log('🎯 [CAROUSEL] Favorite card clicked:', { businessId, offerId, type });
                 
                 if (type === 'business' && businessId) {
                     this.sendBusinessPromotion(businessId);
@@ -835,7 +837,33 @@ extractBusinessIdFromCard(cardElement) {
             // Track the listener for cleanup
             this.cardListeners.set(card, clickHandler);
             card.addEventListener('click', clickHandler);
+            
+            // FIXED: Attach remove button handler
+            const removeBtn = card.querySelector('.remove-favorite');
+            if (removeBtn) {
+                const removeHandler = (e) => {
+                    e.stopPropagation(); // Prevent card click
+                    
+                    const businessId = card.dataset.businessId;
+                    const offerId = card.dataset.offerId;
+                    const type = card.dataset.type;
+                    
+                    console.log('🗑️ [CAROUSEL] Remove button clicked:', { businessId, offerId, type });
+                    
+                    if (type === 'business' && businessId) {
+                        this.removeBusinessFavorite(businessId);
+                    } else if (type === 'offer' && offerId) {
+                        this.removeOfferFavorite(offerId);
+                    }
+                };
+                
+                // Track remove button listener
+                this.cardListeners.set(removeBtn, removeHandler);
+                removeBtn.addEventListener('click', removeHandler);
+            }
         });
+        
+        console.log('✅ [CAROUSEL] Attached click handlers to', favoriteCards.length, 'cards');
     }
     
     /**
@@ -1027,9 +1055,22 @@ extractBusinessIdFromCard(cardElement) {
     
     /**
      * Handle chat closed event
+     * FIXED: Ensure carousel is completely hidden and reset
      */
     onChatClosed() {
+        console.log('🔒 [CAROUSEL] Chat closed - hiding carousel');
+        
+        // Hide immediately
         this.hideCarousel();
+        
+        // Reset to minimized state for next chat
+        this.minimizeCarousel();
+        
+        // Force display none to prevent z-index bleed
+        if (this.carouselElement) {
+            this.carouselElement.style.display = 'none';
+            this.carouselElement.style.visibility = 'hidden';
+        }
     }
     
     /**

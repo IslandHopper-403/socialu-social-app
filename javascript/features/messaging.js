@@ -1284,7 +1284,7 @@ closeChat() {
                 // Regular text message (keep existing code)
                 const sanitizedMsg = sanitizeMessage(msg);
                 const isSent = sanitizedMsg.senderId === currentUserId;
-                const timeStr = msg.timestamp ? this.formatMessageTime(msg.timestamp.toDate()) : '';
+                const timeStr = msg.timestamp ? formatMessageTime(msg.timestamp.toDate()) : '';
                 
                 const messageElement = document.createElement('div');
                 messageElement.className = `message ${isSent ? 'sent' : 'received'}`;
@@ -1777,7 +1777,7 @@ updateChatListUnreadIndicators() {
         if (msg.timestamp) {
             const timeDiv = document.createElement('div');
             timeDiv.className = 'message-time';
-            timeDiv.textContent = this.formatMessageTime(msg.timestamp.toDate());
+            timeDiv.textContent = formatMessageTime(msg.timestamp.toDate());
             promoElement.appendChild(timeDiv);
         }
         

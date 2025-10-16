@@ -436,6 +436,7 @@ extractBusinessIdFromCard(cardElement) {
     
     /**
      * Set up event listeners
+     * RESTORED: Native scroll behavior - no drag handlers needed
      */
     setupEventListeners() {
         // Toggle button
@@ -444,19 +445,11 @@ extractBusinessIdFromCard(cardElement) {
             toggleBtn.addEventListener('click', () => this.toggleCarousel());
         }
         
-        // Handle dragging
-        const handle = document.getElementById('carouselHandle');
-        if (handle) {
-            // Mouse events
-            handle.addEventListener('mousedown', (e) => this.startDrag(e));
-            document.addEventListener('mousemove', (e) => this.drag(e));
-            document.addEventListener('mouseup', () => this.endDrag());
-            
-            // Touch events
-            handle.addEventListener('touchstart', (e) => this.startDrag(e));
-            document.addEventListener('touchmove', (e) => this.drag(e));
-            document.addEventListener('touchend', () => this.endDrag());
-        }
+        // REMOVED: Drag handlers - carousel now uses native CSS scrolling
+        // The carousel-content has overflow-y: auto which enables native
+        // touch scrolling on mobile and trackpad scrolling on desktop
+        
+        console.log('✅ [CAROUSEL] Native scroll enabled - swipe anywhere in carousel');
         
         // Listen for chat open/close events
         document.addEventListener('chatOpened', () => this.onChatOpened());

@@ -327,18 +327,19 @@ export class BusinessMessagingManager {
         const messagesQuery = query(messagesRef, orderBy('timestamp', 'asc'), limit(100));
         
         this.businessChatListener = onSnapshot(messagesQuery, (snapshot) => {
+            console.log('📨 [BUSINESS-CHAT] Snapshot received:', snapshot.docChanges().length, 'changes');
+            
             snapshot.docChanges().forEach(change => {
                 if (change.type === 'added') {
-                    // Only display new messages
-                    const existingMessages = document.querySelectorAll('.message').length;
-                    if (existingMessages > 0) {
-                        this.displayBusinessMessage(change.doc.data());
-                        
-                        // Auto-scroll to bottom
-                        const chatMessages = document.getElementById('businessChatMessages');
-                        if (chatMessages) {
-                            chatMessages.scrollTop = chatMessages.scrollHeight;
-                        }
+                    console.log('➕ [BUSINESS-CHAT] New message added:', change.doc.data().text?.substring(0, 30));
+                    
+                    // 🔧 FIX: Always display new messages, even if it's the first one
+                    this.displayBusinessMessage(change.doc.data());
+                    
+                    // Auto-scroll to bottom
+                    const chatMessages = document.getElementById('businessChatMessages');
+                    if (chatMessages) {
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
                     }
                 }
             });
@@ -375,11 +376,13 @@ export class BusinessMessagingManager {
         }
         
         try {
-            console.log('📤 [BUSINESS-MSG] Preparing to send message');
+            console.log('📤 [BUSINESS-MSG] Preparing to send message at:', Date.now());
+            console.log('📤 [BUSINESS-MSG] Message text:', messageText.substring(0, 50));
             
             // Get message type from state (set by quick question buttons)
             const messageType = this.state.get('pendingMessageType') || null;
-            console.log('🏷️ [BUSINESS-MSG] Message type:', messageType);
+            console.log('🏷️ [BUSINESS-MSG] Message type from state:', messageType);
+            console.log('🏷️ [BUSINESS-MSG] All state keys:', Object.keys(this.state.getAll?.() || {}));
             
             // Add message to conversation
             const messagesRef = collection(this.db, 'businessConversations', conversationId, 'messages');

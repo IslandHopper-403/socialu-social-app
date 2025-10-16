@@ -833,10 +833,22 @@
                 </div>
             </div>
 
-            <!-- Quick Reply Bar (for business responses - shows when chat has messages) -->
+           <!-- Quick Questions Bar (for USERS messaging businesses) -->
+            <div class="chat-quick-reply-bar" id="userQuickQuestions" style="display: none;">
+                <div class="quick-reply-title">Quick Questions:</div>
+                <div class="quick-replies">
+                    <button class="quick-reply-btn" onclick="CLASSIFIED.fillBusinessQuestion(this)">🕐 What are your hours?</button>
+                    <button class="quick-reply-btn" onclick="CLASSIFIED.fillBusinessQuestion(this)">📍 Where are you located?</button>
+                    <button class="quick-reply-btn" onclick="CLASSIFIED.fillBusinessQuestion(this)">🍽️ Can I see the menu?</button>
+                    <button class="quick-reply-btn" onclick="CLASSIFIED.fillBusinessQuestion(this)">🚚 Do you deliver?</button>
+                </div>
+            </div>
+
+            <!-- Quick Reply Bar (for BUSINESSES replying to users) -->
             <div class="chat-quick-reply-bar" id="businessChatQuickReplies" style="display: none;">
                 <div class="quick-reply-title">Quick Replies:</div>
                 <div class="quick-replies">
+                    <button class="quick-reply-btn" onclick="CLASSIFIED.sendQuickReply('greeting')">👋 Greeting</button>
                     <button class="quick-reply-btn" onclick="CLASSIFIED.sendQuickReply('directions')">📍 Directions</button>
                     <button class="quick-reply-btn" onclick="CLASSIFIED.sendQuickReply('hours')">🕒 Hours</button>
                     <button class="quick-reply-btn" onclick="CLASSIFIED.sendQuickReply('menu')">📋 Menu</button>

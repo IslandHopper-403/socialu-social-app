@@ -1,6 +1,6 @@
 // javascript/features/businessStory.js
 
-import { sanitizeText } from '../utils/security.js';
+import { sanitizeText } from '../../utils/security.js';
 
 /**
  * Business Story Manager

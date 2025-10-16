@@ -1277,67 +1277,56 @@
             </div>
         </div>
 
-     <!-- Business Messages Overlay -->
-<div id="businessMessages" class="overlay-screen">
-    <div class="header">
-        <button class="back-btn" onclick="CLASSIFIED.backToDashboard()">←</button>
-        <div class="header-title">Business Messages</div>
-        <button class="settings-btn" onclick="CLASSIFIED.filterBusinessMessages()">🔍</button>
-    </div>
-    
-    <div class="business-messages-content">
-        <!-- Status Bar -->
-        <div class="messages-status-bar">
-            <div class="status-item">
-                <div class="status-number" id="newMessagesToday">0</div>
-                <div class="status-label">New Today</div>
-            </div>
-            <div class="status-item">
-                <div class="status-number" id="urgentMessages">0</div>
-                <div class="status-label">Urgent</div>
-            </div>
-            <div class="status-item">
-                <div class="status-number" id="avgResponseTime">--</div>
-                <div class="status-label">Avg Response</div>
-            </div>
-        </div>
-        
-        <!-- Message Filters -->
-        <div class="message-filters">
-            <button class="filter-btn active" onclick="CLASSIFIED.filterBusinessMessages('all', this)">
-                All Messages
-                <span class="filter-badge" id="allMessagesBadge"></span>
-            </button>
-            <button class="filter-btn" onclick="CLASSIFIED.filterBusinessMessages('unread', this)">
-                Unread
-                <span class="filter-badge" id="unreadMessagesBadge"></span>
-            </button>
-            <button class="filter-btn" onclick="CLASSIFIED.filterBusinessMessages('bookings', this)">
-                Bookings
-            </button>
-        </div>
-        
-        <!-- Conversations List -->
-        <div class="business-conversations" id="businessConversationsList">
-                    <!-- Conversations will be dynamically loaded -->
-                    <div class="empty-state" id="businessMessagesEmpty">
-                        <div style="font-size: 48px; margin-bottom: 10px;">💬</div>
-                        <div style="font-weight: 600; margin-bottom: 5px;">No Messages Yet</div>
-                        <div style="font-size: 14px; opacity: 0.7;">Customer messages will appear here</div>
-                    </div>
+         <!-- Business Messages Overlay -->
+        <div id="businessMessages" class="overlay-screen">
+            <!-- Header -->
+            <div class="header">
+                <button class="back-btn" onclick="CLASSIFIED.backToDashboard()">←</button>
+                <h1 class="header-title">Messages</h1>
+                <div class="notification-bell" onclick="CLASSIFIED.openBusinessNotifications()">
+                    <span style="font-size: 24px;">🔔</span>
+                    <div class="notification-dot" id="businessMessagesNotificationDot" style="display: none;"></div>
                 </div>
-                
-                <!-- Quick Reply Templates -->
-                <div class="quick-replies-section">
-                    <div class="section-header">
-                        <div class="section-title">Quick Replies</div>
-                    </div>
-                    <div class="quick-reply-grid">
-                        <button class="quick-reply-btn" onclick="CLASSIFIED.insertQuickReply('greeting')">👋 Greeting</button>
-                        <button class="quick-reply-btn" onclick="CLASSIFIED.insertQuickReply('hours')">🕐 Hours</button>
-                        <button class="quick-reply-btn" onclick="CLASSIFIED.insertQuickReply('location')">📍 Location</button>
-                        <button class="quick-reply-btn" onclick="CLASSIFIED.insertQuickReply('promotion')">📢 Current Offers</button>
-                    </div>
+            </div>
+            
+            <!-- Status Bar -->
+            <div class="messages-status-bar">
+                <div class="status-item">
+                    <div class="status-number" id="newMessagesToday">0</div>
+                    <div class="status-label">New Today</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-number" id="urgentMessages">0</div>
+                    <div class="status-label">Urgent</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-number" id="avgResponseTime">--</div>
+                    <div class="status-label">Avg Response</div>
+                </div>
+            </div>
+            
+            <!-- Message Filters -->
+            <div class="message-filters">
+                <button class="filter-btn active" onclick="CLASSIFIED.filterBusinessMessages('all', this)">
+                    All Messages
+                    <span class="filter-badge" id="allMessagesBadge" style="display: none;"></span>
+                </button>
+                <button class="filter-btn" onclick="CLASSIFIED.filterBusinessMessages('unread', this)">
+                    Unread
+                    <span class="filter-badge" id="unreadMessagesBadge" style="display: none;"></span>
+                </button>
+                <button class="filter-btn" onclick="CLASSIFIED.filterBusinessMessages('bookings', this)">
+                    Bookings
+                </button>
+            </div>
+            
+            <!-- Conversations List -->
+            <div class="business-conversations" id="businessConversationsList">
+                <!-- Conversations will be dynamically loaded -->
+                <div class="empty-state" id="businessMessagesEmpty" style="display: none;">
+                    <div style="font-size: 48px; margin-bottom: 10px;">💬</div>
+                    <div style="font-weight: 600; margin-bottom: 5px; color: white;">No Messages Yet</div>
+                    <div style="font-size: 14px; opacity: 0.7; color: white;">Customer messages will appear here</div>
                 </div>
             </div>
         </div>

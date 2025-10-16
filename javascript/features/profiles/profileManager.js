@@ -236,11 +236,27 @@ export class ProfileManager {
         return this.userProfile.shareMyProfile();
     }
     
-    /**
+   /**
      * Generate referral code
      * DELEGATION: Passes to userProfile
      */
     generateReferralCode() {
         return this.userProfile.generateReferralCode();
+    }
+    
+    /**
+     * Cleanup resources
+     * DELEGATION: Passes to sub-managers
+     */
+    cleanup() {
+        console.log('🧹 [PROFILE-MANAGER] Cleaning up resources');
+        
+        // Delegate to userProfile sub-manager
+        if (this.userProfile && typeof this.userProfile.cleanup === 'function') {
+            this.userProfile.cleanup();
+        }
+        
+        // Note: Business profile cleanup handled by BusinessManager
+        console.log('✅ [PROFILE-MANAGER] Cleanup complete');
     }
 }

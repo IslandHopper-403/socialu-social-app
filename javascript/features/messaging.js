@@ -1370,7 +1370,7 @@ closeChat() {
         }
     }
     
-    /**
+   /**
      * Open profile from chat
      * Fetches real user data from Firebase and opens profile overlay
      */

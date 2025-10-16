@@ -18,6 +18,7 @@ import {
     updateDoc
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
+import { setItem } from '../utils/storage.js';
 
 /**
  * Favorites Carousel Manager
@@ -544,6 +545,7 @@ extractBusinessIdFromCard(cardElement) {
     
     /**
      * Handle drag end
+     * Saves carousel position to localStorage via storage utility
      */
     endDrag() {
         if (!this.isDragging) return;
@@ -551,8 +553,9 @@ extractBusinessIdFromCard(cardElement) {
         this.isDragging = false;
         this.carouselElement.style.transition = '';
         
-        // Save position to localStorage
-        localStorage.setItem('carouselPosition', JSON.stringify(this.currentPosition));
+        // Save position to localStorage via storage utility
+        console.log('💾 [CAROUSEL] Saving position:', this.currentPosition);
+        setItem('carouselPosition', this.currentPosition);
     }
 
     /**

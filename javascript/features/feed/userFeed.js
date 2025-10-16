@@ -4,11 +4,16 @@ import { sanitizeText, escapeHtml, createSafeElement } from '../../utils/securit
 
 import {
     collection,
+    doc,
+    getDocs,
+    getDoc,
     query,
     where,
     orderBy,
-    getDocs
+    limit
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+import { getUserItem } from '../../utils/storage.js';
 
 /**
  * User Feed Manager
@@ -244,8 +249,9 @@ export class UserFeedManager {
         return users;
     }
     
-    /**
+   /**
      * Get liked users from localStorage (user-specific)
+     * Uses centralized storage utility for consistency
      */
     getLikedUsers() {
         try {
@@ -257,18 +263,16 @@ export class UserFeedManager {
                 return new Set();
             }
             
-            // CRITICAL FIX: Use user-specific key to match matching.js
-            const storageKey = `likedUsers_${currentUser.uid}`;
-            const stored = localStorage.getItem(storageKey);
+            // Use storage utility for user-specific data
+            const stored = getUserItem('likedUsers', currentUser.uid);
             
-            console.log('🔍 [FEED-DEBUG-1] Reading from localStorage:', {
+            console.log('🔍 [FEED-DEBUG-1] Reading from storage utility:', {
                 userId: currentUser.uid,
-                storageKey,
                 hasData: !!stored,
-                dataLength: stored ? JSON.parse(stored).length : 0
+                dataLength: stored ? stored.length : 0
             });
             
-            const likedUsers = stored ? new Set(JSON.parse(stored)) : new Set();
+            const likedUsers = stored ? new Set(stored) : new Set();
             console.log('✅ [FEED-DEBUG-1] Loaded', likedUsers.size, 'liked users');
             
             return likedUsers;
@@ -278,8 +282,9 @@ export class UserFeedManager {
         }
     }
     
-    /**
+   /**
      * Get passed users from localStorage (user-specific)
+     * Uses centralized storage utility for consistency
      */
     getPassedUsers() {
         try {
@@ -291,18 +296,16 @@ export class UserFeedManager {
                 return new Set();
             }
             
-            // CRITICAL FIX: Use user-specific key to match matching.js
-            const storageKey = `passedUsers_${currentUser.uid}`;
-            const stored = localStorage.getItem(storageKey);
+            // Use storage utility for user-specific data
+            const stored = getUserItem('passedUsers', currentUser.uid);
             
-            console.log('🔍 [FEED-DEBUG-2] Reading from localStorage:', {
+            console.log('🔍 [FEED-DEBUG-2] Reading from storage utility:', {
                 userId: currentUser.uid,
-                storageKey,
                 hasData: !!stored,
-                dataLength: stored ? JSON.parse(stored).length : 0
+                dataLength: stored ? stored.length : 0
             });
             
-            const passedUsers = stored ? new Set(JSON.parse(stored)) : new Set();
+            const passedUsers = stored ? new Set(stored) : new Set();
             console.log('✅ [FEED-DEBUG-2] Loaded', passedUsers.size, 'passed users');
             
             return passedUsers;

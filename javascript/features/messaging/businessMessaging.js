@@ -194,11 +194,33 @@ export class BusinessMessagingManager {
                 console.log('📭 No messages yet, showing empty state');
             }
             
-            // 🔧 FIX: ALWAYS show quick replies for business users (persistent)
-            const quickRepliesBar = document.getElementById('businessChatQuickReplies');
-            if (quickRepliesBar) {
-                quickRepliesBar.style.display = 'block';
-                console.log('✨ [BUSINESS-CHAT] Quick replies always visible for business');
+      // 🔧 FIX: Show appropriate quick message bar based on user type
+            const isBusinessUser = this.state.get('isBusinessUser');
+            
+            if (isBusinessUser) {
+                // Show business quick replies
+                const quickRepliesBar = document.getElementById('businessChatQuickReplies');
+                const userQuestionsBar = document.getElementById('userQuickQuestions');
+                
+                if (quickRepliesBar) {
+                    quickRepliesBar.style.display = 'block';
+                    console.log('✨ [BUSINESS-CHAT] Quick REPLIES visible (business user)');
+                }
+                if (userQuestionsBar) {
+                    userQuestionsBar.style.display = 'none';
+                }
+            } else {
+                // Show user quick questions
+                const quickRepliesBar = document.getElementById('businessChatQuickReplies');
+                const userQuestionsBar = document.getElementById('userQuickQuestions');
+                
+                if (userQuestionsBar) {
+                    userQuestionsBar.style.display = 'block';
+                    console.log('✨ [BUSINESS-CHAT] Quick QUESTIONS visible (regular user)');
+                }
+                if (quickRepliesBar) {
+                    quickRepliesBar.style.display = 'none';
+                }
             }
             
             // Scroll to bottom
@@ -536,9 +558,14 @@ try {
             
             // 🔧 FIX: Always show quick replies for business users
             const quickRepliesBar = document.getElementById('businessChatQuickReplies');
+            const userQuestionsBar = document.getElementById('userQuickQuestions');
+            
             if (quickRepliesBar) {
                 quickRepliesBar.style.display = 'block';
                 console.log('✨ [BUSINESS-CHAT] Quick replies visible from start');
+            }
+            if (userQuestionsBar) {
+                userQuestionsBar.style.display = 'none';
             }
             
             // Track in navigation stack

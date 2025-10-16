@@ -26,7 +26,7 @@ import {
     deleteDoc
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
-import { BusinessMessagingManager } from './businessMessaging.js';
+import { BusinessMessagingManager } from './messaging/businessMessaging.js';
 import { MessageListenersManager } from './messaging/messageListeners.js';
 
 /**

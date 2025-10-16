@@ -804,8 +804,7 @@
                 <button class="action-button primary-btn" onclick="CLASSIFIED.messageBusinessFromProfile()">Message</button>
             </div>
         </div>
-
-         <!-- Business Chat Overlay -->
+<!-- Business Chat Overlay -->
         <div id="businessChat" class="overlay-screen">
             <div class="chat-header">
                 <button class="back-btn" onclick="CLASSIFIED.closeBusinessChat()">←</button>
@@ -833,6 +832,20 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Quick Reply Bar (for business responses - shows when chat has messages) -->
+            <div class="chat-quick-reply-bar" id="businessChatQuickReplies" style="display: none;">
+                <div class="quick-reply-title">Quick Replies:</div>
+                <div class="quick-replies">
+                    <button class="quick-reply-btn" onclick="CLASSIFIED.sendQuickReply('directions')">📍 Directions</button>
+                    <button class="quick-reply-btn" onclick="CLASSIFIED.sendQuickReply('hours')">🕒 Hours</button>
+                    <button class="quick-reply-btn" onclick="CLASSIFIED.sendQuickReply('menu')">📋 Menu</button>
+                    <button class="quick-reply-btn" onclick="CLASSIFIED.sendQuickReply('promo')">🎉 Current Offer</button>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <input type="text" class="chat-input" id="businessChatInput" placeholder="Type a message...">
             
             <div class="chat-input-container">
                 <input type="text" id="businessChatInput" class="chat-input" placeholder="Type a message..." maxlength="500">
@@ -1267,24 +1280,48 @@
             </div>
         </div>
 
-        <!-- Business Messages Overlay -->
-        <div id="businessMessages" class="overlay-screen">
-            <div class="header">
-                <button class="back-btn" onclick="CLASSIFIED.backToDashboard()">←</button>
-                <div class="header-title">Business Messages</div>
-                <button class="settings-btn" onclick="CLASSIFIED.filterBusinessMessages()">🔍</button>
+     <!-- Business Messages Overlay -->
+<div id="businessMessages" class="overlay-screen">
+    <div class="header">
+        <button class="back-btn" onclick="CLASSIFIED.backToDashboard()">←</button>
+        <div class="header-title">Business Messages</div>
+        <button class="settings-btn" onclick="CLASSIFIED.filterBusinessMessages()">🔍</button>
+    </div>
+    
+    <div class="business-messages-content">
+        <!-- Status Bar -->
+        <div class="messages-status-bar">
+            <div class="status-item">
+                <div class="status-number" id="newMessagesToday">0</div>
+                <div class="status-label">New Today</div>
             </div>
-            
-            <div class="business-messages-content">
-                <!-- Message Filters -->
-                <div class="message-filters">
-                    <button class="filter-btn active" onclick="CLASSIFIED.filterBusinessMessages('all', this)">All</button>
-                    <button class="filter-btn" onclick="CLASSIFIED.filterBusinessMessages('unread', this)">Unread</button>
-                    <button class="filter-btn" onclick="CLASSIFIED.filterBusinessMessages('inquiries', this)">Inquiries</button>
-                </div>
-                
-                <!-- Conversations List -->
-                <div class="business-conversations" id="businessConversationsList">
+            <div class="status-item">
+                <div class="status-number" id="urgentMessages">0</div>
+                <div class="status-label">Urgent</div>
+            </div>
+            <div class="status-item">
+                <div class="status-number" id="avgResponseTime">--</div>
+                <div class="status-label">Avg Response</div>
+            </div>
+        </div>
+        
+        <!-- Message Filters -->
+        <div class="message-filters">
+            <button class="filter-btn active" onclick="CLASSIFIED.filterBusinessMessages('all', this)">
+                All Messages
+                <span class="filter-badge" id="allMessagesBadge"></span>
+            </button>
+            <button class="filter-btn" onclick="CLASSIFIED.filterBusinessMessages('unread', this)">
+                Unread
+                <span class="filter-badge" id="unreadMessagesBadge"></span>
+            </button>
+            <button class="filter-btn" onclick="CLASSIFIED.filterBusinessMessages('bookings', this)">
+                Bookings
+            </button>
+        </div>
+        
+        <!-- Conversations List -->
+        <div class="business-conversations" id="businessConversationsList">
                     <!-- Conversations will be dynamically loaded -->
                     <div class="empty-state" id="businessMessagesEmpty">
                         <div style="font-size: 48px; margin-bottom: 10px;">💬</div>

@@ -227,14 +227,8 @@ export class BusinessMessagingManager {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isOwn ? 'sent' : 'received'}`;
         
-        // For business messages, add business badge
-        if (!isOwn && message.senderType === 'business') {
-            const badge = document.createElement('div');
-            badge.className = 'business-badge';
-            badge.style.cssText = 'font-size: 10px; opacity: 0.7; margin-bottom: 2px;';
-            badge.textContent = '🏪 Business';
-            messageDiv.appendChild(badge);
-        }
+        // 🔧 REMOVED: Business badge is redundant in business chat context
+        // Users already know they're chatting with a business
         
         const textDiv = document.createElement('div');
         textDiv.className = 'message-text';

@@ -602,10 +602,12 @@ export class BusinessProfileManager {
             const diff = currentX - startX;
             console.log('🏁 [PHOTO-VIEWER] End, total diff:', diff.toFixed(0));
             
-            // SIMPLE LOGIC: Small movement = click, large movement = swipe
+          // SIMPLE LOGIC: Small movement = click, large movement = swipe
             if (Math.abs(diff) < 10) {
                 // CLICK NAVIGATION (moved < 10px)
-                const rect = swiper.getBoundingClientRect();
+                // Use parent container for accurate measurements (swiper has transforms)
+                const viewer = document.querySelector('.photo-viewer-content');
+                const rect = viewer.getBoundingClientRect();
                 const clickPosition = currentX - rect.left;
                 const clickPercent = clickPosition / rect.width;
                 

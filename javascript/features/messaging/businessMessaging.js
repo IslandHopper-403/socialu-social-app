@@ -37,23 +37,18 @@ export class BusinessMessagingManager {
      * SECURITY: Separate from social messaging
      */
        async startBusinessConversation(businessId) {
-        console.log('🚀 START startBusinessConversation - Line 1');
+        console.log('🚀 [START-CONV] Opening chat window (NO conversation created yet)');
         
         const user = this.state.get('currentUser');
-        console.log('🚀 Got user - Line 2');
-        
         const businessData = this.state.get('currentBusiness');
-        console.log('🚀 Got businessData - Line 3');
         
         // Extract business name from various possible properties
         const businessName = businessData?.businessName || businessData?.name || businessData?.title || 'Business';
         
-        console.log('📬 Starting conversation with:', {
+        console.log('📬 [START-CONV] Preparing chat for:', {
             businessId,
-            businessData,
             businessName,
-            user: user?.displayName,
-            allBusinessKeys: businessData ? Object.keys(businessData) : []
+            user: user?.displayName
         });
         
         if (!user) {
@@ -61,63 +56,25 @@ export class BusinessMessagingManager {
             return;
         }
         
-       // Check both uid and id fields for compatibility
-        if (!businessData || (businessData.uid !== businessId && businessData.id !== businessId)) {
-            console.warn('⚠️ Business ID field mismatch, but continuing...', {
-                expected: businessId,
-                actualUid: businessData?.uid,
-                actualId: businessData?.id,
-                businessName: businessData?.name || businessData?.businessName
-            });
-            // Don't block - continue anyway since we have the business data
-        }
-        
-        // businessName already declared above, just log it
-        console.log('🏪 Using business name:', businessName);
-        
         try {
             // Create unique conversation ID for business chats
             // Format: business_[businessId]_user_[userId]
             const conversationId = `business_${businessId}_user_${user.uid}`;
             
-            // Check if conversation exists
-            const conversationRef = doc(this.db, 'businessConversations', conversationId);
-            const conversationDoc = await getDoc(conversationRef);
+            console.log('💬 [START-CONV] Generated conversation ID:', conversationId);
             
-            if (!conversationDoc.exists()) {
-            const dataToSend = {
-                businessId: businessId,
-                businessName: businessName,
-                userId: user.uid,
-                userName: user.displayName || 'User',
-                createdAt: serverTimestamp(),
-                lastMessage: null,
-                lastMessageTime: serverTimestamp(),
-                userUnread: 0,
-                businessUnread: 0,
-                type: 'business_inquiry'
-            };
+            // 🔧 FIX: Store business name in state for later use when creating conversation
+            this.state.set('pendingBusinessName', businessName);
             
-            console.log('🔍 ATTEMPTING TO CREATE:', {
-                conversationId,
-                data: dataToSend,
-                dataKeys: Object.keys(dataToSend),
-                rulesRequire: ['businessId', 'userId', 'userName', 'createdAt', 'type'],
-                authUid: user.uid,
-                matchesUserId: user.uid === dataToSend.userId
-            });
-            
-            await setDoc(conversationRef, dataToSend);
-                
-                console.log('📬 Business conversation created:', conversationId);
-            }
-            
-            // Open business chat interface
+            // 🔧 FIX: Don't create conversation document yet - wait for first message
+            // Just open the chat interface
             this.openBusinessChat(businessId, conversationId);
             
+            console.log('✅ [START-CONV] Chat window opened (conversation will be created on first message)');
+            
         } catch (error) {
-            console.error('❌ Error starting business conversation:', error);
-            alert('Unable to start conversation. Please try again.');
+            console.error('❌ [START-CONV] Error opening chat:', error);
+            alert('Unable to open chat. Please try again.');
         }
     }
     
@@ -331,10 +288,11 @@ export class BusinessMessagingManager {
             
             snapshot.docChanges().forEach(change => {
                 if (change.type === 'added') {
-                    console.log('➕ [BUSINESS-CHAT] New message added:', change.doc.data().text?.substring(0, 30));
+                    const msgData = change.doc.data();
+                    console.log('➕ [BUSINESS-CHAT] New message:', msgData.text?.substring(0, 30), 'from:', msgData.senderType);
                     
-                    // 🔧 FIX: Always display new messages, even if it's the first one
-                    this.displayBusinessMessage(change.doc.data());
+                    // 🔧 FIX: Always display new messages (removed existingMessages check)
+                    this.displayBusinessMessage(msgData);
                     
                     // Auto-scroll to bottom
                     const chatMessages = document.getElementById('businessChatMessages');
@@ -344,7 +302,6 @@ export class BusinessMessagingManager {
                 }
             });
         });
-        
         // Store listener for cleanup if parent messaging manager is available
         if (this.parentMessaging && this.parentMessaging.registerListener) {
             this.parentMessaging.registerListener(`business_chat_${conversationId}`, this.businessChatListener, 'business_chat');
@@ -375,7 +332,7 @@ export class BusinessMessagingManager {
             return;
         }
         
-        try {
+try {
             console.log('📤 [BUSINESS-MSG] Preparing to send message at:', Date.now());
             console.log('📤 [BUSINESS-MSG] Message text:', messageText.substring(0, 50));
             
@@ -383,6 +340,45 @@ export class BusinessMessagingManager {
             const messageType = this.state.get('pendingMessageType') || null;
             console.log('🏷️ [BUSINESS-MSG] Message type from state:', messageType);
             console.log('🏷️ [BUSINESS-MSG] All state keys:', Object.keys(this.state.getAll?.() || {}));
+            
+            // 🔧 FIX: Check if conversation exists first
+            const conversationRef = doc(this.db, 'businessConversations', conversationId);
+            const conversationDoc = await getDoc(conversationRef);
+            
+            if (!conversationDoc.exists()) {
+                console.log('📝 [BUSINESS-MSG] First message - creating conversation document');
+                
+                // Get business name from state (stored when chat was opened)
+                const businessName = this.state.get('pendingBusinessName') || 'Business';
+                
+                // Create the conversation document with first message data
+                const conversationData = {
+                    businessId: businessId,
+                    businessName: businessName,
+                    userId: user.uid,
+                    userName: user.displayName || 'User',
+                    createdAt: serverTimestamp(),
+                    lastMessage: messageText,
+                    lastMessageTime: serverTimestamp(),
+                    userUnread: 0,
+                    businessUnread: 1,
+                    type: 'business_inquiry'
+                };
+                
+                // Add lastMessageType if exists
+                if (messageType) {
+                    conversationData.lastMessageType = messageType;
+                    console.log('🏷️ [BUSINESS-MSG] Including messageType in new conversation:', messageType);
+                }
+                
+                await setDoc(conversationRef, conversationData);
+                console.log('✅ [BUSINESS-MSG] Conversation document created');
+                
+                // Clean up pending business name
+                this.state.set('pendingBusinessName', null);
+            } else {
+                console.log('🔄 [BUSINESS-MSG] Conversation exists - will update after adding message');
+            }
             
             // Add message to conversation
             const messagesRef = collection(this.db, 'businessConversations', conversationId, 'messages');
@@ -402,24 +398,25 @@ export class BusinessMessagingManager {
             }
             
             await addDoc(messagesRef, messageData);
-            
             console.log('✅ [BUSINESS-MSG] Message document created');
             
-            // Update conversation last message
-            const conversationRef = doc(this.db, 'businessConversations', conversationId);
-            const updateData = {
-                lastMessage: messageText,
-                lastMessageTime: serverTimestamp(),
-                businessUnread: increment(1)
-            };
-            
-            // Add lastMessageType if it exists
-            if (messageType) {
-                updateData.lastMessageType = messageType;
-                console.log('🏷️ [BUSINESS-MSG] Updated conversation with type:', messageType);
+            // Update conversation if it already existed (not first message)
+            if (conversationDoc.exists()) {
+                const updateData = {
+                    lastMessage: messageText,
+                    lastMessageTime: serverTimestamp(),
+                    businessUnread: increment(1)
+                };
+                
+                // Add lastMessageType if it exists
+                if (messageType) {
+                    updateData.lastMessageType = messageType;
+                    console.log('🏷️ [BUSINESS-MSG] Updated conversation with type:', messageType);
+                }
+                
+                await updateDoc(conversationRef, updateData);
+                console.log('✅ [BUSINESS-MSG] Conversation updated');
             }
-            
-            await updateDoc(conversationRef, updateData);
             
             // Clear the message type after sending
             this.state.set('pendingMessageType', null);
@@ -430,7 +427,7 @@ export class BusinessMessagingManager {
             // Clear input
             messageInput.value = '';
             
-            console.log('✅ Business message sent');
+            console.log('✅ [BUSINESS-MSG] Business message sent successfully');
             
         } catch (error) {
             console.error('❌ Error sending business message:', error);

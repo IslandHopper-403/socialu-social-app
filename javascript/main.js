@@ -738,10 +738,10 @@ async initializeManagers() {
                 messageType = 'urgent';
             }
             
-            // Store message type in state for when message is sent
-            app.state.set('pendingMessageType', messageType);
+           // Store message type in state for when message is sent
+            this.state.set('pendingMessageType', messageType);  // ← Change this too!
             console.log('🏷️ [QUICK-QUESTION] Set message type:', messageType);
-            console.log('🏷️ [QUICK-QUESTION] State after set:', app.state.get('pendingMessageType'));
+            console.log('🏷️ [QUICK-QUESTION] State after set:', this.state.get('pendingMessageType'));
             console.log('🏷️ [QUICK-QUESTION] Question text:', questionText);
         }
     },
@@ -751,23 +751,23 @@ async initializeManagers() {
      * SECURITY: Templates are pre-defined, no user input injection
      * @param {string} type - Type of quick reply (directions, hours, menu, promo, greeting)
      */
-    sendQuickReply: (type) => {
+   sendQuickReply: (type) => {
         console.log('💬 [QUICK-REPLY] Sending type:', type);
         
-        const user = app.state.get('currentUser');
+        const user = this.state.get('currentUser');
         if (!user) {
             console.error('❌ [QUICK-REPLY] No user logged in');
             return;
         }
         
-        const isBusinessUser = app.state.get('isBusinessUser');
+        const isBusinessUser = this.state.get('isBusinessUser');
         if (!isBusinessUser) {
             console.error('❌ [QUICK-REPLY] Quick replies only available for business users');
             return;
         }
         
         // Get business data from state or Firestore
-        const businessData = app.state.get('currentBusiness') || {};
+        const businessData = this.state.get('currentBusiness') || {};
         const businessName = businessData.name || user.displayName || 'Our Business';
         const businessAddress = businessData.address || '[Address not set - Update in Settings]';
         const businessHours = businessData.hours || 'Mon-Fri: 9am-6pm\nSat-Sun: 10am-4pm';

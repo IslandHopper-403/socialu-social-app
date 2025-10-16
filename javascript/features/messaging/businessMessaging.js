@@ -375,24 +375,51 @@ export class BusinessMessagingManager {
         }
         
         try {
+            console.log('📤 [BUSINESS-MSG] Preparing to send message');
+            
+            // Get message type from state (set by quick question buttons)
+            const messageType = this.state.get('pendingMessageType') || null;
+            console.log('🏷️ [BUSINESS-MSG] Message type:', messageType);
+            
             // Add message to conversation
             const messagesRef = collection(this.db, 'businessConversations', conversationId, 'messages');
-            await addDoc(messagesRef, {
+            const messageData = {
                 text: messageText,
                 senderId: user.uid,
                 senderName: user.displayName || 'User',
                 senderType: 'user',
                 timestamp: serverTimestamp(),
                 read: false
-            });
+            };
+            
+            // Add messageType if it exists (from quick question)
+            if (messageType) {
+                messageData.messageType = messageType;
+                console.log('✅ [BUSINESS-MSG] Tagged message as:', messageType);
+            }
+            
+            await addDoc(messagesRef, messageData);
+            
+            console.log('✅ [BUSINESS-MSG] Message document created');
             
             // Update conversation last message
             const conversationRef = doc(this.db, 'businessConversations', conversationId);
-            await updateDoc(conversationRef, {
+            const updateData = {
                 lastMessage: messageText,
                 lastMessageTime: serverTimestamp(),
                 businessUnread: increment(1)
-            });
+            };
+            
+            // Add lastMessageType if it exists
+            if (messageType) {
+                updateData.lastMessageType = messageType;
+                console.log('🏷️ [BUSINESS-MSG] Updated conversation with type:', messageType);
+            }
+            
+            await updateDoc(conversationRef, updateData);
+            
+            // Clear the message type after sending
+            this.state.set('pendingMessageType', null);
             
             // Track for analytics
             await this.trackBusinessMessage(businessId);

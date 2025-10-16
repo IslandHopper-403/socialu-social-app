@@ -1412,7 +1412,7 @@ closeChat() {
         if (!timestamp) return '';
         
         const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-        return this.formatMessageTime(date);
+        return formatMessageTime(date);
     }
 
 

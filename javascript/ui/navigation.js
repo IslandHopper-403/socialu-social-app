@@ -342,16 +342,21 @@ showOverlay(overlayId) {
                 document.body.classList.add('overlay-open');
                 document.body.style.overflow = 'hidden';
                 
-                // Prevent touch scrolling on body with event listener
+               // Prevent touch scrolling on body with event listener
                 this.preventScroll = (e) => {
-                    // Allow scrolling within overlay content, block body scroll
-                    if (!e.target.closest('.overlay-screen')) {
+                    // Allow scrolling within overlay content AND carousel, block body scroll
+                    const isInOverlay = e.target.closest('.overlay-screen');
+                    const isInCarousel = e.target.closest('.favorites-carousel');
+                    
+                    if (!isInOverlay && !isInCarousel) {
                         e.preventDefault();
                     }
                 };
                 
                 document.body.addEventListener('touchmove', this.preventScroll, { passive: false });
                 document.body.addEventListener('wheel', this.preventScroll, { passive: false });
+                
+                console.log('🔒 Applied event-based scroll lock (overlay + carousel allowed)');
                 
                 console.log('🔒 Applied event-based scroll lock');
             }

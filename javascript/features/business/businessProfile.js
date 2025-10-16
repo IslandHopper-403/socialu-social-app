@@ -567,129 +567,77 @@ export class BusinessProfileManager {
         let currentIndex = 0;
         counter.textContent = `1/${business.photos.length}`;
         
-       // Touch/swipe handling with improved desktop support
+      // Touch/swipe handling - restored simple working logic + click detection
         let startX = 0;
         let currentX = 0;
         let isDragging = false;
-        let hasMoved = false;
         
-        console.log('🖼️ [PHOTO-VIEWER] Setting up navigation for', business.photos.length, 'photos');
+        console.log('🖼️ [PHOTO-VIEWER] Initializing navigation for', business.photos.length, 'photos');
         
         const updateSlide = (index) => {
-            console.log(`📸 [PHOTO-VIEWER] Updating to slide ${index + 1}/${business.photos.length}`);
             swiper.style.transform = `translateX(-${index * 100}%)`;
-            swiper.style.transition = 'transform 0.3s ease-out';
             counter.textContent = `${index + 1}/${business.photos.length}`;
             currentIndex = index;
+            console.log('📸 [PHOTO-VIEWER] Navigated to photo', index + 1);
         };
         
         const handleStart = (e) => {
-            const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-            startX = clientX;
-            currentX = clientX;
+            startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            currentX = startX; // Initialize currentX to startX
             isDragging = true;
-            hasMoved = false;
-            
-            // Disable transition during drag for smooth tracking
-            swiper.style.transition = 'none';
-            
-            console.log('🖱️ [PHOTO-VIEWER] Drag started at X:', startX);
+            console.log('🖱️ [PHOTO-VIEWER] Start at X:', startX);
         };
         
         const handleMove = (e) => {
             if (!isDragging) return;
-            
+            e.preventDefault(); // Always prevent default (like old working version)
             currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-            const diff = currentX - startX;
-            
-            // If moved more than 5px, it's a drag not a click
-            if (Math.abs(diff) > 5) {
-                hasMoved = true;
-                
-                // Visual feedback: drag the swiper along with cursor/finger
-                const currentOffset = -currentIndex * swiper.offsetWidth;
-                const newOffset = currentOffset + diff;
-                swiper.style.transform = `translateX(${newOffset}px)`;
-                
-                console.log('🖱️ [PHOTO-VIEWER] Dragging, diff:', diff.toFixed(0), 'hasMoved:', hasMoved);
-                
-                // Prevent default to avoid text selection
-                if (e.cancelable) {
-                    e.preventDefault();
-                }
-            }
+            console.log('🖱️ [PHOTO-VIEWER] Moving, diff:', (currentX - startX).toFixed(0));
         };
         
-        const handleEnd = (e) => {
+        const handleEnd = () => {
             if (!isDragging) return;
             isDragging = false;
             
-            // Re-enable transition for snap animation
-            swiper.style.transition = 'transform 0.3s ease-out';
+            const diff = currentX - startX;
+            console.log('🏁 [PHOTO-VIEWER] End, total diff:', diff.toFixed(0));
             
-            // Get final position
-            const endX = e.type.includes('mouse') ? e.clientX : (e.changedTouches?.[0]?.clientX || currentX);
-            const diff = endX - startX;
-            
-            console.log('🏁 [PHOTO-VIEWER] Drag ended, diff:', diff.toFixed(0), 'hasMoved:', hasMoved);
-            
-            // CLICK NAVIGATION (no significant drag)
-            if (!hasMoved) {
+            // SIMPLE LOGIC: Small movement = click, large movement = swipe
+            if (Math.abs(diff) < 10) {
+                // CLICK NAVIGATION (moved < 10px)
                 const rect = swiper.getBoundingClientRect();
-                const clickPosition = endX - rect.left;
+                const clickPosition = currentX - rect.left;
                 const clickPercent = clickPosition / rect.width;
                 
-                console.log('👆 [PHOTO-VIEWER] Click navigation:', {
-                    clickPercent: clickPercent.toFixed(2),
-                    clickSide: clickPercent < 0.5 ? 'LEFT' : 'RIGHT',
-                    currentIndex,
-                    canGoPrevious: currentIndex > 0,
-                    canGoNext: currentIndex < business.photos.length - 1
-                });
+                console.log('👆 [PHOTO-VIEWER] Click detected at', (clickPercent * 100).toFixed(0), '%');
                 
-                // LEFT SIDE = PREVIOUS (only if not at start)
-                if (clickPercent < 0.5) {
-                    if (currentIndex > 0) {
-                        console.log('⬅️ [PHOTO-VIEWER] Navigating to previous photo');
-                        updateSlide(currentIndex - 1);
-                    } else {
-                        console.log('⚠️ [PHOTO-VIEWER] Already at first photo');
-                    }
-                }
-                // RIGHT SIDE = NEXT (only if not at end)
-                else {
-                    if (currentIndex < business.photos.length - 1) {
-                        console.log('➡️ [PHOTO-VIEWER] Navigating to next photo');
-                        updateSlide(currentIndex + 1);
-                    } else {
-                        console.log('⚠️ [PHOTO-VIEWER] Already at last photo');
-                    }
-                }
-            } 
-            // SWIPE NAVIGATION (dragged significantly)
-            else {
-                const swipeThreshold = 50; // 50px minimum swipe
-                
-                console.log('🔄 [PHOTO-VIEWER] Swipe navigation, diff:', diff, 'threshold:', swipeThreshold);
-                
-                // SWIPE RIGHT = PREVIOUS
-                if (diff > swipeThreshold && currentIndex > 0) {
-                    console.log('⬅️ [PHOTO-VIEWER] Swiped right, going to previous');
+                // Left half = previous, right half = next
+                if (clickPercent < 0.5 && currentIndex > 0) {
+                    console.log('⬅️ [PHOTO-VIEWER] Click left -> previous photo');
                     updateSlide(currentIndex - 1);
-                }
-                // SWIPE LEFT = NEXT
-                else if (diff < -swipeThreshold && currentIndex < business.photos.length - 1) {
-                    console.log('➡️ [PHOTO-VIEWER] Swiped left, going to next');
+                } else if (clickPercent >= 0.5 && currentIndex < business.photos.length - 1) {
+                    console.log('➡️ [PHOTO-VIEWER] Click right -> next photo');
                     updateSlide(currentIndex + 1);
+                } else {
+                    console.log('⚠️ [PHOTO-VIEWER] At boundary, no navigation');
                 }
-                // SNAP BACK (didn't swipe far enough)
-                else {
-                    console.log('↩️ [PHOTO-VIEWER] Swipe too short, snapping back');
-                    updateSlide(currentIndex);
+            } else if (Math.abs(diff) > 50) {
+                // SWIPE NAVIGATION (moved > 50px)
+                console.log('🔄 [PHOTO-VIEWER] Swipe detected, diff:', diff);
+                
+                if (diff > 0 && currentIndex > 0) {
+                    console.log('⬅️ [PHOTO-VIEWER] Swipe right -> previous photo');
+                    updateSlide(currentIndex - 1);
+                } else if (diff < 0 && currentIndex < business.photos.length - 1) {
+                    console.log('➡️ [PHOTO-VIEWER] Swipe left -> next photo');
+                    updateSlide(currentIndex + 1);
+                } else {
+                    console.log('⚠️ [PHOTO-VIEWER] At boundary, no navigation');
                 }
+            } else {
+                // DEAD ZONE (moved 10-50px) - ignore, might be accidental
+                console.log('⚪ [PHOTO-VIEWER] Movement too small for swipe, too large for click');
             }
-            
-            hasMoved = false;
         };
         
         // Store listeners for cleanup

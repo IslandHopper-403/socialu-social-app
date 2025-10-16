@@ -741,6 +741,8 @@ async initializeManagers() {
             // Store message type in state for when message is sent
             app.state.set('pendingMessageType', messageType);
             console.log('🏷️ [QUICK-QUESTION] Set message type:', messageType);
+            console.log('🏷️ [QUICK-QUESTION] State after set:', app.state.get('pendingMessageType'));
+            console.log('🏷️ [QUICK-QUESTION] Question text:', questionText);
         }
     },
 

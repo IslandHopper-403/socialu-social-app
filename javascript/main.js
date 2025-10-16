@@ -718,14 +718,78 @@ async initializeManagers() {
                 }
             },
         
-        fillBusinessQuestion: (button) => {
-            const questionText = button.textContent.trim();
-            const input = document.getElementById('businessChatInput');
-            if (input) {
-                input.value = questionText;
-                input.focus();
-            }
-        },
+        // Fill business question from quick question buttons
+    fillBusinessQuestion: (button) => {
+        const questionText = button.textContent.trim();
+        const input = document.getElementById('businessChatInput');
+        if (input) {
+            input.value = questionText;
+            input.focus();
+        }
+    },
+
+    /**
+     * Send a quick reply message in business chat
+     * SECURITY: Templates are pre-defined, no user input injection
+     * @param {string} type - Type of quick reply (directions, hours, menu, promo, greeting)
+     */
+    sendQuickReply: (type) => {
+        console.log('💬 [QUICK-REPLY] Sending type:', type);
+        
+        const user = app.state.get('currentUser');
+        if (!user) {
+            console.error('❌ [QUICK-REPLY] No user logged in');
+            return;
+        }
+        
+        const isBusinessUser = app.state.get('isBusinessUser');
+        if (!isBusinessUser) {
+            console.error('❌ [QUICK-REPLY] Quick replies only available for business users');
+            return;
+        }
+        
+        // Get business data from state or Firestore
+        const businessData = app.state.get('currentBusiness') || {};
+        const businessName = businessData.name || user.displayName || 'Our Business';
+        const businessAddress = businessData.address || '[Address not set - Update in Settings]';
+        const businessHours = businessData.hours || 'Mon-Fri: 9am-6pm\nSat-Sun: 10am-4pm';
+        const businessDescription = businessData.description || 'Check out our profile for more details!';
+        
+        console.log('🏢 [QUICK-REPLY] Business data:', { businessName, hasAddress: !!businessData.address });
+        
+        // Define quick reply templates
+        // SECURITY: All templates are hardcoded, no user input concatenation
+        const quickReplies = {
+            greeting: `👋 Hello! Thanks for reaching out to ${businessName}. How can we help you today?`,
+            
+            directions: `📍 We're located at:\n${businessAddress}\n\nLooking forward to seeing you!`,
+            
+            hours: `🕒 Our business hours:\n${businessHours}\n\nSee you soon!`,
+            
+            menu: `📋 Thanks for your interest!\n\n${businessDescription}\n\nLet us know if you have any questions!`,
+            
+            promo: `🎉 Special offer just for you!\n\n${businessData.currentPromo || '20% off your first visit - mention this message!'}\n\nDon't miss out!`
+        };
+        
+        const message = quickReplies[type];
+        
+        if (!message) {
+            console.error('❌ [QUICK-REPLY] Unknown type:', type);
+            return;
+        }
+        
+        // Insert message into chat input
+        const chatInput = document.getElementById('businessChatInput');
+        if (chatInput) {
+            // SECURITY: Using textContent equivalent via .value (no HTML injection possible)
+            chatInput.value = message;
+            chatInput.focus();
+            console.log('✅ [QUICK-REPLY] Template inserted into input field');
+            console.log('📝 [QUICK-REPLY] Message preview:', message.substring(0, 50) + '...');
+        } else {
+            console.error('❌ [QUICK-REPLY] Chat input element not found');
+        }
+    },
         
         sendBusinessMessage: () => {
             if (this.managers.messaging?.businessMessaging) {

@@ -851,7 +851,7 @@ async businessSignup(businessData) {
         );
     }
 
-    /**
+   /**
      * Clear user-specific localStorage on logout
      * SECURITY: Prevent data leakage between account switches on shared devices
      */
@@ -867,25 +867,8 @@ async businessSignup(businessData) {
             const userId = currentUser.uid;
             console.log('🧹 [AUTH] Clearing localStorage for user:', userId);
             
-            // List of user-specific keys to clear
-            const keysToRemove = [
-                `likedUsers_${userId}`,
-                `passedUsers_${userId}`,
-                `seenMatches_${userId}`,
-                `businessFavorites_${userId}`,
-                `offerFavorites_${userId}`,
-                `processedMessages_${userId}`,
-                `lastAppClose_${userId}`
-            ];
-            
-            let removedCount = 0;
-            keysToRemove.forEach(key => {
-                if (localStorage.getItem(key)) {
-                    localStorage.removeItem(key);
-                    removedCount++;
-                    console.log('🧹 [AUTH] Removed:', key);
-                }
-            });
+            // Delegate to storage utility for comprehensive cleanup
+            const removedCount = clearUserData(userId);
             
             console.log(`✅ [AUTH] Cleared ${removedCount} localStorage items for user ${userId}`);
             

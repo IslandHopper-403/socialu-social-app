@@ -274,7 +274,10 @@ export class UserProfileManager {
             console.log('👤 [SAVE-PROFILE-7] Closing profile editor at:', Date.now());
             this.closeProfileEditor();
             
-            // CRITICAL: Refresh user feed with multiple fallback paths
+           // CRITICAL: Refresh user feed with multiple fallback paths
+            // WHY 3 PATHS: Handles edge cases like deep links, initialization race conditions,
+            // and ensures feed refresh works even if manager references aren't set properly.
+            // Path 1 (direct) works 99% of the time. Paths 2-3 are safety nets.
             console.log('👤 [SAVE-PROFILE-8] Starting feed refresh at:', Date.now());
             console.log('👤 [SAVE-PROFILE-8] Checking manager paths:', {
                 path1_userFeedManager: !!this.userFeedManager,
@@ -432,6 +435,13 @@ export class UserProfileManager {
      * Open user profile view
      */
     openUserProfile(user) {
+        // DEFENSIVE: Validate user data
+        if (!user || !user.uid) {
+            console.error('❌ [USER-PROFILE] Invalid user data:', user);
+            alert('Unable to load user profile');
+            return;
+        }
+        
         console.log(`👤 Opening ${user.name}'s profile`);
         this.currentViewedUser = user;
         this.state.set('currentViewedUser', user);
@@ -619,10 +629,20 @@ export class UserProfileManager {
         }
     }
     
-    /**
+   /**
      * Generate referral code
      */
     generateReferralCode() {
         return Math.random().toString(36).substring(2, 8).toUpperCase();
+    }
+    
+    /**
+     * Cleanup resources
+     */
+    cleanup() {
+        console.log('🧹 [USER-PROFILE] Cleaning up resources');
+        // Currently no listeners or intervals to clean
+        // This method exists for pattern consistency and future needs
+        console.log('✅ [USER-PROFILE] Cleanup complete');
     }
 }

@@ -332,6 +332,13 @@ export class BusinessProfileManager {
      * Handles both full business objects and business IDs
      */
     async openBusinessProfile(businessDataOrId, businessType) {
+        // DEFENSIVE: Validate input
+        if (!businessDataOrId) {
+            console.error('❌ [BUSINESS-PROFILE] No business data or ID provided');
+            alert('Unable to load business profile');
+            return;
+        }
+        
         let businessData;
         let businessId;
         

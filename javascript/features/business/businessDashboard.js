@@ -640,7 +640,7 @@ export class BusinessDashboardManager {
                 messagesList.style.display = 'block';
                 messagesList.innerHTML = ''; // Clear existing
                 
-                // Populate conversations and collect data for status bar
+               // Populate conversations and collect data for status bar
                 const conversations = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
@@ -650,6 +650,12 @@ export class BusinessDashboardManager {
                 
                 // 📊 [ENHANCEMENT] Update status bar with conversation analytics
                 this.updateMessagesStatusBar(conversations);
+                
+                // 🎨 [FILTER-INIT] Initialize filter to show all by default
+                console.log('🎨 [DASHBOARD] Initializing filters - all conversations visible');
+                document.querySelectorAll('.business-conversations .message-item').forEach(item => {
+                    item.style.display = 'flex';
+                });
                 
                 console.log('✅ [DASHBOARD] Conversations loaded:', snapshot.size);
             }
@@ -709,13 +715,36 @@ export class BusinessDashboardManager {
         header.appendChild(name);
         header.appendChild(time);
         
-        // Preview
+       // Preview
         const preview = document.createElement('div');
         preview.className = 'message-preview';
         preview.textContent = data.lastMessage || 'New inquiry'; // SECURITY: textContent
         
         content.appendChild(header);
         content.appendChild(preview);
+        
+        // Message Tags
+        if (data.lastMessageType) {
+            console.log('🏷️ [DASHBOARD] Rendering tag:', data.lastMessageType);
+            
+            const tagsContainer = document.createElement('div');
+            tagsContainer.className = 'message-tags';
+            
+            const tag = document.createElement('span');
+            tag.className = `message-tag ${data.lastMessageType}`;
+            
+            // Set tag text based on type
+            if (data.lastMessageType === 'booking') {
+                tag.textContent = 'Booking Request';
+            } else if (data.lastMessageType === 'urgent') {
+                tag.textContent = 'Urgent';
+            } else if (data.lastMessageType === 'question') {
+                tag.textContent = 'Question';
+            }
+            
+            tagsContainer.appendChild(tag);
+            content.appendChild(tagsContainer);
+        }
         
         // Unread badge
         if (data.businessUnread > 0) {
@@ -801,10 +830,46 @@ export class BusinessDashboardManager {
             console.log('  ✅ [DASHBOARD] Urgent count:', urgent);
         }
         
-        // Note: avgResponseTime shows "--" placeholder (calculated later if needed)
+        // Demo Avg Response Time (TODO: Calculate from actual data)
+        const avgResponseEl = document.getElementById('avgResponseTime');
+        if (avgResponseEl) {
+            // Demo data: Random between 1.5h - 3.5h
+            const demoHours = (Math.random() * 2 + 1.5).toFixed(1);
+            avgResponseEl.textContent = `${demoHours}h`;
+            console.log('  ⏱️ [DASHBOARD] Demo avg response time:', demoHours + 'h');
+        }
         
-        // Update filter badges
+      // Update filter badges with counts
+        console.log('🔢 [DASHBOARD] Updating filter badges');
+        
         const allBadge = document.getElementById('allMessagesBadge');
+        const unreadBadge = document.getElementById('unreadMessagesBadge');
+        
+        // Count unread conversations
+        const unreadCount = conversations.filter(conv => conv.businessUnread > 0).length;
+        
+        // Update all messages badge (show total count if > 0)
+        if (allBadge) {
+            if (conversations.length > 0) {
+                allBadge.textContent = conversations.length;
+                allBadge.style.display = 'block';
+                console.log('  📊 [DASHBOARD] All messages badge:', conversations.length);
+            } else {
+                allBadge.style.display = 'none';
+            }
+        }
+        
+        // Update unread badge (show red dot if unread > 0)
+        if (unreadBadge) {
+            if (unreadCount > 0) {
+                unreadBadge.textContent = unreadCount;
+                unreadBadge.style.display = 'block';
+                console.log('  🔴 [DASHBOARD] Unread badge:', unreadCount);
+            } else {
+                unreadBadge.style.display = 'none';
+            }
+        }
+        
         const unreadBadge = document.getElementById('unreadMessagesBadge');
         
         const totalUnread = conversations.filter(c => c.businessUnread > 0).length;

@@ -372,6 +372,9 @@ async initializeManagers() {
             },
             enableGuestMode: () => this.managers.auth.enableGuestMode(),
             
+            // Password management
+            resetPassword: () => this.managers.auth.resetPassword(),
+            
             // Navigation methods
             showScreen: (screen) => this.managers.navigation.showScreen(screen),
             switchSocialTab: (tab) => this.managers.feed.switchSocialTab(tab),

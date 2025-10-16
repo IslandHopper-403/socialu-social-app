@@ -1372,16 +1372,61 @@ closeChat() {
     
     /**
      * Open profile from chat
+     * Fetches real user data from Firebase and opens profile overlay
      */
-    openProfileFromChat() {
-        if (this.currentChatPartner && this.profileManager) {
-            // Get full user data
-            if (this.mockData) {
-                const user = this.mockData.getUserById(this.currentChatPartner.userId);
-                if (user) {
-                    this.profileManager.openUserProfile(user);
-                }
+    async openProfileFromChat() {
+        console.log('👤 [CHAT-AVATAR-1] openProfileFromChat() called at:', Date.now());
+        console.log('👤 [CHAT-AVATAR-1] currentChatPartner:', this.currentChatPartner);
+        
+        if (!this.currentChatPartner) {
+            console.error('❌ [CHAT-AVATAR-1] No chat partner set');
+            return;
+        }
+        
+        if (!this.profileManager) {
+            console.error('❌ [CHAT-AVATAR-1] Profile manager not available');
+            return;
+        }
+        
+        const partnerId = this.currentChatPartner.userId;
+        console.log('👤 [CHAT-AVATAR-2] Fetching user from Firebase:', partnerId);
+        
+        try {
+            const userDoc = await getDoc(doc(this.db, 'users', partnerId));
+            
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                console.log('✅ [CHAT-AVATAR-3] Found user in Firebase:', userData.name);
+                
+                // Transform Firebase data to match expected format
+                const userProfile = {
+                    uid: partnerId,
+                    name: userData.name || 'User',
+                    age: userData.age || null,
+                    bio: userData.bio || 'No bio available',
+                    image: userData.photos?.[0] || userData.photo || 'https://via.placeholder.com/400',
+                    photos: userData.photos || [],
+                    career: userData.career || null,
+                    lookingFor: userData.lookingFor || null,
+                    interests: userData.interests || [],
+                    height: userData.height || null,
+                    zodiac: userData.zodiac || null,
+                    showHoroscope: userData.showHoroscope || false,
+                    matchPercentage: userData.matchPercentage || 85,
+                    distance: userData.distance || '2 km'
+                };
+                
+                console.log('✅ [CHAT-AVATAR-4] Opening user profile overlay');
+                this.profileManager.openUserProfile(userProfile);
+            } else {
+                console.error('❌ [CHAT-AVATAR-3] User not found in Firebase:', partnerId);
+                alert('Unable to load user profile');
             }
+            
+        } catch (error) {
+            console.error('❌ [CHAT-AVATAR-ERROR] Error loading profile:', error);
+            console.error('❌ [CHAT-AVATAR-ERROR] Stack:', error.stack);
+            alert('Failed to load profile. Please try again.');
         }
     }
     

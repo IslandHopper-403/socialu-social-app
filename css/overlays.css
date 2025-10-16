@@ -1163,15 +1163,15 @@ input:disabled + .toggle-slider {
    ===================================================== */
 
 .chat-quick-reply-bar {
-    position: absolute; /* 🔧 FIX: Position it above input */
-    bottom: 90px; /* 🔧 FIX: Place it above the input container */
+    position: absolute;
+    bottom: 90px;
     left: 0;
     right: 0;
-    padding: 15px 20px;
-    background: rgba(255, 255, 255, 0.03);
+    padding: 12px 20px;
+    background: rgba(26, 26, 26, 0.95);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    z-index: 9; /* 🔧 FIX: Ensure it's visible */
-   overflow: hidden; /* 🔧 FIX: Hide any overflow/scrollbars */
+    z-index: 9;
+    overflow: visible; /* 🔧 FIX: Allow child to scroll */
 }
 
 .quick-reply-title {
@@ -1180,21 +1180,22 @@ input:disabled + .toggle-slider {
     margin-bottom: 10px;
 }
 
-}
+
 .quick-replies {
     display: flex;
     gap: 10px;
-    overflow-x: auto;
+    overflow-x: scroll; /* 🔧 FIX: Enable horizontal scrolling */
     overflow-y: hidden;
-    flex-wrap: nowrap;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
+    flex-wrap: nowrap; /* 🔧 FIX: Force single row */
+    scrollbar-width: none; /* Firefox - hide scrollbar */
+    -ms-overflow-style: none; /* IE/Edge - hide scrollbar */
+    padding-bottom: 5px; /* Small padding to prevent cutting off */
 }
 
 .quick-replies::-webkit-scrollbar {
-    display: none; /* Chrome/Safari/Opera */
-    width: 0;
-    height: 0;
+    display: none; /* Chrome/Safari/Opera - hide scrollbar */
+    width: 0 !important;
+    height: 0 !important;
 }
 
 .quick-reply-btn {
@@ -1208,6 +1209,7 @@ input:disabled + .toggle-slider {
     transition: all 0.2s ease;
     color: white;
     flex-shrink: 0; /* 🔧 FIX: Prevent buttons from shrinking */
+    min-width: fit-content; /* 🔧 FIX: Maintain button width */
 }
 
 .quick-reply-btn:hover {

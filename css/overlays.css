@@ -948,25 +948,6 @@ input:disabled + .toggle-slider {
     color: white;
 }
 
-.unread-badge {
-    position: absolute;
-    top: 50%;
-    right: var(--spacing-md);
-    transform: translateY(-50%);
-    background: var(--error);
-    color: white;
-    border-radius: var(--radius-circle);
-    min-width: 22px;
-    height: 22px;
-    padding: 0 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--text-xs);
-    font-weight: 700;
-    border: 2px solid var(--bg-dark);
-}
-
 /* =====================================================
    Photo Viewer Overlay
    ===================================================== */

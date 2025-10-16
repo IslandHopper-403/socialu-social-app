@@ -52,7 +52,7 @@ import { ProfileManager } from './features/profiles/profileManager.js';
 import { MatchingManager } from './features/matching.js';
 import { MessagingManager } from './features/messaging.js';
 import { BusinessManager } from './features/business.js';
-import { BusinessStoryManager } from './features/businessStory.js';
+import { BusinessStoryManager } from './features/business/businessStory.js';
 import { PhotoUploadManager } from './features/photoUpload.js';
 import { AdminManager } from './features/admin.js';
 import { ReferralManager } from './features/referral.js';

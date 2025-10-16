@@ -913,7 +913,8 @@ input:disabled + .toggle-slider {
 }
 
 #businessChat .chat-messages {
-    padding-bottom: 80px;
+    padding-bottom: 180px; /* 🔧 FIX: Add more space for quick replies bar */
+    overflow-y: auto;
 }
 
 /* =====================================================
@@ -1162,9 +1163,14 @@ input:disabled + .toggle-slider {
    ===================================================== */
 
 .chat-quick-reply-bar {
+    position: absolute; /* 🔧 FIX: Position it above input */
+    bottom: 70px; /* 🔧 FIX: Place it above the input container */
+    left: 0;
+    right: 0;
     padding: 15px 20px;
     background: rgba(255, 255, 255, 0.03);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 9; /* 🔧 FIX: Ensure it's visible */
 }
 
 .quick-reply-title {

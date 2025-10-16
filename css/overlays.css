@@ -1108,8 +1108,8 @@ input:disabled + .toggle-slider {
 /* 🔧 FIX: Unread badge positioning - top right corner */
 .business-conversations .unread-badge {
     position: absolute;
-    top: 8px;
-    right: 12px;
+    top: -2px;
+    right: -2px;
     background: #ef4444;
     color: white;
     font-size: 11px;

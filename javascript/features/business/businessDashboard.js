@@ -558,7 +558,7 @@ export class BusinessDashboardManager {
      * Open Business Messages overlay
      * SECURITY: Filter business messages only
      */
-    openBusinessMessages() {
+   openBusinessMessages() {
         console.log('💬 [DASHBOARD] Opening business messages overlay');
         
         if (!this.state.get('isBusinessUser')) {
@@ -566,11 +566,19 @@ export class BusinessDashboardManager {
             return;
         }
         
-        const overlay = document.getElementById('businessMessages');
-        if (overlay) {
-            overlay.classList.add('show');
-            this.loadBusinessConversations();
+        // 🔧 FIX: Use navigation manager to properly register overlay in stack
+        if (window.CLASSIFIED?.managers?.navigation) {
+            window.CLASSIFIED.managers.navigation.showOverlay('businessMessages');
+            console.log('✅ [DASHBOARD] Registered overlay with navigation stack');
+        } else {
+            console.error('❌ [DASHBOARD] Navigation manager not available - manual fallback');
+            const overlay = document.getElementById('businessMessages');
+            if (overlay) {
+                overlay.classList.add('show');
+            }
         }
+        
+        this.loadBusinessConversations();
         
         console.log('✅ [DASHBOARD] Business messages overlay opened');
     }

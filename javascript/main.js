@@ -718,13 +718,29 @@ async initializeManagers() {
                 }
             },
         
-        // Fill business question from quick question buttons
+      // Fill business question from quick question buttons
     fillBusinessQuestion: (button) => {
+        console.log('❓ [QUICK-QUESTION] Button clicked');
+        
         const questionText = button.textContent.trim();
         const input = document.getElementById('businessChatInput');
+        
         if (input) {
             input.value = questionText;
             input.focus();
+            
+            // Determine message type based on button text
+            let messageType = 'question'; // default
+            
+            if (questionText.toLowerCase().includes('table') || questionText.toLowerCase().includes('reservation') || questionText.toLowerCase().includes('booking')) {
+                messageType = 'booking';
+            } else if (questionText.toLowerCase().includes('urgent') || questionText.toLowerCase().includes('asap') || questionText.toLowerCase().includes('now')) {
+                messageType = 'urgent';
+            }
+            
+            // Store message type in state for when message is sent
+            app.state.set('pendingMessageType', messageType);
+            console.log('🏷️ [QUICK-QUESTION] Set message type:', messageType);
         }
     },
 
@@ -794,6 +810,58 @@ async initializeManagers() {
         sendBusinessMessage: () => {
             if (this.managers.messaging?.businessMessaging) {
                 this.managers.messaging.businessMessaging.sendBusinessMessage();
+            }
+        },
+        
+        /**
+         * Filter business messages by tab
+         * @param {string} filter - 'all', 'unread', or 'bookings'
+         * @param {HTMLElement} button - The filter button clicked
+         */
+        filterBusinessMessages: (filter, button) => {
+            console.log('🔍 [FILTER] Filtering messages:', filter);
+            
+            // Update active button state
+            const allButtons = document.querySelectorAll('.message-filters .filter-btn');
+            allButtons.forEach(btn => btn.classList.remove('active'));
+            if (button) {
+                button.classList.add('active');
+            }
+            
+            // Get all conversation items
+            const conversations = document.querySelectorAll('.business-conversations .message-item');
+            console.log('📋 [FILTER] Total conversations:', conversations.length);
+            
+            let visibleCount = 0;
+            
+            conversations.forEach(item => {
+                const isUnread = item.classList.contains('unread');
+                const hasBookingTag = item.querySelector('.message-tag.booking') !== null;
+                
+                let shouldShow = false;
+                
+                if (filter === 'all') {
+                    shouldShow = true;
+                } else if (filter === 'unread') {
+                    shouldShow = isUnread;
+                } else if (filter === 'bookings') {
+                    shouldShow = hasBookingTag;
+                }
+                
+                item.style.display = shouldShow ? 'flex' : 'none';
+                if (shouldShow) visibleCount++;
+            });
+            
+            console.log('✅ [FILTER] Visible conversations:', visibleCount);
+            
+            // Show/hide empty state
+            const emptyState = document.getElementById('businessMessagesEmpty');
+            const conversationsList = document.getElementById('businessConversationsList');
+            
+            if (visibleCount === 0 && emptyState) {
+                emptyState.style.display = 'block';
+            } else if (emptyState) {
+                emptyState.style.display = 'none';
             }
         },
             showBusinessSignup: () => this.managers.business.showBusinessSignup(),

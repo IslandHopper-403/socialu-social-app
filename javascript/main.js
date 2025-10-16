@@ -48,7 +48,7 @@ import { MockData } from './data/mockData.js';
 import { AuthManager } from './features/auth.js';
 import { FeedManager } from './features/feed/feedManager.js';
 import { UserFeedManager } from './features/feed/userFeed.js';
-import { ProfileManager } from './features/profile.js';
+import { ProfileManager } from './features/profiles/profileManager.js';
 import { MatchingManager } from './features/matching.js';
 import { MessagingManager } from './features/messaging.js';
 import { BusinessManager } from './features/business.js';

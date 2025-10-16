@@ -309,6 +309,8 @@ extractBusinessIdFromCard(cardElement) {
                     padding: 10px;
                     max-height: 200px;
                     overflow-y: auto;
+                    -webkit-overflow-scrolling: touch;
+                    overscroll-behavior: contain;
                 }
                 
                 .carousel-scroll {

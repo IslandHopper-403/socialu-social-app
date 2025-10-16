@@ -1869,7 +1869,7 @@ updateChatListUnreadIndicators() {
         // Add time
         const timeDiv = document.createElement('div');
         timeDiv.className = 'message-time';
-        timeDiv.textContent = this.formatMessageTime(new Date());
+        timeDiv.textContent = formatMessageTime(new Date());
         
         promoElement.appendChild(promoCard);
         promoElement.appendChild(timeDiv);

@@ -493,7 +493,7 @@ async businessSignup(businessData) {
     }
 }
     
-    /**
+   /**
      * Logout
      */
     async logout() {
@@ -504,6 +504,63 @@ async businessSignup(businessData) {
         } catch (error) {
             console.error('❌ Logout error:', error);
             throw error;
+        }
+    }
+    
+    /**
+     * Send password reset email
+     */
+    async resetPassword() {
+        console.log('🔐 [AUTH] Password reset requested at:', Date.now());
+        
+        const emailInput = document.getElementById('loginEmail');
+        const email = emailInput?.value?.trim();
+        
+        console.log('🔐 [AUTH] Email field found:', !!emailInput);
+        console.log('🔐 [AUTH] Email value:', email ? 'provided' : 'empty');
+        
+        if (!email) {
+            console.warn('⚠️ [AUTH] No email provided for reset');
+            alert('Please enter your email address first, then click "Forgot Password?"');
+            emailInput?.focus();
+            return;
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            console.warn('⚠️ [AUTH] Invalid email format:', email);
+            alert('Please enter a valid email address');
+            return;
+        }
+        
+        try {
+            this.showLoading();
+            console.log('🔐 [AUTH] Sending password reset email to:', email);
+            
+            const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js');
+            
+            await sendPasswordResetEmail(this.auth, email);
+            
+            this.hideLoading();
+            console.log('✅ [AUTH] Password reset email sent successfully');
+            alert('✅ Password reset email sent!\n\nCheck your inbox and spam folder.\n\nClick the link in the email to reset your password.');
+            
+        } catch (error) {
+            this.hideLoading();
+            console.error('❌ [AUTH] Password reset error:', error);
+            console.error('❌ [AUTH] Error code:', error.code);
+            console.error('❌ [AUTH] Error message:', error.message);
+            
+            if (error.code === 'auth/user-not-found') {
+                alert('❌ No account found with this email.\n\nPlease check the email address or sign up for a new account.');
+            } else if (error.code === 'auth/invalid-email') {
+                alert('❌ Invalid email address format.');
+            } else if (error.code === 'auth/too-many-requests') {
+                alert('⚠️ Too many reset attempts.\n\nPlease wait a few minutes and try again.');
+            } else {
+                alert('❌ Failed to send reset email.\n\nPlease try again or contact support.');
+            }
         }
     }
     

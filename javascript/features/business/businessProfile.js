@@ -585,6 +585,10 @@ export class BusinessProfileManager {
             startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
             currentX = startX; // Initialize currentX to startX
             isDragging = true;
+            
+            // Disable transition for smooth drag tracking
+            swiper.style.transition = 'none';
+            
             console.log('🖱️ [PHOTO-VIEWER] Start at X:', startX);
         };
         
@@ -592,12 +596,22 @@ export class BusinessProfileManager {
             if (!isDragging) return;
             e.preventDefault(); // Always prevent default (like old working version)
             currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-            console.log('🖱️ [PHOTO-VIEWER] Moving, diff:', (currentX - startX).toFixed(0));
+            
+            // Visual feedback: image follows cursor/finger during drag
+            const diff = currentX - startX;
+            const currentOffset = -currentIndex * 100;
+            const dragPercent = (diff / swiper.offsetWidth) * 100;
+            swiper.style.transform = `translateX(${currentOffset + dragPercent}%)`;
+            
+            console.log('🖱️ [PHOTO-VIEWER] Moving, diff:', diff.toFixed(0));
         };
         
         const handleEnd = () => {
             if (!isDragging) return;
             isDragging = false;
+            
+            // Re-enable smooth transition for snap animation
+            swiper.style.transition = 'transform 0.3s ease-out';
             
             const diff = currentX - startX;
             console.log('🏁 [PHOTO-VIEWER] End, total diff:', diff.toFixed(0));

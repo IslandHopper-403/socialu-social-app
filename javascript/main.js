@@ -885,6 +885,15 @@ async initializeManagers() {
             closeBusinessChat: () => this.managers.navigation.closeOverlay('businessChat'),
             openChatWithUser: (userName) => this.managers.messaging.openChatWithUser(userName),
             openProfileFromChat: () => this.managers.messaging.openProfileFromChat(),
+            openBusinessProfileFromChat: () => {
+                console.log('🏪 [MAIN] Opening business profile from chat');
+                const businessId = this.state.get('currentChatBusinessId');
+                if (businessId && this.managers.business) {
+                    this.managers.business.openBusinessProfile(businessId);
+                } else {
+                    console.error('❌ [MAIN] No business ID or business manager not available');
+                }
+            },
             startChatFromMatch: () => this.managers.messaging.startChatFromMatch(),
             startChatWithViewedUser: () => this.managers.messaging.startChatWithViewedUser(),
 

@@ -1036,8 +1036,9 @@ displayUnifiedChats(chats) {
         }
     }
 
-/**
+    /**
  * Cleanup chat state (called by navigation manager)
+ * FIXED: Dispatch chatClosed event for carousel
  */
 closeChat() {
     console.log('🧹 [MESSAGING] closeChat() called');
@@ -1066,6 +1067,10 @@ closeChat() {
     this.state.set('currentChatType', null);
     this.state.set('currentBusinessConversationId', null);
     this.state.set('currentChatBusinessId', null);
+    
+    // FIXED: Fire chatClosed event so carousel can hide
+    document.dispatchEvent(new CustomEvent('chatClosed'));
+    console.log('📢 [MESSAGING] Dispatched chatClosed event');
     
     console.log('✅ [MESSAGING] closeChat() complete');
 }

@@ -825,7 +825,7 @@ export class BusinessDashboardManager {
             console.log('  ✅ [DASHBOARD] New today count:', newToday);
         }
         
-        if (urgentEl) {
+          if (urgentEl) {
             urgentEl.textContent = urgent;
             console.log('  ✅ [DASHBOARD] Urgent count:', urgent);
         }
@@ -839,7 +839,7 @@ export class BusinessDashboardManager {
             console.log('  ⏱️ [DASHBOARD] Demo avg response time:', demoHours + 'h');
         }
         
-      // Update filter badges with counts
+        // Update filter badges with counts
         console.log('🔢 [DASHBOARD] Updating filter badges');
         
         const allBadge = document.getElementById('allMessagesBadge');
@@ -870,23 +870,7 @@ export class BusinessDashboardManager {
             }
         }
         
-        const unreadBadge = document.getElementById('unreadMessagesBadge');
-        
-        const totalUnread = conversations.filter(c => c.businessUnread > 0).length;
-        
-        if (allBadge && conversations.length > 0) {
-            allBadge.textContent = conversations.length;
-            allBadge.classList.add('show');
-            console.log('  ✅ [DASHBOARD] All messages badge:', conversations.length);
-        }
-        
-        if (unreadBadge && totalUnread > 0) {
-            unreadBadge.textContent = totalUnread;
-            unreadBadge.classList.add('show');
-            console.log('  ✅ [DASHBOARD] Unread badge:', totalUnread);
-        }
-        
-        console.log('✅ [DASHBOARD] Status bar updated:', { newToday, urgent, totalUnread });
+        console.log('✅ [DASHBOARD] Status bar updated:', { newToday, urgent, unreadCount });
     }
 
     // ========== CLEANUP METHODS ==========

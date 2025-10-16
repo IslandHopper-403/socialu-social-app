@@ -634,17 +634,22 @@ export class BusinessDashboardManager {
                 return;
             }
             
-            // Hide empty state, show list
+           // Hide empty state, show list
             if (emptyState) emptyState.style.display = 'none';
             if (messagesList) {
                 messagesList.style.display = 'block';
                 messagesList.innerHTML = ''; // Clear existing
                 
-                // Populate conversations
+                // Populate conversations and collect data for status bar
+                const conversations = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
+                    conversations.push(data);
                     this.renderConversationItem(doc.id, data, messagesList);
                 });
+                
+                // 📊 [ENHANCEMENT] Update status bar with conversation analytics
+                this.updateMessagesStatusBar(conversations);
                 
                 console.log('✅ [DASHBOARD] Conversations loaded:', snapshot.size);
             }
@@ -746,6 +751,79 @@ export class BusinessDashboardManager {
         container.appendChild(messageItem);
     }
     
+   /**
+     * Update Messages Inbox Status Bar
+     * Shows: New Today, Urgent Count, Avg Response Time
+     * @param {Array} conversations - Array of conversation objects
+     */
+    updateMessagesStatusBar(conversations) {
+        console.log('📊 [DASHBOARD] Updating messages status bar');
+        
+        if (!conversations || conversations.length === 0) {
+            console.log('📭 [DASHBOARD] No conversations to analyze');
+            return;
+        }
+        
+        const now = Date.now();
+        const todayStart = new Date().setHours(0, 0, 0, 0);
+        
+        let newToday = 0;
+        let urgent = 0;
+        
+        conversations.forEach(conv => {
+            const messageTime = conv.lastMessageTime?.toMillis?.() || conv.lastMessageTime || 0;
+            
+            // Count messages from today
+            if (messageTime >= todayStart) {
+                newToday++;
+                console.log('  📅 [DASHBOARD] Message from today:', conv.userName);
+            }
+            
+            // Count urgent (unread messages less than 5 min old)
+            const messageAge = now - messageTime;
+            if (conv.businessUnread > 0 && messageAge < 5 * 60 * 1000) {
+                urgent++;
+                console.log('  🚨 [DASHBOARD] Urgent message from:', conv.userName);
+            }
+        });
+        
+        // Update DOM elements in status bar
+        const newTodayEl = document.getElementById('newMessagesToday');
+        const urgentEl = document.getElementById('urgentMessages');
+        
+        if (newTodayEl) {
+            newTodayEl.textContent = newToday;
+            console.log('  ✅ [DASHBOARD] New today count:', newToday);
+        }
+        
+        if (urgentEl) {
+            urgentEl.textContent = urgent;
+            console.log('  ✅ [DASHBOARD] Urgent count:', urgent);
+        }
+        
+        // Note: avgResponseTime shows "--" placeholder (calculated later if needed)
+        
+        // Update filter badges
+        const allBadge = document.getElementById('allMessagesBadge');
+        const unreadBadge = document.getElementById('unreadMessagesBadge');
+        
+        const totalUnread = conversations.filter(c => c.businessUnread > 0).length;
+        
+        if (allBadge && conversations.length > 0) {
+            allBadge.textContent = conversations.length;
+            allBadge.classList.add('show');
+            console.log('  ✅ [DASHBOARD] All messages badge:', conversations.length);
+        }
+        
+        if (unreadBadge && totalUnread > 0) {
+            unreadBadge.textContent = totalUnread;
+            unreadBadge.classList.add('show');
+            console.log('  ✅ [DASHBOARD] Unread badge:', totalUnread);
+        }
+        
+        console.log('✅ [DASHBOARD] Status bar updated:', { newToday, urgent, totalUnread });
+    }
+
     // ========== CLEANUP METHODS ==========
     
     /**

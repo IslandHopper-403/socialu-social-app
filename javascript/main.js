@@ -796,6 +796,14 @@ async initializeManagers() {
             return;
         }
         
+        // 🔧 FIX: Set sender context so sendBusinessMessage knows this is from business
+        this.state.set('pendingMessageSender', 'business');
+        this.state.set('pendingMessageType', 'reply');
+        console.log('✅ [QUICK-REPLY] Set sender context:', {
+            sender: 'business',
+            type: 'reply'
+        });
+        
         // Insert message into chat input
         const chatInput = document.getElementById('businessChatInput');
         if (chatInput) {

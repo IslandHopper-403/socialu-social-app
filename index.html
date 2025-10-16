@@ -806,8 +806,9 @@
         </div>
 <!-- Business Chat Overlay -->
         <div id="businessChat" class="overlay-screen">
-            <div class="chat-header">
-                <button class="back-btn" onclick="CLASSIFIED.closeBusinessChat()">←</button>
+        <div class="chat-header">
+            <button class="back-btn" onclick="CLASSIFIED.closeBusinessChat()">←</button>
+            <div class="chat-header-clickable" onclick="CLASSIFIED.openBusinessProfileFromChat()" style="display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer;">
                 <img src="" alt="Business" class="chat-header-avatar" id="businessChatAvatar">
                 <div class="chat-header-info">
                     <div class="chat-header-name" id="businessChatName">Business</div>
@@ -816,6 +817,7 @@
                     </div>
                 </div>
             </div>
+        </div>
             
             <div class="chat-messages" id="businessChatMessages">
                 <!-- Empty state -->
@@ -864,14 +866,16 @@
         
         <!-- Individual Chat Overlay -->
         <div id="individualChat" class="overlay-screen">
-            <div class="chat-header">
-                <button class="back-btn" id="chatBackBtn" onclick="event.stopPropagation(); CLASSIFIED.closeChat(); return false;">←</button>
-                <div class="chat-header-avatar" id="chatAvatar" onclick="CLASSIFIED.openProfileFromChat();"></div>
-                <div class="chat-header-info" onclick="CLASSIFIED.openProfileFromChat();">
+        <div class="chat-header">
+            <button class="back-btn" id="chatBackBtn" onclick="event.stopPropagation(); CLASSIFIED.closeChat(); return false;">←</button>
+            <div class="chat-header-clickable" onclick="CLASSIFIED.openProfileFromChat()" style="display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer;">
+                <div class="chat-header-avatar" id="chatAvatar"></div>
+                <div class="chat-header-info">
                     <div class="chat-header-name" id="chatName">Jessica</div>
                     <div class="chat-status">Online now</div>
                 </div>
             </div>
+        </div>
             <div class="chat-messages" id="chatMessages">
                 <div class="message received">
                     <div class="message-bubble">Hey! I saw you're into live music too 🎵</div>

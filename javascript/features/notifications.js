@@ -14,6 +14,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 import { sanitizeText } from '../utils/security.js';
+import { getUserItem, setUserItem } from '../utils/storage.js';
 
 /**
  * COMPLETE Notification Manager - Single Source of Truth
@@ -86,13 +87,11 @@ export class NotificationManager {
             const currentUser = this.state.get('currentUser');
             if (!currentUser) return;
             
-            const storageKey = `processedNotifications_${currentUser.uid}`;
-            const saved = localStorage.getItem(storageKey);
+            const saved = getUserItem('processedNotifications', currentUser.uid);
             if (saved) {
-                const parsed = JSON.parse(saved);
                 // Only load messages from current session (last 24 hours)
                 const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
-                parsed.forEach(id => {
+                saved.forEach(id => {
                     if (id.includes('_')) {
                         const parts = id.split('_');
                         const timestamp = parseInt(parts[parts.length - 1]);
@@ -101,10 +100,10 @@ export class NotificationManager {
                         }
                     }
                 });
-                console.log(`📦 Loaded ${this.processedMessages.size} processed messages`);
+                console.log(`📦 [NOTIFICATIONS] Loaded ${this.processedMessages.size} processed messages`);
             }
         } catch (error) {
-            console.error('Error loading processed messages:', error);
+            console.error('❌ [NOTIFICATIONS] Error loading processed messages:', error);
         }
     }
     
@@ -118,11 +117,10 @@ export class NotificationManager {
             const currentUser = this.state.get('currentUser');
             if (!currentUser) return;
             
-            const storageKey = `processedNotifications_${currentUser.uid}`;
             const toSave = Array.from(this.processedMessages).slice(-100);
-            localStorage.setItem(storageKey, JSON.stringify(toSave));
+            setUserItem('processedNotifications', toSave, currentUser.uid);
         } catch (error) {
-            console.error('Error saving processed messages:', error);
+            console.error('❌ [NOTIFICATIONS] Error saving processed messages:', error);
         }
     }
     
@@ -134,20 +132,18 @@ export class NotificationManager {
             const currentUser = this.state.get('currentUser');
             if (!currentUser) return;
             
-            const storageKey = `unreadMessages_${currentUser.uid}`;
-            const saved = localStorage.getItem(storageKey);
+            const saved = getUserItem('unreadMessages', currentUser.uid);
             if (saved) {
-                const parsed = JSON.parse(saved);
-                Object.entries(parsed).forEach(([chatId, count]) => {
+                Object.entries(saved).forEach(([chatId, count]) => {
                     // SECURITY: Validate chatId format
                     if (chatId.match(/^[a-zA-Z0-9]+_[a-zA-Z0-9]+$/)) {
                         this.unreadMessages.set(chatId, parseInt(count) || 0);
                     }
                 });
-                console.log(`📦 Loaded unread counts for ${this.unreadMessages.size} chats`);
+                console.log(`📦 [NOTIFICATIONS] Loaded unread counts for ${this.unreadMessages.size} chats`);
             }
         } catch (error) {
-            console.error('Error loading unread state:', error);
+            console.error('❌ [NOTIFICATIONS] Error loading unread state:', error);
         }
     }
     
@@ -161,7 +157,6 @@ export class NotificationManager {
             const currentUser = this.state.get('currentUser');
             if (!currentUser) return;
             
-            const storageKey = `unreadMessages_${currentUser.uid}`;
             const unreadObject = {};
             this.unreadMessages.forEach((count, chatId) => {
                 if (count > 0) {
@@ -169,9 +164,9 @@ export class NotificationManager {
                 }
             });
             
-            localStorage.setItem(storageKey, JSON.stringify(unreadObject));
+            setUserItem('unreadMessages', unreadObject, currentUser.uid);
         } catch (error) {
-            console.error('Error saving unread state:', error);
+            console.error('❌ [NOTIFICATIONS] Error saving unread state:', error);
         }
     }
     
@@ -183,17 +178,15 @@ export class NotificationManager {
             const currentUser = this.state.get('currentUser');
             if (!currentUser) return;
             
-            const storageKey = `lastSeenTimestamps_${currentUser.uid}`;
-            const saved = localStorage.getItem(storageKey);
+            const saved = getUserItem('lastSeenTimestamps', currentUser.uid);
             if (saved) {
-                const parsed = JSON.parse(saved);
-                Object.entries(parsed).forEach(([chatId, timestamp]) => {
+                Object.entries(saved).forEach(([chatId, timestamp]) => {
                     this.lastSeenTimestamps.set(chatId, timestamp);
                 });
-                console.log(`📦 Loaded ${this.lastSeenTimestamps.size} last seen timestamps`);
+                console.log(`📦 [NOTIFICATIONS] Loaded ${this.lastSeenTimestamps.size} last seen timestamps`);
             }
         } catch (error) {
-            console.error('Error loading last seen timestamps:', error);
+            console.error('❌ [NOTIFICATIONS] Error loading last seen timestamps:', error);
         }
     }
     
@@ -207,15 +200,14 @@ export class NotificationManager {
             const currentUser = this.state.get('currentUser');
             if (!currentUser) return;
             
-            const storageKey = `lastSeenTimestamps_${currentUser.uid}`;
             const timestamps = {};
             this.lastSeenTimestamps.forEach((time, chatId) => {
                 timestamps[chatId] = time;
             });
             
-            localStorage.setItem(storageKey, JSON.stringify(timestamps));
+            setUserItem('lastSeenTimestamps', timestamps, currentUser.uid);
         } catch (error) {
-            console.error('Error saving last seen timestamps:', error);
+            console.error('❌ [NOTIFICATIONS] Error saving last seen timestamps:', error);
         }
     }
     

@@ -693,6 +693,32 @@ input:disabled + .toggle-slider {
     display: flex;
     align-items: flex-end;
     animation: messageAppear 0.3s ease;
+    width: 100%;
+}
+
+.message.received {
+    justify-content: flex-start; /* Customer messages LEFT */
+}
+
+.message.sent {
+    justify-content: flex-end; /* Business replies RIGHT */
+}
+
+.message.received .message-text {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 18px 18px 18px 4px;
+    padding: 10px 14px;
+    max-width: 70%;
+    word-wrap: break-word;
+}
+
+.message.sent .message-text {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border-radius: 18px 18px 4px 18px;
+    padding: 10px 14px;
+    max-width: 70%;
+    word-wrap: break-word;
+    color: white;
 }
 
 .message.sent {

@@ -949,161 +949,117 @@ input:disabled + .toggle-slider {
 }
 
 /* =====================================================
-   Business Messages Inbox - Enhanced Styling
+   Business Messages Inbox - Direct from Mockup (Dark Theme)
    ===================================================== */
 
-/* Status Bar - Polished Design */
+/* Status Bar - Exact from mockup */
 .messages-status-bar {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
+    padding: 15px 20px;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
-    padding: 24px var(--spacing-lg);
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, rgba(147, 51, 234, 0.12) 100%);
-    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
-    margin: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .status-item {
     text-align: center;
-    flex: 1;
 }
 
 .status-number {
-    font-size: 36px;
-    font-weight: 800;
-    color: var(--accent-cyan);
-    margin-bottom: 6px;
-    line-height: 1;
-    letter-spacing: -1px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #3b82f6;
 }
 
 .status-label {
-    font-size: 10px;
+    font-size: 12px;
     color: rgba(255, 255, 255, 0.5);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 600;
+    margin-top: 2px;
 }
 
-/* Message Filters - Enhanced Pills */
+/* Message Tabs - Exact from mockup */
 .message-filters {
     display: flex;
-    gap: 8px;
-    padding: var(--spacing-md) var(--spacing-lg);
-    overflow-x: auto;
-    scrollbar-width: none;
-    background: rgba(0, 0, 0, 0.2);
-}
-
-.message-filters::-webkit-scrollbar {
-    display: none;
+    padding: 10px 20px;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .message-filters .filter-btn {
-    position: relative;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 28px;
-    padding: 11px 22px;
-    color: rgba(255, 255, 255, 0.8);
-    cursor: pointer;
-    white-space: nowrap;
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
     font-size: 14px;
-    font-weight: 600;
-    transition: all 0.25s ease;
-    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    color: white;
 }
 
 .message-filters .filter-btn.active {
-    background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
-    border-color: transparent;
+    background: #3b82f6;
     color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.35);
 }
 
-.message-filters .filter-btn:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
-}
-
-/* Filter Badges - Enhanced */
 .filter-badge {
     position: absolute;
-    top: -8px;
-    right: -8px;
+    top: -5px;
+    right: -5px;
     background: #ef4444;
     color: white;
     font-size: 11px;
-    padding: 4px 8px;
-    border-radius: 14px;
-    font-weight: 700;
-    min-width: 22px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: bold;
     display: none;
-    text-align: center;
-    border: 2px solid var(--bg-dark);
-    box-shadow: 0 3px 10px rgba(239, 68, 68, 0.5);
-    line-height: 1;
 }
 
 .filter-badge.show {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
 }
 
-/* Conversations List Container */
+/* Conversations List - Exact from mockup */
 .business-conversations {
-    padding: var(--spacing-md) var(--spacing-lg);
+    flex: 1;
     overflow-y: auto;
+    background: var(--bg-dark);
 }
 
-/* Enhanced Message Items - Closer to Mockup */
 .business-conversations .message-item {
     display: flex;
-    align-items: flex-start;
-    padding: 15px 16px;
-    background: rgba(255, 255, 255, 0.04);
-    border-radius: 16px;
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     cursor: pointer;
-    transition: all 0.2s ease;
-    margin-bottom: 12px;
+    transition: background 0.2s ease;
     position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .business-conversations .message-item:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateX(6px);
-    border-color: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .business-conversations .message-item.unread {
-    background: rgba(59, 130, 246, 0.15);
-    border-left: 4px solid var(--accent-cyan);
-    padding-left: 12px;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+    background: rgba(59, 130, 246, 0.1);
+    border-left: 3px solid #3b82f6;
 }
 
-/* Customer Avatar - Better Design */
 .business-conversations .customer-avatar {
-    width: 52px;
-    height: 52px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    margin-right: 14px;
+    font-size: 20px;
+    margin-right: 12px;
     flex-shrink: 0;
-    border: 3px solid rgba(251, 191, 36, 0.25);
-    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
 }
 
-/* Message Content - Better Typography */
 .business-conversations .message-content {
     flex: 1;
     min-width: 0;
@@ -1113,141 +1069,100 @@ input:disabled + .toggle-slider {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .business-conversations .customer-name {
-    font-weight: 700;
-    font-size: 16px;
+    font-weight: 600;
+    font-size: 15px;
     color: white;
-    letter-spacing: -0.2px;
 }
 
 .business-conversations .message-time {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.45);
-    white-space: nowrap;
-    margin-left: 12px;
-    font-weight: 500;
+    color: rgba(255, 255, 255, 0.4);
 }
 
 .business-conversations .message-preview {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.65);
+    color: rgba(255, 255, 255, 0.6);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    margin-bottom: 10px;
-    line-height: 1.5;
 }
 
-/* Message Tags - More Prominent */
 .message-tags {
     display: flex;
-    gap: 7px;
-    margin-top: 10px;
-    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 6px;
 }
 
 .message-tag {
     font-size: 11px;
-    padding: 5px 11px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.75);
-    font-weight: 600;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    text-transform: capitalize;
-    letter-spacing: 0.3px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
 }
 
 .message-tag.inquiry {
-    background: rgba(59, 130, 246, 0.25);
-    color: #60a5fa;
-    border-color: rgba(59, 130, 246, 0.4);
+    background: #dbeafe;
+    color: #3b82f6;
 }
 
 .message-tag.booking {
-    background: rgba(16, 185, 129, 0.25);
-    color: #34d399;
-    border-color: rgba(16, 185, 129, 0.4);
+    background: #d1fae5;
+    color: #10b981;
 }
 
 .message-tag.urgent {
-    background: rgba(239, 68, 68, 0.25);
-    color: #f87171;
-    border-color: rgba(239, 68, 68, 0.4);
-    animation: pulse 2s infinite;
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
 }
 
 .message-tag.confirmed {
-    background: rgba(34, 197, 94, 0.25);
-    color: #4ade80;
-    border-color: rgba(34, 197, 94, 0.4);
-}
-
-/* Empty State */
-.business-conversations .empty-state {
-    text-align: center;
-    padding: 80px 30px;
-    opacity: 0.6;
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
 }
 
 /* =====================================================
-   Business Chat Quick Replies (In Chat Window ONLY)
+   Business Chat Quick Replies (Chat Window Only)
    ===================================================== */
 
-/* Quick Reply Bar in Chat Window */
 .chat-quick-reply-bar {
-    padding: 14px var(--spacing-lg);
-    background: rgba(0, 0, 0, 0.3);
-    border-top: 1px solid var(--border-light);
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .quick-reply-title {
-    font-size: 10px;
+    font-size: 12px;
     color: rgba(255, 255, 255, 0.5);
     margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 700;
 }
 
 .quick-replies {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     overflow-x: auto;
-    scrollbar-width: none;
-    padding-bottom: 2px;
-}
-
-.quick-replies::-webkit-scrollbar {
-    display: none;
 }
 
 .quick-reply-btn {
-    padding: 10px 16px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 22px;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
     font-size: 13px;
-    color: white;
     white-space: nowrap;
     cursor: pointer;
     transition: all 0.2s ease;
-    flex-shrink: 0;
-    font-weight: 600;
+    color: white;
 }
 
 .quick-reply-btn:hover {
-    background: var(--accent-cyan);
-    border-color: var(--accent-cyan);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 212, 255, 0.4);
-}
-
-.quick-reply-btn:active {
-    transform: translateY(0);
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
 }
 
 /* =====================================================

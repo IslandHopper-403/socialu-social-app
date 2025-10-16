@@ -252,34 +252,10 @@ export class BusinessProfileManager {
         // SIMPLE: Always return to current feed screen
         const currentScreen = this.state.get('currentScreen') || 'restaurant';
         this.navigationManager.showScreen(currentScreen, false);
-        console.log('📱 [BUSINESS-PROFILE] Returned to', currentScreen, 'feed');
-    }
+       console.log('📱 [BUSINESS-PROFILE] Returned to', currentScreen, 'feed');
+}
 
-    /**
-     * Close business profile
-     */
-    closeBusinessProfile() {
-        console.log('🔙 [BUSINESS-PROFILE] Closing business profile');
-        
-        // Clear business state first
-        this.state.set('currentBusiness', null);
-
-        // Clear any rotating specials interval
-        if (this.specialsInterval) {
-            clearInterval(this.specialsInterval);
-            this.specialsInterval = null;
-        }
-        
-        // Close the overlay
-        this.navigationManager.closeOverlay('businessProfile');
-        
-        // SIMPLE: Always return to current feed screen
-        const currentScreen = this.state.get('currentScreen') || 'restaurant';
-        this.navigationManager.showScreen(currentScreen, false);
-        console.log('📱 [BUSINESS-PROFILE] Returned to', currentScreen, 'feed');
-    }
-    
-    // ========== BUSINESS PROFILE OPENING & LOOKUP ==========
+// ========== BUSINESS PROFILE OPENING & LOOKUP ==========
     
     /**
      * Open business profile by slug or ID

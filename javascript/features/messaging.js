@@ -1169,7 +1169,7 @@ closeChat() {
         
         const currentUser = this.state.get('currentUser');
         const isSent = messageData.senderId === currentUser?.uid;
-        const timeStr = messageData.timestamp ? this.formatMessageTime(messageData.timestamp) : 'Sending...';
+        const timeStr = messageData.timestamp ? formatMessageTime(messageData.timestamp) : 'Sending...';
         
         const messageElement = document.createElement('div');
         messageElement.className = `message ${isSent ? 'sent' : 'received'}${isOptimistic ? ' optimistic' : ''}`;

@@ -856,8 +856,8 @@
 /* 🔧 FIX: Unread badge for dashboard messages - top right corner */
 .message-item .unread-badge {
     position: absolute;
-    top: 8px;
-    right: 12px;
+    top: -2px;
+    right: -2px;
     background: #ef4444;
     color: white;
     font-size: 11px;

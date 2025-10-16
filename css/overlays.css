@@ -987,6 +987,10 @@ input:disabled + .toggle-slider {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.message-filters {
+    position: relative; /* Allow badges to overflow */
+}
+
 .message-filters .filter-btn {
     flex: 1;
     padding: 10px;
@@ -998,6 +1002,7 @@ input:disabled + .toggle-slider {
     transition: all 0.3s ease;
     position: relative;
     color: white;
+    overflow: visible; /* 🔧 FIX: Allow badge to overflow */
 }
 
 .message-filters .filter-btn.active {
@@ -1007,15 +1012,19 @@ input:disabled + .toggle-slider {
 
 .filter-badge {
     position: absolute;
-    top: -5px;
-    right: -5px;
+    top: -8px;
+    right: -8px;
     background: #ef4444;
     color: white;
     font-size: 11px;
-    padding: 2px 6px;
-    border-radius: 10px;
+    padding: 3px 7px;
+    border-radius: 12px;
     font-weight: bold;
     display: none;
+    z-index: 10; /* 🔧 FIX: Ensure badge appears above everything */
+    border: 2px solid var(--bg-dark); /* 🔧 FIX: Visible border */
+    min-width: 20px;
+    text-align: center;
 }
 
 .filter-badge.show {
@@ -1032,10 +1041,13 @@ input:disabled + .toggle-slider {
 .business-conversations .message-item {
     display: flex;
     padding: 15px 20px;
+    padding-left: 20px; /* 🔧 FIX: Reset to standard padding */
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     cursor: pointer;
     transition: background 0.2s ease;
     position: relative;
+    border-radius: 0; /* 🔧 FIX: Square corners */
+    margin: 0; /* 🔧 FIX: Full width */
 }
 
 .business-conversations .message-item:hover {
@@ -1044,7 +1056,9 @@ input:disabled + .toggle-slider {
 
 .business-conversations .message-item.unread {
     background: rgba(59, 130, 246, 0.1);
-    border-left: 3px solid #3b82f6;
+    border-left: 4px solid #3b82f6; /* 🔧 FIX: Full width, square border */
+    padding-left: 16px; /* 🔧 FIX: Compensate for border */
+    border-radius: 0; /* 🔧 FIX: Square corners */
 }
 
 .business-conversations .customer-avatar {
@@ -1090,6 +1104,24 @@ input:disabled + .toggle-slider {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+/* 🔧 FIX: Unread badge positioning - top right corner */
+.business-conversations .unread-badge {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    background: #ef4444;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 7px;
+    border-radius: 12px;
+    min-width: 20px;
+    text-align: center;
+    z-index: 5;
+    border: 2px solid var(--bg-dark);
+}
+
 
 .message-tags {
     display: flex;

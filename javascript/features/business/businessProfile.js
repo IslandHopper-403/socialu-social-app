@@ -600,27 +600,43 @@ export class BusinessProfileManager {
             if (!isDragging) return;
             isDragging = false;
             
+            // Get end position
+            const endX = e.type.includes('mouse') ? e.clientX : (e.changedTouches?.[0]?.clientX || startX);
+            
             // If no significant movement, treat as click (desktop)
             if (!hasMoved) {
-                const clickX = e.type.includes('mouse') ? e.clientX : startX;
                 const rect = swiper.getBoundingClientRect();
-                const clickPosition = clickX - rect.left;
+                const clickPosition = endX - rect.left;
                 const clickPercent = clickPosition / rect.width;
                 
-                // Left third = previous, right third = next
-                if (clickPercent < 0.33 && currentIndex > 0) {
+                console.log('🖱️ [PHOTO-VIEWER] Click detected:', {
+                    clickPercent: clickPercent.toFixed(2),
+                    currentIndex,
+                    totalPhotos: business.photos.length
+                });
+                
+                // Left half = previous, right half = next (simpler than thirds)
+                if (clickPercent < 0.5 && currentIndex > 0) {
+                    console.log('⬅️ [PHOTO-VIEWER] Going to previous photo');
                     updateSlide(currentIndex - 1);
-                } else if (clickPercent > 0.67 && currentIndex < business.photos.length - 1) {
+                } else if (clickPercent >= 0.5 && currentIndex < business.photos.length - 1) {
+                    console.log('➡️ [PHOTO-VIEWER] Going to next photo');
                     updateSlide(currentIndex + 1);
+                } else {
+                    console.log('⚠️ [PHOTO-VIEWER] At boundary, cannot navigate');
                 }
             } 
             // Otherwise treat as swipe (mobile)
             else {
-                const diff = currentX - startX;
+                const diff = endX - startX;
+                console.log('👆 [PHOTO-VIEWER] Swipe detected, diff:', diff);
+                
                 if (Math.abs(diff) > 50) {
                     if (diff > 0 && currentIndex > 0) {
+                        console.log('⬅️ [PHOTO-VIEWER] Swiping to previous');
                         updateSlide(currentIndex - 1);
                     } else if (diff < 0 && currentIndex < business.photos.length - 1) {
+                        console.log('➡️ [PHOTO-VIEWER] Swiping to next');
                         updateSlide(currentIndex + 1);
                     }
                 }

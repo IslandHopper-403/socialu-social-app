@@ -567,32 +567,56 @@ export class BusinessProfileManager {
         let currentIndex = 0;
         counter.textContent = `1/${business.photos.length}`;
         
-       // Touch/swipe handling
+       // Touch/swipe handling with improved desktop support
         let startX = 0;
         let currentX = 0;
         let isDragging = false;
-        let hasMoved = false; // Track if mouse/touch moved significantly
+        let hasMoved = false;
+        
+        console.log('🖼️ [PHOTO-VIEWER] Setting up navigation for', business.photos.length, 'photos');
         
         const updateSlide = (index) => {
+            console.log(`📸 [PHOTO-VIEWER] Updating to slide ${index + 1}/${business.photos.length}`);
             swiper.style.transform = `translateX(-${index * 100}%)`;
+            swiper.style.transition = 'transform 0.3s ease-out';
             counter.textContent = `${index + 1}/${business.photos.length}`;
             currentIndex = index;
         };
         
         const handleStart = (e) => {
-            startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            startX = clientX;
+            currentX = clientX;
             isDragging = true;
             hasMoved = false;
+            
+            // Disable transition during drag for smooth tracking
+            swiper.style.transition = 'none';
+            
+            console.log('🖱️ [PHOTO-VIEWER] Drag started at X:', startX);
         };
         
         const handleMove = (e) => {
             if (!isDragging) return;
-            currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
             
-            // If moved more than 10px, it's a drag not a click
-            if (Math.abs(currentX - startX) > 10) {
+            currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            const diff = currentX - startX;
+            
+            // If moved more than 5px, it's a drag not a click
+            if (Math.abs(diff) > 5) {
                 hasMoved = true;
-                e.preventDefault();
+                
+                // Visual feedback: drag the swiper along with cursor/finger
+                const currentOffset = -currentIndex * swiper.offsetWidth;
+                const newOffset = currentOffset + diff;
+                swiper.style.transform = `translateX(${newOffset}px)`;
+                
+                console.log('🖱️ [PHOTO-VIEWER] Dragging, diff:', diff.toFixed(0), 'hasMoved:', hasMoved);
+                
+                // Prevent default to avoid text selection
+                if (e.cancelable) {
+                    e.preventDefault();
+                }
             }
         };
         
@@ -600,45 +624,68 @@ export class BusinessProfileManager {
             if (!isDragging) return;
             isDragging = false;
             
-            // Get end position
-            const endX = e.type.includes('mouse') ? e.clientX : (e.changedTouches?.[0]?.clientX || startX);
+            // Re-enable transition for snap animation
+            swiper.style.transition = 'transform 0.3s ease-out';
             
-            // If no significant movement, treat as click (desktop)
+            // Get final position
+            const endX = e.type.includes('mouse') ? e.clientX : (e.changedTouches?.[0]?.clientX || currentX);
+            const diff = endX - startX;
+            
+            console.log('🏁 [PHOTO-VIEWER] Drag ended, diff:', diff.toFixed(0), 'hasMoved:', hasMoved);
+            
+            // CLICK NAVIGATION (no significant drag)
             if (!hasMoved) {
                 const rect = swiper.getBoundingClientRect();
                 const clickPosition = endX - rect.left;
                 const clickPercent = clickPosition / rect.width;
                 
-                console.log('🖱️ [PHOTO-VIEWER] Click detected:', {
+                console.log('👆 [PHOTO-VIEWER] Click navigation:', {
                     clickPercent: clickPercent.toFixed(2),
+                    clickSide: clickPercent < 0.5 ? 'LEFT' : 'RIGHT',
                     currentIndex,
-                    totalPhotos: business.photos.length
+                    canGoPrevious: currentIndex > 0,
+                    canGoNext: currentIndex < business.photos.length - 1
                 });
                 
-                // Left half = previous, right half = next (simpler than thirds)
-                if (clickPercent < 0.5 && currentIndex > 0) {
-                    console.log('⬅️ [PHOTO-VIEWER] Going to previous photo');
-                    updateSlide(currentIndex - 1);
-                } else if (clickPercent >= 0.5 && currentIndex < business.photos.length - 1) {
-                    console.log('➡️ [PHOTO-VIEWER] Going to next photo');
-                    updateSlide(currentIndex + 1);
-                } else {
-                    console.log('⚠️ [PHOTO-VIEWER] At boundary, cannot navigate');
+                // LEFT SIDE = PREVIOUS (only if not at start)
+                if (clickPercent < 0.5) {
+                    if (currentIndex > 0) {
+                        console.log('⬅️ [PHOTO-VIEWER] Navigating to previous photo');
+                        updateSlide(currentIndex - 1);
+                    } else {
+                        console.log('⚠️ [PHOTO-VIEWER] Already at first photo');
+                    }
+                }
+                // RIGHT SIDE = NEXT (only if not at end)
+                else {
+                    if (currentIndex < business.photos.length - 1) {
+                        console.log('➡️ [PHOTO-VIEWER] Navigating to next photo');
+                        updateSlide(currentIndex + 1);
+                    } else {
+                        console.log('⚠️ [PHOTO-VIEWER] Already at last photo');
+                    }
                 }
             } 
-            // Otherwise treat as swipe (mobile)
+            // SWIPE NAVIGATION (dragged significantly)
             else {
-                const diff = endX - startX;
-                console.log('👆 [PHOTO-VIEWER] Swipe detected, diff:', diff);
+                const swipeThreshold = 50; // 50px minimum swipe
                 
-                if (Math.abs(diff) > 50) {
-                    if (diff > 0 && currentIndex > 0) {
-                        console.log('⬅️ [PHOTO-VIEWER] Swiping to previous');
-                        updateSlide(currentIndex - 1);
-                    } else if (diff < 0 && currentIndex < business.photos.length - 1) {
-                        console.log('➡️ [PHOTO-VIEWER] Swiping to next');
-                        updateSlide(currentIndex + 1);
-                    }
+                console.log('🔄 [PHOTO-VIEWER] Swipe navigation, diff:', diff, 'threshold:', swipeThreshold);
+                
+                // SWIPE RIGHT = PREVIOUS
+                if (diff > swipeThreshold && currentIndex > 0) {
+                    console.log('⬅️ [PHOTO-VIEWER] Swiped right, going to previous');
+                    updateSlide(currentIndex - 1);
+                }
+                // SWIPE LEFT = NEXT
+                else if (diff < -swipeThreshold && currentIndex < business.photos.length - 1) {
+                    console.log('➡️ [PHOTO-VIEWER] Swiped left, going to next');
+                    updateSlide(currentIndex + 1);
+                }
+                // SNAP BACK (didn't swipe far enough)
+                else {
+                    console.log('↩️ [PHOTO-VIEWER] Swipe too short, snapping back');
+                    updateSlide(currentIndex);
                 }
             }
             

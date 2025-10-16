@@ -746,16 +746,17 @@ export class BusinessDashboardManager {
             content.appendChild(tagsContainer);
         }
         
-        // Unread badge
+       messageItem.appendChild(avatar);
+        messageItem.appendChild(content);
+        
+        // 🔧 FIX: Unread badge positioned on messageItem (top right corner)
         if (data.businessUnread > 0) {
             const badge = document.createElement('div');
             badge.className = 'unread-badge';
             badge.textContent = data.businessUnread.toString();
-            content.appendChild(badge);
+            console.log('🔴 [DASHBOARD] Adding unread badge:', data.businessUnread);
+            messageItem.appendChild(badge); // Append to messageItem, not content
         }
-        
-        messageItem.appendChild(avatar);
-        messageItem.appendChild(content);
         
         // Click handler - opens conversation in chat
         messageItem.onclick = () => {

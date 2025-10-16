@@ -217,6 +217,13 @@ export class BusinessMessagingManager {
                 const emptyState = document.getElementById('businessChatEmptyState');
                 if (emptyState) emptyState.style.display = 'none';
                 
+                // 🎨 [ENHANCEMENT] Show quick replies bar when messages exist
+                const quickRepliesBar = document.getElementById('businessChatQuickReplies');
+                if (quickRepliesBar) {
+                    quickRepliesBar.style.display = 'block';
+                    console.log('✨ [BUSINESS-CHAT] Quick replies visible (active chat)');
+                }
+                
                 // Clear existing messages
                 chatMessages.innerHTML = '';
                 
@@ -235,6 +242,13 @@ export class BusinessMessagingManager {
             } else {
                 // No messages - keep empty state visible
                 console.log('📭 No messages yet, showing empty state');
+                
+                // 🔧 [ENHANCEMENT] Hide quick replies bar when chat is empty
+                const quickRepliesBar = document.getElementById('businessChatQuickReplies');
+                if (quickRepliesBar) {
+                    quickRepliesBar.style.display = 'none';
+                    console.log('👻 [BUSINESS-CHAT] Quick replies hidden (empty chat)');
+                }
             }
             
             // Scroll to bottom
@@ -470,11 +484,18 @@ export class BusinessMessagingManager {
             }
         }
         
-        // Show businessChat overlay
+       // Show businessChat overlay
         const chatOverlay = document.getElementById('businessChat');
         if (chatOverlay) {
             chatOverlay.classList.add('show');
             console.log('✅ Opened businessChat overlay for dashboard response');
+            
+            // 🔧 [ENHANCEMENT] Initially hide quick replies (will show if messages exist)
+            const quickRepliesBar = document.getElementById('businessChatQuickReplies');
+            if (quickRepliesBar) {
+                quickRepliesBar.style.display = 'none';
+                console.log('👻 [BUSINESS-CHAT] Quick replies initially hidden');
+            }
             
             // Track in navigation stack
             if (window.CLASSIFIED?.managers?.navigation) {

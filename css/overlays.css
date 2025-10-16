@@ -38,10 +38,6 @@ body.form-overlay-open {
 }
 
 /* Specific z-index for each overlay type */
-#businessProfile.overlay-screen {
-    z-index: var(--z-business-profile);
-}
-
 #businessChat.overlay-screen {
     z-index: 400 !important;
     padding-top: 0 !important;
@@ -49,7 +45,16 @@ body.form-overlay-open {
 
 #userProfileView.overlay-screen,
 #myProfileView.overlay-screen {
-    z-index: var(--z-overlay-profile);
+    z-index: var(--z-overlay-profile); /* Now 420 - above chats */
+}
+
+#businessProfile.overlay-screen {
+    z-index: var(--z-business-profile); /* Now 425 - above chats */
+}
+
+#profileEditor.overlay-screen,
+#businessProfileEditor.overlay-screen {
+    z-index: var(--z-profile-editor);
 }
 
 #profileEditor.overlay-screen,

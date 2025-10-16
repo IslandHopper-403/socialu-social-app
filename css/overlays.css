@@ -1164,7 +1164,7 @@ input:disabled + .toggle-slider {
 
 .chat-quick-reply-bar {
     position: absolute; /* 🔧 FIX: Position it above input */
-    bottom: 70px; /* 🔧 FIX: Place it above the input container */
+    bottom: 100px; /* 🔧 FIX: Place it above the input container */
     left: 0;
     right: 0;
     padding: 15px 20px;

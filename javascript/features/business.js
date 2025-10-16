@@ -1,6 +1,7 @@
 // javascript/features/business.js
 
 import { sanitizeText, escapeHtml } from '../utils/security.js';
+import { formatMessageTime, fetchCustomerPhoto } from '../utils/helpers.js';
 import { BusinessDashboardManager } from './business/businessDashboard.js';
 import { BusinessAnalyticsManager } from './business/businessAnalytics.js';
 import { BusinessPromotionsManager } from './business/businessPromotions.js';

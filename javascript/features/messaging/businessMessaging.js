@@ -329,10 +329,20 @@ try {
             console.log('📤 [BUSINESS-MSG] Preparing to send message at:', Date.now());
             console.log('📤 [BUSINESS-MSG] Message text:', messageText.substring(0, 50));
             
-            // Get message type from state (set by quick question buttons)
+            // 🔧 FIX: Detect who is sending this message
+            const isBusinessUser = this.state.get('isBusinessUser');
+            const pendingMessageSender = this.state.get('pendingMessageSender');
+            const actualSender = pendingMessageSender || (isBusinessUser ? 'business' : 'user');
+            
+            console.log('👤 [BUSINESS-MSG] Sender detection:', {
+                isBusinessUser,
+                pendingMessageSender,
+                actualSender
+            });
+            
+            // Get message type from state (set by quick question buttons or quick replies)
             const messageType = this.state.get('pendingMessageType') || null;
             console.log('🏷️ [BUSINESS-MSG] Message type from state:', messageType);
-            console.log('🏷️ [BUSINESS-MSG] All state keys:', Object.keys(this.state.getAll?.() || {}));
             
             // 🔧 FIX: Check if conversation exists first
             const conversationRef = doc(this.db, 'businessConversations', conversationId);
@@ -353,6 +363,7 @@ try {
                     createdAt: serverTimestamp(),
                     lastMessage: messageText,
                     lastMessageTime: serverTimestamp(),
+                    lastMessageSender: user.uid,
                     userUnread: 0,
                     businessUnread: 1,
                     type: 'business_inquiry'
@@ -379,7 +390,7 @@ try {
                 text: messageText,
                 senderId: user.uid,
                 senderName: user.displayName || 'User',
-                senderType: 'user',
+                senderType: actualSender,  // 🔧 FIX: Use detected sender type
                 timestamp: serverTimestamp(),
                 read: false
             };
@@ -390,6 +401,12 @@ try {
                 console.log('✅ [BUSINESS-MSG] Tagged message as:', messageType);
             }
             
+            console.log('📨 [BUSINESS-MSG] Message data prepared:', {
+                senderType: messageData.senderType,
+                messageType: messageData.messageType,
+                textPreview: messageText.substring(0, 30)
+            });
+            
             await addDoc(messagesRef, messageData);
             console.log('✅ [BUSINESS-MSG] Message document created');
             
@@ -398,8 +415,19 @@ try {
                 const updateData = {
                     lastMessage: messageText,
                     lastMessageTime: serverTimestamp(),
-                    businessUnread: increment(1)
+                    lastMessageSender: user.uid  // 🔧 FIX: Track who sent last message
                 };
+                
+                // 🔧 FIX: Increment correct unread counter based on sender
+                if (actualSender === 'business') {
+                    // Business sent message → User should be notified
+                    updateData.userUnread = increment(1);
+                    console.log('📊 [BUSINESS-MSG] Incremented userUnread (business → user)');
+                } else {
+                    // User sent message → Business should be notified
+                    updateData.businessUnread = increment(1);
+                    console.log('📊 [BUSINESS-MSG] Incremented businessUnread (user → business)');
+                }
                 
                 // Add lastMessageType if it exists
                 if (messageType) {
@@ -408,11 +436,13 @@ try {
                 }
                 
                 await updateDoc(conversationRef, updateData);
-                console.log('✅ [BUSINESS-MSG] Conversation updated');
+                console.log('✅ [BUSINESS-MSG] Conversation updated with correct unread counter');
             }
             
-            // Clear the message type after sending
+            // Clear the sender context and message type after sending
             this.state.set('pendingMessageType', null);
+            this.state.set('pendingMessageSender', null);
+            console.log('🧹 [BUSINESS-MSG] Cleared pending state');
             
             // Track for analytics
             await this.trackBusinessMessage(businessId);

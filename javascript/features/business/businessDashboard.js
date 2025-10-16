@@ -802,11 +802,15 @@ export class BusinessDashboardManager {
             return;
         }
         
-        const now = Date.now();
+         const now = Date.now();
         const todayStart = new Date().setHours(0, 0, 0, 0);
         
         let newToday = 0;
         let urgent = 0;
+        
+        // Get business user ID for sender comparison
+        const user = this.state.get('currentUser');
+        const businessUserId = user?.uid;
         
         conversations.forEach(conv => {
             const messageTime = conv.lastMessageTime?.toMillis?.() || conv.lastMessageTime || 0;
@@ -817,11 +821,19 @@ export class BusinessDashboardManager {
                 console.log('  📅 [DASHBOARD] Message from today:', conv.userName);
             }
             
-            // Count urgent (unread messages less than 5 min old)
+            // 🔧 FIX: Count urgent only if message is FROM user TO business
             const messageAge = now - messageTime;
-            if (conv.businessUnread > 0 && messageAge < 5 * 60 * 1000) {
+            const isFromUser = conv.lastMessageSender !== businessUserId;
+            
+            if (conv.businessUnread > 0 && messageAge < 5 * 60 * 1000 && isFromUser) {
                 urgent++;
-                console.log('  🚨 [DASHBOARD] Urgent message from:', conv.userName);
+                console.log('  🚨 [DASHBOARD] Urgent message from user:', conv.userName, {
+                    lastSender: conv.lastMessageSender,
+                    businessId: businessUserId,
+                    isFromUser
+                });
+            } else if (conv.businessUnread > 0 && messageAge < 5 * 60 * 1000 && !isFromUser) {
+                console.log('  ⏭️ [DASHBOARD] Skipping urgent (business sent last message):', conv.userName);
             }
         });
         

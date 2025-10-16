@@ -698,9 +698,28 @@ export class FeedManager {
         }
     }
     
-    /**
+/**
      * ==========================================
      * END DAILY STORIES IMPLEMENTATION
      * ==========================================
      */
-}
+    
+    /**
+     * Cleanup resources
+     * Delegates to sub-managers for proper cleanup
+     */
+    cleanup() { // ⬅️ cleanup is a SEPARATE method at class level
+        console.log('🧹 [FEED-MANAGER] Cleaning up resources');
+        
+        // Delegate to sub-managers
+        if (this.userFeed && typeof this.userFeed.cleanup === 'function') {
+            this.userFeed.cleanup();
+        }
+        if (this.businessFeed && typeof this.businessFeed.cleanup === 'function') {
+            this.businessFeed.cleanup();
+        }
+        
+        console.log('✅ [FEED-MANAGER] Cleanup complete');
+    }
+} // ⬅️ FeedManager class ends here
+

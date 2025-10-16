@@ -120,8 +120,8 @@
     --z-business-profile: 425;       /* Business profile overlay - ABOVE chats */
     
     /* Editors & Settings: 400-499 */
-    --z-profile-editor: 400;         /* Profile editors */
-    --z-settings: 450;               /* Settings overlay */
+    --z-profile-editor: 460;         /* Profile editors */
+    --z-settings: 470;               /* Settings overlay */
     
     /* Authentication: 500-599 */
     --z-auth-portal: 500;            /* Login/Register/Business auth screens */

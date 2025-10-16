@@ -1164,13 +1164,14 @@ input:disabled + .toggle-slider {
 
 .chat-quick-reply-bar {
     position: absolute; /* 🔧 FIX: Position it above input */
-    bottom: 100px; /* 🔧 FIX: Place it above the input container */
+    bottom: 90px; /* 🔧 FIX: Place it above the input container */
     left: 0;
     right: 0;
     padding: 15px 20px;
     background: rgba(255, 255, 255, 0.03);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 9; /* 🔧 FIX: Ensure it's visible */
+   overflow: hidden; /* 🔧 FIX: Hide any overflow/scrollbars */
 }
 
 .quick-reply-title {
@@ -1179,10 +1180,21 @@ input:disabled + .toggle-slider {
     margin-bottom: 10px;
 }
 
+}
 .quick-replies {
     display: flex;
     gap: 10px;
     overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.quick-replies::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Opera */
+    width: 0;
+    height: 0;
 }
 
 .quick-reply-btn {
@@ -1195,6 +1207,7 @@ input:disabled + .toggle-slider {
     cursor: pointer;
     transition: all 0.2s ease;
     color: white;
+    flex-shrink: 0; /* 🔧 FIX: Prevent buttons from shrinking */
 }
 
 .quick-reply-btn:hover {

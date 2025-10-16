@@ -174,13 +174,6 @@ export class BusinessMessagingManager {
                 const emptyState = document.getElementById('businessChatEmptyState');
                 if (emptyState) emptyState.style.display = 'none';
                 
-                // 🎨 [ENHANCEMENT] Show quick replies bar when messages exist
-                const quickRepliesBar = document.getElementById('businessChatQuickReplies');
-                if (quickRepliesBar) {
-                    quickRepliesBar.style.display = 'block';
-                    console.log('✨ [BUSINESS-CHAT] Quick replies visible (active chat)');
-                }
-                
                 // Clear existing messages
                 chatMessages.innerHTML = '';
                 
@@ -196,16 +189,16 @@ export class BusinessMessagingManager {
                     const message = doc.data();
                     this.displayBusinessMessage(message);
                 });
-            } else {
+           } else {
                 // No messages - keep empty state visible
                 console.log('📭 No messages yet, showing empty state');
-                
-                // 🔧 [ENHANCEMENT] Hide quick replies bar when chat is empty
-                const quickRepliesBar = document.getElementById('businessChatQuickReplies');
-                if (quickRepliesBar) {
-                    quickRepliesBar.style.display = 'none';
-                    console.log('👻 [BUSINESS-CHAT] Quick replies hidden (empty chat)');
-                }
+            }
+            
+            // 🔧 FIX: ALWAYS show quick replies for business users (persistent)
+            const quickRepliesBar = document.getElementById('businessChatQuickReplies');
+            if (quickRepliesBar) {
+                quickRepliesBar.style.display = 'block';
+                console.log('✨ [BUSINESS-CHAT] Quick replies always visible for business');
             }
             
             // Scroll to bottom
@@ -517,11 +510,11 @@ try {
             chatOverlay.classList.add('show');
             console.log('✅ Opened businessChat overlay for dashboard response');
             
-            // 🔧 [ENHANCEMENT] Initially hide quick replies (will show if messages exist)
+            // 🔧 FIX: Always show quick replies for business users
             const quickRepliesBar = document.getElementById('businessChatQuickReplies');
             if (quickRepliesBar) {
-                quickRepliesBar.style.display = 'none';
-                console.log('👻 [BUSINESS-CHAT] Quick replies initially hidden');
+                quickRepliesBar.style.display = 'block';
+                console.log('✨ [BUSINESS-CHAT] Quick replies visible from start');
             }
             
             // Track in navigation stack

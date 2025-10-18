@@ -584,7 +584,6 @@
    SHARE KIT SECTION - COLLAPSIBLE (Section 1.2) 
    Matches insights-section and promotions-section styling
    ===================================================== */
-
 .share-kit-section {
     background: rgba(255,255,255,0.05);
     border-radius: var(--radius-lg);
@@ -653,7 +652,7 @@
 }
 
 .qr-code-display img {
-    display: none !important; /* Prevent duplicate */
+    display: none !important;
 }
 
 .qr-hint {

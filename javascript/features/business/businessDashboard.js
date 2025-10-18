@@ -142,41 +142,27 @@ export class BusinessDashboardManager {
             this.initializeShareKit();
         }, 500);
     }
-    
-    /**
+  
+     /**
      * Initialize Share Kit (Section 1.2)
      * Generates QR code and social templates for current business
      */
-     initializeShareKit() {
+    initializeShareKit() {
         console.log('📱 [DASHBOARD] Initializing share kit at:', Date.now());
         
         // Check if we have business data
         if (!this.currentBusinessData) {
             console.error('❌ [DASHBOARD] No business data available for share kit');
-            
-            // Retry after delay if business data not ready
-            setTimeout(() => {
-                console.log('🔄 [DASHBOARD] Retrying share kit initialization...');
-                this.initializeShareKit();
-            }, 1000);
             return;
         }
         
         // Check if profile manager exists
-        if (!window.classifiedApp?.managers?.business?.profile) {
+        if (!window.classifiedApp?.managers?.business?.businessProfile) {
             console.error('❌ [DASHBOARD] Profile manager not available for share kit');
-            console.log('🔍 [DASHBOARD] Available managers:', Object.keys(window.classifiedApp?.managers || {}));
-            console.log('🔍 [DASHBOARD] Business manager:', window.classifiedApp?.managers?.business);
-            
-            // Retry after delay if profile manager not ready
-            setTimeout(() => {
-                console.log('🔄 [DASHBOARD] Retrying share kit initialization...');
-                this.initializeShareKit();
-            }, 1000);
             return;
         }
         
-        const profileManager = window.classifiedApp.managers.business.profile;
+        const profileManager = window.classifiedApp.managers.business.businessProfile;
         
         // Generate QR code with current business data
         profileManager.generateSingleBusinessQR(this.currentBusinessData);
@@ -235,7 +221,7 @@ export class BusinessDashboardManager {
             return;
         }
         
-        window.classifiedApp.managers.business.profile.downloadQRAsPNG();
+        window.classifiedApp.managers.business.businessProfile.downloadQRAsPNG();
     }
     
     /**
@@ -251,7 +237,7 @@ export class BusinessDashboardManager {
             return;
         }
         
-        window.classifiedApp.managers.business.profile.downloadQRAsPDF();
+        window.classifiedApp.managers.business.businessProfile.downloadQRAsPDF();
     }
     
     /**
@@ -267,7 +253,7 @@ export class BusinessDashboardManager {
             return;
         }
         
-        window.classifiedApp.managers.business.profile.copySingleBusinessLink();
+        window.classifiedApp.managers.business.businessProfile.copySingleBusinessLink();
     }
     
     /**
@@ -282,7 +268,7 @@ export class BusinessDashboardManager {
             return;
         }
         
-        window.classifiedApp.managers.business.profile.updateSocialTemplateDisplay(platform);
+        window.classifiedApp.managers.business.businessProfile.updateSocialTemplateDisplay(platform);
     }
     
     /**

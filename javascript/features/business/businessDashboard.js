@@ -136,26 +136,43 @@ export class BusinessDashboardManager {
         
         console.log('✅ [DASHBOARD] Dashboard initialization complete at:', Date.now());
         
-        // ========== INITIALIZE SHARE KIT (Section 1.2) ==========
-        this.initializeShareKit();
+         // ========== INITIALIZE SHARE KIT (Section 1.2) ==========
+        // Small delay to ensure profile manager is ready
+        setTimeout(() => {
+            this.initializeShareKit();
+        }, 500);
     }
     
     /**
      * Initialize Share Kit (Section 1.2)
      * Generates QR code and social templates for current business
      */
-    initializeShareKit() {
+     initializeShareKit() {
         console.log('📱 [DASHBOARD] Initializing share kit at:', Date.now());
         
         // Check if we have business data
         if (!this.currentBusinessData) {
             console.error('❌ [DASHBOARD] No business data available for share kit');
+            
+            // Retry after delay if business data not ready
+            setTimeout(() => {
+                console.log('🔄 [DASHBOARD] Retrying share kit initialization...');
+                this.initializeShareKit();
+            }, 1000);
             return;
         }
         
         // Check if profile manager exists
         if (!window.classifiedApp?.managers?.business?.profile) {
             console.error('❌ [DASHBOARD] Profile manager not available for share kit');
+            console.log('🔍 [DASHBOARD] Available managers:', Object.keys(window.classifiedApp?.managers || {}));
+            console.log('🔍 [DASHBOARD] Business manager:', window.classifiedApp?.managers?.business);
+            
+            // Retry after delay if profile manager not ready
+            setTimeout(() => {
+                console.log('🔄 [DASHBOARD] Retrying share kit initialization...');
+                this.initializeShareKit();
+            }, 1000);
             return;
         }
         

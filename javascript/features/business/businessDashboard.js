@@ -161,36 +161,35 @@ export class BusinessDashboardManager {
             console.error('❌ [DASHBOARD] Profile manager not available for share kit');
         }
     }
+    
+    // ========== SHARE KIT METHODS (Section 1.2) ==========
+    
+    /**
+     * Toggle Share Kit expansion
+     */
+    toggleShareKit() {
+        console.log('🔄 [SHARE-KIT] Toggling visibility at:', Date.now());
+        
+        const content = document.getElementById('shareKitContent');
+        const arrow = document.getElementById('shareKitArrow');
+        
+        if (!content || !arrow) {
+            console.error('❌ [SHARE-KIT] Elements not found');
+            return;
+        }
+        
+        // Toggle visibility
+        if (content.style.display === 'none' || content.style.display === '') {
+            content.style.display = 'block';
+            arrow.classList.add('rotated');
+            console.log('✅ [SHARE-KIT] Expanded');
+        } else {
+            content.style.display = 'none';
+            arrow.classList.remove('rotated');
+            console.log('✅ [SHARE-KIT] Collapsed');
+        }
+    }
 }
-
-
-    // ========== SHARE KIT TOGGLE (Section 1.2) ==========
-
-/**
- * Toggle Share Kit expansion
- */
-window.toggleShareKit = function() {
-    console.log('🔄 [SHARE-KIT] Toggling visibility');
-    
-    const content = document.getElementById('shareKitContent');
-    const arrow = document.getElementById('shareKitArrow');
-    
-    if (!content || !arrow) {
-        console.error('❌ [SHARE-KIT] Elements not found');
-        return;
-    }
-    
-    // Toggle visibility
-    if (content.style.display === 'none') {
-        content.style.display = 'block';
-        arrow.classList.add('rotated');
-        console.log('✅ [SHARE-KIT] Expanded');
-    } else {
-        content.style.display = 'none';
-        arrow.classList.remove('rotated');
-        console.log('✅ [SHARE-KIT] Collapsed');
-    }
-};
     
     /**
      * Load business dashboard data

@@ -161,6 +161,7 @@ export class BusinessDashboardManager {
             console.error('❌ [DASHBOARD] Profile manager not available for share kit');
         }
     }
+}
 
 
     // ========== SHARE KIT TOGGLE (Section 1.2) ==========

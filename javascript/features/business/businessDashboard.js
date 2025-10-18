@@ -215,7 +215,7 @@ export class BusinessDashboardManager {
     downloadQRAsPNG() {
         console.log('📥 [DASHBOARD] Download QR as PNG clicked');
         
-        if (!window.classifiedApp?.managers?.business?.profile) {
+        if (!window.classifiedApp?.managers?.business?.businessProfile) {
             console.error('❌ [DASHBOARD] Profile manager not available');
             alert('Feature not available. Please refresh the page.');
             return;
@@ -231,7 +231,7 @@ export class BusinessDashboardManager {
     downloadQRAsPDF() {
         console.log('📄 [DASHBOARD] Download QR as PDF clicked');
         
-        if (!window.classifiedApp?.managers?.business?.profile) {
+        if (!window.classifiedApp?.managers?.business?.businessProfile) {
             console.error('❌ [DASHBOARD] Profile manager not available');
             alert('Feature not available. Please refresh the page.');
             return;
@@ -247,7 +247,7 @@ export class BusinessDashboardManager {
     copySingleBusinessLink() {
         console.log('🔗 [DASHBOARD] Copy business link clicked');
         
-        if (!window.classifiedApp?.managers?.business?.profile) {
+        if (!window.classifiedApp?.managers?.business?.businessProfile) {
             console.error('❌ [DASHBOARD] Profile manager not available');
             alert('Feature not available. Please refresh the page.');
             return;
@@ -263,7 +263,7 @@ export class BusinessDashboardManager {
     updateSocialTemplateDisplay(platform) {
         console.log('🔄 [DASHBOARD] Switching social template to:', platform);
         
-        if (!window.classifiedApp?.managers?.business?.profile) {
+        if (!window.classifiedApp?.managers?.business?.businessProfile) {
             console.error('❌ [DASHBOARD] Profile manager not available');
             return;
         }

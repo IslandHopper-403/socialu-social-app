@@ -161,7 +161,7 @@ export class BusinessDashboardManager {
             console.error('❌ [DASHBOARD] Profile manager not available for share kit');
         }
     }
-    
+
     // ========== SHARE KIT METHODS (Section 1.2) ==========
     
     /**
@@ -189,7 +189,6 @@ export class BusinessDashboardManager {
             console.log('✅ [SHARE-KIT] Collapsed');
         }
     }
-}
     
     /**
      * Load business dashboard data

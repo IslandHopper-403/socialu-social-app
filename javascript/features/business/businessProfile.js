@@ -1275,6 +1275,248 @@ export class BusinessProfileManager {
         
         return output;
     }
+
+
+    // ========== INDIVIDUAL BUSINESS SHARE KIT (Section 1.2) ==========
+    
+    /**
+     * Generate QR code for single business (for dashboard)
+     */
+    generateSingleBusinessQR(business) {
+        console.log('📱 [BUSINESS-PROFILE] Generating QR code for:', business.name);
+        
+        const qrContainer = document.getElementById('businessQRContainer');
+        if (!qrContainer) {
+            console.error('❌ [BUSINESS-PROFILE] QR container not found');
+            return;
+        }
+        
+        // Clear previous QR code
+        qrContainer.innerHTML = '';
+        
+        // Create slug from business name
+        const slug = this.createBusinessSlug(business);
+        const url = `https://socialu.app/business/${slug}`;
+        
+        // Generate QR code
+        const qr = new QRCode(qrContainer, {
+            text: url,
+            width: 200,
+            height: 200,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        
+        console.log('✅ [BUSINESS-PROFILE] QR code generated:', url);
+        
+        // Store current business for download functions
+        this.currentShareBusiness = {
+            ...business,
+            slug: slug,
+            url: url
+        };
+    }
+    
+    /**
+     * Download QR code as PNG
+     */
+    downloadQRAsPNG() {
+        console.log('💾 [BUSINESS-PROFILE] Downloading QR as PNG');
+        
+        const canvas = document.querySelector('#businessQRContainer canvas');
+        if (!canvas) {
+            console.error('❌ [BUSINESS-PROFILE] QR canvas not found');
+            alert('Please generate QR code first');
+            return;
+        }
+        
+        const business = this.currentShareBusiness;
+        if (!business) {
+            console.error('❌ [BUSINESS-PROFILE] No business data stored');
+            return;
+        }
+        
+        // Convert canvas to image
+        const link = document.createElement('a');
+        const fileName = `${business.name.replace(/\s+/g, '-')}-QR.png`;
+        
+        link.download = fileName;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        console.log('✅ [BUSINESS-PROFILE] PNG downloaded:', fileName);
+    }
+    
+    /**
+     * Download QR code as PDF (print version)
+     */
+    downloadQRAsPDF() {
+        console.log('📄 [BUSINESS-PROFILE] Opening PDF print dialog');
+        
+        const canvas = document.querySelector('#businessQRContainer canvas');
+        if (!canvas) {
+            console.error('❌ [BUSINESS-PROFILE] QR canvas not found');
+            alert('Please generate QR code first');
+            return;
+        }
+        
+        const business = this.currentShareBusiness;
+        if (!business) {
+            console.error('❌ [BUSINESS-PROFILE] No business data stored');
+            return;
+        }
+        
+        // Create print-friendly HTML
+        const imageData = canvas.toDataURL('image/png');
+        const printWindow = window.open('', '_blank');
+        
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>${business.name} - QR Code</title>
+                <style>
+                    body {
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                        margin: 0;
+                        font-family: Arial, sans-serif;
+                        text-align: center;
+                    }
+                    h1 {
+                        margin-bottom: 20px;
+                        color: #333;
+                    }
+                    img {
+                        max-width: 400px;
+                        margin: 20px 0;
+                    }
+                    p {
+                        color: #666;
+                        font-size: 14px;
+                    }
+                    .url {
+                        color: #4F46E5;
+                        font-weight: bold;
+                        margin-top: 10px;
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>${business.name}</h1>
+                <img src="${imageData}" alt="${business.name} QR Code" />
+                <p>Scan to visit on SocialU</p>
+                <p class="url">${business.url}</p>
+                <script>
+                    window.onload = function() {
+                        window.print();
+                    };
+                </script>
+            </body>
+            </html>
+        `);
+        
+        printWindow.document.close();
+        console.log('✅ [BUSINESS-PROFILE] PDF print dialog opened');
+    }
+    
+    /**
+     * Copy business profile link to clipboard
+     */
+    copySingleBusinessLink() {
+        console.log('📋 [BUSINESS-PROFILE] Copying business link');
+        
+        const business = this.currentShareBusiness;
+        if (!business) {
+            console.error('❌ [BUSINESS-PROFILE] No business data stored');
+            alert('Please generate QR code first');
+            return;
+        }
+        
+        navigator.clipboard.writeText(business.url).then(() => {
+            console.log('✅ [BUSINESS-PROFILE] Link copied:', business.url);
+            
+            // Visual feedback
+            const copyBtn = document.getElementById('copyBusinessLinkBtn');
+            if (copyBtn) {
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '✓ Copied!';
+                copyBtn.style.background = '#10b981';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.style.background = '';
+                }, 2000);
+            }
+            
+            alert(`✅ Link copied!\n\n${business.url}`);
+        }).catch(err => {
+            console.error('❌ [BUSINESS-PROFILE] Failed to copy:', err);
+            alert('Failed to copy link. Please copy manually:\n\n' + business.url);
+        });
+    }
+    
+    /**
+     * Get social media templates for single business
+     */
+    getSingleBusinessSocialTemplates(business) {
+        console.log('📱 [BUSINESS-PROFILE] Generating social templates for:', business.name);
+        
+        const slug = this.createBusinessSlug(business);
+        const url = `https://socialu.app/business/${slug}`;
+        const bio = business.bio || business.description || business.aboutUs || '';
+        
+        const templates = {
+            facebook: `Check out ${business.name} on SocialU! 🎉\n\n${bio.substring(0, 200)}${bio.length > 200 ? '...' : ''}\n\n📍 ${business.address || 'Hội An, Vietnam'}\n🔗 ${url}\n\n#HoiAn #Vietnam #LocalBusiness #SocialU`,
+            
+            instagram: `✨ ${business.name} ✨\n\n${bio.substring(0, 150)}${bio.length > 150 ? '...' : ''}\n\n📍 Hội An, Vietnam\n🔗 Link in bio\n\n#HoiAn #Vietnam #${(business.category || 'Business').replace(/\s+/g, '')} #SocialU`,
+            
+            whatsapp: `Hi! 👋\n\nCheck out ${business.name} on SocialU:\n${url}\n\n${bio.substring(0, 100)}${bio.length > 100 ? '...' : ''}\n\nPerfect for ${business.category || 'your visit'}!`,
+            
+            email: {
+                subject: `Connect with ${business.name} on SocialU`,
+                body: `Hi there!\n\nWe're now on SocialU - the best way to connect with local businesses in Hội An.\n\n${bio}\n\nVisit our profile: ${url}\n\nSee you there!\n${business.name}`
+            }
+        };
+        
+        console.log('✅ [BUSINESS-PROFILE] Social templates generated');
+        return templates;
+    }
+    
+    /**
+     * Update social template display when platform changes
+     */
+    updateSocialTemplateDisplay(platform) {
+        console.log('🔄 [BUSINESS-PROFILE] Switching to platform:', platform);
+        
+        const business = this.currentShareBusiness;
+        if (!business || !this.currentSocialTemplates) {
+            console.error('❌ [BUSINESS-PROFILE] No templates available');
+            return;
+        }
+        
+        const textarea = document.getElementById('socialTemplateText');
+        if (!textarea) {
+            console.error('❌ [BUSINESS-PROFILE] Template textarea not found');
+            return;
+        }
+        
+        const template = this.currentSocialTemplates[platform];
+        
+        if (typeof template === 'object') {
+            // Email format
+            textarea.value = `Subject: ${template.subject}\n\n${template.body}`;
+        } else {
+            // Text format
+            textarea.value = template;
+        }
+        
+        console.log('✅ [BUSINESS-PROFILE] Template updated for:', platform);
+    }
+
     
     /**
      * ADMIN: Mass upload businesses from array

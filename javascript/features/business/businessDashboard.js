@@ -135,6 +135,32 @@ export class BusinessDashboardManager {
         this.setupDashboardListeners();
         
         console.log('✅ [DASHBOARD] Dashboard initialization complete at:', Date.now());
+
+        // ========== INITIALIZE SHARE KIT (Section 1.2) ==========
+        console.log('📱 [DASHBOARD] Initializing share kit');
+        
+        // Generate QR code for current business
+        if (window.classifiedApp?.managers?.business?.profile) {
+            const profileManager = window.classifiedApp.managers.business.profile;
+            
+            // Generate QR code
+            profileManager.generateSingleBusinessQR(business);
+            
+            // Generate and store social templates
+            const templates = profileManager.getSingleBusinessSocialTemplates(business);
+            profileManager.currentSocialTemplates = templates;
+            
+            // Set initial template (Facebook by default)
+            const textarea = document.getElementById('socialTemplateText');
+            if (textarea && templates.facebook) {
+                textarea.value = templates.facebook;
+            }
+            
+            console.log('✅ [DASHBOARD] Share kit initialized');
+        } else {
+            console.error('❌ [DASHBOARD] Profile manager not available for share kit');
+        }
+
     }
     
     /**

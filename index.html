@@ -1092,6 +1092,50 @@
         <button class="fab-button" onclick="CLASSIFIED.sendQuickBusinessMessage()" title="Send quick message to customers">
             <span style="font-size: 24px;">💬</span>
         </button>
+
+        <!-- Share Kit Section (Section 1.2) -->
+        <div class="dashboard-section share-kit-section">
+            <h3 class="section-title">📱 Share Your Profile</h3>
+            
+            <div class="share-kit-content">
+                <!-- QR Code Display -->
+                <div class="qr-code-wrapper">
+                    <div id="businessQRContainer" class="qr-code-display"></div>
+                    <p class="qr-hint">Scan to visit your profile</p>
+                </div>
+                
+                <!-- Download Buttons -->
+                <div class="download-buttons">
+                    <button class="btn-secondary" onclick="window.classifiedApp.managers.business.profile.downloadQRAsPNG()">
+                        📥 Download PNG
+                    </button>
+                    <button class="btn-secondary" onclick="window.classifiedApp.managers.business.profile.downloadQRAsPDF()">
+                        📄 Download PDF
+                    </button>
+                    <button id="copyBusinessLinkBtn" class="btn-primary" onclick="window.classifiedApp.managers.business.profile.copySingleBusinessLink()">
+                        🔗 Copy Link
+                    </button>
+                </div>
+                
+                <!-- Social Media Templates -->
+                <div class="social-templates-section">
+                    <h4 class="subsection-title">Social Media Templates</h4>
+                    
+                    <select id="socialPlatformSelect" class="platform-selector" onchange="window.classifiedApp.managers.business.profile.updateSocialTemplateDisplay(this.value)">
+                        <option value="facebook">Facebook</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="whatsapp">WhatsApp</option>
+                        <option value="email">Email</option>
+                    </select>
+                    
+                    <textarea id="socialTemplateText" class="social-template-textarea" readonly rows="6" placeholder="Select a platform to see template..."></textarea>
+                    
+                    <button class="btn-secondary" onclick="navigator.clipboard.writeText(document.getElementById('socialTemplateText').value).then(() => alert('✅ Template copied!'))">
+                        📋 Copy Template
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
 
@@ -1638,10 +1682,6 @@
             </div>
         </div>
     </div>
-    
-    
-      <!-- QR Code Library for Business Share Kit -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <!-- Load JavaScript modules -->
     <!-- Note: Firebase is loaded as ES6 modules via CDN in firebase.js -->

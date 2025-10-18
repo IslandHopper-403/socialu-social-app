@@ -1093,11 +1093,22 @@
             <span style="font-size: 24px;">💬</span>
         </button>
 
-        <!-- Share Kit Section (Section 1.2) -->
-        <div class="dashboard-section share-kit-section">
-            <h3 class="section-title">📱 Share Your Profile</h3>
+        <!-- Share Kit Section (Section 1.2) - Collapsible -->
+        <div class="dashboard-section share-kit-section-wrapper">
+            <!-- Collapsible Header -->
+            <div class="share-kit-header" onclick="window.toggleShareKit()">
+                <div class="share-kit-header-left">
+                    <span class="share-kit-icon">📱</span>
+                    <span class="share-kit-title">Share Your Profile</span>
+                </div>
+                <div class="share-kit-header-right">
+                    <span class="view-more-text">View More</span>
+                    <span class="toggle-arrow" id="shareKitArrow">▼</span>
+                </div>
+            </div>
             
-            <div class="share-kit-content">
+            <!-- Collapsible Content (Hidden by default) -->
+            <div class="share-kit-content" id="shareKitContent" style="display: none;">
                 <!-- QR Code Display -->
                 <div class="qr-code-wrapper">
                     <div id="businessQRContainer" class="qr-code-display"></div>
@@ -1136,6 +1147,7 @@
                 </div>
             </div>
         </div>
+        
     </div>
 
 

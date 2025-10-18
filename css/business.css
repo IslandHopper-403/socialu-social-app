@@ -580,32 +580,50 @@
     margin-bottom: 10px;
 }
 
+
 /* =====================================================
-   SHARE KIT SECTION - COLLAPSIBLE (Section 1.2) 
-   Matches insights-section and promotions-section styling
+   SHARE KIT SECTION - COLLAPSIBLE (Section 1.2)
+   Matches promotions-section and insights-section styling
    ===================================================== */
-.share-kit-section {
+
+.share-kit-section-wrapper {
     background: rgba(255,255,255,0.05);
     border-radius: var(--radius-lg);
     margin: 0 var(--spacing-lg) var(--spacing-lg);
     padding: var(--spacing-lg);
+    position: relative;
 }
 
-/* Share Kit uses standard section-header (already styled) */
-.share-kit-section .section-header {
+.share-kit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     cursor: pointer;
     transition: opacity 0.2s ease;
+    padding: 0;
+    margin-bottom: var(--spacing-md);
 }
 
-.share-kit-section .section-header:hover {
+.share-kit-header:hover {
     opacity: 0.8;
 }
 
-.share-kit-icon {
-    margin-right: 8px;
+.share-kit-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.share-kit-toggle {
+.share-kit-icon {
+    font-size: 20px;
+}
+
+.share-kit-title {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.share-kit-header-right {
     display: flex;
     align-items: center;
     gap: 8px;

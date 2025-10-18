@@ -215,18 +215,13 @@ export class BusinessDashboardManager {
     downloadQRAsPNG() {
         console.log('📥 [DASHBOARD] Download QR as PNG clicked');
         
-        // Try instance reference first, fallback to global
-        const profileManager = this.businessManager?.profileManager || 
-                              window.classifiedApp?.managers?.business?.businessProfile;
-        
-        if (!profileManager) {
+        if (!window.classifiedApp?.managers?.business?.businessProfile) {
             console.error('❌ [DASHBOARD] Profile manager not available');
             alert('Feature not available. Please refresh the page.');
             return;
         }
         
-        // Call the actual implementation method
-        profileManager.downloadQRAsPNG();
+        window.classifiedApp.managers.business.businessProfile.downloadQRAsPNG();
     }
     
     /**
@@ -236,18 +231,13 @@ export class BusinessDashboardManager {
     downloadQRAsPDF() {
         console.log('📄 [DASHBOARD] Download QR as PDF clicked');
         
-        // Try instance reference first, fallback to global
-        const profileManager = this.businessManager?.profileManager || 
-                              window.classifiedApp?.managers?.business?.businessProfile;
-        
-        if (!profileManager) {
+        if (!window.classifiedApp?.managers?.business?.businessProfile) {
             console.error('❌ [DASHBOARD] Profile manager not available');
             alert('Feature not available. Please refresh the page.');
             return;
         }
         
-        // Call the actual implementation method
-        profileManager.downloadQRAsPDF();
+        window.classifiedApp.managers.business.businessProfile.downloadQRAsPDF();
     }
     
     /**
@@ -257,18 +247,13 @@ export class BusinessDashboardManager {
     copySingleBusinessLink() {
         console.log('🔗 [DASHBOARD] Copy business link clicked');
         
-        // Try instance reference first, fallback to global
-        const profileManager = this.businessManager?.profileManager || 
-                              window.classifiedApp?.managers?.business?.businessProfile;
-        
-        if (!profileManager) {
+        if (!window.classifiedApp?.managers?.business?.businessProfile) {
             console.error('❌ [DASHBOARD] Profile manager not available');
             alert('Feature not available. Please refresh the page.');
             return;
         }
         
-        // Call the actual implementation method
-        profileManager.copySingleBusinessLink();
+        window.classifiedApp.managers.business.businessProfile.copySingleBusinessLink();
     }
     
     /**
@@ -278,19 +263,14 @@ export class BusinessDashboardManager {
     updateSocialTemplateDisplay(platform) {
         console.log('🔄 [DASHBOARD] Switching social template to:', platform);
         
-        // Try instance reference first, fallback to global
-        const profileManager = this.businessManager?.profileManager || 
-                              window.classifiedApp?.managers?.business?.businessProfile;
-        
-        if (!profileManager) {
+        if (!window.classifiedApp?.managers?.business?.businessProfile) {
             console.error('❌ [DASHBOARD] Profile manager not available');
             return;
         }
         
-        // Call the actual implementation method
-        profileManager.updateSocialTemplateDisplay(platform);
+        window.classifiedApp.managers.business.businessProfile.updateSocialTemplateDisplay(platform);
     }
-  
+    
     /**
      * Load business dashboard data
      */

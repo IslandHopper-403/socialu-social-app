@@ -11,6 +11,7 @@
 // GOOD WORKING CONDITION - First Steps of Refactor Complete Week 1: Complete. Week 2: 2.1 & 2.2 Complete
 // GOOD WORKING CONDITION - Week 1 Complete: Week 2: Completed up unitl step 2.6 - Only minor bugs with CSS and Like Pass buttons
 // GOOD WORKING CONDITION - WEEK 3 - Refactor Roadmap COMPLETED
+// GOOD WORKING CONDITON MESSAGING BUGS WORKED OUT = USER PROFILE AVATARS CLICKABLE TO PROFILE FROM CHATS
 // From this place forward start refactoring Users and Business for seperate UI/UX portals
 // ALL CSS REFACTORED TO CLEAN ORGINIZED STRUCTURE 
 

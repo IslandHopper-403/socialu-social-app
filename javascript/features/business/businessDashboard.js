@@ -135,34 +135,49 @@ export class BusinessDashboardManager {
         this.setupDashboardListeners();
         
         console.log('✅ [DASHBOARD] Dashboard initialization complete at:', Date.now());
-
-        // ========== INITIALIZE SHARE KIT (Section 1.2) ==========
-        console.log('📱 [DASHBOARD] Initializing share kit');
         
-        // Generate QR code for current business
-        if (window.classifiedApp?.managers?.business?.profile) {
-            const profileManager = window.classifiedApp.managers.business.profile;
-            
-            // Generate QR code
-            profileManager.generateSingleBusinessQR(business);
-            
-            // Generate and store social templates
-            const templates = profileManager.getSingleBusinessSocialTemplates(business);
-            profileManager.currentSocialTemplates = templates;
-            
-            // Set initial template (Facebook by default)
-            const textarea = document.getElementById('socialTemplateText');
-            if (textarea && templates.facebook) {
-                textarea.value = templates.facebook;
-            }
-            
-            console.log('✅ [DASHBOARD] Share kit initialized');
-        } else {
-            console.error('❌ [DASHBOARD] Profile manager not available for share kit');
+        // ========== INITIALIZE SHARE KIT (Section 1.2) ==========
+        this.initializeShareKit();
+    }
+    
+    /**
+     * Initialize Share Kit (Section 1.2)
+     * Generates QR code and social templates for current business
+     */
+    initializeShareKit() {
+        console.log('📱 [DASHBOARD] Initializing share kit at:', Date.now());
+        
+        // Check if we have business data
+        if (!this.currentBusinessData) {
+            console.error('❌ [DASHBOARD] No business data available for share kit');
+            return;
         }
+        
+        // Check if profile manager exists
+        if (!window.classifiedApp?.managers?.business?.profile) {
+            console.error('❌ [DASHBOARD] Profile manager not available for share kit');
+            return;
+        }
+        
+        const profileManager = window.classifiedApp.managers.business.profile;
+        
+        // Generate QR code with current business data
+        profileManager.generateSingleBusinessQR(this.currentBusinessData);
+        
+        // Generate and store social templates
+        const templates = profileManager.getSingleBusinessSocialTemplates(this.currentBusinessData);
+        profileManager.currentSocialTemplates = templates;
+        
+        // Set initial template (Facebook by default)
+        const textarea = document.getElementById('socialTemplateText');
+        if (textarea && templates.facebook) {
+            textarea.value = templates.facebook;
+        }
+        
+        console.log('✅ [DASHBOARD] Share kit initialized');
     }
 
-    // ========== SHARE KIT METHODS (Section 1.2) ==========
+    // ========== SHARE KIT METHODS - Toggle (Section 1.2) ==========
     
     /**
      * Toggle Share Kit expansion
@@ -188,6 +203,69 @@ export class BusinessDashboardManager {
             arrow.classList.remove('rotated');
             console.log('✅ [SHARE-KIT] Collapsed');
         }
+    }
+    
+    /**
+     * Download QR code as PNG
+     * Wrapper method that calls profile manager
+     */
+    downloadQRAsPNG() {
+        console.log('📥 [DASHBOARD] Download QR as PNG clicked');
+        
+        if (!window.classifiedApp?.managers?.business?.profile) {
+            console.error('❌ [DASHBOARD] Profile manager not available');
+            alert('Feature not available. Please refresh the page.');
+            return;
+        }
+        
+        window.classifiedApp.managers.business.profile.downloadQRAsPNG();
+    }
+    
+    /**
+     * Download QR code as PDF
+     * Wrapper method that calls profile manager
+     */
+    downloadQRAsPDF() {
+        console.log('📄 [DASHBOARD] Download QR as PDF clicked');
+        
+        if (!window.classifiedApp?.managers?.business?.profile) {
+            console.error('❌ [DASHBOARD] Profile manager not available');
+            alert('Feature not available. Please refresh the page.');
+            return;
+        }
+        
+        window.classifiedApp.managers.business.profile.downloadQRAsPDF();
+    }
+    
+    /**
+     * Copy business profile link
+     * Wrapper method that calls profile manager
+     */
+    copySingleBusinessLink() {
+        console.log('🔗 [DASHBOARD] Copy business link clicked');
+        
+        if (!window.classifiedApp?.managers?.business?.profile) {
+            console.error('❌ [DASHBOARD] Profile manager not available');
+            alert('Feature not available. Please refresh the page.');
+            return;
+        }
+        
+        window.classifiedApp.managers.business.profile.copySingleBusinessLink();
+    }
+    
+    /**
+     * Update social template display
+     * Wrapper method that calls profile manager
+     */
+    updateSocialTemplateDisplay(platform) {
+        console.log('🔄 [DASHBOARD] Switching social template to:', platform);
+        
+        if (!window.classifiedApp?.managers?.business?.profile) {
+            console.error('❌ [DASHBOARD] Profile manager not available');
+            return;
+        }
+        
+        window.classifiedApp.managers.business.profile.updateSocialTemplateDisplay(platform);
     }
     
     /**

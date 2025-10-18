@@ -1117,13 +1117,13 @@
                 
                 <!-- Download Buttons -->
                 <div class="download-buttons">
-                    <button class="btn-secondary" onclick="window.classifiedApp.managers.business.profile.downloadQRAsPNG()">
+                    <button class="btn-secondary" onclick="window.classifiedApp.managers.business.dashboard.downloadQRAsPNG()">
                         📥 Download PNG
                     </button>
-                    <button class="btn-secondary" onclick="window.classifiedApp.managers.business.profile.downloadQRAsPDF()">
+                    <button class="btn-secondary" onclick="window.classifiedApp.managers.business.dashboard.downloadQRAsPDF()">
                         📄 Download PDF
                     </button>
-                    <button id="copyBusinessLinkBtn" class="btn-primary" onclick="window.classifiedApp.managers.business.profile.copySingleBusinessLink()">
+                    <button id="copyBusinessLinkBtn" class="btn-primary" onclick="window.classifiedApp.managers.business.dashboard.copySingleBusinessLink()">
                         🔗 Copy Link
                     </button>
                 </div>
@@ -1132,7 +1132,7 @@
                 <div class="social-templates-section">
                     <h4 class="subsection-title">Social Media Templates</h4>
                     
-                    <select id="socialPlatformSelect" class="platform-selector" onchange="window.classifiedApp.managers.business.profile.updateSocialTemplateDisplay(this.value)">
+                   <select id="socialPlatformSelect" class="platform-selector" onchange="window.classifiedApp.managers.business.dashboard.updateSocialTemplateDisplay(this.value)">
                         <option value="facebook">Facebook</option>
                         <option value="instagram">Instagram</option>
                         <option value="whatsapp">WhatsApp</option>

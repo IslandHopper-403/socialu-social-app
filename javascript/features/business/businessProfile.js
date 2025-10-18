@@ -1291,8 +1291,11 @@ export class BusinessProfileManager {
             return;
         }
         
-        // Clear previous QR code
+        // Clear previous QR code completely (prevents duplicates)
         qrContainer.innerHTML = '';
+        while (qrContainer.firstChild) {
+            qrContainer.removeChild(qrContainer.firstChild);
+        }
         
         // Create slug from business name
         const slug = this.createBusinessSlug(business);

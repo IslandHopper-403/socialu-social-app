@@ -582,47 +582,36 @@
 
 /* =====================================================
    SHARE KIT SECTION - COLLAPSIBLE (Section 1.2) 
+   Matches Active Promotions & Today's Performance styling
    ===================================================== */
 
-.share-kit-section-wrapper {
+.share-kit-section {
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-top: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    margin: 0 var(--spacing-lg) var(--spacing-lg);
+    padding: var(--spacing-lg);
 }
 
-/* Collapsible Header */
+/* Share Kit Header (matches section-header style) */
 .share-kit-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 20px;
     cursor: pointer;
     transition: background 0.2s ease;
+    padding: 0;
+    margin-bottom: var(--spacing-md);
 }
 
 .share-kit-header:hover {
-    background: rgba(255, 255, 255, 0.08);
-}
-
-.share-kit-header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    opacity: 0.8;
 }
 
 .share-kit-icon {
-    font-size: 20px;
+    margin-right: 8px;
 }
 
-.share-kit-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #ffffff;
-}
-
-.share-kit-header-right {
+.share-kit-toggle {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -645,9 +634,7 @@
 
 /* Collapsible Content */
 .share-kit-content {
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.2);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: var(--spacing-lg) 0 0 0;
     animation: slideDown 0.3s ease;
 }
 
@@ -684,6 +671,11 @@
     font-size: 13px;
     color: rgba(255, 255, 255, 0.6);
     margin: 0;
+}
+
+/* Prevent duplicate QR code */
+.qr-code-display img {
+    display: none !important;
 }
 
 /* Download Buttons */

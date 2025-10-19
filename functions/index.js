@@ -2,7 +2,6 @@
  * SocialU Cloud Functions
  * SEO and server-side rendering for business profiles
  */
-
 const admin = require('firebase-admin');
 
 // Initialize Firebase Admin once
@@ -12,7 +11,10 @@ console.log('🚀 [Functions] Firebase Admin initialized');
 
 // Import and export SEO functions
 const { businessProfile } = require('./seo');
+const { generateSitemap } = require('./sitemap');
 
 exports.businessProfile = businessProfile;
+exports.generateSitemap = generateSitemap;
 
 console.log('✅ [Functions] All functions exported successfully');
+console.log('📦 [Functions] Available: businessProfile, generateSitemap');

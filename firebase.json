@@ -13,7 +13,7 @@
     }
   ],
   "hosting": {
-    "public": ".",
+    "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -23,6 +23,18 @@
       {
         "source": "/business/:slug",
         "function": "businessProfile"
+      },
+      {
+        "source": "/sitemap.xml",
+        "function": "generateSitemap"
+      },
+      {
+        "source": "/:location/:category",
+        "destination": "/category.html"
+      },
+      {
+        "source": "/:location",
+        "destination": "/category.html"
       },
       {
         "source": "**",

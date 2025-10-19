@@ -104,3 +104,52 @@ export class FirebaseConfig {
         return !!(this.services.auth && this.services.db && this.services.storage);
     }
 }
+
+// ============================================================================
+// SINGLETON INSTANCE & DIRECT EXPORTS FOR CATEGORY PAGES
+// ============================================================================
+
+/**
+ * Create singleton instance for direct imports
+ * This allows category pages to import { db } directly
+ */
+let firebaseInstance = null;
+
+/**
+ * Initialize and return Firebase services
+ * @returns {Promise<Object>} Firebase services
+ */
+export async function getFirebaseServices() {
+    if (!firebaseInstance) {
+        console.log('🔥 [Firebase] Creating singleton instance for category pages');
+        firebaseInstance = new FirebaseConfig();
+        await firebaseInstance.initialize();
+    }
+    return firebaseInstance.getServices();
+}
+
+/**
+ * Direct exports for convenience
+ * Usage: import { db, auth, storage } from './config/firebase.js'
+ */
+export const initFirebase = async () => {
+    const services = await getFirebaseServices();
+    return services;
+};
+
+// Export individual services (lazy-loaded)
+export let db, auth, storage, googleProvider;
+
+// Auto-initialize for direct imports (needed for category pages)
+(async () => {
+    try {
+        const services = await getFirebaseServices();
+        db = services.db;
+        auth = services.auth;
+        storage = services.storage;
+        googleProvider = services.googleProvider;
+        console.log('✅ [Firebase] Direct exports ready for category pages');
+    } catch (error) {
+        console.error('❌ [Firebase] Failed to initialize direct exports:', error);
+    }
+})();

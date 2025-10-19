@@ -15,6 +15,7 @@ const { generateSitemap } = require('./sitemap');
 
 exports.businessProfile = businessProfile;
 exports.generateSitemap = generateSitemap;
+exports.fixAllSlugs = require('./fixSlugs').fixAllSlugs;  // ADD THIS
 
 console.log('✅ [Functions] All functions exported successfully');
 console.log('📦 [Functions] Available: businessProfile, generateSitemap');

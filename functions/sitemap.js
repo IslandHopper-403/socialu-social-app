@@ -56,13 +56,13 @@ exports.generateSitemap = functions.https.onRequest(async (req, res) => {
         <lastmod>${currentDate}</lastmod>
     </url>
     
-    <!-- Main Location Page -->
-    <url>
-        <loc>https://hoi-an-social-app.web.app/hue</loc>
-        <changefreq>daily</changefreq>
-        <priority>0.9</priority>
-        <lastmod>${currentDate}</lastmod>
-    </url>
+   <!-- Main Location Page -->
+<url>
+    <loc>https://hoi-an-social-app.web.app/hoi-an</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <lastmod>${currentDate}</lastmod>
+</url>
     
 `;
         
@@ -72,7 +72,7 @@ exports.generateSitemap = functions.https.onRequest(async (req, res) => {
             const slug = category.toLowerCase().replace(/\s+/g, '-');
             sitemap += `    <!-- Category: ${category} -->
     <url>
-        <loc>https://hoi-an-social-app.web.app/hue/${slug}</loc>
+        <loc>https://hoi-an-social-app.web.app/hoi-an/${slug}</loc>
         <changefreq>daily</changefreq>
         <priority>0.8</priority>
         <lastmod>${currentDate}</lastmod>

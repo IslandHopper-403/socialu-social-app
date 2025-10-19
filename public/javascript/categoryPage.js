@@ -11,11 +11,76 @@ import { getFirestore, collection, query, where, getDocs, orderBy } from 'https:
 
 class CategoryPage {
     constructor() {
-        this.location = 'hue';
+        this.location = 'hoi-an';
         this.category = null;
         this.businesses = [];
         this.allCategories = [];
         this.db = null;
+        
+        // Category slug to Firestore category mappings
+        // Maps URL-friendly slugs to exact Firestore category field values
+        this.categoryMappings = {
+            // Food & Drink (matching your JSON data)
+            'coffee-shops': 'Coffee Shop',
+            'coffee-shop': 'Coffee Shop',
+            'cafes': 'Cafe',
+            'cafe': 'Cafe',
+            'vietnamese-cuisine': 'Vietnamese Cuisine',
+            'vietnamese': 'Vietnamese Cuisine',
+            'vietnamese-fusion': 'Vietnamese & Fusion Cuisine',
+            'fusion': 'Vietnamese & Fusion Cuisine',
+            'restaurants': 'Vietnamese Cuisine',
+            'restaurant': 'Vietnamese Cuisine',
+            'western-cuisine': 'Western Cuisine',
+            'western': 'Western Cuisine',
+            'western-international': 'Western & International Cuisine',
+            'international': 'Western & International Cuisine',
+            'seafood': 'Seafood',
+            'vegan': 'Vegan',
+            'indian-cuisine': 'Indian Cuisine',
+            'indian': 'Indian Cuisine',
+            'korean-cuisine': 'Korean Cuisine',
+            'korean': 'Korean Cuisine',
+            'middle-eastern': 'Middle Eastern Cuisine',
+            'middle-eastern-cuisine': 'Middle Eastern Cuisine',
+            
+            // Nightlife
+            'bar': 'Bar',
+            'bars': 'Bar',
+            'pubs': 'Bars & Pubs',
+            'pub': 'Bars & Pubs',
+            'nightclub': 'Nightclub',
+            'nightclubs': 'Nightclub',
+            'live-music': 'Live Music Venue',
+            'live-music-venue': 'Live Music Venue',
+            'beach-club': 'Beach Club',
+            'beach-clubs': 'Beach Club',
+            'restaurant-bar': 'Restaurant Bar',
+            'restaurant-bars': 'Restaurant Bar',
+            
+            // Activities
+            'activity': 'Tours & Outdoor Activities',
+            'activities': 'Tours & Outdoor Activities',
+            'tour': 'Tours & Outdoor Activities',
+            'tours': 'Tours & Outdoor Activities',
+            'outdoor-activities': 'Tours & Outdoor Activities',
+            'cooking-class': 'Cooking Classes & Workshops',
+            'cooking-classes': 'Cooking Classes & Workshops',
+            'workshop': 'Cooking Classes & Workshops',
+            'workshops': 'Cooking Classes & Workshops',
+            'wellness': 'Wellness & Relaxation',
+            'wellness-relaxation': 'Wellness & Relaxation',
+            'spa': 'Wellness & Relaxation',
+            'yoga': 'Wellness & Relaxation',
+            'entertainment': 'Entertainment & Culture',
+            'entertainment-culture': 'Entertainment & Culture',
+            'culture': 'Entertainment & Culture',
+            'community': 'Community & Lifestyle',
+            'community-lifestyle': 'Community & Lifestyle',
+            'lifestyle': 'Community & Lifestyle',
+            'coworking': 'Community & Lifestyle'
+        };
+        
         
         console.log('🏙️ [Category] CategoryPage instance created');
         this.init();
@@ -80,36 +145,40 @@ class CategoryPage {
         console.log('✅ [Category] Firebase initialized successfully');
     }
 
-    parseURL() {
-        console.log('🔍 [Category] Parsing URL:', window.location.pathname);
-        
-        const pathParts = window.location.pathname.split('/').filter(Boolean);
-        console.log('🔍 [Category] Path parts:', pathParts);
-        
-        if (pathParts.length >= 1) {
-            this.location = pathParts[0];
-            console.log('📍 [Category] Location set to:', this.location);
-        }
-        
-        if (pathParts.length >= 2) {
-            this.category = pathParts[1];
-            console.log('📂 [Category] Category set to:', this.category);
-        }
+   parseURL() {
+    console.log('🔍 [Category] Parsing URL:', window.location.pathname);
+    
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    console.log('🔍 [Category] Path parts:', pathParts);
+    
+    // Default to 'hoi-an' for location
+    this.location = 'hoi-an';
+    
+    if (pathParts.length >= 1 && pathParts[0] === 'hoi-an') {
+        this.location = pathParts[0];
+        console.log('📍 [Category] Location set to:', this.location);
     }
+    
+    if (pathParts.length >= 2) {
+        this.category = pathParts[1];
+        console.log('📂 [Category] Category set to:', this.category);
+    }
+}
 
     async loadBusinesses() {
         console.log('🔍 [Category] Loading businesses from Firestore...');
         console.log('🔍 [Category] Query params - Location:', this.location, 'Category:', this.category);
         
         try {
-            // Base query: approved and active businesses
+           // Base query: active businesses
+            // Note: JSON shows status: "active", not "active"
             let q = query(
                 collection(this.db, 'businesses'),
-                where('status', '==', 'approved'),
+                where('status', '==', 'active'),
                 where('isActive', '==', true)
             );
             
-            console.log('🔍 [Category] Base query created (status=approved, isActive=true)');
+            console.log('🔍 [Category] Base query created (status=active, isActive=true)');
             
             // Add category filter if specified
             if (this.category) {
@@ -118,14 +187,8 @@ class CategoryPage {
                 q = query(q, where('category', '==', categoryName));
             }
             
-            // Try to add orderBy (may require Firestore index)
-            try {
-                q = query(q, orderBy('rating', 'desc'));
-                console.log('🔍 [Category] Added orderBy rating DESC');
-            } catch (e) {
-                console.log('⚠️ [Category] Firestore index missing for orderBy, continuing without sort');
-                console.log('⚠️ [Category] To create index, visit:', e.message);
-            }
+           // Skip orderBy until index is created
+            console.log('⚠️ [Category] Skipping orderBy - will sort in JavaScript');
             
             // Execute query
             console.log('🔍 [Category] Executing Firestore query...');
@@ -135,8 +198,15 @@ class CategoryPage {
             // Map documents to business objects
             this.businesses = snapshot.docs.map(doc => {
                 const data = doc.data();
-                console.log('📄 [Category] Business found:', data.businessName, '- Category:', data.category);
-                return { id: doc.id, ...data };
+                // Normalize field names: 'name' -> 'businessName' for consistency
+                const business = {
+                    id: doc.id,
+                    ...data,
+                    businessName: data.businessName || data.name,  // Support both field names
+                    slug: data.slug || this.generateSlug(data.name || data.businessName)
+                };
+                console.log('📄 [Category] Business found:', business.businessName, '- Category:', business.category);
+                return business;
             });
             
             // Sort by rating if orderBy failed
@@ -159,9 +229,9 @@ class CategoryPage {
         console.log('📂 [Category] Loading all categories...');
         
         try {
-            const q = query(
+           const q = query(
                 collection(this.db, 'businesses'),
-                where('status', '==', 'approved'),
+                where('status', '==', 'active'),
                 where('isActive', '==', true)
             );
             
@@ -187,20 +257,53 @@ class CategoryPage {
         }
     }
 
-    formatCategoryName(slug) {
-        // Convert slug to proper category name
-        // "coffee-shops" -> "Coffee Shops"
+formatCategoryName(slug) {
+        // Check if we have a specific mapping first (from constructor)
+        if (this.categoryMappings[slug]) {
+            const mapped = this.categoryMappings[slug];
+            console.log('🔄 [Category] Mapped slug:', slug, '->', mapped);
+            return mapped;
+        }
+        
+        // Otherwise, capitalize each word for display
         const formatted = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-        console.log('🔄 [Category] Formatted slug:', slug, '->', formatted);
+        console.log('🔄 [Category] Formatted slug (no mapping):', slug, '->', formatted);
         return formatted;
     }
 
     formatCategorySlug(name) {
-        // Convert category name to slug
-        // "Coffee Shops" -> "coffee-shops"
-        const slug = name.toLowerCase().replace(/\s+/g, '-');
-        console.log('🔄 [Category] Formatted name:', name, '->', slug);
+        // First, check if we have a reverse mapping (category name -> slug)
+        // Build reverse mapping from this.categoryMappings
+        const reverseMapping = Object.entries(this.categoryMappings).find(
+            ([slug, categoryName]) => categoryName === name
+        );
+        
+        if (reverseMapping) {
+            const [slug, categoryName] = reverseMapping;
+            console.log('🔄 [Category] Reverse mapped:', name, '->', slug);
+            return slug;
+        }
+        
+        // Otherwise, convert category name to slug format
+        // "Coffee Shop" -> "coffee-shop" (lowercase, replace spaces with hyphens)
+        const slug = name.toLowerCase()
+            .replace(/\s+/g, '-')           // Replace spaces with hyphens
+            .replace(/[^a-z0-9-]/g, '')     // Remove special characters
+            .replace(/--+/g, '-')           // Replace multiple hyphens with single
+            .replace(/^-|-$/g, '');         // Remove leading/trailing hyphens
+        
+        console.log('🔄 [Category] Generated slug:', name, '->', slug);
         return slug;
+    }
+
+    generateSlug(name) {
+        // Generate URL-friendly slug from business name
+        if (!name) return 'business';
+        return name.toLowerCase()
+            .replace(/\s+/g, '-')           // Replace spaces with hyphens
+            .replace(/[^a-z0-9-]/g, '')     // Remove special characters
+            .replace(/--+/g, '-')           // Replace multiple hyphens with single
+            .replace(/^-|-$/g, '');         // Remove leading/trailing hyphens
     }
 
     updateMetaTags() {
@@ -258,22 +361,22 @@ class CategoryPage {
         console.log('📄 [Category] Businesses count:', this.businesses.length);
     }
 
-    updateBreadcrumbs() {
-        console.log('🍞 [Category] Updating breadcrumbs...');
-        
-        const locationName = 'Hội An';
-        const categoryName = this.category ? this.formatCategoryName(this.category) : null;
-        
-        let html = '<a href="/">Home</a>';
-        html += ` / <a href="/${this.location}">${locationName}</a>`;
-        
-        if (categoryName) {
-            html += ` / <span>${categoryName}</span>`;
-        }
-        
-        document.getElementById('breadcrumbs').innerHTML = html;
-        console.log('✅ [Category] Breadcrumbs updated');
+   updateBreadcrumbs() {
+    console.log('🍞 [Category] Updating breadcrumbs...');
+    
+    const locationName = 'Hội An';
+    const categoryName = this.category ? this.formatCategoryName(this.category) : null;
+    
+    let html = '<a href="/">Home</a>';
+    html += ` / <a href="/hoi-an">${locationName}</a>`;
+    
+    if (categoryName) {
+        html += ` / <span>${categoryName}</span>`;
     }
+    
+    document.getElementById('breadcrumbs').innerHTML = html;
+    console.log('✅ [Category] Breadcrumbs updated');
+}
 
     updateHeader() {
         console.log('📋 [Category] Updating page header...');
@@ -347,38 +450,38 @@ class CategoryPage {
         console.log('✅ [Category] Rendered', this.businesses.length, 'business cards');
     }
 
-    renderCategoryList() {
-        console.log('📂 [Category] Rendering category list...');
+   renderCategoryList() {
+    console.log('📂 [Category] Rendering category list...');
+    
+    const list = document.getElementById('categoryList');
+    
+    if (this.allCategories.length === 0) {
+        console.log('⚠️ [Category] No categories to display');
+        list.innerHTML = '<li style="color: #9ca3af;">No categories available</li>';
+        return;
+    }
+    
+    list.innerHTML = `
+        <li>
+            <a href="/hoi-an" ${!this.category ? 'style="font-weight: 600; background: #f3f4f6;"' : ''}>
+                All Categories
+            </a>
+        </li>
+    ` + this.allCategories.map(cat => {
+        const slug = this.formatCategorySlug(cat);
+        const isActive = this.category === slug;
         
-        const list = document.getElementById('categoryList');
-        
-        if (this.allCategories.length === 0) {
-            console.log('⚠️ [Category] No categories to display');
-            list.innerHTML = '<li style="color: #9ca3af;">No categories available</li>';
-            return;
-        }
-        
-        list.innerHTML = `
+        return `
             <li>
-                <a href="/${this.location}" ${!this.category ? 'style="font-weight: 600; background: #f3f4f6;"' : ''}>
-                    All Categories
+                <a href="/hoi-an/${slug}" ${isActive ? 'style="font-weight: 600; background: #f3f4f6;"' : ''}>
+                    ${cat}
                 </a>
             </li>
-        ` + this.allCategories.map(cat => {
-            const slug = this.formatCategorySlug(cat);
-            const isActive = this.category === slug;
-            
-            return `
-                <li>
-                    <a href="/${this.location}/${slug}" ${isActive ? 'style="font-weight: 600; background: #f3f4f6;"' : ''}>
-                        ${cat}
-                    </a>
-                </li>
-            `;
-        }).join('');
-        
-        console.log('✅ [Category] Category list rendered with', this.allCategories.length, 'categories');
-    }
+        `;
+    }).join('');
+    
+    console.log('✅ [Category] Category list rendered with', this.allCategories.length, 'categories');
+}
 
     showError(message) {
         console.error('💥 [Category] Displaying error to user:', message);

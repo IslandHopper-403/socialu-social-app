@@ -1,5 +1,10 @@
 // FILE: functions/seo.js
 
+/**
+ * SEO Cloud Function for Business Profiles
+ * Handles bot detection and serves pre-rendered HTML with meta tags
+ */
+
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 
@@ -62,8 +67,8 @@ function generateBusinessMetaTags(business, generatedSlug) {
     const title = `${businessName} - SocialU Hội An`;
     const description = bio ||
         `Connect with ${businessName} on SocialU. ${business.category || 'Local business'} in Hội An, Vietnam.`;
-    const imageUrl = business.photos?.[0] || 'https://socialu.app/assets/default-business.jpg';
-    const url = `https://socialu.app/business/${slug}`;
+    const imageUrl = business.photos?.[0] || 'https://hoi-an-social-app.web.app/assets/default-business.jpg';
+    const url = `https://hoi-an-social-app.web.app/business/${slug}`;
     
     // Escape special characters for HTML
     const escapeHtml = (str) => {
@@ -78,7 +83,7 @@ function generateBusinessMetaTags(business, generatedSlug) {
     
     const safeTitle = escapeHtml(title);
     const safeDescription = escapeHtml(description);
-    const safeBusinessName = escapeHtml(businessName); // ← Use our variable, not business.businessName
+    const safeBusinessName = escapeHtml(businessName);
     const safeImageUrl = escapeHtml(imageUrl);
     const safeUrl = escapeHtml(url);
     
@@ -138,13 +143,17 @@ function generateBusinessMetaTags(business, generatedSlug) {
     }
     </script>
     
-    <!-- Redirect users (non-bots) to main app -->
+    <!-- For bots: Keep them here to read meta tags -->
+    <!-- For users with JS: Redirect after brief delay -->
     <script>
-        window.location.href = '${safeUrl}';
+        // Only redirect if not a bot (bots don't execute JS anyway)
+        setTimeout(function() {
+            window.location.href = 'https://hoi-an-social-app.web.app/#business/${slug}';
+        }, 100);
     </script>
     
     <noscript>
-        <meta http-equiv="refresh" content="0; url=${safeUrl}">
+        <meta http-equiv="refresh" content="1; url=https://hoi-an-social-app.web.app/#business/${slug}">
     </noscript>
 </head>
 <body>
@@ -174,22 +183,29 @@ exports.businessProfile = functions.https.onRequest(async (req, res) => {
         timestamp: new Date().toISOString()
     });
     
-    // If not a bot, redirect to main app
+    // If not a bot, redirect to main app with hash routing
     if (!isBot(userAgent)) {
-        const redirectUrl = `https://socialu.app/#business/${slug}`;
+        const redirectUrl = `https://hoi-an-social-app.web.app/#business/${slug}`;
         console.log('👤 [SEO] Regular user detected, redirecting to:', redirectUrl);
         return res.redirect(302, redirectUrl);
     }
     
-  // Bot detected - serve pre-rendered HTML
+    // Bot detected - serve pre-rendered HTML
     try {
         console.log('🤖 [SEO] Bot detected, fetching business data for:', slug);
         
-        // Helper function to create slug from name
+        // Helper function to create slug from name (matches categoryPage.js logic)
         const createSlug = (name) => {
+            if (!name) return '';
             return name
                 .toLowerCase()
-                .replace(/[^a-z0-9]+/g, '')
+                .normalize('NFD')                    // Normalize accented characters
+                .replace(/[\u0300-\u036f]/g, '')    // Remove diacritics
+                .replace(/đ/g, 'd')                 // Vietnamese đ → d
+                .replace(/[^a-z0-9\s-]/g, '')       // Remove special chars except spaces and hyphens
+                .replace(/\s+/g, '-')               // Spaces → hyphens
+                .replace(/-+/g, '-')                // Multiple hyphens → single hyphen
+                .replace(/^-|-$/g, '')              // Remove leading/trailing hyphens
                 .trim();
         };
         
@@ -213,7 +229,7 @@ exports.businessProfile = functions.https.onRequest(async (req, res) => {
             // Find business where generated slug matches
             const matchingBusiness = allBusinesses.docs.find(doc => {
                 const business = doc.data();
-                const businessName = business.name || business.displayName || '';
+                const businessName = business.name || business.displayName || business.businessName || '';
                 const generatedSlug = createSlug(businessName);
                 console.log(`  🔍 Checking: "${businessName}" → "${generatedSlug}" (looking for: "${slug}")`);
                 return generatedSlug === slug;
@@ -224,7 +240,7 @@ exports.businessProfile = functions.https.onRequest(async (req, res) => {
                     empty: false, 
                     docs: [matchingBusiness] 
                 };
-                console.log('✅ [SEO] Found business by name match:', matchingBusiness.data().name);
+                console.log('✅ [SEO] Found business by name match:', matchingBusiness.data().name || matchingBusiness.data().businessName);
             }
         }
         
@@ -237,7 +253,7 @@ exports.businessProfile = functions.https.onRequest(async (req, res) => {
                 <body>
                     <h1>Business Not Found</h1>
                     <p>The business profile you're looking for doesn't exist.</p>
-                    <a href="https://socialu.app">Return to SocialU</a>
+                    <a href="https://hoi-an-social-app.web.app">Return to SocialU</a>
                 </body>
                 </html>
             `);
@@ -247,8 +263,8 @@ exports.businessProfile = functions.https.onRequest(async (req, res) => {
         const processingTime = Date.now() - startTime;
         
         console.log('✅ [SEO] Business found, generating meta tags:', {
-            businessName: business.businessName,
-            slug: business.slug,
+            businessName: business.businessName || business.name,
+            slug: business.slug || slug,
             processingTime: `${processingTime}ms`
         });
         
@@ -274,7 +290,7 @@ exports.businessProfile = functions.https.onRequest(async (req, res) => {
             <body>
                 <h1>Error Loading Business</h1>
                 <p>An error occurred while loading this business profile.</p>
-                <a href="https://socialu.app">Return to SocialU</a>
+                <a href="https://hoi-an-social-app.web.app">Return to SocialU</a>
             </body>
             </html>
         `);

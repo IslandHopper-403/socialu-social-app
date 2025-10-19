@@ -21,19 +21,19 @@
     ],
     "rewrites": [
       {
-        "source": "/business/:slug",
-        "function": "businessProfile"
-      },
-      {
         "source": "/sitemap.xml",
         "function": "generateSitemap"
       },
       {
-        "source": "/:location/:category",
+        "source": "/business/**",
+        "function": "businessProfile"
+      },
+      {
+        "source": "/hoi-an",
         "destination": "/category.html"
       },
       {
-        "source": "/:location",
+        "source": "/hoi-an/**",
         "destination": "/category.html"
       },
       {

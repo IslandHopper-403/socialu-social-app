@@ -826,16 +826,23 @@ export class BusinessProfileManager {
     /**
      * Create clean URL slug from business name
      */
-    createBusinessSlug(business) {
+  createBusinessSlug(business) {
         if (!business) return '';
         
         // Use business name to create slug
         const name = business.name || business.businessName || '';
         
-        // Create clean slug: "Moon Restaurant" → "moonrestaurant"
+        // Create URL-friendly slug with hyphens (matches Cloud Function logic)
+        // "Ba Trong Coffee" → "ba-trong-coffee"
         const slug = name
             .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '') // Remove all non-alphanumeric chars
+            .normalize('NFD')                    // Normalize accented characters
+            .replace(/[\u0300-\u036f]/g, '')    // Remove diacritics
+            .replace(/đ/g, 'd')                 // Vietnamese đ → d
+            .replace(/[^a-z0-9\s-]/g, '')       // Remove special chars except spaces and hyphens
+            .replace(/\s+/g, '-')               // Spaces → hyphens
+            .replace(/-+/g, '-')                // Multiple hyphens → single hyphen
+            .replace(/^-|-$/g, '')              // Remove leading/trailing hyphens
             .trim();
         
         // Fallback to ID if slug is empty

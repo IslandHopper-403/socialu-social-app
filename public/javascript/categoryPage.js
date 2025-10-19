@@ -314,7 +314,7 @@ formatCategoryName(slug) {
         
         const title = `${categoryName} in ${locationName} - SocialU`;
         const description = `Discover the best ${categoryName.toLowerCase()} in ${locationName}, Vietnam. Connect with local businesses on SocialU.`;
-        const url = `https://hoi-an-social-app.web.app/${this.location}${this.category ? '/' + this.category : ''}`;
+        const url = `https://socialu.app/${this.location}${this.category ? '/' + this.category : ''}`;
         
         // Update page title
         document.getElementById('pageTitle').textContent = title;

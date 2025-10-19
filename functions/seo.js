@@ -67,8 +67,8 @@ function generateBusinessMetaTags(business, generatedSlug) {
     const title = `${businessName} - SocialU Hội An`;
     const description = bio ||
         `Connect with ${businessName} on SocialU. ${business.category || 'Local business'} in Hội An, Vietnam.`;
-    const imageUrl = business.photos?.[0] || 'https://hoi-an-social-app.web.app/assets/default-business.jpg';
-    const url = `https://hoi-an-social-app.web.app/business/${slug}`;
+    const imageUrl = business.photos?.[0] || 'https://socialu.app/assets/default-business.jpg';
+    const url = `https://socialu.app/business/${slug}`;
     
     // Escape special characters for HTML
     const escapeHtml = (str) => {
@@ -148,12 +148,12 @@ function generateBusinessMetaTags(business, generatedSlug) {
     <script>
         // Only redirect if not a bot (bots don't execute JS anyway)
         setTimeout(function() {
-            window.location.href = 'https://hoi-an-social-app.web.app/#business/${slug}';
+            window.location.href = 'https://socialu.app/#business/${slug}';
         }, 100);
     </script>
     
     <noscript>
-        <meta http-equiv="refresh" content="1; url=https://hoi-an-social-app.web.app/#business/${slug}">
+        <meta http-equiv="refresh" content="1; url=https://socialu.app/#business/${slug}">
     </noscript>
 </head>
 <body>
@@ -185,7 +185,7 @@ exports.businessProfile = functions.https.onRequest(async (req, res) => {
     
     // If not a bot, redirect to main app with hash routing
     if (!isBot(userAgent)) {
-        const redirectUrl = `https://hoi-an-social-app.web.app/#business/${slug}`;
+        const redirectUrl = `https://socialu.app/#business/${slug}`;
         console.log('👤 [SEO] Regular user detected, redirecting to:', redirectUrl);
         return res.redirect(302, redirectUrl);
     }
@@ -253,7 +253,7 @@ exports.businessProfile = functions.https.onRequest(async (req, res) => {
                 <body>
                     <h1>Business Not Found</h1>
                     <p>The business profile you're looking for doesn't exist.</p>
-                    <a href="https://hoi-an-social-app.web.app">Return to SocialU</a>
+                    <a href="https://socialu.app">Return to SocialU</a>
                 </body>
                 </html>
             `);
@@ -290,7 +290,7 @@ exports.businessProfile = functions.https.onRequest(async (req, res) => {
             <body>
                 <h1>Error Loading Business</h1>
                 <p>An error occurred while loading this business profile.</p>
-                <a href="https://hoi-an-social-app.web.app">Return to SocialU</a>
+                <a href="https://socialu.app">Return to SocialU</a>
             </body>
             </html>
         `);

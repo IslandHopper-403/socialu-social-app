@@ -50,7 +50,7 @@ exports.generateSitemap = functions.https.onRequest(async (req, res) => {
     
     <!-- Homepage -->
     <url>
-        <loc>https://hoi-an-social-app.web.app/</loc>
+        <loc>https://socialu.app/</loc>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
         <lastmod>${currentDate}</lastmod>
@@ -58,7 +58,7 @@ exports.generateSitemap = functions.https.onRequest(async (req, res) => {
     
    <!-- Main Location Page -->
 <url>
-    <loc>https://hoi-an-social-app.web.app/hoi-an</loc>
+    <loc>https://socialu.app/hoi-an</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
     <lastmod>${currentDate}</lastmod>
@@ -72,7 +72,7 @@ exports.generateSitemap = functions.https.onRequest(async (req, res) => {
             const slug = category.toLowerCase().replace(/\s+/g, '-');
             sitemap += `    <!-- Category: ${category} -->
     <url>
-        <loc>https://hoi-an-social-app.web.app/hoi-an/${slug}</loc>
+        <loc>https://socialu.app/hoi-an/${slug}</loc>
         <changefreq>daily</changefreq>
         <priority>0.8</priority>
         <lastmod>${currentDate}</lastmod>
@@ -90,7 +90,7 @@ exports.generateSitemap = functions.https.onRequest(async (req, res) => {
             
             sitemap += `    <!-- Business: ${business.businessName} -->
     <url>
-        <loc>https://hoi-an-social-app.web.app/business/${business.slug}</loc>
+        <loc>https://socialu.app/business/${business.slug}</loc>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
         <lastmod>${lastMod}</lastmod>

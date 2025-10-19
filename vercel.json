@@ -2,15 +2,15 @@
   "rewrites": [
     {
       "source": "/hoi-an/:path*",
-      "destination": "https://hoi-an-social-app.web.app/hoi-an/:path*"
+      "destination": "https://socialu.app/hoi-an/:path*"
     },
     {
       "source": "/business/:slug",
-      "destination": "https://hoi-an-social-app.web.app/business/:slug"
+      "destination": "https://socialu.app/business/:slug"
     },
     {
       "source": "/app/:path*",
-      "destination": "https://hoi-an-social-app.web.app/:path*"
+      "destination": "https://socialu.app/:path*"
     }
   ]
 }

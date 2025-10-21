@@ -1,6 +1,7 @@
 // javascript/features/businessStory.js
 
 import { sanitizeText } from '../../utils/security.js';
+import { getOptimizedImageURL } from '../../utils/imageUtils.js';
 
 /**
  * Business Story Manager
@@ -90,7 +91,10 @@ export class BusinessStoryManager {
         const nameElement = document.getElementById('singleStoryName');
         const typeElement = document.getElementById('singleStoryType');
         
-        if (logoElement) logoElement.src = business.logo || photos[1] || photos[0] || '';
+        if (logoElement) {
+    const logoSrc = business.logo || getOptimizedImageURL(photos[1], 'thumbnail') || getOptimizedImageURL(photos[0], 'thumbnail') || '';
+    logoElement.src = logoSrc;
+}
         if (nameElement) nameElement.textContent = sanitizeText(business.name);
         if (typeElement) typeElement.textContent = sanitizeText(business.type);
         
@@ -135,11 +139,17 @@ export class BusinessStoryManager {
         
         this.currentPhotoIndex = index;
         
-        // Update photo
-        const imageElement = document.getElementById('singleStoryImage');
-        if (imageElement) {
-            imageElement.src = photos[index];
-        }
+        // Update photo - use optimized image
+const imageElement = document.getElementById('singleStoryImage');
+if (imageElement) {
+    const optimizedUrl = getOptimizedImageURL(photos[index], 'large');
+    imageElement.src = optimizedUrl;
+    console.log('🖼️ [STORY] Setting story image:', {
+        photoIndex: index,
+        photoFormat: typeof photos[index],
+        optimizedUrl: optimizedUrl.substring(0, 50) + '...'
+    });
+}
         
         // Update text overlay - ALWAYS show About Us on ALL photos (per requirement)
         const textOverlay = document.getElementById('singleStoryText');
@@ -294,7 +304,10 @@ export class BusinessStoryManager {
         avatar.className = 'profile-hero-story-avatar';
         
         const img = document.createElement('img');
-        img.src = business.logo || business.photos?.[1] || business.photos?.[0] || '';
+        const avatarSrc = business.logo || 
+                  getOptimizedImageURL(business.photos?.[1], 'thumbnail') || 
+                  getOptimizedImageURL(business.photos?.[0], 'thumbnail') || '';
+        img.src = avatarSrc;
         img.alt = 'View Story';
         
         avatar.appendChild(img);

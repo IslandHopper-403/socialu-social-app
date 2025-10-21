@@ -313,11 +313,14 @@ export class FeedManager {
             
             return `
                 <div class="story-item" 
-                     style="background-image: url('${escapeHtml(image)}')"
-                     onclick="window.CLASSIFIED.openStoryViewer('${storiesContainerId}', ${index})"
-                     data-business-id="${business.id}"
-                     data-business-name="${escapeHtml(name)}"
-                     data-index="${index}">
+                    onclick="window.CLASSIFIED.openStoryViewer('${storiesContainerId}', ${index})"
+                    data-business-id="${business.id}"
+                    data-business-name="${escapeHtml(name)}"
+                    data-index="${index}">
+                    <img src="${escapeHtml(image)}" 
+                        alt="${escapeHtml(name)}" 
+                        loading="lazy"
+                        class="story-item-image">
                     <div class="story-overlay">
                         <div class="story-title">${name}</div>
                         <div class="story-subtitle">${type}</div>

@@ -259,9 +259,19 @@ export class BusinessFeedManager {
         }
         
         console.log('✅ [BusinessFeedManager] Restaurant feed populated with', restaurants.length, 'restaurants');
-        
+
         // Set up logo click handlers after feed is rendered
         setTimeout(() => this.setupLogoClickHandlers(), 100);
+
+        // Set up lazy loading for feed images
+        setTimeout(() => {
+            const lazyImages = feedContainer.querySelectorAll('img.lazy-load');
+            if (lazyImages.length > 0 && window.classifiedApp?.managers?.feed?.lazyLoadManager) {
+                // Vertical scroll - use viewport (null)
+                window.classifiedApp.managers.feed.lazyLoadManager.observe(lazyImages, null);
+                console.log(`👀 [BusinessFeedManager] Observing ${lazyImages.length} restaurant images for lazy load`);
+            }
+        }, 200);
     }
     
     /**
@@ -388,6 +398,18 @@ export class BusinessFeedManager {
         this.addBusinessSignupBanner(feedContainer);
         
         console.log('✅ [BusinessFeedManager] Activity feed populated with', activities.length, 'activities');
+
+        // Set up lazy loading for feed images
+        setTimeout(() => {
+            const lazyImages = feedContainer.querySelectorAll('img.lazy-load');
+            if (lazyImages.length > 0 && window.classifiedApp?.managers?.feed?.lazyLoadManager) {
+                // Vertical scroll - use viewport (null)
+                window.classifiedApp.managers.feed.lazyLoadManager.observe(lazyImages, null);
+                console.log(`👀 [BusinessFeedManager] Observing ${lazyImages.length} activity images for lazy load`);
+            }
+        }, 200);
+
+        
         
         // Set up logo click handlers after feed is rendered
         setTimeout(() => this.setupLogoClickHandlers(), 100);
@@ -425,7 +447,12 @@ export class BusinessFeedManager {
             optimizedUrl: logoUrl.substring(0, 50) + '...'
         });
         
-        logo.style.backgroundImage = `url("${logoUrl}")`;
+        // Create img tag instead of background-image for lazy loading
+        const logoImg = document.createElement('img');
+        logoImg.dataset.src = logoUrl; // Use data-src for lazy loading
+        logoImg.alt = business.name;
+        logoImg.className = 'business-logo-img lazy-load';
+        logo.appendChild(logoImg);
         
         // Make logo clickable to open story (SECURITY: stopPropagation)
         logo.style.cursor = 'pointer';
@@ -528,36 +555,50 @@ export class BusinessFeedManager {
         scrollWrapper.style.msOverflowStyle = 'none';
         scrollWrapper.style.webkitScrollbar = 'none';
         
-         // Add all available images
+         // Add all available images - OPTIMIZED: Only load first, lazy load rest
         const photos = business.photos || [business.image];
         photos.slice(0, 5).forEach((photo, photoIndex) => {
             // ✨ OPTIMIZED: Use medium size (800x800) for carousel
             const optimizedUrl = getOptimizedImageURL(photo, 'medium');
             
-            console.log('🖼️ [BUSINESS-FEED] Carousel image:', {
-                businessName: business.name,
-                photoIndex: photoIndex,
-                photoFormat: typeof photo,
-                optimizedUrl: optimizedUrl.substring(0, 50) + '...'
-            });
-            
             const imageDiv = document.createElement('div');
             imageDiv.className = 'carousel-image';
-            imageDiv.style.cssText = `
-                min-width: 100%;
-                width: 100%;
-                height: 100%;
-                flex-shrink: 0;
-                scroll-snap-align: start;
-                background-image: url("${optimizedUrl}");
-                background-size: cover;
-                background-position: center;
-            `;
+            
+            // CRITICAL: Only load first image immediately, lazy load rest
+            if (photoIndex === 0) {
+                // First image: Load immediately
+                imageDiv.style.cssText = `
+                    min-width: 100%;
+                    width: 100%;
+                    height: 100%;
+                    flex-shrink: 0;
+                    scroll-snap-align: start;
+                    background-image: url("${optimizedUrl}");
+                    background-size: cover;
+                    background-position: center;
+                `;
+                console.log('🖼️ [BUSINESS-FEED] Loading first carousel image for:', business.name);
+            } else {
+                // Images 2-5: Lazy load on scroll/swipe
+                imageDiv.dataset.bgSrc = optimizedUrl; // Store URL for lazy loading
+                imageDiv.style.cssText = `
+                    min-width: 100%;
+                    width: 100%;
+                    height: 100%;
+                    flex-shrink: 0;
+                    scroll-snap-align: start;
+                    background-size: cover;
+                    background-position: center;
+                    background-color: #f0f0f0;
+                `;
+                console.log('🖼️ [BUSINESS-FEED] Queuing lazy load for image', photoIndex + 1, 'of:', business.name);
+            }
+            
             scrollWrapper.appendChild(imageDiv);
         });
         
         imageContainer.appendChild(scrollWrapper);
-        
+
         // Add dot indicators
         const dotsContainer = document.createElement('div');
         dotsContainer.className = 'carousel-dots';
@@ -569,7 +610,7 @@ export class BusinessFeedManager {
             display: flex;
             gap: 6px;
         `;
-        
+
         photos.slice(0, 5).forEach((_, index) => {
             const dot = document.createElement('span');
             dot.className = 'carousel-dot';
@@ -582,73 +623,52 @@ export class BusinessFeedManager {
             `;
             dotsContainer.appendChild(dot);
         });
-        
-        // Track current image
-        let currentIndex = 0;
-        
-        // Touch handling
-        let startX = 0;
-        let currentX = 0;
-        let isDragging = false;
-        
-        // Touch AND mouse handling for better compatibility
-        const handleStart = (e) => {
-            startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-            isDragging = true;
-            imageContainer.style.cursor = 'grabbing';
-        };
-        
-        const handleMove = (e) => {
-            if (!isDragging) return;
-            e.preventDefault();
-            currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-            const diff = currentX - startX;
-            scrollWrapper.style.transform = `translateX(${-currentIndex * 100 + (diff / imageContainer.offsetWidth * 100)}%)`;
-        };
-        
-        const handleEnd = () => {
-            if (!isDragging) return;
-            isDragging = false;
-            imageContainer.style.cursor = 'grab';
-            const diff = currentX - startX;
-            
-            if (Math.abs(diff) > 50) { // Swipe threshold
-                if (diff > 0 && currentIndex > 0) {
-                    currentIndex--;
-                } else if (diff < 0 && currentIndex < photos.length - 1) {
-                    currentIndex++;
+
+        // Track scrolling state for click prevention
+        let isScrolling = false;
+        let scrollTimeout;
+
+        // Combined scroll listener: lazy load + dots + track scrolling
+        scrollWrapper.addEventListener('scroll', () => {
+            // 1. LAZY LOAD images as they come into view
+            const images = scrollWrapper.querySelectorAll('.carousel-image');
+            images.forEach((img, idx) => {
+                if (img.dataset.bgSrc && !img.dataset.loaded) {
+                    const rect = img.getBoundingClientRect();
+                    const containerRect = scrollWrapper.getBoundingClientRect();
+                    
+                    if (rect.left < containerRect.right + 100) {
+                        img.style.backgroundImage = `url("${img.dataset.bgSrc}")`;
+                        img.dataset.loaded = 'true';
+                        console.log('🖼️ [BUSINESS-FEED] Lazy loaded carousel image', idx + 1, 'for:', business.name);
+                    }
                 }
-            }
+            });
             
-            // Update position and dots
-            scrollWrapper.style.transform = `translateX(${-currentIndex * 100}%)`;
+            // 2. UPDATE dots based on scroll position
+            const scrollLeft = scrollWrapper.scrollLeft;
+            const imageWidth = scrollWrapper.offsetWidth;
+            const currentIndex = Math.round(scrollLeft / imageWidth);
+            
             dotsContainer.querySelectorAll('.carousel-dot').forEach((dot, i) => {
                 dot.style.background = i === currentIndex ? 'white' : 'rgba(255,255,255,0.5)';
             });
             
-            // Reset for next swipe
-            startX = 0;
-            currentX = 0;
-        };
-        
-        // Add both touch and mouse events
-        imageContainer.addEventListener('touchstart', handleStart, { passive: true });
-        imageContainer.addEventListener('touchmove', handleMove, { passive: false });
-        imageContainer.addEventListener('touchend', handleEnd);
-        
-        // Mouse events for desktop testing
-        imageContainer.addEventListener('mousedown', handleStart);
-        imageContainer.addEventListener('mousemove', handleMove);
-        imageContainer.addEventListener('mouseup', handleEnd);
-        imageContainer.addEventListener('mouseleave', handleEnd);
-        
-        // Prevent card click on swipe
+            // 3. TRACK scrolling for click prevention
+            isScrolling = true;
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                isScrolling = false;
+            }, 150);
+        });
+
+        // Prevent card click when scrolling carousel
         imageContainer.addEventListener('click', (e) => {
-            if (Math.abs(currentX - startX) > 5) {
+            if (isScrolling) {
                 e.stopPropagation();
             }
         });
-        
+                
         if (photos.length > 1) {
             imageContainer.appendChild(dotsContainer);
         }

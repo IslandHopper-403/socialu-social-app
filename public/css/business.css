@@ -32,6 +32,27 @@
 }
 
 /* =====================================================
+   Business logo as img tag for lazy loading 
+   ===================================================== */
+.business-logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.business-logo-img.loaded {
+    opacity: 1;
+}
+
+.business-logo-img:not(.loaded) {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* =====================================================
    Business Signup Banner
    ===================================================== */
 .business-signup-banner {

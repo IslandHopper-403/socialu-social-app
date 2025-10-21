@@ -2,6 +2,7 @@
 
 import { sanitizeText, escapeHtml, createSafeElement } from '../../utils/security.js';
 import { getOptimizedImageURL } from '../../utils/imageUtils.js';
+import { LazyLoadManager } from '../../utils/lazyLoad.js';
 import { UserFeedManager } from './userFeed.js';
 import { BusinessFeedManager } from './businessFeed.js';
 
@@ -38,6 +39,9 @@ export class FeedManager {
         // References to other managers (set later)
         this.uiComponents = null;
         this.adminManager = null;
+
+          // Create lazy load manager
+         this.lazyLoadManager = new LazyLoadManager();
         
         console.log('✅ [FeedManager] Orchestrator initialized at:', Date.now());
     }
@@ -311,16 +315,15 @@ export class FeedManager {
                 hasImage: !!image
             });
             
-            return `
+           return `
                 <div class="story-item" 
                     onclick="window.CLASSIFIED.openStoryViewer('${storiesContainerId}', ${index})"
                     data-business-id="${business.id}"
                     data-business-name="${escapeHtml(name)}"
                     data-index="${index}">
-                    <img src="${escapeHtml(image)}" 
+                    <img data-src="${escapeHtml(image)}" 
                         alt="${escapeHtml(name)}" 
-                        loading="lazy"
-                        class="story-item-image">
+                        class="story-item-image lazy-load">
                     <div class="story-overlay">
                         <div class="story-title">${name}</div>
                         <div class="story-subtitle">${type}</div>
@@ -328,8 +331,17 @@ export class FeedManager {
                 </div>
             `;
         }).join('');
-        
+
         console.log(`✅ [FeedManager] Populated ${businesses.length} stories at:`, Date.now());
+
+        // Set up lazy loading for story images
+        setTimeout(() => {
+            const lazyImages = container.querySelectorAll('img.lazy-load');
+            if (lazyImages.length > 0) {
+                this.lazyLoadManager.observe(lazyImages);
+                console.log(`👀 [FeedManager] Observing ${lazyImages.length} story images for lazy load`);
+            }
+        }, 100);
     }
     
     /**
@@ -725,8 +737,13 @@ export class FeedManager {
      * Cleanup resources
      * Delegates to sub-managers for proper cleanup
      */
-    cleanup() { // ⬅️ cleanup is a SEPARATE method at class level
+    cleanup() {
         console.log('🧹 [FEED-MANAGER] Cleaning up resources');
+        
+        // Cleanup lazy load manager
+        if (this.lazyLoadManager && typeof this.lazyLoadManager.cleanup === 'function') {
+            this.lazyLoadManager.cleanup();
+        }
         
         // Delegate to sub-managers
         if (this.userFeed && typeof this.userFeed.cleanup === 'function') {

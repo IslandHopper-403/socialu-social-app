@@ -197,6 +197,18 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Show image once loaded */
+.story-item-image.loaded {
+    opacity: 1;
+}
+
+/* Placeholder while loading */
+.story-item-image:not(.loaded) {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .story-overlay {

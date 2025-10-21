@@ -564,35 +564,17 @@ export class BusinessFeedManager {
             const imageDiv = document.createElement('div');
             imageDiv.className = 'carousel-image';
             
-            // CRITICAL: Only load first image immediately, lazy load rest
-            if (photoIndex === 0) {
-                // First image: Load immediately
-                imageDiv.style.cssText = `
-                    min-width: 100%;
-                    width: 100%;
-                    height: 100%;
-                    flex-shrink: 0;
-                    scroll-snap-align: start;
-                    background-image: url("${optimizedUrl}");
-                    background-size: cover;
-                    background-position: center;
-                `;
-                console.log('🖼️ [BUSINESS-FEED] Loading first carousel image for:', business.name);
-            } else {
-                // Images 2-5: Lazy load on scroll/swipe
-                imageDiv.dataset.bgSrc = optimizedUrl; // Store URL for lazy loading
-                imageDiv.style.cssText = `
-                    min-width: 100%;
-                    width: 100%;
-                    height: 100%;
-                    flex-shrink: 0;
-                    scroll-snap-align: start;
-                    background-size: cover;
-                    background-position: center;
-                    background-color: #f0f0f0;
-                `;
-                console.log('🖼️ [BUSINESS-FEED] Queuing lazy load for image', photoIndex + 1, 'of:', business.name);
-            }
+           // Load all carousel images (simple and reliable)
+            imageDiv.style.cssText = `
+                min-width: 100%;
+                width: 100%;
+                height: 100%;
+                flex-shrink: 0;
+                scroll-snap-align: start;
+                background-image: url("${optimizedUrl}");
+                background-size: cover;
+                background-position: center;
+            `;
             
             scrollWrapper.appendChild(imageDiv);
         });

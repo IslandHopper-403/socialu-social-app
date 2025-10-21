@@ -297,9 +297,11 @@ export class FeedManager {
         
         // Create story items
         container.innerHTML = businesses.map((business, index) => {
-            const image = business.image || 
-                        getOptimizedImageURL(business.photos?.[0], 'medium') || 
-                        business.logo || '';
+        // Try photos first (most reliable), then image, then logo
+        const image = getOptimizedImageURL(business.photos?.[0], 'medium') || 
+              (typeof business.image === 'string' ? business.image : '') ||
+              (typeof business.logo === 'string' ? business.logo : '') ||
+              '';
             const name = sanitizeText(business.name || 'Unknown');
             const type = sanitizeText(business.type || business.cuisine || 'Business');
             
@@ -515,8 +517,9 @@ export class FeedManager {
         const name = document.getElementById('storyBusinessName');
         const type = document.getElementById('storyBusinessType');
         
-        const logoSrc = business.logo || 
-                getOptimizedImageURL(business.photos?.[0], 'thumbnail') || '';
+        const logoSrc = (typeof business.logo === 'string' ? business.logo : '') ||
+                getOptimizedImageURL(business.photos?.[0], 'thumbnail') || 
+                '';
         const displayName = sanitizeText(business.name || 'Unknown');
         const displayType = sanitizeText(business.type || business.cuisine || 'Business');
         
@@ -527,8 +530,9 @@ export class FeedManager {
         // Update story image - use optimized URL
         const storyImage = document.getElementById('storyImage');
         const imageSrc = getOptimizedImageURL(business.photos?.[0], 'large') || 
-                        business.image || 
-                        business.logo || '';
+                 (typeof business.image === 'string' ? business.image : '') ||
+                 (typeof business.logo === 'string' ? business.logo : '') ||
+                 '';
 
         if (storyImage) {
             storyImage.src = imageSrc;

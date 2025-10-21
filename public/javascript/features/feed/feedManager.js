@@ -338,8 +338,10 @@ export class FeedManager {
         setTimeout(() => {
             const lazyImages = container.querySelectorAll('img.lazy-load');
             if (lazyImages.length > 0) {
-                this.lazyLoadManager.observe(lazyImages);
-                console.log(`👀 [FeedManager] Observing ${lazyImages.length} story images for lazy load`);
+                // Find the scroll container (parent of story items)
+                const scrollContainer = container.querySelector('.stories-scroll') || container;
+                this.lazyLoadManager.observe(lazyImages, scrollContainer);
+                console.log(`👀 [FeedManager] Observing ${lazyImages.length} story images in scroll container`);
             }
         }, 100);
     }

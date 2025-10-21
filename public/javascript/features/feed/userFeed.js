@@ -1,6 +1,7 @@
 // javascript/features/feed/userFeed.js
 
 import { sanitizeText, escapeHtml, createSafeElement } from '../../utils/security.js';
+import { getOptimizedImageURL } from '../../utils/imageUtils.js';
 
 import {
     collection,
@@ -12,6 +13,7 @@ import {
     orderBy,
     limit
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
 
 import { getUserItem } from '../../utils/storage.js';
 
@@ -541,6 +543,16 @@ export class UserFeedManager {
             }
         });
         
+        // ✨ OPTIMIZED: Use medium size (800x800) for user card image
+        const userPhoto = user.image || user.photos?.[0] || '';
+        const optimizedImageUrl = getOptimizedImageURL(userPhoto, 'medium');
+        
+        console.log('🖼️ [USER-FEED] User card image:', {
+            userName: safeName,
+            photoFormat: typeof userPhoto,
+            optimizedUrl: optimizedImageUrl.substring(0, 50) + '...'
+        });
+        
         // Build HTML safely - only using sanitized data
         feedItem.innerHTML = `
             <div class="user-status-badges">
@@ -548,7 +560,7 @@ export class UserFeedManager {
                 <div class="status-badge status-distance">📍 ${escapeHtml(user.distance)}</div>
                 <div class="status-badge status-match">🔥 ${parseInt(user.matchPercentage) || 75}% Match</div>
             </div>
-            <div class="user-image" style="background-image: url('${escapeHtml(user.image)}')">
+            <div class="user-image" style="background-image: url('${escapeHtml(optimizedImageUrl)}')">
                 <div class="user-image-overlay">
                     <div class="user-name">${escapeHtml(safeName)}, ${safeAge}</div>
                 </div>

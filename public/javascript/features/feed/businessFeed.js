@@ -1,6 +1,7 @@
 // javascript/features/feed/businessFeed.js
 
 import { sanitizeText, escapeHtml, createSafeElement } from '../../utils/security.js';
+import { getOptimizedImageURL } from '../../utils/imageUtils.js';
 
 import {
     collection,
@@ -413,7 +414,17 @@ export class BusinessFeedManager {
 
         const logo = document.createElement('div');
         logo.className = 'business-logo';
-        const logoUrl = business.logo || business.photos?.[0] || '';
+        
+        // ✨ OPTIMIZED: Use medium size (800x800) for logo
+        const logoPhoto = business.logo || business.photos?.[0] || '';
+        const logoUrl = getOptimizedImageURL(logoPhoto, 'medium');
+        
+        console.log('🖼️ [BUSINESS-FEED] Logo URL:', {
+            businessName: business.name,
+            photoFormat: typeof logoPhoto,
+            optimizedUrl: logoUrl.substring(0, 50) + '...'
+        });
+        
         logo.style.backgroundImage = `url("${logoUrl}")`;
         
         // Make logo clickable to open story (SECURITY: stopPropagation)
@@ -517,9 +528,19 @@ export class BusinessFeedManager {
         scrollWrapper.style.msOverflowStyle = 'none';
         scrollWrapper.style.webkitScrollbar = 'none';
         
-        // Add all available images
+         // Add all available images
         const photos = business.photos || [business.image];
-        photos.slice(0, 5).forEach((photo) => {
+        photos.slice(0, 5).forEach((photo, photoIndex) => {
+            // ✨ OPTIMIZED: Use medium size (800x800) for carousel
+            const optimizedUrl = getOptimizedImageURL(photo, 'medium');
+            
+            console.log('🖼️ [BUSINESS-FEED] Carousel image:', {
+                businessName: business.name,
+                photoIndex: photoIndex,
+                photoFormat: typeof photo,
+                optimizedUrl: optimizedUrl.substring(0, 50) + '...'
+            });
+            
             const imageDiv = document.createElement('div');
             imageDiv.className = 'carousel-image';
             imageDiv.style.cssText = `
@@ -528,7 +549,7 @@ export class BusinessFeedManager {
                 height: 100%;
                 flex-shrink: 0;
                 scroll-snap-align: start;
-                background-image: url("${photo}");
+                background-image: url("${optimizedUrl}");
                 background-size: cover;
                 background-position: center;
             `;

@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "hoi-an-social-app"
-  }
+  },
+  "targets": {
+    "hoi-an-social-app": {
+      "hosting": {
+        "socialu": [
+          "socialu-app"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

@@ -67,8 +67,8 @@ function generateBusinessMetaTags(business, generatedSlug) {
     const title = `${businessName} - SocialU Hội An`;
     const description = bio ||
         `Connect with ${businessName} on SocialU. ${business.category || 'Local business'} in Hội An, Vietnam.`;
-    const imageUrl = business.photos?.[0] || 'https://socialu.app/assets/default-business.jpg';
-    const url = `https://socialu.app/business/${slug}`;
+    const imageUrl = business.photos?.[0] || 'https://socialuapp.com/assets/default-business.jpg';
+    const url = `https://socialuapp.com/business/${slug}`;
     
     // Escape special characters for HTML
     const escapeHtml = (str) => {
@@ -148,12 +148,12 @@ function generateBusinessMetaTags(business, generatedSlug) {
     <script>
         // Only redirect if not a bot (bots don't execute JS anyway)
         setTimeout(function() {
-            window.location.href = 'https://socialu.app/#business/${slug}';
+            window.location.href = 'https://socialuapp.com/#business/${slug}';
         }, 100);
     </script>
     
     <noscript>
-        <meta http-equiv="refresh" content="1; url=https://socialu.app/#business/${slug}">
+        <meta http-equiv="refresh" content="1; url=https://socialuapp.com/#business/${slug}">
     </noscript>
 </head>
 <body>
@@ -185,7 +185,7 @@ exports.businessProfile = functions.https.onRequest(async (req, res) => {
     
     // If not a bot, redirect to main app with hash routing
     if (!isBot(userAgent)) {
-        const redirectUrl = `https://socialu.app/#business/${slug}`;
+        const redirectUrl = `https://socialuapp.com/#business/${slug}`;
         console.log('👤 [SEO] Regular user detected, redirecting to:', redirectUrl);
         return res.redirect(302, redirectUrl);
     }
@@ -195,19 +195,22 @@ exports.businessProfile = functions.https.onRequest(async (req, res) => {
         console.log('🤖 [SEO] Bot detected, fetching business data for:', slug);
         
         // Helper function to create slug from name (matches categoryPage.js logic)
-        const createSlug = (name) => {
-            if (!name) return '';
-            return name
-                .toLowerCase()
-                .normalize('NFD')                    // Normalize accented characters
-                .replace(/[\u0300-\u036f]/g, '')    // Remove diacritics
-                .replace(/đ/g, 'd')                 // Vietnamese đ → d
-                .replace(/[^a-z0-9\s-]/g, '')       // Remove special chars except spaces and hyphens
-                .replace(/\s+/g, '-')               // Spaces → hyphens
-                .replace(/-+/g, '-')                // Multiple hyphens → single hyphen
-                .replace(/^-|-$/g, '')              // Remove leading/trailing hyphens
-                .trim();
-        };
+    const createSlug = (name) => {
+    if (!name) return '';
+    const vietnameseMap = {
+        'à':'a','á':'a','ả':'a','ã':'a','ạ':'a','ă':'a','ằ':'a','ắ':'a','ẳ':'a','ẵ':'a','ặ':'a',
+        'â':'a','ầ':'a','ấ':'a','ẩ':'a','ẫ':'a','ậ':'a','è':'e','é':'e','ẻ':'e','ẽ':'e','ẹ':'e',
+        'ê':'e','ề':'e','ế':'e','ể':'e','ễ':'e','ệ':'e','ì':'i','í':'i','ỉ':'i','ĩ':'i','ị':'i',
+        'ò':'o','ó':'o','ỏ':'o','õ':'o','ọ':'o','ô':'o','ồ':'o','ố':'o','ổ':'o','ỗ':'o','ộ':'o',
+        'ơ':'o','ờ':'o','ớ':'o','ở':'o','ỡ':'o','ợ':'o','ù':'u','ú':'u','ủ':'u','ũ':'u','ụ':'u',
+        'ư':'u','ừ':'u','ứ':'u','ử':'u','ữ':'u','ự':'u','ỳ':'y','ý':'y','ỷ':'y','ỹ':'y','ỵ':'y',
+        'đ':'d','Đ':'d'
+    };
+    return name.toLowerCase().split('').map(c=>vietnameseMap[c]||c).join('')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+        .replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-')
+        .replace(/-+/g,'-').replace(/^-|-$/g,'').trim();
+};
         
         // Try to find by slug field first
         let businessDoc = await admin.firestore()
@@ -253,7 +256,7 @@ exports.businessProfile = functions.https.onRequest(async (req, res) => {
                 <body>
                     <h1>Business Not Found</h1>
                     <p>The business profile you're looking for doesn't exist.</p>
-                    <a href="https://socialu.app">Return to SocialU</a>
+                    <a href="https://socialuapp.com">Return to SocialU</a>
                 </body>
                 </html>
             `);
@@ -290,7 +293,7 @@ exports.businessProfile = functions.https.onRequest(async (req, res) => {
             <body>
                 <h1>Error Loading Business</h1>
                 <p>An error occurred while loading this business profile.</p>
-                <a href="https://socialu.app">Return to SocialU</a>
+                <a href="https://socialuapp.com">Return to SocialU</a>
             </body>
             </html>
         `);

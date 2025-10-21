@@ -284,37 +284,49 @@ formatCategoryName(slug) {
             return slug;
         }
         
-        // Otherwise, convert category name to slug format
-        // "Coffee Shop" -> "coffee-shop" (lowercase, replace spaces with hyphens)
-        const slug = name.toLowerCase()
-            .replace(/\s+/g, '-')           // Replace spaces with hyphens
-            .replace(/[^a-z0-9-]/g, '')     // Remove special characters
-            .replace(/--+/g, '-')           // Replace multiple hyphens with single
-            .replace(/^-|-$/g, '');         // Remove leading/trailing hyphens
-        
-        console.log('🔄 [Category] Generated slug:', name, '->', slug);
-        return slug;
-    }
+     // Otherwise, convert category name to slug format
+// "Coffee Shop" -> "coffee-shop" (lowercase, replace spaces with hyphens)
+const vietnameseMap = {
+    'à':'a','á':'a','ả':'a','ã':'a','ạ':'a','ă':'a','ằ':'a','ắ':'a','ẳ':'a','ẵ':'a','ặ':'a',
+    'â':'a','ầ':'a','ấ':'a','ẩ':'a','ẫ':'a','ậ':'a','è':'e','é':'e','ẻ':'e','ẽ':'e','ẹ':'e',
+    'ê':'e','ề':'e','ế':'e','ể':'e','ễ':'e','ệ':'e','ì':'i','í':'i','ỉ':'i','ĩ':'i','ị':'i',
+    'ò':'o','ó':'o','ỏ':'o','õ':'o','ọ':'o','ô':'o','ồ':'o','ố':'o','ổ':'o','ỗ':'o','ộ':'o',
+    'ơ':'o','ờ':'o','ớ':'o','ở':'o','ỡ':'o','ợ':'o','ù':'u','ú':'u','ủ':'u','ũ':'u','ụ':'u',
+    'ư':'u','ừ':'u','ứ':'u','ử':'u','ữ':'u','ự':'u','ỳ':'y','ý':'y','ỷ':'y','ỹ':'y','ỵ':'y',
+    'đ':'d','Đ':'d'
+};
+const slug = name.toLowerCase().split('').map(c=>vietnameseMap[c]||c).join('')
+    .replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/--+/g,'-').replace(/^-|-$/g,'');
 
-    generateSlug(name) {
-        // Generate URL-friendly slug from business name
-        if (!name) return 'business';
-        return name.toLowerCase()
-            .replace(/\s+/g, '-')           // Replace spaces with hyphens
-            .replace(/[^a-z0-9-]/g, '')     // Remove special characters
-            .replace(/--+/g, '-')           // Replace multiple hyphens with single
-            .replace(/^-|-$/g, '');         // Remove leading/trailing hyphens
-    }
+console.log('🔄 [Category] Generated slug:', name, '->', slug);
+return slug;
+}
+
+generateSlug(name) {
+    // Generate URL-friendly slug from business name
+    if (!name) return 'business';
+    const vietnameseMap = {
+        'à':'a','á':'a','ả':'a','ã':'a','ạ':'a','ă':'a','ằ':'a','ắ':'a','ẳ':'a','ẵ':'a','ặ':'a',
+        'â':'a','ầ':'a','ấ':'a','ẩ':'a','ẫ':'a','ậ':'a','è':'e','é':'e','ẻ':'e','ẽ':'e','ẹ':'e',
+        'ê':'e','ề':'e','ế':'e','ể':'e','ễ':'e','ệ':'e','ì':'i','í':'i','ỉ':'i','ĩ':'i','ị':'i',
+        'ò':'o','ó':'o','ỏ':'o','õ':'o','ọ':'o','ô':'o','ồ':'o','ố':'o','ổ':'o','ỗ':'o','ộ':'o',
+        'ơ':'o','ờ':'o','ớ':'o','ở':'o','ỡ':'o','ợ':'o','ù':'u','ú':'u','ủ':'u','ũ':'u','ụ':'u',
+        'ư':'u','ừ':'u','ứ':'u','ử':'u','ữ':'u','ự':'u','ỳ':'y','ý':'y','ỷ':'y','ỹ':'y','ỵ':'y',
+        'đ':'d','Đ':'d'
+    };
+    return name.toLowerCase().split('').map(c=>vietnameseMap[c]||c).join('')
+        .replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/--+/g,'-').replace(/^-|-$/g,'');
+}
 
     updateMetaTags() {
         console.log('📄 [Category] Updating meta tags...');
-        
-        const categoryName = this.category ? this.formatCategoryName(this.category) : 'All Businesses';
-        const locationName = 'Hội An';
+    
+    const categoryName = this.category ? this.formatCategoryName(this.category) : 'All Businesses';
+    const locationName = 'Hội An';
         
         const title = `${categoryName} in ${locationName} - SocialU`;
         const description = `Discover the best ${categoryName.toLowerCase()} in ${locationName}, Vietnam. Connect with local businesses on SocialU.`;
-        const url = `https://socialu.app/${this.location}${this.category ? '/' + this.category : ''}`;
+        const url = `https://socialuapp.com/${this.location}${this.category ? '/' + this.category : ''}`;
         
         // Update page title
         document.getElementById('pageTitle').textContent = title;

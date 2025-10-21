@@ -9,11 +9,14 @@ import {
 
 import {
     doc,
-    updateDoc,
     setDoc,
     getDoc,
+    updateDoc,
     serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+import { generatePhotoObject } from '../../utils/imageUtils.js';
+
 
 /**
  * Photo Upload Manager - FIXED VERSION
@@ -488,14 +491,33 @@ export class PhotoUploadManager {
         return { valid: true };
     }
     
-    /**
+   /**
      * Update profile with new photo URL
+     * OPTIMIZED: Saves photo object with all size variants
      */
    async updateProfilePhoto(profileType, slotIndex, photoURL) {
         const currentUser = this.state.get('currentUser');
         if (!currentUser) return;
         
         try {
+            console.log('📸 [PHOTO-UPLOAD] updateProfilePhoto called:', {
+                profileType,
+                slotIndex,
+                photoURL: photoURL.substring(0, 50) + '...'
+            });
+            
+            // ✨ NEW: Generate photo object with all optimized sizes
+            // Extension will create: photo_200x200.webp, photo_800x800.webp, photo_1200x1200.webp
+            // We save all URLs immediately (Extension processes in background)
+            const photoObject = generatePhotoObject(photoURL);
+            
+            console.log('📦 [PHOTO-UPLOAD] Generated photo object:', {
+                hasOriginal: !!photoObject.original,
+                hasThumb: !!photoObject.thumb,
+                hasMedium: !!photoObject.medium,
+                hasLarge: !!photoObject.large
+            });
+            
             if (profileType === 'user') {
                 // CHECK: Ensure profile document exists first
                 const userDocRef = doc(this.db, 'users', currentUser.uid);
@@ -525,11 +547,18 @@ export class PhotoUploadManager {
                 
                 // Delete old photo from storage if exists
                 if (profile.photos[slotIndex]) {
+                    console.log('🗑️ [PHOTO-UPLOAD] Deleting old photo from slot', slotIndex);
                     await this.deleteOldPhoto(profile.photos[slotIndex]);
                 }
                 
-                // Update photo URL
-                profile.photos[slotIndex] = photoURL;
+                // ✨ CHANGE: Save photo object instead of string
+                profile.photos[slotIndex] = photoObject;
+                
+                console.log('💾 [PHOTO-UPLOAD] Saving to Firestore (user):', {
+                    slotIndex,
+                    format: 'object',
+                    photoCount: profile.photos.length
+                });
                 
               // Save to Firebase - use setDoc with merge for safety
                 await setDoc(doc(this.db, 'users', currentUser.uid), {
@@ -552,11 +581,18 @@ export class PhotoUploadManager {
                 
                 // Delete old photo from storage if exists
                 if (profile.photos[slotIndex]) {
+                    console.log('🗑️ [PHOTO-UPLOAD] Deleting old photo from slot', slotIndex);
                     await this.deleteOldPhoto(profile.photos[slotIndex]);
                 }
                 
-                // Update photo URL
-                profile.photos[slotIndex] = photoURL;
+                // ✨ CHANGE: Save photo object instead of string
+                profile.photos[slotIndex] = photoObject;
+                
+                console.log('💾 [PHOTO-UPLOAD] Saving to Firestore (business):', {
+                    slotIndex,
+                    format: 'object',
+                    photoCount: profile.photos.length
+                });
                 
                 // Save to Firebase
                 await updateDoc(doc(this.db, 'businesses', currentUser.uid), {
@@ -568,30 +604,61 @@ export class PhotoUploadManager {
                 this.state.set('businessProfile', profile);
             }
             
-            console.log(`✅ ${profileType} profile photo updated`);
+            console.log(`✅ [PHOTO-UPLOAD] ${profileType} profile photo updated successfully`);
             
         } catch (error) {
-            console.error('❌ Error updating profile photo:', error);
+            console.error('❌ [PHOTO-UPLOAD] Error updating profile photo:', error);
             throw error;
         }
     }
     
     /**
      * Delete old photo from storage
+     * OPTIMIZED: Handles both string and object formats
      */
-    async deleteOldPhoto(photoURL) {
+    async deleteOldPhoto(photo) {
         try {
-            // Extract path from URL
-            const url = new URL(photoURL);
-            const path = decodeURIComponent(url.pathname.split('/o/')[1].split('?')[0]);
+            console.log('🗑️ [PHOTO-UPLOAD] deleteOldPhoto called:', {
+                photoType: typeof photo
+            });
             
-            // Create reference and delete
-            const photoRef = ref(this.storage, path);
-            await deleteObject(photoRef);
+            // Collect all URLs to delete
+            const urlsToDelete = [];
             
-            console.log('🗑️ Old photo deleted from storage');
+            if (typeof photo === 'string') {
+                // OLD FORMAT: Single string URL
+                urlsToDelete.push(photo);
+            } else if (typeof photo === 'object' && photo !== null) {
+                // NEW FORMAT: Object with multiple sizes
+                if (photo.original) urlsToDelete.push(photo.original);
+                if (photo.thumb) urlsToDelete.push(photo.thumb);
+                if (photo.medium) urlsToDelete.push(photo.medium);
+                if (photo.large) urlsToDelete.push(photo.large);
+            }
+            
+            console.log('🗑️ [PHOTO-UPLOAD] Deleting', urlsToDelete.length, 'files from storage');
+            
+            // Delete all files
+            for (const photoURL of urlsToDelete) {
+                try {
+                    // Extract path from URL
+                    const url = new URL(photoURL);
+                    const path = decodeURIComponent(url.pathname.split('/o/')[1].split('?')[0]);
+                    
+                    // Create reference and delete
+                    const photoRef = ref(this.storage, path);
+                    await deleteObject(photoRef);
+                    
+                    console.log('✅ [PHOTO-UPLOAD] Deleted:', path.split('/').pop());
+                } catch (err) {
+                    console.warn('⚠️ [PHOTO-UPLOAD] Could not delete file:', err.message);
+                    // Non-critical, continue
+                }
+            }
+            
+            console.log('✅ [PHOTO-UPLOAD] Old photo(s) deleted from storage');
         } catch (error) {
-            console.error('Error deleting old photo:', error);
+            console.error('❌ [PHOTO-UPLOAD] Error deleting old photo:', error);
             // Non-critical error, continue
         }
     }

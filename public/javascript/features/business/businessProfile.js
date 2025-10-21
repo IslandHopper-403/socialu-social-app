@@ -1,6 +1,7 @@
 // javascript/features/business/businessProfile.js
 
 import { sanitizeText, escapeHtml } from '../../utils/security.js';
+import { getOptimizedImageURL } from '../../utils/imageUtils.js';
 
 import {
     doc,
@@ -91,8 +92,16 @@ export class BusinessProfileManager {
         
         // Update hero - SAFE (CSS background) 
         const heroElement = document.getElementById('profileHero');
-        const imageUrl = business.photos?.[0] || business.image || business.story;
-        console.log('🖼️ [BUSINESS-PROFILE] Setting hero image:', imageUrl);
+        const heroPhoto = business.photos?.[0] || business.image || business.story;
+        
+        // ✨ OPTIMIZED: Use large size (1200x1200) for hero image
+        const imageUrl = getOptimizedImageURL(heroPhoto, 'large');
+        
+        console.log('🖼️ [BUSINESS-PROFILE] Setting hero image:', {
+            businessName: business.name,
+            photoFormat: typeof heroPhoto,
+            optimizedUrl: imageUrl.substring(0, 50) + '...'
+        });
         
         if (heroElement && imageUrl) {
             heroElement.style.backgroundImage = `url('${escapeHtml(imageUrl)}')`;
@@ -540,9 +549,19 @@ export class BusinessProfileManager {
         
         // Add all photos
         business.photos.forEach((photo, index) => {
+            // ✨ OPTIMIZED: Use large size (1200x1200) for full-screen viewer
+            const optimizedUrl = getOptimizedImageURL(photo, 'large');
+            
+            console.log('🖼️ [BUSINESS-PROFILE] Photo viewer image:', {
+                businessName: business.name,
+                photoIndex: index,
+                photoFormat: typeof photo,
+                optimizedUrl: optimizedUrl.substring(0, 50) + '...'
+            });
+            
             const slide = document.createElement('div');
             slide.className = 'photo-slide';
-            slide.innerHTML = `<img src="${escapeHtml(photo)}" alt="${business.name} photo ${index + 1}">`;
+            slide.innerHTML = `<img src="${escapeHtml(optimizedUrl)}" alt="${business.name} photo ${index + 1}" loading="lazy">`;
             swiper.appendChild(slide);
         });
         

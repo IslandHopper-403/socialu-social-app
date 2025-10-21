@@ -19,27 +19,27 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    "rewrites": [
-      {
-        "source": "/sitemap.xml",
-        "function": "generateSitemap"
-      },
-      {
-        "source": "/business/**",
-        "function": "businessProfile"
-      },
-      {
-        "source": "/hoi-an",
-        "destination": "/category.html"
-      },
-      {
-        "source": "/hoi-an/**",
-        "destination": "/category.html"
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
+   "rewrites": [
+  {
+    "source": "/sitemap.xml",
+    "function": "generateSitemap"
+  },
+  {
+    "source": "/business/**",
+    "function": "businessProfile"
+  },
+  {
+    "source": "/hoi-an",
+    "destination": "/category.html"
+  },
+  {
+    "source": "/hoi-an/**",
+    "destination": "/category.html"
+  },
+  {
+    "source": "!/@(javascript|css|assets|images)/**",
+    "destination": "/index.html"
+  }
+]
   }
 }

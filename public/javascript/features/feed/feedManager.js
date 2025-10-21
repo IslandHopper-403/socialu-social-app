@@ -1,6 +1,7 @@
 // javascript/features/feed/feedManager.js
 
 import { sanitizeText, escapeHtml, createSafeElement } from '../../utils/security.js';
+import { getOptimizedImageURL } from '../../utils/imageUtils.js';
 import { UserFeedManager } from './userFeed.js';
 import { BusinessFeedManager } from './businessFeed.js';
 
@@ -296,7 +297,9 @@ export class FeedManager {
         
         // Create story items
         container.innerHTML = businesses.map((business, index) => {
-            const image = business.image || business.photos?.[0] || business.logo || '';
+            const image = business.image || 
+                        getOptimizedImageURL(business.photos?.[0], 'medium') || 
+                        business.logo || '';
             const name = sanitizeText(business.name || 'Unknown');
             const type = sanitizeText(business.type || business.cuisine || 'Business');
             
@@ -512,7 +515,8 @@ export class FeedManager {
         const name = document.getElementById('storyBusinessName');
         const type = document.getElementById('storyBusinessType');
         
-        const logoSrc = business.logo || business.photos?.[0] || '';
+        const logoSrc = business.logo || 
+                getOptimizedImageURL(business.photos?.[0], 'thumbnail') || '';
         const displayName = sanitizeText(business.name || 'Unknown');
         const displayType = sanitizeText(business.type || business.cuisine || 'Business');
         
@@ -520,12 +524,18 @@ export class FeedManager {
         if (name) name.textContent = displayName;
         if (type) type.textContent = displayType;
         
-        // Update story image
+        // Update story image - use optimized URL
         const storyImage = document.getElementById('storyImage');
-        const imageSrc = business.photos?.[0] || business.image || business.logo || '';
-        
+        const imageSrc = getOptimizedImageURL(business.photos?.[0], 'large') || 
+                        business.image || 
+                        business.logo || '';
+
         if (storyImage) {
             storyImage.src = imageSrc;
+            console.log('🖼️ [FEED-MANAGER] Setting story image:', {
+                photoFormat: typeof business.photos?.[0],
+                optimizedUrl: imageSrc.substring(0, 50) + '...'
+            });
         } else {
             console.error('❌ [FeedManager] Story image element not found');
         }

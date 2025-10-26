@@ -2,6 +2,7 @@
 
 import { sanitizeText, escapeHtml, createSafeElement } from '../../utils/security.js';
 import { getOptimizedImageURL } from '../../utils/imageUtils.js';
+import { FeedPaginator } from '../../utils/pagination.js'; 
 
 import {
     collection,
@@ -42,6 +43,10 @@ export class UserFeedManager {
         this.CACHE_DURATION = 60000; // 1 minute cache
         
         console.log('✅ [UserFeedManager] Initialized');
+
+        // Paginators for infinite scroll
+        this.userPaginator = null;      // 🆕 ADD
+        this.demoUserPaginator = null;  // 🆕 ADD
     }
     
     /**

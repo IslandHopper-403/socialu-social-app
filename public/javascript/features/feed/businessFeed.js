@@ -2,6 +2,7 @@
 
 import { sanitizeText, escapeHtml, createSafeElement } from '../../utils/security.js';
 import { getOptimizedImageURL } from '../../utils/imageUtils.js';
+import { FeedPaginator } from '../../utils/pagination.js';
 
 import {
     collection,
@@ -37,6 +38,10 @@ export class BusinessFeedManager {
         this.favoritesCarousel = null;
         
         console.log('✅ [BusinessFeedManager] Initialized');
+
+         // Paginators for infinite scroll
+        this.restaurantPaginator = null;  // 🆕 ADD
+        this.activityPaginator = null;   // 🆕 ADD
     }
     
     /**

@@ -74,7 +74,7 @@ export class NotificationManager {
         // Restore notification dot on page load
         this.restoreNotificationDot();
         
-        console.log('✅ NotificationManager initialized');
+        console.log('✅ [NOTIFICATION] NotificationManager initialized (STATIC) at:', Date.now());
     }
     
     // ==================== PERSISTENCE METHODS ====================

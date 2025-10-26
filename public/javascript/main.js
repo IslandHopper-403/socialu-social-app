@@ -60,6 +60,7 @@ import { AdminManager } from './features/admin.js';
 import { ReferralManager } from './features/referral.js';
 import { MapManager } from './features/map.js';
 import { FavoritesCarouselManager } from './features/favoritesCarousel.js';
+import { NotificationManager } from './features/notifications.js';
 
 // Import UI modules
 import { NavigationManager } from './ui/navigation.js';
@@ -205,10 +206,8 @@ loadDemoContent() {
      * Create all manager instances
      */
   async createManagers(firebaseServices) {
-        // Import the new NotificationManager
-        const { NotificationManager } = await import('./features/notifications.js');
-        
         console.log('🔗 [MAIN] Creating manager instances including Router');
+        console.log('✅ [MAIN] NotificationManager loaded (static)');
         
         // Create manager instances
         this.managers = {
@@ -217,8 +216,9 @@ loadDemoContent() {
             userFeed: new UserFeedManager(firebaseServices, this.state, this.mockData),
             profile: new ProfileManager(firebaseServices, this.state),
             matching: new MatchingManager(firebaseServices, this.state),
-            messaging: new MessagingManager(firebaseServices, this.state),
+            // CRITICAL: NotificationManager BEFORE MessagingManager (prevents race conditions)
             notifications: new NotificationManager(firebaseServices, this.state),
+            messaging: new MessagingManager(firebaseServices, this.state),
             business: new BusinessManager(firebaseServices, this.state),
             businessStory: new BusinessStoryManager(firebaseServices, this.state),
             admin: new AdminManager(firebaseServices, this.state),

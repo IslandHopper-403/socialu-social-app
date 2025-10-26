@@ -32,16 +32,20 @@ export class BusinessFeedManager {
         this.cachedRestaurants = null;
         this.cachedActivities = null;
         
+        // Pagination for infinite scroll
+        this.restaurantPaginator = null;
+        this.activityPaginator = null;
+        this.isLoadingRestaurants = false;
+        this.isLoadingActivities = false;
+        
         // References to other managers (set later)
         this.uiComponents = null;
         this.adminManager = null;
         this.favoritesCarousel = null;
         
+        
         console.log('✅ [BusinessFeedManager] Initialized');
 
-         // Paginators for infinite scroll
-        this.restaurantPaginator = null;  // 🆕 ADD
-        this.activityPaginator = null;   // 🆕 ADD
     }
     
     /**
@@ -250,8 +254,20 @@ export class BusinessFeedManager {
             window.classifiedApp.managers.feed.populateStories('restaurantStories', restaurants);
         }
         
-        // Populate feed
-        feedContainer.innerHTML = restaurants.map(restaurant => 
+        // 📄 PAGINATION: Initialize paginator with 8 items per page
+        this.restaurantPaginator = new FeedPaginator(restaurants, 8, 'restaurant');
+        console.log('📄 [BusinessFeedManager] Restaurant paginator initialized:', {
+            totalItems: restaurants.length,
+            pageSize: 8,
+            needsPagination: this.restaurantPaginator.needsPagination()
+        });
+        
+        // 📄 PAGINATION: Get first page only (8 items or less)
+        const firstPage = this.restaurantPaginator.getNextPage();
+        console.log('📄 [BusinessFeedManager] Rendering first page:', firstPage.length, 'restaurants');
+        
+        // Populate feed with FIRST PAGE only
+        feedContainer.innerHTML = firstPage.map(restaurant => 
             this.createBusinessCard(restaurant, 'restaurant')
         ).join('');
         
@@ -263,7 +279,7 @@ export class BusinessFeedManager {
             this.addAdminNotice(feedContainer);
         }
         
-        console.log('✅ [BusinessFeedManager] Restaurant feed populated with', restaurants.length, 'restaurants');
+        console.log('✅ [BusinessFeedManager] Restaurant feed populated with', firstPage.length, 'of', restaurants.length, 'restaurants');
 
         // Set up logo click handlers after feed is rendered
         setTimeout(() => this.setupLogoClickHandlers(), 100);
@@ -277,6 +293,113 @@ export class BusinessFeedManager {
                 console.log(`👀 [BusinessFeedManager] Observing ${lazyImages.length} restaurant images for lazy load`);
             }
         }, 200);
+        
+        // 📄 PAGINATION: Set up infinite scroll if more pages exist
+        if (this.restaurantPaginator.hasMore()) {
+            console.log('📄 [BusinessFeedManager] More restaurants available, setting up infinite scroll');
+            this.setupRestaurantInfiniteScroll(feedContainer);
+        } else {
+            console.log('📄 [BusinessFeedManager] All restaurants loaded on first page, no infinite scroll needed');
+        }
+    }
+    
+    /**
+     * Set up infinite scroll for restaurant feed
+     * Uses IntersectionObserver to detect when user scrolls near bottom
+     */
+    setupRestaurantInfiniteScroll(feedContainer) {
+        console.log('📄 [BusinessFeedManager] setupRestaurantInfiniteScroll() called');
+        
+        // Create sentinel element at bottom of feed
+        const sentinel = document.createElement('div');
+        sentinel.className = 'feed-sentinel-restaurant';
+        sentinel.style.height = '1px';
+        sentinel.style.width = '100%';
+        sentinel.setAttribute('data-feed-type', 'restaurant');
+        feedContainer.appendChild(sentinel);
+        
+        console.log('📄 [BusinessFeedManager] Sentinel element created for restaurants');
+        
+        // Create IntersectionObserver
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !this.isLoadingRestaurants) {
+                    console.log('📄 [BusinessFeedManager] Restaurant sentinel intersecting - loading next page at:', Date.now());
+                    this.loadNextRestaurantPage(feedContainer, sentinel);
+                }
+            });
+        }, {
+            root: null, // Use viewport
+            rootMargin: '200px', // Load 200px before user reaches bottom (smooth UX)
+            threshold: 0.1
+        });
+        
+        observer.observe(sentinel);
+        console.log('📄 [BusinessFeedManager] IntersectionObserver observing restaurant sentinel');
+    }
+    
+    /**
+     * Load next page of restaurants
+     */
+    async loadNextRestaurantPage(feedContainer, sentinel) {
+        console.log('📄 [BusinessFeedManager] loadNextRestaurantPage() called at:', Date.now());
+        
+        // Check if paginator exists and has more
+        if (!this.restaurantPaginator || !this.restaurantPaginator.hasMore()) {
+            console.log('📄 [BusinessFeedManager] No more restaurants to load');
+            return;
+        }
+        
+        // Prevent duplicate loads
+        if (this.isLoadingRestaurants) {
+            console.log('📄 [BusinessFeedManager] Already loading restaurants, skipping');
+            return;
+        }
+        
+        // Set loading state
+        this.isLoadingRestaurants = true;
+        this.restaurantPaginator.setLoading(true);
+        console.log('📄 [BusinessFeedManager] Loading state set to true');
+        
+        // Show loading spinner
+        this.showLoadingSpinner(feedContainer, sentinel, 'restaurants');
+        
+        // Simulate slight delay for smooth UX (optional, can remove)
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Get next page
+        const nextPage = this.restaurantPaginator.getNextPage();
+        console.log('📄 [BusinessFeedManager] Next page retrieved:', nextPage.length, 'restaurants');
+        
+        // Create HTML for new cards
+        const newCards = nextPage.map(restaurant => 
+            this.createBusinessCard(restaurant, 'restaurant')
+        ).join('');
+        
+        // Insert new cards BEFORE sentinel
+        sentinel.insertAdjacentHTML('beforebegin', newCards);
+        console.log('📄 [BusinessFeedManager] New restaurant cards inserted into DOM');
+        
+        // Hide loading spinner
+        this.hideLoadingSpinner(feedContainer);
+        
+        // Reset loading state
+        this.isLoadingRestaurants = false;
+        this.restaurantPaginator.setLoading(false);
+        
+        // Set up logo click handlers for new cards
+        setTimeout(() => this.setupLogoClickHandlers(), 100);
+        
+        // Set up lazy loading for new images
+        setTimeout(() => {
+            const lazyImages = feedContainer.querySelectorAll('img.lazy-load');
+            if (lazyImages.length > 0 && window.classifiedApp?.managers?.feed?.lazyLoadManager) {
+                window.classifiedApp.managers.feed.lazyLoadManager.observe(lazyImages, null);
+                console.log(`👀 [BusinessFeedManager] Observing ${lazyImages.length} new restaurant images for lazy load`);
+            }
+        }, 200);
+        
+        console.log('✅ [BusinessFeedManager] Restaurant page loaded successfully. Has more?', this.restaurantPaginator.hasMore());
     }
     
     /**
@@ -394,15 +517,27 @@ export class BusinessFeedManager {
             window.classifiedApp.managers.feed.populateStories('activityStories', activities);
         }
         
-        // Populate feed
-        feedContainer.innerHTML = activities.map(activity => 
+        // 📄 PAGINATION: Initialize paginator with 8 items per page
+        this.activityPaginator = new FeedPaginator(activities, 8, 'activity');
+        console.log('📄 [BusinessFeedManager] Activity paginator initialized:', {
+            totalItems: activities.length,
+            pageSize: 8,
+            needsPagination: this.activityPaginator.needsPagination()
+        });
+        
+        // 📄 PAGINATION: Get first page only (8 items or less)
+        const firstPage = this.activityPaginator.getNextPage();
+        console.log('📄 [BusinessFeedManager] Rendering first page:', firstPage.length, 'activities');
+        
+        // Populate feed with FIRST PAGE only
+        feedContainer.innerHTML = firstPage.map(activity => 
             this.createBusinessCard(activity, 'activity')
         ).join('');
         
         // Add business signup banner
         this.addBusinessSignupBanner(feedContainer);
         
-        console.log('✅ [BusinessFeedManager] Activity feed populated with', activities.length, 'activities');
+        console.log('✅ [BusinessFeedManager] Activity feed populated with', firstPage.length, 'of', activities.length, 'activities');
 
         // Set up lazy loading for feed images
         setTimeout(() => {
@@ -413,11 +548,116 @@ export class BusinessFeedManager {
                 console.log(`👀 [BusinessFeedManager] Observing ${lazyImages.length} activity images for lazy load`);
             }
         }, 200);
-
-        
         
         // Set up logo click handlers after feed is rendered
         setTimeout(() => this.setupLogoClickHandlers(), 100);
+        
+        // 📄 PAGINATION: Set up infinite scroll if more pages exist
+        if (this.activityPaginator.hasMore()) {
+            console.log('📄 [BusinessFeedManager] More activities available, setting up infinite scroll');
+            this.setupActivityInfiniteScroll(feedContainer);
+        } else {
+            console.log('📄 [BusinessFeedManager] All activities loaded on first page, no infinite scroll needed');
+        }
+    }
+    
+     /**
+     * Set up infinite scroll for activity feed
+     * Uses IntersectionObserver to detect when user scrolls near bottom
+     */
+    setupActivityInfiniteScroll(feedContainer) {
+        console.log('📄 [BusinessFeedManager] setupActivityInfiniteScroll() called');
+        
+        // Create sentinel element at bottom of feed
+        const sentinel = document.createElement('div');
+        sentinel.className = 'feed-sentinel-activity';
+        sentinel.style.height = '1px';
+        sentinel.style.width = '100%';
+        sentinel.setAttribute('data-feed-type', 'activity');
+        feedContainer.appendChild(sentinel);
+        
+        console.log('📄 [BusinessFeedManager] Sentinel element created for activities');
+        
+        // Create IntersectionObserver
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !this.isLoadingActivities) {
+                    console.log('📄 [BusinessFeedManager] Activity sentinel intersecting - loading next page at:', Date.now());
+                    this.loadNextActivityPage(feedContainer, sentinel);
+                }
+            });
+        }, {
+            root: null, // Use viewport
+            rootMargin: '200px', // Load 200px before user reaches bottom (smooth UX)
+            threshold: 0.1
+        });
+        
+        observer.observe(sentinel);
+        console.log('📄 [BusinessFeedManager] IntersectionObserver observing activity sentinel');
+    }
+    
+    /**
+     * Load next page of activities
+     */
+    async loadNextActivityPage(feedContainer, sentinel) {
+        console.log('📄 [BusinessFeedManager] loadNextActivityPage() called at:', Date.now());
+        
+        // Check if paginator exists and has more
+        if (!this.activityPaginator || !this.activityPaginator.hasMore()) {
+            console.log('📄 [BusinessFeedManager] No more activities to load');
+            return;
+        }
+        
+        // Prevent duplicate loads
+        if (this.isLoadingActivities) {
+            console.log('📄 [BusinessFeedManager] Already loading activities, skipping');
+            return;
+        }
+        
+        // Set loading state
+        this.isLoadingActivities = true;
+        this.activityPaginator.setLoading(true);
+        console.log('📄 [BusinessFeedManager] Loading state set to true');
+        
+        // Show loading spinner
+        this.showLoadingSpinner(feedContainer, sentinel, 'activities');
+        
+        // Simulate slight delay for smooth UX (optional, can remove)
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Get next page
+        const nextPage = this.activityPaginator.getNextPage();
+        console.log('📄 [BusinessFeedManager] Next page retrieved:', nextPage.length, 'activities');
+        
+        // Create HTML for new cards
+        const newCards = nextPage.map(activity => 
+            this.createBusinessCard(activity, 'activity')
+        ).join('');
+        
+        // Insert new cards BEFORE sentinel
+        sentinel.insertAdjacentHTML('beforebegin', newCards);
+        console.log('📄 [BusinessFeedManager] New activity cards inserted into DOM');
+        
+        // Hide loading spinner
+        this.hideLoadingSpinner(feedContainer);
+        
+        // Reset loading state
+        this.isLoadingActivities = false;
+        this.activityPaginator.setLoading(false);
+        
+        // Set up logo click handlers for new cards
+        setTimeout(() => this.setupLogoClickHandlers(), 100);
+        
+        // Set up lazy loading for new images
+        setTimeout(() => {
+            const lazyImages = feedContainer.querySelectorAll('img.lazy-load');
+            if (lazyImages.length > 0 && window.classifiedApp?.managers?.feed?.lazyLoadManager) {
+                window.classifiedApp.managers.feed.lazyLoadManager.observe(lazyImages, null);
+                console.log(`👀 [BusinessFeedManager] Observing ${lazyImages.length} new activity images for lazy load`);
+            }
+        }, 200);
+        
+        console.log('✅ [BusinessFeedManager] Activity page loaded successfully. Has more?', this.activityPaginator.hasMore());
     }
     
     /**
@@ -849,11 +1089,46 @@ export class BusinessFeedManager {
         return priceMap[priceRange] || '$$ - Moderate';
     }
     
-    /**
+  /**
      * Refresh activity feed (for debugging)
      */
     async refreshActivityFeed() {
         console.log('🏢 [BusinessFeedManager] Manual refresh triggered for activity feed');
         await this.populateActivityFeed();
+    }
+    
+    /**
+     * Show loading spinner while loading next page
+     */
+    showLoadingSpinner(container, sentinel, feedType) {
+        console.log(`📄 [BusinessFeedManager] Showing loading spinner for ${feedType}`);
+        
+        // Remove any existing spinner
+        const existingSpinner = container.querySelector('.pagination-loading');
+        if (existingSpinner) existingSpinner.remove();
+        
+        const spinner = document.createElement('div');
+        spinner.className = 'pagination-loading';
+        spinner.style.cssText = 'text-align: center; padding: 20px; margin: 20px 0;';
+        spinner.innerHTML = `
+            <div class="spinner-container">
+                <div class="spinner" style="width: 40px; height: 40px; border: 4px solid rgba(0, 212, 255, 0.2); border-top-color: #00D4FF; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+                <p style="margin-top: 10px; color: #888; font-size: 14px;">Loading more ${feedType}...</p>
+            </div>
+        `;
+        
+        // Insert before sentinel
+        sentinel.insertAdjacentElement('beforebegin', spinner);
+    }
+    
+    /**
+     * Hide loading spinner
+     */
+    hideLoadingSpinner(container) {
+        const spinner = container.querySelector('.pagination-loading');
+        if (spinner) {
+            console.log('📄 [BusinessFeedManager] Hiding loading spinner');
+            spinner.remove();
+        }
     }
 }

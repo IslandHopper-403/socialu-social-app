@@ -41,12 +41,14 @@ export class UserFeedManager {
         this.cachedMatchedUsers = null;
         this.matchedUsersCacheTime = 0;
         this.CACHE_DURATION = 60000; // 1 minute cache
+
+        // Pagination for infinite scroll
+        this.userPaginator = null;
+        this.demoUserPaginator = null;
+        this.isLoadingUsers = false;
         
         console.log('✅ [UserFeedManager] Initialized');
 
-        // Paginators for infinite scroll
-        this.userPaginator = null;      // 🆕 ADD
-        this.demoUserPaginator = null;  // 🆕 ADD
     }
     
     /**
@@ -388,13 +390,27 @@ export class UserFeedManager {
         
         container.innerHTML = '';
         
-        users.forEach((user, index) => {
+        // 📄 PAGINATION: Initialize paginator with 8 items per page
+        this.userPaginator = new FeedPaginator(users, 8, 'user');
+        console.log('📄 [UserFeedManager] User paginator initialized:', {
+            totalItems: users.length,
+            pageSize: 8,
+            needsPagination: this.userPaginator.needsPagination()
+        });
+        
+        // 📄 PAGINATION: Get first page only (8 items or less)
+        const firstPage = this.userPaginator.getNextPage();
+        console.log('📄 [UserFeedManager] Rendering first page:', firstPage.length, 'users');
+        
+        // Render first page
+        firstPage.forEach((user, index) => {
             const feedItem = this.createUserFeedItem(user, index);
             container.appendChild(feedItem);
         });
         
-        // Add activity indicator
+        // Add activity indicator (only shows count of first page initially)
         const activityIndicator = document.createElement('div');
+        activityIndicator.className = 'user-activity-indicator';
         activityIndicator.innerHTML = `
             <div style="text-align: center; padding: 20px; background: rgba(0,212,255,0.1); margin: 20px 0; border-radius: 15px;">
                 <h3>🔥 ${users.length} travelers active in Hoi An</h3>
@@ -403,7 +419,107 @@ export class UserFeedManager {
         `;
         container.appendChild(activityIndicator);
         
-        console.log('✅ [populateUserFeedWithData] Feed populated successfully');
+        console.log('✅ [populateUserFeedWithData] Feed populated with', firstPage.length, 'of', users.length, 'users');
+        
+        // 📄 PAGINATION: Set up infinite scroll if more pages exist
+        if (this.userPaginator.hasMore()) {
+            console.log('📄 [UserFeedManager] More users available, setting up infinite scroll');
+            this.setupUserInfiniteScroll(container);
+        } else {
+            console.log('📄 [UserFeedManager] All users loaded on first page, no infinite scroll needed');
+        }
+    }
+    
+    /**
+     * Set up infinite scroll for user feed
+     * Uses IntersectionObserver to detect when user scrolls near bottom
+     */
+    setupUserInfiniteScroll(container) {
+        console.log('📄 [UserFeedManager] setupUserInfiniteScroll() called');
+        
+        // Create sentinel element at bottom of feed (before activity indicator)
+        const sentinel = document.createElement('div');
+        sentinel.className = 'feed-sentinel-user';
+        sentinel.style.height = '1px';
+        sentinel.style.width = '100%';
+        sentinel.setAttribute('data-feed-type', 'user');
+        
+        // Insert sentinel BEFORE the activity indicator
+        const activityIndicator = container.querySelector('.user-activity-indicator');
+        if (activityIndicator) {
+            activityIndicator.insertAdjacentElement('beforebegin', sentinel);
+        } else {
+            container.appendChild(sentinel);
+        }
+        
+        console.log('📄 [UserFeedManager] Sentinel element created for users');
+        
+        // Create IntersectionObserver
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !this.isLoadingUsers) {
+                    console.log('📄 [UserFeedManager] User sentinel intersecting - loading next page at:', Date.now());
+                    this.loadNextUserPage(container, sentinel);
+                }
+            });
+        }, {
+            root: null, // Use viewport
+            rootMargin: '200px', // Load 200px before user reaches bottom (smooth UX)
+            threshold: 0.1
+        });
+        
+        observer.observe(sentinel);
+        console.log('📄 [UserFeedManager] IntersectionObserver observing user sentinel');
+    }
+    
+    /**
+     * Load next page of users
+     */
+    async loadNextUserPage(container, sentinel) {
+        console.log('📄 [UserFeedManager] loadNextUserPage() called at:', Date.now());
+        
+        // Check if paginator exists and has more
+        if (!this.userPaginator || !this.userPaginator.hasMore()) {
+            console.log('📄 [UserFeedManager] No more users to load');
+            return;
+        }
+        
+        // Prevent duplicate loads
+        if (this.isLoadingUsers) {
+            console.log('📄 [UserFeedManager] Already loading users, skipping');
+            return;
+        }
+        
+        // Set loading state
+        this.isLoadingUsers = true;
+        this.userPaginator.setLoading(true);
+        console.log('📄 [UserFeedManager] Loading state set to true');
+        
+        // Show loading spinner
+        this.showLoadingSpinner(container, sentinel, 'users');
+        
+        // Simulate slight delay for smooth UX (optional, can remove)
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Get next page
+        const nextPage = this.userPaginator.getNextPage();
+        console.log('📄 [UserFeedManager] Next page retrieved:', nextPage.length, 'users');
+        
+        // Create and insert new user cards BEFORE sentinel
+        nextPage.forEach((user, index) => {
+            const feedItem = this.createUserFeedItem(user, index);
+            sentinel.insertAdjacentElement('beforebegin', feedItem);
+        });
+        console.log('📄 [UserFeedManager] New user cards inserted into DOM');
+        
+        // Hide loading spinner
+        this.hideLoadingSpinner(container);
+        
+        // Reset loading state
+        this.isLoadingUsers = false;
+        this.userPaginator.setLoading(false);
+        
+        console.log('✅ [UserFeedManager] User page loaded successfully. Has more?', this.userPaginator.hasMore());
     }
     
    /**
@@ -426,13 +542,28 @@ export class UserFeedManager {
         const demoUsers = this.mockData.getUsers();
         
         container.innerHTML = '';
-        demoUsers.forEach((user, index) => {
+        
+        // 📄 PAGINATION: Initialize paginator with 8 items per page
+        this.demoUserPaginator = new FeedPaginator(demoUsers, 8, 'demo-user');
+        console.log('📄 [UserFeedManager] Demo user paginator initialized:', {
+            totalItems: demoUsers.length,
+            pageSize: 8,
+            needsPagination: this.demoUserPaginator.needsPagination()
+        });
+        
+        // 📄 PAGINATION: Get first page only (8 items or less)
+        const firstPage = this.demoUserPaginator.getNextPage();
+        console.log('📄 [UserFeedManager] Rendering first page:', firstPage.length, 'demo users');
+        
+        // Render first page
+        firstPage.forEach((user, index) => {
             const feedItem = this.createUserFeedItem(user, index);
             container.appendChild(feedItem);
         });
         
         // Show encouraging message
         const encourageMessage = document.createElement('div');
+        encourageMessage.className = 'demo-user-encourage-message';
         encourageMessage.innerHTML = `
             <div style="text-align: center; padding: 40px; opacity: 0.9;">
                 <div style="font-size: 48px; margin-bottom: 20px;">🚀</div>
@@ -445,7 +576,107 @@ export class UserFeedManager {
         `;
         container.appendChild(encourageMessage);
         
-        console.log('✅ [populateDemoUserFeed] Demo feed displayed');
+        console.log('✅ [populateDemoUserFeed] Demo feed displayed with', firstPage.length, 'of', demoUsers.length, 'demo users');
+        
+        // 📄 PAGINATION: Set up infinite scroll if more pages exist
+        if (this.demoUserPaginator.hasMore()) {
+            console.log('📄 [UserFeedManager] More demo users available, setting up infinite scroll');
+            this.setupDemoUserInfiniteScroll(container);
+        } else {
+            console.log('📄 [UserFeedManager] All demo users loaded on first page, no infinite scroll needed');
+        }
+    }
+    
+     /**
+     * Set up infinite scroll for demo user feed
+     * Uses IntersectionObserver to detect when user scrolls near bottom
+     */
+    setupDemoUserInfiniteScroll(container) {
+        console.log('📄 [UserFeedManager] setupDemoUserInfiniteScroll() called');
+        
+        // Create sentinel element at bottom of feed (before encourage message)
+        const sentinel = document.createElement('div');
+        sentinel.className = 'feed-sentinel-demo-user';
+        sentinel.style.height = '1px';
+        sentinel.style.width = '100%';
+        sentinel.setAttribute('data-feed-type', 'demo-user');
+        
+        // Insert sentinel BEFORE the encourage message
+        const encourageMessage = container.querySelector('.demo-user-encourage-message');
+        if (encourageMessage) {
+            encourageMessage.insertAdjacentElement('beforebegin', sentinel);
+        } else {
+            container.appendChild(sentinel);
+        }
+        
+        console.log('📄 [UserFeedManager] Sentinel element created for demo users');
+        
+        // Create IntersectionObserver
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !this.isLoadingUsers) {
+                    console.log('📄 [UserFeedManager] Demo user sentinel intersecting - loading next page at:', Date.now());
+                    this.loadNextDemoUserPage(container, sentinel);
+                }
+            });
+        }, {
+            root: null, // Use viewport
+            rootMargin: '200px', // Load 200px before user reaches bottom (smooth UX)
+            threshold: 0.1
+        });
+        
+        observer.observe(sentinel);
+        console.log('📄 [UserFeedManager] IntersectionObserver observing demo user sentinel');
+    }
+    
+    /**
+     * Load next page of demo users
+     */
+    async loadNextDemoUserPage(container, sentinel) {
+        console.log('📄 [UserFeedManager] loadNextDemoUserPage() called at:', Date.now());
+        
+        // Check if paginator exists and has more
+        if (!this.demoUserPaginator || !this.demoUserPaginator.hasMore()) {
+            console.log('📄 [UserFeedManager] No more demo users to load');
+            return;
+        }
+        
+        // Prevent duplicate loads (reuse same flag as regular users)
+        if (this.isLoadingUsers) {
+            console.log('📄 [UserFeedManager] Already loading demo users, skipping');
+            return;
+        }
+        
+        // Set loading state
+        this.isLoadingUsers = true;
+        this.demoUserPaginator.setLoading(true);
+        console.log('📄 [UserFeedManager] Loading state set to true');
+        
+        // Show loading spinner
+        this.showLoadingSpinner(container, sentinel, 'demo users');
+        
+        // Simulate slight delay for smooth UX (optional, can remove)
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Get next page
+        const nextPage = this.demoUserPaginator.getNextPage();
+        console.log('📄 [UserFeedManager] Next page retrieved:', nextPage.length, 'demo users');
+        
+        // Create and insert new user cards BEFORE sentinel
+        nextPage.forEach((user, index) => {
+            const feedItem = this.createUserFeedItem(user, index);
+            sentinel.insertAdjacentElement('beforebegin', feedItem);
+        });
+        console.log('📄 [UserFeedManager] New demo user cards inserted into DOM');
+        
+        // Hide loading spinner
+        this.hideLoadingSpinner(container);
+        
+        // Reset loading state
+        this.isLoadingUsers = false;
+        this.demoUserPaginator.setLoading(false);
+        
+        console.log('✅ [UserFeedManager] Demo user page loaded successfully. Has more?', this.demoUserPaginator.hasMore());
     }
     
     /**
@@ -673,5 +904,40 @@ export class UserFeedManager {
     async showDemoData() {
         console.log('👥 [showDemoData] Loading demo user data for guest mode...');
         this.populateGuestUserFeed();
+    }
+    
+    /**
+     * Show loading spinner while loading next page
+     */
+    showLoadingSpinner(container, sentinel, feedType) {
+        console.log(`📄 [UserFeedManager] Showing loading spinner for ${feedType}`);
+        
+        // Remove any existing spinner
+        const existingSpinner = container.querySelector('.pagination-loading');
+        if (existingSpinner) existingSpinner.remove();
+        
+        const spinner = document.createElement('div');
+        spinner.className = 'pagination-loading';
+        spinner.style.cssText = 'text-align: center; padding: 20px; margin: 20px 0;';
+        spinner.innerHTML = `
+            <div class="spinner-container">
+                <div class="spinner" style="width: 40px; height: 40px; border: 4px solid rgba(0, 212, 255, 0.2); border-top-color: #00D4FF; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+                <p style="margin-top: 10px; color: #888; font-size: 14px;">Loading more ${feedType}...</p>
+            </div>
+        `;
+        
+        // Insert before sentinel
+        sentinel.insertAdjacentElement('beforebegin', spinner);
+    }
+    
+    /**
+     * Hide loading spinner
+     */
+    hideLoadingSpinner(container) {
+        const spinner = container.querySelector('.pagination-loading');
+        if (spinner) {
+            console.log('📄 [UserFeedManager] Hiding loading spinner');
+            spinner.remove();
+        }
     }
 }

@@ -388,27 +388,38 @@ export class UserFeedManager {
     populateUserFeedWithData(users, container) {
         console.log('👥 [populateUserFeedWithData] Populating with', users.length, 'users');
         
-        container.innerHTML = '';
+       container.innerHTML = '';
         
-        // 📄 PAGINATION: Initialize paginator with 8 items per page
-        this.userPaginator = new FeedPaginator(users, 8, 'user');
-        console.log('📄 [UserFeedManager] User paginator initialized:', {
-            totalItems: users.length,
-            pageSize: 8,
-            needsPagination: this.userPaginator.needsPagination()
-        });
+        // 📄 CONDITIONAL PAGINATION: Only use pagination if more than 8 items
+        if (users.length > 8) {
+            console.log('📄 [UserFeedManager] Using pagination for', users.length, 'users');
+            
+            // Initialize paginator with 8 items per page
+            this.userPaginator = new FeedPaginator(users, 8, 'user');
+            
+            // Get first page only (8 items)
+            const firstPage = this.userPaginator.getNextPage();
+            
+            // Render first page
+            firstPage.forEach((user, index) => {
+                const feedItem = this.createUserFeedItem(user, index);
+                container.appendChild(feedItem);
+            });
+            
+            console.log('✅ [populateUserFeedWithData] Feed populated with', firstPage.length, 'of', users.length, 'users (paginated)');
+        } else {
+            console.log('📄 [UserFeedManager] Using direct render for', users.length, 'users (no pagination needed)');
+            
+            // Direct render - FAST for small datasets
+            users.forEach((user, index) => {
+                const feedItem = this.createUserFeedItem(user, index);
+                container.appendChild(feedItem);
+            });
+            
+            console.log('✅ [populateUserFeedWithData] Feed populated with', users.length, 'users (direct render)');
+        }
         
-        // 📄 PAGINATION: Get first page only (8 items or less)
-        const firstPage = this.userPaginator.getNextPage();
-        console.log('📄 [UserFeedManager] Rendering first page:', firstPage.length, 'users');
-        
-        // Render first page
-        firstPage.forEach((user, index) => {
-            const feedItem = this.createUserFeedItem(user, index);
-            container.appendChild(feedItem);
-        });
-        
-        // Add activity indicator (only shows count of first page initially)
+        // Add activity indicator
         const activityIndicator = document.createElement('div');
         activityIndicator.className = 'user-activity-indicator';
         activityIndicator.innerHTML = `
@@ -419,17 +430,13 @@ export class UserFeedManager {
         `;
         container.appendChild(activityIndicator);
         
-        console.log('✅ [populateUserFeedWithData] Feed populated with', firstPage.length, 'of', users.length, 'users');
-        
-        // 📄 PAGINATION: Set up infinite scroll if more pages exist
-        if (this.userPaginator.hasMore()) {
+        // 📄 PAGINATION: Set up infinite scroll ONLY if pagination is active and has more pages
+        if (this.userPaginator && this.userPaginator.hasMore()) {
             console.log('📄 [UserFeedManager] More users available, setting up infinite scroll');
             this.setupUserInfiniteScroll(container);
-        } else {
-            console.log('📄 [UserFeedManager] All users loaded on first page, no infinite scroll needed');
         }
     }
-    
+
     /**
      * Set up infinite scroll for user feed
      * Uses IntersectionObserver to detect when user scrolls near bottom
@@ -543,23 +550,34 @@ export class UserFeedManager {
         
         container.innerHTML = '';
         
-        // 📄 PAGINATION: Initialize paginator with 8 items per page
-        this.demoUserPaginator = new FeedPaginator(demoUsers, 8, 'demo-user');
-        console.log('📄 [UserFeedManager] Demo user paginator initialized:', {
-            totalItems: demoUsers.length,
-            pageSize: 8,
-            needsPagination: this.demoUserPaginator.needsPagination()
-        });
-        
-        // 📄 PAGINATION: Get first page only (8 items or less)
-        const firstPage = this.demoUserPaginator.getNextPage();
-        console.log('📄 [UserFeedManager] Rendering first page:', firstPage.length, 'demo users');
-        
-        // Render first page
-        firstPage.forEach((user, index) => {
-            const feedItem = this.createUserFeedItem(user, index);
-            container.appendChild(feedItem);
-        });
+        // 📄 CONDITIONAL PAGINATION: Only use pagination if more than 8 items
+        if (demoUsers.length > 8) {
+            console.log('📄 [UserFeedManager] Using pagination for', demoUsers.length, 'demo users');
+            
+            // Initialize paginator with 8 items per page
+            this.demoUserPaginator = new FeedPaginator(demoUsers, 8, 'demo-user');
+            
+            // Get first page only (8 items)
+            const firstPage = this.demoUserPaginator.getNextPage();
+            
+            // Render first page
+            firstPage.forEach((user, index) => {
+                const feedItem = this.createUserFeedItem(user, index);
+                container.appendChild(feedItem);
+            });
+            
+            console.log('✅ [populateDemoUserFeed] Demo feed displayed with', firstPage.length, 'of', demoUsers.length, 'demo users (paginated)');
+        } else {
+            console.log('📄 [UserFeedManager] Using direct render for', demoUsers.length, 'demo users (no pagination needed)');
+            
+            // Direct render - FAST for small datasets
+            demoUsers.forEach((user, index) => {
+                const feedItem = this.createUserFeedItem(user, index);
+                container.appendChild(feedItem);
+            });
+            
+            console.log('✅ [populateDemoUserFeed] Demo feed displayed with', demoUsers.length, 'demo users (direct render)');
+        }
         
         // Show encouraging message
         const encourageMessage = document.createElement('div');
@@ -576,14 +594,10 @@ export class UserFeedManager {
         `;
         container.appendChild(encourageMessage);
         
-        console.log('✅ [populateDemoUserFeed] Demo feed displayed with', firstPage.length, 'of', demoUsers.length, 'demo users');
-        
-        // 📄 PAGINATION: Set up infinite scroll if more pages exist
-        if (this.demoUserPaginator.hasMore()) {
+        // 📄 PAGINATION: Set up infinite scroll ONLY if pagination is active and has more pages
+        if (this.demoUserPaginator && this.demoUserPaginator.hasMore()) {
             console.log('📄 [UserFeedManager] More demo users available, setting up infinite scroll');
             this.setupDemoUserInfiniteScroll(container);
-        } else {
-            console.log('📄 [UserFeedManager] All demo users loaded on first page, no infinite scroll needed');
         }
     }
     

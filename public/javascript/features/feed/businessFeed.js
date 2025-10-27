@@ -254,22 +254,32 @@ export class BusinessFeedManager {
             window.classifiedApp.managers.feed.populateStories('restaurantStories', restaurants);
         }
         
-        // 📄 PAGINATION: Initialize paginator with 8 items per page
-        this.restaurantPaginator = new FeedPaginator(restaurants, 8, 'restaurant');
-        console.log('📄 [BusinessFeedManager] Restaurant paginator initialized:', {
-            totalItems: restaurants.length,
-            pageSize: 8,
-            needsPagination: this.restaurantPaginator.needsPagination()
-        });
-        
-        // 📄 PAGINATION: Get first page only (8 items or less)
-        const firstPage = this.restaurantPaginator.getNextPage();
-        console.log('📄 [BusinessFeedManager] Rendering first page:', firstPage.length, 'restaurants');
-        
-        // Populate feed with FIRST PAGE only
-        feedContainer.innerHTML = firstPage.map(restaurant => 
-            this.createBusinessCard(restaurant, 'restaurant')
-        ).join('');
+        // 📄 CONDITIONAL PAGINATION: Only use pagination if more than 8 items
+        if (restaurants.length > 8) {
+            console.log('📄 [BusinessFeedManager] Using pagination for', restaurants.length, 'restaurants');
+            
+            // Initialize paginator with 8 items per page
+            this.restaurantPaginator = new FeedPaginator(restaurants, 8, 'restaurant');
+            
+            // Get first page only (8 items)
+            const firstPage = this.restaurantPaginator.getNextPage();
+            
+            // Populate feed with FIRST PAGE only
+            feedContainer.innerHTML = firstPage.map(restaurant => 
+                this.createBusinessCard(restaurant, 'restaurant')
+            ).join('');
+            
+            console.log('✅ [BusinessFeedManager] Restaurant feed populated with', firstPage.length, 'of', restaurants.length, 'restaurants (paginated)');
+        } else {
+            console.log('📄 [BusinessFeedManager] Using direct render for', restaurants.length, 'restaurants (no pagination needed)');
+            
+            // Direct render - FAST for small datasets
+            feedContainer.innerHTML = restaurants.map(restaurant => 
+                this.createBusinessCard(restaurant, 'restaurant')
+            ).join('');
+            
+            console.log('✅ [BusinessFeedManager] Restaurant feed populated with', restaurants.length, 'restaurants (direct render)');
+        }
         
         // Add business signup banner
         this.addBusinessSignupBanner(feedContainer);
@@ -278,8 +288,6 @@ export class BusinessFeedManager {
         if (this.adminManager && this.adminManager.isAdmin()) {
             this.addAdminNotice(feedContainer);
         }
-        
-        console.log('✅ [BusinessFeedManager] Restaurant feed populated with', firstPage.length, 'of', restaurants.length, 'restaurants');
 
         // Set up logo click handlers after feed is rendered
         setTimeout(() => this.setupLogoClickHandlers(), 100);
@@ -294,12 +302,10 @@ export class BusinessFeedManager {
             }
         }, 200);
         
-        // 📄 PAGINATION: Set up infinite scroll if more pages exist
-        if (this.restaurantPaginator.hasMore()) {
+        // 📄 PAGINATION: Set up infinite scroll ONLY if pagination is active and has more pages
+        if (this.restaurantPaginator && this.restaurantPaginator.hasMore()) {
             console.log('📄 [BusinessFeedManager] More restaurants available, setting up infinite scroll');
             this.setupRestaurantInfiniteScroll(feedContainer);
-        } else {
-            console.log('📄 [BusinessFeedManager] All restaurants loaded on first page, no infinite scroll needed');
         }
     }
     
@@ -517,27 +523,35 @@ export class BusinessFeedManager {
             window.classifiedApp.managers.feed.populateStories('activityStories', activities);
         }
         
-        // 📄 PAGINATION: Initialize paginator with 8 items per page
-        this.activityPaginator = new FeedPaginator(activities, 8, 'activity');
-        console.log('📄 [BusinessFeedManager] Activity paginator initialized:', {
-            totalItems: activities.length,
-            pageSize: 8,
-            needsPagination: this.activityPaginator.needsPagination()
-        });
-        
-        // 📄 PAGINATION: Get first page only (8 items or less)
-        const firstPage = this.activityPaginator.getNextPage();
-        console.log('📄 [BusinessFeedManager] Rendering first page:', firstPage.length, 'activities');
-        
-        // Populate feed with FIRST PAGE only
-        feedContainer.innerHTML = firstPage.map(activity => 
-            this.createBusinessCard(activity, 'activity')
-        ).join('');
+        // 📄 CONDITIONAL PAGINATION: Only use pagination if more than 8 items
+        if (activities.length > 8) {
+            console.log('📄 [BusinessFeedManager] Using pagination for', activities.length, 'activities');
+            
+            // Initialize paginator with 8 items per page
+            this.activityPaginator = new FeedPaginator(activities, 8, 'activity');
+            
+            // Get first page only (8 items)
+            const firstPage = this.activityPaginator.getNextPage();
+            
+            // Populate feed with FIRST PAGE only
+            feedContainer.innerHTML = firstPage.map(activity => 
+                this.createBusinessCard(activity, 'activity')
+            ).join('');
+            
+            console.log('✅ [BusinessFeedManager] Activity feed populated with', firstPage.length, 'of', activities.length, 'activities (paginated)');
+        } else {
+            console.log('📄 [BusinessFeedManager] Using direct render for', activities.length, 'activities (no pagination needed)');
+            
+            // Direct render - FAST for small datasets
+            feedContainer.innerHTML = activities.map(activity => 
+                this.createBusinessCard(activity, 'activity')
+            ).join('');
+            
+            console.log('✅ [BusinessFeedManager] Activity feed populated with', activities.length, 'activities (direct render)');
+        }
         
         // Add business signup banner
         this.addBusinessSignupBanner(feedContainer);
-        
-        console.log('✅ [BusinessFeedManager] Activity feed populated with', firstPage.length, 'of', activities.length, 'activities');
 
         // Set up lazy loading for feed images
         setTimeout(() => {
@@ -552,12 +566,10 @@ export class BusinessFeedManager {
         // Set up logo click handlers after feed is rendered
         setTimeout(() => this.setupLogoClickHandlers(), 100);
         
-        // 📄 PAGINATION: Set up infinite scroll if more pages exist
-        if (this.activityPaginator.hasMore()) {
+        // 📄 PAGINATION: Set up infinite scroll ONLY if pagination is active and has more pages
+        if (this.activityPaginator && this.activityPaginator.hasMore()) {
             console.log('📄 [BusinessFeedManager] More activities available, setting up infinite scroll');
             this.setupActivityInfiniteScroll(feedContainer);
-        } else {
-            console.log('📄 [BusinessFeedManager] All activities loaded on first page, no infinite scroll needed');
         }
     }
     
